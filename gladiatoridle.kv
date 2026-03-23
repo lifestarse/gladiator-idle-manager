@@ -6,11 +6,10 @@
 #:import CardWidget game.widgets.CardWidget
 
 # ============================================================
-#  SHARED NAV BAR TEMPLATE
+#  SHARED NAV — 6 tabs
 # ============================================================
-
 <NavBar@BoxLayout>:
-    size_hint_y: 0.065
+    size_hint_y: 0.06
     canvas.before:
         Color:
             rgba: app.nav_bg
@@ -24,7 +23,7 @@
             size: self.width, 1
 
 # ============================================================
-#  ARENA
+#  ARENA (THE PIT)
 # ============================================================
 <ArenaScreen>:
     FloatLayout:
@@ -39,8 +38,8 @@
         # Top bar
         BoxLayout:
             pos_hint: {"top": 1, "x": 0}
-            size_hint: 1, 0.06
-            padding: [15, 4]
+            size_hint: 1, 0.055
+            padding: [12, 3]
             canvas.before:
                 Color:
                     rgba: app.nav_bg
@@ -49,7 +48,7 @@
                     size: self.size
             Label:
                 text: root.gold_text
-                font_size: "17sp"
+                font_size: "16sp"
                 bold: True
                 color: app.accent_gold
                 halign: "left"
@@ -57,14 +56,21 @@
                 valign: "middle"
             Label:
                 text: root.idle_rate_text
-                font_size: "11sp"
+                font_size: "10sp"
                 color: app.accent_green
                 halign: "center"
                 text_size: self.size
                 valign: "middle"
             Label:
-                text: root.wins_text + " W"
-                font_size: "13sp"
+                text: root.ad_bonus_text
+                font_size: "10sp"
+                color: app.accent_cyan
+                halign: "center"
+                text_size: self.size
+                valign: "middle"
+            Label:
+                text: root.wins_text + "W"
+                font_size: "12sp"
                 color: app.text_secondary
                 halign: "right"
                 text_size: self.size
@@ -73,31 +79,31 @@
         # Arena content
         BoxLayout:
             orientation: "vertical"
-            pos_hint: {"top": 0.94, "x": 0}
-            size_hint: 1, 0.685
-            padding: [20, 8]
-            spacing: 4
+            pos_hint: {"top": 0.945, "x": 0}
+            size_hint: 1, 0.655
+            padding: [16, 6]
+            spacing: 3
 
             Label:
                 text: "T H E   P I T"
-                font_size: "11sp"
+                font_size: "10sp"
                 color: app.text_muted
-                size_hint_y: 0.04
+                size_hint_y: 0.035
 
             # Player
             BoxLayout:
-                size_hint_y: 0.28
-                spacing: 10
+                size_hint_y: 0.25
+                spacing: 8
                 GladiatorAvatar:
-                    size_hint_x: 0.3
+                    size_hint_x: 0.28
                     accent_color: app.accent_green
                 BoxLayout:
                     orientation: "vertical"
-                    size_hint_x: 0.7
-                    spacing: 2
+                    size_hint_x: 0.72
+                    spacing: 1
                     Label:
                         text: root.gladiator_name
-                        font_size: "16sp"
+                        font_size: "15sp"
                         bold: True
                         color: app.accent_green
                         halign: "left"
@@ -106,14 +112,13 @@
                         size_hint_y: 0.25
                     Label:
                         text: root.gladiator_level
-                        font_size: "10sp"
+                        font_size: "9sp"
                         color: app.text_secondary
                         halign: "left"
                         text_size: self.size
-                        valign: "top"
                         size_hint_y: 0.12
                     MinimalBar:
-                        size_hint_y: 0.12
+                        size_hint_y: 0.1
                         value: root.player_hp_pct
                         bar_color: theme.HP_PLAYER
                         bg_color: theme.HP_PLAYER_BG
@@ -123,21 +128,21 @@
                         color: app.text_muted
                         halign: "left"
                         text_size: self.size
-                        size_hint_y: 0.1
+                        size_hint_y: 0.08
                     Label:
                         text: root.injuries_text + "  " + root.death_risk_text
-                        font_size: "9sp"
+                        font_size: "8sp"
                         color: app.accent_red
                         halign: "left"
                         text_size: self.size
-                        size_hint_y: 0.1
+                        size_hint_y: 0.08
                     Widget:
-                        size_hint_y: 0.31
+                        size_hint_y: 0.37
 
             # VS
             BoxLayout:
-                size_hint_y: 0.05
-                padding: [40, 0]
+                size_hint_y: 0.04
+                padding: [30, 0]
                 Widget:
                     canvas:
                         Color:
@@ -147,11 +152,11 @@
                             size: self.width, 1
                 Label:
                     text: "VS"
-                    font_size: "13sp"
+                    font_size: "12sp"
                     bold: True
                     color: app.accent_red
                     size_hint_x: None
-                    width: 36
+                    width: 30
                 Widget:
                     canvas:
                         Color:
@@ -162,15 +167,15 @@
 
             # Enemy
             BoxLayout:
-                size_hint_y: 0.28
-                spacing: 10
+                size_hint_y: 0.25
+                spacing: 8
                 BoxLayout:
                     orientation: "vertical"
-                    size_hint_x: 0.7
-                    spacing: 2
+                    size_hint_x: 0.72
+                    spacing: 1
                     Label:
                         text: root.enemy_name
-                        font_size: "16sp"
+                        font_size: "15sp"
                         bold: True
                         color: app.accent_red
                         halign: "right"
@@ -179,14 +184,13 @@
                         size_hint_y: 0.3
                     Label:
                         text: root.enemy_tier
-                        font_size: "10sp"
+                        font_size: "9sp"
                         color: app.text_secondary
                         halign: "right"
                         text_size: self.size
-                        valign: "top"
-                        size_hint_y: 0.15
-                    MinimalBar:
                         size_hint_y: 0.12
+                    MinimalBar:
+                        size_hint_y: 0.1
                         value: root.enemy_hp_pct
                         bar_color: theme.HP_ENEMY
                         bg_color: theme.HP_ENEMY_BG
@@ -196,30 +200,40 @@
                         color: app.text_muted
                         halign: "right"
                         text_size: self.size
-                        size_hint_y: 0.1
+                        size_hint_y: 0.08
                     Widget:
-                        size_hint_y: 0.33
+                        size_hint_y: 0.4
                 GladiatorAvatar:
-                    size_hint_x: 0.3
+                    size_hint_x: 0.28
                     accent_color: app.accent_red
 
             # Log
             Label:
                 text: root.battle_log
-                font_size: "11sp"
+                font_size: "10sp"
                 color: app.text_secondary
-                size_hint_y: 0.13
+                size_hint_y: 0.11
                 text_size: self.width, None
                 halign: "center"
                 valign: "middle"
 
-            # Fight
-            MinimalButton:
-                text: "F I G H T"
-                btn_color: theme.BTN_FIGHT
-                font_size: 19
-                size_hint_y: 0.14
-                on_press: root.fight()
+            # Buttons row: Fight + Watch Ad
+            BoxLayout:
+                size_hint_y: 0.12
+                spacing: 8
+                MinimalButton:
+                    text: "F I G H T"
+                    btn_color: theme.BTN_FIGHT
+                    font_size: 17
+                    size_hint_x: 0.65
+                    on_press: root.fight()
+                MinimalButton:
+                    text: "2x AD"
+                    btn_color: theme.ACCENT_CYAN
+                    text_color: theme.BG_DARK
+                    font_size: 12
+                    size_hint_x: 0.35
+                    on_press: root.watch_ad()
 
         # Nav
         NavBar:
@@ -228,31 +242,37 @@
                 text: "PIT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.accent_gold
-                font_size: 11
+                font_size: 10
             MinimalButton:
                 text: "SQUAD"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "roster"
             MinimalButton:
                 text: "ANVIL"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "forge"
             MinimalButton:
                 text: "HUNTS"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "expedition"
             MinimalButton:
-                text: "MARKET"
+                text: "MRKT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "shop"
+            MinimalButton:
+                text: "GEAR"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "settings"
 
 
 # ============================================================
@@ -268,10 +288,9 @@
                 pos: self.pos
                 size: self.size
 
-        # Top bar
         BoxLayout:
-            size_hint_y: 0.06
-            padding: [15, 4]
+            size_hint_y: 0.055
+            padding: [12, 3]
             canvas.before:
                 Color:
                     rgba: app.nav_bg
@@ -280,21 +299,21 @@
                     size: self.size
             Label:
                 text: "S Q U A D"
-                font_size: "13sp"
+                font_size: "12sp"
                 color: app.accent_green
                 halign: "left"
                 text_size: self.size
                 valign: "middle"
             Label:
                 text: root.graveyard_text
-                font_size: "11sp"
+                font_size: "10sp"
                 color: app.accent_red
                 halign: "center"
                 text_size: self.size
                 valign: "middle"
             Label:
                 text: root.gold_text
-                font_size: "17sp"
+                font_size: "16sp"
                 bold: True
                 color: app.accent_gold
                 halign: "right"
@@ -302,24 +321,24 @@
                 valign: "middle"
 
         ScrollView:
-            size_hint_y: 0.745
+            size_hint_y: 0.76
             bar_width: 2
             bar_color: app.text_muted
             GridLayout:
                 id: roster_grid
                 cols: 1
-                spacing: 8
-                padding: [12, 8]
+                spacing: 6
+                padding: [10, 6]
                 size_hint_y: None
                 height: self.minimum_height
 
         BoxLayout:
-            size_hint_y: 0.065
-            padding: [20, 4]
+            size_hint_y: 0.06
+            padding: [16, 3]
             MinimalButton:
                 text: "+ RECRUIT FIGHTER"
                 btn_color: theme.BTN_SUCCESS
-                font_size: 14
+                font_size: 13
                 on_press: root.hire()
 
         NavBar:
@@ -327,31 +346,37 @@
                 text: "PIT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "arena"
             MinimalButton:
                 text: "SQUAD"
                 btn_color: 0, 0, 0, 0
                 text_color: app.accent_gold
-                font_size: 11
+                font_size: 10
             MinimalButton:
                 text: "ANVIL"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "forge"
             MinimalButton:
                 text: "HUNTS"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "expedition"
             MinimalButton:
-                text: "MARKET"
+                text: "MRKT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "shop"
+            MinimalButton:
+                text: "GEAR"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "settings"
 
 
 # ============================================================
@@ -367,10 +392,9 @@
                 pos: self.pos
                 size: self.size
 
-        # Top bar
         BoxLayout:
-            size_hint_y: 0.06
-            padding: [15, 4]
+            size_hint_y: 0.055
+            padding: [12, 3]
             canvas.before:
                 Color:
                     rgba: app.nav_bg
@@ -379,39 +403,37 @@
                     size: self.size
             Label:
                 text: "T H E   A N V I L"
-                font_size: "13sp"
+                font_size: "12sp"
                 color: app.accent_red
                 halign: "left"
                 text_size: self.size
                 valign: "middle"
             Label:
                 text: root.gold_text
-                font_size: "17sp"
+                font_size: "16sp"
                 bold: True
                 color: app.accent_gold
                 halign: "right"
                 text_size: self.size
                 valign: "middle"
 
-        # Active fighter equipment
         Label:
             text: root.active_fighter_text
-            font_size: "10sp"
+            font_size: "9sp"
             color: app.text_secondary
-            size_hint_y: 0.04
-            text_size: self.width - 24, None
+            size_hint_y: 0.035
+            text_size: self.width - 20, None
             halign: "center"
-            padding: [12, 0]
 
         ScrollView:
-            size_hint_y: 0.77
+            size_hint_y: 0.79
             bar_width: 2
             bar_color: app.text_muted
             GridLayout:
                 id: forge_grid
                 cols: 1
-                spacing: 8
-                padding: [12, 8]
+                spacing: 6
+                padding: [10, 6]
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -420,31 +442,37 @@
                 text: "PIT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "arena"
             MinimalButton:
                 text: "SQUAD"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "roster"
             MinimalButton:
                 text: "ANVIL"
                 btn_color: 0, 0, 0, 0
                 text_color: app.accent_gold
-                font_size: 11
+                font_size: 10
             MinimalButton:
                 text: "HUNTS"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "expedition"
             MinimalButton:
-                text: "MARKET"
+                text: "MRKT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "shop"
+            MinimalButton:
+                text: "GEAR"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "settings"
 
 
 # ============================================================
@@ -460,10 +488,9 @@
                 pos: self.pos
                 size: self.size
 
-        # Top bar
         BoxLayout:
-            size_hint_y: 0.06
-            padding: [15, 4]
+            size_hint_y: 0.055
+            padding: [12, 3]
             canvas.before:
                 Color:
                     rgba: app.nav_bg
@@ -472,48 +499,45 @@
                     size: self.size
             Label:
                 text: "H U N T S"
-                font_size: "13sp"
+                font_size: "12sp"
                 color: app.accent_purple
                 halign: "left"
                 text_size: self.size
                 valign: "middle"
             Label:
                 text: root.gold_text
-                font_size: "17sp"
+                font_size: "16sp"
                 bold: True
                 color: app.accent_gold
                 halign: "right"
                 text_size: self.size
                 valign: "middle"
 
-        # Active expeditions
         GridLayout:
             id: expedition_status_grid
             cols: 1
             spacing: 4
-            padding: [12, 4]
+            padding: [10, 3]
             size_hint_y: None
             height: self.minimum_height
 
-        # Expedition log
         Label:
             text: root.log_text
-            font_size: "9sp"
+            font_size: "8sp"
             color: app.text_muted
-            size_hint_y: 0.08
-            text_size: self.width - 24, None
+            size_hint_y: 0.07
+            text_size: self.width - 20, None
             halign: "center"
             valign: "middle"
 
-        # Available expeditions
         ScrollView:
             bar_width: 2
             bar_color: app.text_muted
             GridLayout:
                 id: expedition_grid
                 cols: 1
-                spacing: 8
-                padding: [12, 8]
+                spacing: 6
+                padding: [10, 6]
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -522,31 +546,37 @@
                 text: "PIT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "arena"
             MinimalButton:
                 text: "SQUAD"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "roster"
             MinimalButton:
                 text: "ANVIL"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "forge"
             MinimalButton:
                 text: "HUNTS"
                 btn_color: 0, 0, 0, 0
                 text_color: app.accent_gold
-                font_size: 11
+                font_size: 10
             MinimalButton:
-                text: "MARKET"
+                text: "MRKT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "shop"
+            MinimalButton:
+                text: "GEAR"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "settings"
 
 
 # ============================================================
@@ -562,10 +592,9 @@
                 pos: self.pos
                 size: self.size
 
-        # Top bar
         BoxLayout:
-            size_hint_y: 0.06
-            padding: [15, 4]
+            size_hint_y: 0.055
+            padding: [12, 3]
             canvas.before:
                 Color:
                     rgba: app.nav_bg
@@ -574,14 +603,14 @@
                     size: self.size
             Label:
                 text: "M A R K E T"
-                font_size: "13sp"
+                font_size: "12sp"
                 color: app.accent_blue
                 halign: "left"
                 text_size: self.size
                 valign: "middle"
             Label:
                 text: root.gold_text
-                font_size: "17sp"
+                font_size: "16sp"
                 bold: True
                 color: app.accent_gold
                 halign: "right"
@@ -590,9 +619,9 @@
 
         Label:
             text: root.idle_rate_text
-            font_size: "12sp"
+            font_size: "11sp"
             color: app.accent_green
-            size_hint_y: 0.035
+            size_hint_y: 0.03
 
         ScrollView:
             bar_width: 2
@@ -600,8 +629,8 @@
             GridLayout:
                 id: shop_grid
                 cols: 1
-                spacing: 8
-                padding: [12, 8]
+                spacing: 6
+                padding: [10, 6]
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -610,28 +639,237 @@
                 text: "PIT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "arena"
             MinimalButton:
                 text: "SQUAD"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "roster"
             MinimalButton:
                 text: "ANVIL"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "forge"
             MinimalButton:
                 text: "HUNTS"
                 btn_color: 0, 0, 0, 0
                 text_color: app.text_secondary
-                font_size: 11
+                font_size: 10
                 on_press: app.root.current = "expedition"
             MinimalButton:
-                text: "MARKET"
+                text: "MRKT"
                 btn_color: 0, 0, 0, 0
                 text_color: app.accent_gold
-                font_size: 11
+                font_size: 10
+            MinimalButton:
+                text: "GEAR"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "settings"
+
+
+# ============================================================
+#  SETTINGS (GEAR)
+# ============================================================
+<SettingsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            size_hint_y: 0.055
+            padding: [12, 3]
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                text: "S E T T I N G S"
+                font_size: "12sp"
+                color: app.text_primary
+                halign: "left"
+                text_size: self.size
+                valign: "middle"
+
+        ScrollView:
+            size_hint_y: 0.825
+            bar_width: 2
+            GridLayout:
+                cols: 1
+                spacing: 10
+                padding: [16, 12]
+                size_hint_y: None
+                height: self.minimum_height
+
+                # --- IAP Section ---
+                Label:
+                    text: "PREMIUM"
+                    font_size: "11sp"
+                    color: app.accent_gold
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: 25
+
+                # Remove Ads
+                BoxLayout:
+                    size_hint_y: None
+                    height: 55
+                    spacing: 10
+                    BoxLayout:
+                        orientation: "vertical"
+                        Label:
+                            text: "Remove Ads"
+                            font_size: "13sp"
+                            bold: True
+                            color: app.text_primary
+                            halign: "left"
+                            text_size: self.size
+                        Label:
+                            text: "Status: " + root.ads_status
+                            font_size: "10sp"
+                            color: app.text_muted
+                            halign: "left"
+                            text_size: self.size
+                    MinimalButton:
+                        text: "100 UAH"
+                        btn_color: app.accent_gold
+                        text_color: app.bg_dark
+                        font_size: 12
+                        size_hint_x: 0.35
+                        on_press: root.buy_remove_ads()
+
+                # VIP Idle
+                BoxLayout:
+                    size_hint_y: None
+                    height: 55
+                    spacing: 10
+                    BoxLayout:
+                        orientation: "vertical"
+                        Label:
+                            text: "VIP: 1.5x Income"
+                            font_size: "13sp"
+                            bold: True
+                            color: app.text_primary
+                            halign: "left"
+                            text_size: self.size
+                        Label:
+                            text: "Status: " + root.vip_status
+                            font_size: "10sp"
+                            color: app.text_muted
+                            halign: "left"
+                            text_size: self.size
+                    MinimalButton:
+                        text: "100 UAH"
+                        btn_color: app.accent_gold
+                        text_color: app.bg_dark
+                        font_size: 12
+                        size_hint_x: 0.35
+                        on_press: root.buy_vip_idle()
+
+                # Restore
+                MinimalButton:
+                    text: "RESTORE PURCHASES"
+                    btn_color: app.bg_elevated
+                    text_color: app.text_secondary
+                    font_size: 11
+                    size_hint_y: None
+                    height: 40
+                    on_press: root.restore_purchases()
+
+                # --- Cloud Save Section ---
+                Label:
+                    text: "CLOUD SAVE"
+                    font_size: "11sp"
+                    color: app.accent_cyan
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: 30
+
+                Label:
+                    text: root.cloud_status
+                    font_size: "11sp"
+                    color: app.text_secondary
+                    halign: "center"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: 20
+
+                MinimalButton:
+                    text: "SIGN IN WITH GOOGLE"
+                    btn_color: app.accent_blue
+                    font_size: 12
+                    size_hint_y: None
+                    height: 42
+                    on_press: root.cloud_sign_in()
+
+                BoxLayout:
+                    size_hint_y: None
+                    height: 42
+                    spacing: 8
+                    MinimalButton:
+                        text: "UPLOAD"
+                        btn_color: app.accent_green
+                        text_color: app.bg_dark
+                        font_size: 11
+                        on_press: root.cloud_upload()
+                    MinimalButton:
+                        text: "DOWNLOAD"
+                        btn_color: app.accent_purple
+                        font_size: 11
+                        on_press: root.cloud_download()
+                    MinimalButton:
+                        text: "SYNC"
+                        btn_color: app.accent_cyan
+                        text_color: app.bg_dark
+                        font_size: 11
+                        on_press: root.cloud_sync()
+
+        NavBar:
+            MinimalButton:
+                text: "PIT"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "arena"
+            MinimalButton:
+                text: "SQUAD"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "roster"
+            MinimalButton:
+                text: "ANVIL"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "forge"
+            MinimalButton:
+                text: "HUNTS"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "expedition"
+            MinimalButton:
+                text: "MRKT"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 10
+                on_press: app.root.current = "shop"
+            MinimalButton:
+                text: "GEAR"
+                btn_color: 0, 0, 0, 0
+                text_color: app.accent_gold
+                font_size: 10

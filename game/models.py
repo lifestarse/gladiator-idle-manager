@@ -1,7 +1,8 @@
-"""Game data models — fighters, enemies, equipment, expeditions."""
+"""Game data models — fighters, enemies, equipment, expeditions, economy."""
 
 import random
 import time
+import math
 
 # --- Name pools ---
 
@@ -98,7 +99,7 @@ EXPEDITIONS = [
         "id": "dark_tunnels",
         "name": "Dark Tunnels",
         "desc": "Scout the tunnels beneath the arena",
-        "duration": 60,  # seconds
+        "duration": 60,
         "min_level": 1,
         "danger": 0.05,
         "gold_range": (30, 80),
@@ -151,7 +152,7 @@ EXPEDITIONS = [
     },
 ]
 
-# --- Relics (expedition loot) ---
+# --- Relics ---
 
 RELICS = {
     RARITY_COMMON: [
@@ -182,7 +183,143 @@ RELICS = {
 }
 
 
-# --- Fighter class ---
+# ============================================================
+#  DIFFICULTY & ECONOMY SCALING
+# ============================================================
+
+class DifficultyScaler:
+    """Manages exponential difficulty curve and resource scarcity."""
+
+    # Enemy scaling — exponential growth
+    ENEMY_ATK_BASE = 6
+    ENEMY_ATK_PER_TIER = 4
+    ENEMY_ATK_EXPO = 1.12       # +12% compounding per tier
+    ENEMY_DEF_BASE = 2
+    ENEMY_DEF_PER_TIER = 2
+    ENEMY_DEF_EXPO = 1.10
+    ENEMY_HP_BASE = 30
+    ENEMY_HP_PER_TIER = 20
+    ENEMY_HP_EXPO = 1.15        # HP grows fastest
+
+    # Gold reward — grows slower than enemy power (diminishing returns)
+    REWARD_BASE = 20
+    REWARD_EXPO = 1.18          # was 1.3 linear, now slower exponential
+
+    # Costs — inflate faster than income
+    HIRE_BASE = 50
+    HIRE_EXPO = 1.8             # each new fighter costs almost 2x more
+    UPGRADE_BASE = 50
+    UPGRADE_EXPO = 1.65         # steeper than before (was 1.5)
+
+    # Idle income costs — exponential inflation
+    IDLE_COST_INFLATION = 1.35  # each purchase of same tier costs 35% more
+
+    # Heal cost scales with tier
+    HEAL_BASE = 30
+    HEAL_TIER_MULT = 1.25
+
+    # Surgeon scales with injuries cured total
+    SURGEON_BASE = 200
+    SURGEON_INFLATION = 1.4
+
+    @staticmethod
+    def enemy_stats(tier):
+        s = DifficultyScaler
+        atk = int((s.ENEMY_ATK_BASE + tier * s.ENEMY_ATK_PER_TIER)
+                   * (s.ENEMY_ATK_EXPO ** (tier - 1)))
+        defense = int((s.ENEMY_DEF_BASE + tier * s.ENEMY_DEF_PER_TIER)
+                       * (s.ENEMY_DEF_EXPO ** (tier - 1)))
+        hp = int((s.ENEMY_HP_BASE + tier * s.ENEMY_HP_PER_TIER)
+                  * (s.ENEMY_HP_EXPO ** (tier - 1)))
+        return atk, defense, hp
+
+    @staticmethod
+    def enemy_reward(tier):
+        s = DifficultyScaler
+        return int(s.REWARD_BASE * (s.REWARD_EXPO ** (tier - 1)))
+
+    @staticmethod
+    def hire_cost(alive_count):
+        s = DifficultyScaler
+        return int(s.HIRE_BASE * (s.HIRE_EXPO ** alive_count))
+
+    @staticmethod
+    def upgrade_cost(level):
+        s = DifficultyScaler
+        return int(s.UPGRADE_BASE * (s.UPGRADE_EXPO ** (level - 1)))
+
+    @staticmethod
+    def heal_cost(arena_tier):
+        s = DifficultyScaler
+        return int(s.HEAL_BASE * (s.HEAL_TIER_MULT ** (arena_tier - 1)))
+
+    @staticmethod
+    def surgeon_cost(times_used):
+        s = DifficultyScaler
+        return int(s.SURGEON_BASE * (s.SURGEON_INFLATION ** times_used))
+
+
+# --- Dynamic market items (costs scale) ---
+
+def get_dynamic_shop_items(arena_tier, idle_purchases, surgeon_uses):
+    """Generate shop items with inflating costs."""
+    s = DifficultyScaler
+
+    # Idle income items — each purchase inflates cost
+    idle_items = [
+        {
+            "id": "idle_boost_1", "name": "Street Bets",
+            "desc": f"+1 gold/sec (bought {idle_purchases.get('idle_boost_1', 0)}x)",
+            "cost": int(100 * (s.IDLE_COST_INFLATION ** idle_purchases.get("idle_boost_1", 0))),
+            "effect": {"idle_gold_rate": 1.0},
+        },
+        {
+            "id": "idle_boost_2", "name": "Fight Club",
+            "desc": f"+5 gold/sec (bought {idle_purchases.get('idle_boost_2', 0)}x)",
+            "cost": int(500 * (s.IDLE_COST_INFLATION ** idle_purchases.get("idle_boost_2", 0))),
+            "effect": {"idle_gold_rate": 5.0},
+        },
+        {
+            "id": "idle_boost_3", "name": "Noble Patron",
+            "desc": f"+25 gold/sec (bought {idle_purchases.get('idle_boost_3', 0)}x)",
+            "cost": int(2500 * (s.IDLE_COST_INFLATION ** idle_purchases.get("idle_boost_3", 0))),
+            "effect": {"idle_gold_rate": 25.0},
+        },
+    ]
+
+    consumables = [
+        {
+            "id": "heal_potion", "name": "Blood Salve",
+            "desc": "Fully heal active fighter",
+            "cost": DifficultyScaler.heal_cost(arena_tier),
+            "effect": {"heal": True},
+        },
+        {
+            "id": "atk_tonic", "name": "Fury Tonic",
+            "desc": "+3 base ATK to active fighter",
+            "cost": int(300 * (1.2 ** (arena_tier - 1))),
+            "effect": {"base_attack": 3},
+        },
+        {
+            "id": "def_tonic", "name": "Stone Brew",
+            "desc": "+3 base DEF to active fighter",
+            "cost": int(300 * (1.2 ** (arena_tier - 1))),
+            "effect": {"base_defense": 3},
+        },
+        {
+            "id": "injury_cure", "name": "Surgeon's Kit",
+            "desc": f"Remove 1 injury (used {surgeon_uses}x)",
+            "cost": DifficultyScaler.surgeon_cost(surgeon_uses),
+            "effect": {"cure_injury": 1},
+        },
+    ]
+
+    return idle_items + consumables
+
+
+# ============================================================
+#  FIGHTER
+# ============================================================
 
 class Fighter:
     """Player-owned arena fighter. Can die permanently."""
@@ -195,7 +332,7 @@ class Fighter:
         self.base_hp = random.randint(40, 60)
         self.hp = self.max_hp
         self.alive = True
-        self.injuries = 0  # increases permadeath chance
+        self.injuries = 0
         self.kills = 0
         self.equipment = {"weapon": None, "armor": None, "accessory": None}
         self.relics: list[dict] = []
@@ -250,7 +387,7 @@ class Fighter:
 
     @property
     def upgrade_cost(self):
-        return int(50 * (1.5 ** (self.level - 1)))
+        return DifficultyScaler.upgrade_cost(self.level)
 
     @property
     def power_rating(self):
@@ -258,7 +395,6 @@ class Fighter:
 
     @property
     def death_chance(self):
-        """Chance of permanent death when defeated. Scales with injuries."""
         base = 0.03
         injury_bonus = self.injuries * 0.04
         return min(0.50, base + injury_bonus)
@@ -276,7 +412,6 @@ class Fighter:
         return int(self.attack * variance)
 
     def check_permadeath(self) -> bool:
-        """Roll for permanent death. Returns True if fighter dies forever."""
         if random.random() < self.death_chance:
             self.alive = False
             return True
@@ -330,22 +465,27 @@ class Fighter:
         return g
 
 
-# Backward compat alias
 Gladiator = Fighter
 
 
+# ============================================================
+#  ENEMY (with exponential scaling)
+# ============================================================
+
 class Enemy:
-    """Auto-generated arena opponent."""
+    """Arena opponent with exponential stat growth."""
 
     def __init__(self, tier=1):
         self.tier = tier
         title_idx = min(tier - 1, len(ENEMY_TITLES) - 1)
         self.name = ENEMY_TITLES[title_idx]
-        self.attack = 6 + tier * 4
-        self.defense = 2 + tier * 2
-        self.max_hp = 30 + tier * 20
+
+        atk, defense, hp = DifficultyScaler.enemy_stats(tier)
+        self.attack = atk
+        self.defense = defense
+        self.max_hp = hp
         self.hp = self.max_hp
-        self.gold_reward = int(20 * (1.3 ** (tier - 1)))
+        self.gold_reward = DifficultyScaler.enemy_reward(tier)
 
     def take_damage(self, raw_dmg):
         reduced = max(1, raw_dmg - self.defense // 2)
@@ -357,21 +497,5 @@ class Enemy:
         return int(self.attack * variance)
 
 
-# --- Market items ---
-
-SHOP_ITEMS = [
-    {"id": "idle_boost_1", "name": "Street Bets", "desc": "+1 gold/sec passive income",
-     "cost": 100, "effect": {"idle_gold_rate": 1.0}},
-    {"id": "idle_boost_2", "name": "Fight Club", "desc": "+5 gold/sec passive income",
-     "cost": 500, "effect": {"idle_gold_rate": 5.0}},
-    {"id": "idle_boost_3", "name": "Noble Patron", "desc": "+25 gold/sec passive income",
-     "cost": 2500, "effect": {"idle_gold_rate": 25.0}},
-    {"id": "heal_potion", "name": "Blood Salve", "desc": "Fully heal active fighter",
-     "cost": 30, "effect": {"heal": True}},
-    {"id": "atk_tonic", "name": "Fury Tonic", "desc": "+5 base ATK to active fighter",
-     "cost": 300, "effect": {"base_attack": 5}},
-    {"id": "def_tonic", "name": "Stone Brew", "desc": "+5 base DEF to active fighter",
-     "cost": 300, "effect": {"base_defense": 5}},
-    {"id": "injury_cure", "name": "Surgeon's Kit", "desc": "Remove 1 injury from active fighter",
-     "cost": 200, "effect": {"cure_injury": 1}},
-]
+# Legacy flat list for backward compat (forge still uses it)
+SHOP_ITEMS = []
