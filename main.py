@@ -5,11 +5,9 @@ Minimalist geometric style inspired by The Tower.
 
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
-from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.core.window import Window
-from kivy.animation import Animation
 
 from game.engine import GameEngine
 from game.theme import *
@@ -17,7 +15,10 @@ from game.widgets import (
     MinimalBar, GladiatorAvatar, MinimalButton,
     CardWidget, NavButton, FloatingText,
 )
-from game.ui_helpers import refresh_roster_grid, refresh_shop_grid
+from game.ui_helpers import (
+    refresh_roster_grid, refresh_shop_grid,
+    refresh_forge_grid, refresh_expedition_grid,
+)
 
 Window.size = (360, 640)
 Window.clearcolor = BG_DARK
@@ -36,6 +37,8 @@ class ArenaScreen(Screen):
     enemy_hp_pct = NumericProperty(1.0)
     wins_text = StringProperty("0")
     idle_rate_text = StringProperty("0.0/s")
+    death_risk_text = StringProperty("")
+    injuries_text = StringProperty("")
 
     def on_enter(self):
         self.refresh_ui()
@@ -52,6 +55,15 @@ class ArenaScreen(Screen):
             self.gladiator_hp_text = f"{max(0, g.hp)}/{g.max_hp}"
             self.gladiator_level = f"LV {g.level}"
             self.player_hp_pct = max(0, g.hp / g.max_hp)
+            self.injuries_text = f"Injuries: {g.injuries}" if g.injuries > 0 else ""
+            self.death_risk_text = f"Death risk: {g.death_chance:.0%}" if g.injuries > 0 else ""
+        else:
+            self.gladiator_name = "NO FIGHTERS"
+            self.gladiator_hp_text = ""
+            self.gladiator_level = ""
+            self.player_hp_pct = 0
+            self.injuries_text = ""
+            self.death_risk_text = ""
         if e:
             self.enemy_name = e.name
             self.enemy_hp_text = f"{max(0, e.hp)}/{e.max_hp}"
@@ -63,24 +75,21 @@ class ArenaScreen(Screen):
         result = engine.do_battle_tick()
         self.battle_log = result
         self.refresh_ui()
-        # Spawn floating text for gold on victory
         if "Victory" in result:
             gold_part = result.split("+")[-1].split(" ")[0] if "+" in result else ""
             if gold_part:
                 self._spawn_float(f"+{gold_part}", ACCENT_GOLD)
-        elif "defeated" in result.lower():
-            self._spawn_float("DEFEATED", ACCENT_RED)
+        elif "FALLEN" in result:
+            self._spawn_float("PERMADEATH!", ACCENT_RED)
+        elif "survived" in result.lower():
+            self._spawn_float("INJURED!", (1, 0.6, 0.2, 1))
 
     def _spawn_float(self, text, color):
         arena = self.ids.get("arena_zone")
         if arena:
             ft = FloatingText(
-                text=text,
-                font_size="20sp",
-                bold=True,
-                color=color,
-                center_x=arena.center_x,
-                y=arena.center_y,
+                text=text, font_size="20sp", bold=True, color=color,
+                center_x=arena.center_x, y=arena.center_y,
                 size_hint=(None, None),
             )
             arena.add_widget(ft)
@@ -89,6 +98,7 @@ class ArenaScreen(Screen):
 class RosterScreen(Screen):
     gladiators_data = ListProperty()
     gold_text = StringProperty("0")
+    graveyard_text = StringProperty("")
 
     def on_enter(self):
         self.refresh_roster()
@@ -96,35 +106,106 @@ class RosterScreen(Screen):
     def refresh_roster(self):
         engine = App.get_running_app().engine
         self.gold_text = f"{engine.gold:,.0f}"
+        deaths = engine.total_deaths
+        self.graveyard_text = f"Fallen: {deaths}" if deaths > 0 else ""
         self.gladiators_data = [
             {
-                "name": g.name,
-                "level": g.level,
-                "atk": g.attack,
-                "def": g.defense,
-                "hp": g.max_hp,
-                "cost": g.upgrade_cost,
+                "name": f.name,
+                "level": f.level,
+                "atk": f.attack,
+                "def": f.defense,
+                "hp": f.max_hp,
+                "cost": f.upgrade_cost,
                 "index": i,
-                "active": i == engine.active_gladiator_idx,
+                "active": i == engine.active_fighter_idx,
+                "alive": f.alive,
+                "injuries": f.injuries,
+                "kills": f.kills,
+                "death_chance": f.death_chance,
+                "on_expedition": f.on_expedition,
+                "weapon": f.equipment.get("weapon"),
+                "armor": f.equipment.get("armor"),
+                "accessory": f.equipment.get("accessory"),
+                "relics": len(f.relics),
             }
-            for i, g in enumerate(engine.gladiators)
+            for i, f in enumerate(engine.fighters)
         ]
         refresh_roster_grid(self)
 
     def upgrade(self, index):
-        engine = App.get_running_app().engine
-        engine.upgrade_gladiator(index)
+        App.get_running_app().engine.upgrade_gladiator(index)
         self.refresh_roster()
 
     def set_active(self, index):
-        engine = App.get_running_app().engine
-        engine.active_gladiator_idx = index
+        App.get_running_app().engine.active_fighter_idx = index
         self.refresh_roster()
 
     def hire(self):
-        engine = App.get_running_app().engine
-        engine.hire_gladiator()
+        App.get_running_app().engine.hire_gladiator()
         self.refresh_roster()
+
+    def dismiss(self, index):
+        App.get_running_app().engine.dismiss_dead(index)
+        self.refresh_roster()
+
+
+class ForgeScreen(Screen):
+    gold_text = StringProperty("0")
+    forge_items = ListProperty()
+    active_fighter_text = StringProperty("")
+
+    def on_enter(self):
+        self.refresh_forge()
+
+    def refresh_forge(self):
+        engine = App.get_running_app().engine
+        self.gold_text = f"{engine.gold:,.0f}"
+        self.forge_items = engine.get_forge_items()
+        f = engine.get_active_gladiator()
+        if f:
+            equip_names = []
+            for slot in ["weapon", "armor", "accessory"]:
+                item = f.equipment.get(slot)
+                equip_names.append(item["name"] if item else "---")
+            self.active_fighter_text = (
+                f"{f.name} Lv.{f.level}  |  "
+                f"W: {equip_names[0]}  A: {equip_names[1]}  R: {equip_names[2]}"
+            )
+        else:
+            self.active_fighter_text = "No active fighter"
+        refresh_forge_grid(self)
+
+    def buy(self, item_id):
+        App.get_running_app().engine.buy_forge_item(item_id)
+        self.refresh_forge()
+
+
+class ExpeditionScreen(Screen):
+    gold_text = StringProperty("0")
+    expeditions_data = ListProperty()
+    status_data = ListProperty()
+    log_text = StringProperty("")
+    fighters_for_send = ListProperty()
+
+    def on_enter(self):
+        self.refresh_expeditions()
+
+    def refresh_expeditions(self):
+        engine = App.get_running_app().engine
+        self.gold_text = f"{engine.gold:,.0f}"
+        self.expeditions_data = engine.get_expeditions()
+        self.status_data = engine.get_expedition_status()
+        self.log_text = "\n".join(engine.expedition_log[-5:]) if engine.expedition_log else "No expeditions yet"
+        self.fighters_for_send = [
+            {"name": f.name, "level": f.level, "index": i}
+            for i, f in enumerate(engine.fighters)
+            if f.alive and not f.on_expedition
+        ]
+        refresh_expedition_grid(self)
+
+    def send(self, fighter_idx, expedition_id):
+        result = App.get_running_app().engine.send_on_expedition(fighter_idx, expedition_id)
+        self.refresh_expeditions()
 
 
 class ShopScreen(Screen):
@@ -143,13 +224,11 @@ class ShopScreen(Screen):
         refresh_shop_grid(self)
 
     def buy(self, item_id):
-        engine = App.get_running_app().engine
-        engine.buy_item(item_id)
+        App.get_running_app().engine.buy_item(item_id)
         self.refresh_shop()
 
 
 class GladiatorIdleApp(App):
-    # Expose theme colors to KV
     bg_dark = ListProperty(BG_DARK)
     bg_card = ListProperty(BG_CARD)
     bg_elevated = ListProperty(BG_ELEVATED)
@@ -158,6 +237,7 @@ class GladiatorIdleApp(App):
     accent_red = ListProperty(ACCENT_RED)
     accent_blue = ListProperty(ACCENT_BLUE)
     accent_cyan = ListProperty(ACCENT_CYAN)
+    accent_purple = ListProperty(ACCENT_PURPLE)
     text_primary = ListProperty(TEXT_PRIMARY)
     text_secondary = ListProperty(TEXT_SECONDARY)
     text_muted = ListProperty(TEXT_MUTED)
@@ -171,6 +251,8 @@ class GladiatorIdleApp(App):
         sm = ScreenManager(transition=FadeTransition(duration=0.2))
         sm.add_widget(ArenaScreen(name="arena"))
         sm.add_widget(RosterScreen(name="roster"))
+        sm.add_widget(ForgeScreen(name="forge"))
+        sm.add_widget(ExpeditionScreen(name="expedition"))
         sm.add_widget(ShopScreen(name="shop"))
 
         Clock.schedule_interval(self._idle_tick, 1.0)
@@ -184,6 +266,10 @@ class GladiatorIdleApp(App):
             scr.refresh_ui()
         elif hasattr(scr, "refresh_roster"):
             scr.refresh_roster()
+        elif hasattr(scr, "refresh_forge"):
+            scr.refresh_forge()
+        elif hasattr(scr, "refresh_expeditions"):
+            scr.refresh_expeditions()
         elif hasattr(scr, "refresh_shop"):
             scr.refresh_shop()
 
