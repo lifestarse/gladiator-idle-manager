@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.buildozer/
+bin/
+*.apk
+*.aab
+*.ipa
+*.spec.bak
+.env
+*.save.json
+.gladiator_idle_save.json
+.vscode/
+.idea/
