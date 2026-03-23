@@ -1,62 +1,91 @@
-"""Dynamic UI builders for roster and shop screens."""
+"""Dynamic UI builders using minimalist CardWidget style."""
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.app import App
+
+from game.widgets import CardWidget, MinimalButton, MinimalBar
+from game.theme import *
 
 
-def build_roster_card(gladiator_data, roster_screen):
-    """Build a single gladiator card widget."""
-    card = BoxLayout(
+def build_roster_card(data, roster_screen):
+    """Minimalist gladiator roster card."""
+    card = CardWidget(
         orientation="horizontal",
         size_hint_y=None,
-        height=80,
-        padding=5,
-        spacing=5,
+        height=90,
+        padding=[12, 8],
+        spacing=10,
+        active=data["active"],
     )
 
-    is_active = gladiator_data["active"]
-    bg_color = (0.2, 0.4, 0.2, 1) if is_active else (0.2, 0.2, 0.2, 1)
+    # Left: info
+    info = BoxLayout(orientation="vertical", size_hint_x=0.55, spacing=2)
 
-    # Info section
-    info = BoxLayout(orientation="vertical", size_hint_x=0.5)
-    name_label = Label(
-        text=("► " if is_active else "") + gladiator_data["name"],
-        font_size="14sp",
+    name_color = ACCENT_GREEN if data["active"] else TEXT_PRIMARY
+    name = Label(
+        text=data["name"],
+        font_size="15sp",
         bold=True,
-        color=(0.4, 1, 0.4, 1) if is_active else (0.8, 0.8, 0.8, 1),
+        color=name_color,
         halign="left",
         text_size=(None, None),
+        size_hint_y=0.35,
     )
-    stats_label = Label(
-        text=f"Lv.{gladiator_data['level']}  ATK:{gladiator_data['atk']}  DEF:{gladiator_data['def']}  HP:{gladiator_data['hp']}",
-        font_size="11sp",
-        color=(0.7, 0.7, 0.7, 1),
+    name.bind(size=lambda w, s: setattr(w, "text_size", s))
+
+    stats = Label(
+        text=f"LV {data['level']}   ATK {data['atk']}   DEF {data['def']}   HP {data['hp']}",
+        font_size="10sp",
+        color=TEXT_SECONDARY,
+        halign="left",
+        size_hint_y=0.25,
     )
-    info.add_widget(name_label)
-    info.add_widget(stats_label)
+    stats.bind(size=lambda w, s: setattr(w, "text_size", s))
 
-    # Buttons
-    btns = BoxLayout(orientation="vertical", size_hint_x=0.5, spacing=3)
-
-    idx = gladiator_data["index"]
-    select_btn = Button(
-        text="Active" if is_active else "Select",
-        font_size="12sp",
-        background_color=(0.3, 0.6, 0.3, 1) if is_active else (0.4, 0.4, 0.4, 1),
-        disabled=is_active,
+    # Mini HP bar showing relative power
+    power_bar = MinimalBar(
+        size_hint_y=0.15,
+        value=min(1.0, data["level"] / 20),
+        bar_color=ACCENT_CYAN,
+        bg_color=BG_ELEVATED,
     )
-    select_btn.bind(on_press=lambda inst, i=idx: roster_screen.set_active(i))
 
-    upgrade_btn = Button(
-        text=f"Upgrade ({gladiator_data['cost']}g)",
-        font_size="12sp",
-        background_color=(0.6, 0.5, 0.1, 1),
+    tag = Label(
+        text="ACTIVE" if data["active"] else "",
+        font_size="9sp",
+        color=ACCENT_GOLD if data["active"] else TEXT_MUTED,
+        halign="left",
+        size_hint_y=0.25,
+    )
+    tag.bind(size=lambda w, s: setattr(w, "text_size", s))
+
+    info.add_widget(name)
+    info.add_widget(stats)
+    info.add_widget(power_bar)
+    info.add_widget(tag)
+
+    # Right: buttons
+    btns = BoxLayout(orientation="vertical", size_hint_x=0.45, spacing=5, padding=[0, 4])
+    idx = data["index"]
+
+    if not data["active"]:
+        select_btn = MinimalButton(
+            text="SELECT",
+            btn_color=BTN_PRIMARY,
+            font_size=12,
+            size_hint_y=0.5,
+        )
+        select_btn.bind(on_press=lambda inst, i=idx: roster_screen.set_active(i))
+        btns.add_widget(select_btn)
+
+    upgrade_btn = MinimalButton(
+        text=f"UPGRADE  {data['cost']}g",
+        btn_color=ACCENT_GOLD,
+        text_color=BG_DARK,
+        font_size=11,
+        size_hint_y=0.5,
     )
     upgrade_btn.bind(on_press=lambda inst, i=idx: roster_screen.upgrade(i))
-
-    btns.add_widget(select_btn)
     btns.add_widget(upgrade_btn)
 
     card.add_widget(info)
@@ -64,38 +93,51 @@ def build_roster_card(gladiator_data, roster_screen):
     return card
 
 
-def build_shop_card(item_data, shop_screen):
-    """Build a single shop item widget."""
-    card = BoxLayout(
+def build_shop_card(item, shop_screen):
+    """Minimalist shop item card."""
+    card = CardWidget(
         orientation="horizontal",
         size_hint_y=None,
-        height=70,
-        padding=5,
-        spacing=5,
+        height=75,
+        padding=[12, 8],
+        spacing=10,
     )
 
-    info = BoxLayout(orientation="vertical", size_hint_x=0.6)
-    info.add_widget(Label(
-        text=item_data["name"],
+    # Left: info
+    info = BoxLayout(orientation="vertical", size_hint_x=0.65, spacing=2)
+
+    name = Label(
+        text=item["name"],
         font_size="14sp",
         bold=True,
-        color=(0.8, 0.85, 1, 1),
+        color=TEXT_PRIMARY,
         halign="left",
-    ))
-    info.add_widget(Label(
-        text=item_data["desc"],
-        font_size="11sp",
-        color=(0.6, 0.6, 0.6, 1),
-    ))
-
-    affordable = item_data["affordable"]
-    buy_btn = Button(
-        text=f"{item_data['cost']}g",
-        font_size="14sp",
-        size_hint_x=0.4,
-        background_color=(0.2, 0.5, 0.7, 1) if affordable else (0.3, 0.3, 0.3, 1),
+        size_hint_y=0.5,
     )
-    buy_btn.bind(on_press=lambda inst, iid=item_data["id"]: shop_screen.buy(iid))
+    name.bind(size=lambda w, s: setattr(w, "text_size", s))
+
+    desc = Label(
+        text=item["desc"],
+        font_size="10sp",
+        color=TEXT_MUTED,
+        halign="left",
+        size_hint_y=0.5,
+    )
+    desc.bind(size=lambda w, s: setattr(w, "text_size", s))
+
+    info.add_widget(name)
+    info.add_widget(desc)
+
+    # Right: buy button
+    affordable = item["affordable"]
+    buy_btn = MinimalButton(
+        text=f"{item['cost']}g",
+        btn_color=ACCENT_BLUE if affordable else BTN_DISABLED,
+        text_color=TEXT_PRIMARY if affordable else TEXT_MUTED,
+        font_size=14,
+        size_hint_x=0.35,
+    )
+    buy_btn.bind(on_press=lambda inst, iid=item["id"]: shop_screen.buy(iid))
 
     card.add_widget(info)
     card.add_widget(buy_btn)
@@ -103,7 +145,6 @@ def build_shop_card(item_data, shop_screen):
 
 
 def refresh_roster_grid(roster_screen):
-    """Rebuild the roster grid with current gladiator data."""
     grid = roster_screen.ids.get("roster_grid")
     if not grid:
         return
@@ -113,7 +154,6 @@ def refresh_roster_grid(roster_screen):
 
 
 def refresh_shop_grid(shop_screen):
-    """Rebuild the shop grid with current item data."""
     grid = shop_screen.ids.get("shop_grid")
     if not grid:
         return

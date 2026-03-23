@@ -1,267 +1,435 @@
 #:kivy 2.0
+#:import theme game.theme
+#:import MinimalBar game.widgets.MinimalBar
+#:import GladiatorAvatar game.widgets.GladiatorAvatar
+#:import MinimalButton game.widgets.MinimalButton
+#:import CardWidget game.widgets.CardWidget
 
+# ============================================================
+#  ARENA SCREEN
+# ============================================================
 <ArenaScreen>:
-    BoxLayout:
-        orientation: "vertical"
-        padding: 10
-        spacing: 5
+    FloatLayout:
+        id: arena_zone
         canvas.before:
             Color:
-                rgba: 0.12, 0.10, 0.15, 1
+                rgba: app.bg_dark
             Rectangle:
                 pos: self.pos
                 size: self.size
 
-        # --- Top bar ---
+        # --- Top stats bar ---
         BoxLayout:
-            size_hint_y: 0.06
+            pos_hint: {"top": 1, "x": 0}
+            size_hint: 1, 0.07
+            padding: [15, 5]
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            # Gold
             Label:
-                text: "⚔ GLADIATOR IDLE"
+                text: root.gold_text
                 font_size: "18sp"
                 bold: True
-                color: 1, 0.85, 0.4, 1
+                color: app.accent_gold
+                halign: "left"
+                text_size: self.size
+                valign: "middle"
+            # Idle rate
             Label:
-                text: "💰 " + root.gold_text
-                font_size: "16sp"
-                color: 1, 0.9, 0.3, 1
+                text: root.idle_rate_text
+                font_size: "12sp"
+                color: app.accent_green
+                halign: "center"
+                text_size: self.size
+                valign: "middle"
+            # Wins
+            Label:
+                text: root.wins_text + " W"
+                font_size: "14sp"
+                color: app.text_secondary
                 halign: "right"
                 text_size: self.size
+                valign: "middle"
 
-        # --- Arena ---
+        # --- Central arena area ---
         BoxLayout:
-            size_hint_y: 0.55
             orientation: "vertical"
+            pos_hint: {"top": 0.93, "x": 0}
+            size_hint: 1, 0.72
+            padding: [20, 10]
             spacing: 5
-            padding: 10
 
+            # Arena title
             Label:
-                text: "— ARENA —"
-                font_size: "14sp"
-                color: 0.8, 0.6, 0.6, 1
-                size_hint_y: 0.1
+                text: "A R E N A"
+                font_size: "12sp"
+                color: app.text_muted
+                size_hint_y: 0.04
+                letter_spacing: 4
 
-            # Player gladiator
+            # --- Player section ---
             BoxLayout:
-                size_hint_y: 0.2
-                orientation: "vertical"
-                Label:
-                    text: root.gladiator_name
-                    font_size: "16sp"
-                    bold: True
-                    color: 0.4, 0.9, 0.4, 1
+                size_hint_y: 0.30
+                spacing: 10
+                # Avatar
+                GladiatorAvatar:
+                    size_hint_x: 0.35
+                    accent_color: app.accent_green
+                    tier: app.engine.active_gladiator_idx + 1 if app.engine else 1
+                # Info
                 BoxLayout:
-                    size_hint_y: 0.5
-                    padding: [20, 0]
-                    canvas.before:
-                        Color:
-                            rgba: 0.3, 0.1, 0.1, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [5]
+                    orientation: "vertical"
+                    size_hint_x: 0.65
+                    spacing: 3
+                    Label:
+                        text: root.gladiator_name
+                        font_size: "17sp"
+                        bold: True
+                        color: app.accent_green
+                        halign: "left"
+                        text_size: self.size
+                        valign: "bottom"
+                        size_hint_y: 0.3
+                    Label:
+                        text: root.gladiator_level
+                        font_size: "11sp"
+                        color: app.text_secondary
+                        halign: "left"
+                        text_size: self.size
+                        valign: "top"
+                        size_hint_y: 0.15
+                    MinimalBar:
+                        size_hint_y: 0.15
+                        value: root.player_hp_pct
+                        bar_color: theme.HP_PLAYER
+                        bg_color: theme.HP_PLAYER_BG
+                    Label:
+                        text: root.gladiator_hp_text
+                        font_size: "10sp"
+                        color: app.text_muted
+                        halign: "left"
+                        text_size: self.size
+                        valign: "top"
+                        size_hint_y: 0.1
                     Widget:
-                        canvas:
-                            Color:
-                                rgba: 0.2, 0.8, 0.2, 1
-                            RoundedRectangle:
-                                pos: self.parent.pos[0] + 20, self.parent.pos[1]
-                                size: (self.parent.size[0] - 40) * root.player_hp_pct, self.parent.size[1]
-                                radius: [5]
-                Label:
-                    text: "HP: " + root.gladiator_hp
-                    font_size: "12sp"
-                    size_hint_y: 0.3
+                        size_hint_y: 0.3
 
-            Label:
-                text: "⚔ VS ⚔"
-                font_size: "20sp"
-                color: 1, 0.3, 0.3, 1
-                size_hint_y: 0.1
-
-            # Enemy
+            # VS divider
             BoxLayout:
-                size_hint_y: 0.2
-                orientation: "vertical"
-                Label:
-                    text: root.enemy_name
-                    font_size: "16sp"
-                    bold: True
-                    color: 1, 0.4, 0.4, 1
-                BoxLayout:
-                    size_hint_y: 0.5
-                    padding: [20, 0]
-                    canvas.before:
+                size_hint_y: 0.06
+                padding: [40, 0]
+                Widget:
+                    canvas:
                         Color:
-                            rgba: 0.3, 0.1, 0.1, 1
-                        RoundedRectangle:
-                            pos: self.pos
-                            size: self.size
-                            radius: [5]
-                    Widget:
-                        canvas:
-                            Color:
-                                rgba: 0.8, 0.2, 0.2, 1
-                            RoundedRectangle:
-                                pos: self.parent.pos[0] + 20, self.parent.pos[1]
-                                size: (self.parent.size[0] - 40) * root.enemy_hp_pct, self.parent.size[1]
-                                radius: [5]
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.x, self.center_y
+                            size: self.width, 1
                 Label:
-                    text: "HP: " + root.enemy_hp
-                    font_size: "12sp"
-                    size_hint_y: 0.3
+                    text: "VS"
+                    font_size: "14sp"
+                    bold: True
+                    color: app.accent_red
+                    size_hint_x: None
+                    width: 40
+                Widget:
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.x, self.center_y
+                            size: self.width, 1
+
+            # --- Enemy section ---
+            BoxLayout:
+                size_hint_y: 0.30
+                spacing: 10
+                # Info (left for enemy)
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_x: 0.65
+                    spacing: 3
+                    Label:
+                        text: root.enemy_name
+                        font_size: "17sp"
+                        bold: True
+                        color: app.accent_red
+                        halign: "right"
+                        text_size: self.size
+                        valign: "bottom"
+                        size_hint_y: 0.3
+                    Label:
+                        text: root.enemy_tier
+                        font_size: "11sp"
+                        color: app.text_secondary
+                        halign: "right"
+                        text_size: self.size
+                        valign: "top"
+                        size_hint_y: 0.15
+                    MinimalBar:
+                        size_hint_y: 0.15
+                        value: root.enemy_hp_pct
+                        bar_color: theme.HP_ENEMY
+                        bg_color: theme.HP_ENEMY_BG
+                    Label:
+                        text: root.enemy_hp_text
+                        font_size: "10sp"
+                        color: app.text_muted
+                        halign: "right"
+                        text_size: self.size
+                        valign: "top"
+                        size_hint_y: 0.1
+                    Widget:
+                        size_hint_y: 0.3
+                # Avatar
+                GladiatorAvatar:
+                    size_hint_x: 0.35
+                    accent_color: app.accent_red
+                    tier: app.engine.arena_tier if app.engine else 1
 
             # Battle log
             Label:
                 text: root.battle_log
-                font_size: "13sp"
-                color: 0.9, 0.9, 0.7, 1
-                size_hint_y: 0.2
+                font_size: "12sp"
+                color: app.text_secondary
+                size_hint_y: 0.14
                 text_size: self.width, None
                 halign: "center"
+                valign: "middle"
 
             # Fight button
-            Button:
-                text: "⚔ FIGHT!"
-                font_size: "20sp"
-                bold: True
-                size_hint_y: 0.2
-                background_color: 0.8, 0.2, 0.2, 1
+            MinimalButton:
+                text: "F I G H T"
+                btn_color: theme.BTN_FIGHT
+                font_size: 20
+                size_hint_y: 0.16
                 on_press: root.fight()
 
         # --- Bottom nav ---
         BoxLayout:
-            size_hint_y: 0.08
-            spacing: 5
-            Button:
-                text: "Arena"
-                background_color: 0.6, 0.3, 0.3, 1
-            Button:
-                text: "Roster"
-                background_color: 0.3, 0.5, 0.3, 1
+            pos_hint: {"y": 0, "x": 0}
+            size_hint: 1, 0.08
+            padding: [0, 0]
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                # Top border line
+                Color:
+                    rgba: app.divider
+                Rectangle:
+                    pos: self.x, self.top - 1
+                    size: self.width, 1
+
+            MinimalButton:
+                text: "ARENA"
+                btn_color: 0, 0, 0, 0
+                text_color: app.accent_gold
+                font_size: 13
+            MinimalButton:
+                text: "ROSTER"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 13
                 on_press: app.root.current = "roster"
-            Button:
-                text: "Shop"
-                background_color: 0.3, 0.3, 0.6, 1
+            MinimalButton:
+                text: "SHOP"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 13
                 on_press: app.root.current = "shop"
 
 
+# ============================================================
+#  ROSTER SCREEN
+# ============================================================
 <RosterScreen>:
     BoxLayout:
         orientation: "vertical"
-        padding: 10
-        spacing: 5
         canvas.before:
             Color:
-                rgba: 0.10, 0.12, 0.10, 1
+                rgba: app.bg_dark
             Rectangle:
                 pos: self.pos
                 size: self.size
 
         # Top bar
         BoxLayout:
-            size_hint_y: 0.06
+            size_hint_y: 0.07
+            padding: [15, 5]
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
             Label:
-                text: "🛡 ROSTER"
+                text: "R O S T E R"
+                font_size: "14sp"
+                color: app.accent_green
+                halign: "left"
+                text_size: self.size
+                valign: "middle"
+            Label:
+                text: root.gold_text
                 font_size: "18sp"
                 bold: True
-                color: 0.4, 0.9, 0.4, 1
-            Label:
-                text: "💰 " + root.gold_text
-                font_size: "16sp"
-                color: 1, 0.9, 0.3, 1
+                color: app.accent_gold
                 halign: "right"
                 text_size: self.size
+                valign: "middle"
 
-        # Gladiator list
+        # Roster list
         ScrollView:
-            size_hint_y: 0.78
+            size_hint_y: 0.77
+            bar_width: 2
+            bar_color: app.text_muted
             GridLayout:
                 id: roster_grid
                 cols: 1
-                spacing: 5
+                spacing: 8
+                padding: [12, 8]
                 size_hint_y: None
                 height: self.minimum_height
 
         # Hire button
-        Button:
-            text: "+ Hire New Gladiator"
-            font_size: "16sp"
+        BoxLayout:
             size_hint_y: 0.08
-            background_color: 0.2, 0.6, 0.2, 1
-            on_press: root.hire()
+            padding: [20, 5]
+            MinimalButton:
+                text: "+ HIRE GLADIATOR"
+                btn_color: theme.BTN_SUCCESS
+                font_size: 15
+                on_press: root.hire()
 
         # Bottom nav
         BoxLayout:
             size_hint_y: 0.08
-            spacing: 5
-            Button:
-                text: "Arena"
-                background_color: 0.6, 0.3, 0.3, 1
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                Color:
+                    rgba: app.divider
+                Rectangle:
+                    pos: self.x, self.top - 1
+                    size: self.width, 1
+
+            MinimalButton:
+                text: "ARENA"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 13
                 on_press: app.root.current = "arena"
-            Button:
-                text: "Roster"
-                background_color: 0.3, 0.5, 0.3, 1
-            Button:
-                text: "Shop"
-                background_color: 0.3, 0.3, 0.6, 1
+            MinimalButton:
+                text: "ROSTER"
+                btn_color: 0, 0, 0, 0
+                text_color: app.accent_gold
+                font_size: 13
+            MinimalButton:
+                text: "SHOP"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 13
                 on_press: app.root.current = "shop"
 
 
+# ============================================================
+#  SHOP SCREEN
+# ============================================================
 <ShopScreen>:
     BoxLayout:
         orientation: "vertical"
-        padding: 10
-        spacing: 5
         canvas.before:
             Color:
-                rgba: 0.10, 0.10, 0.15, 1
+                rgba: app.bg_dark
             Rectangle:
                 pos: self.pos
                 size: self.size
 
         # Top bar
         BoxLayout:
-            size_hint_y: 0.06
+            size_hint_y: 0.07
+            padding: [15, 5]
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
             Label:
-                text: "🏪 SHOP"
+                text: "S H O P"
+                font_size: "14sp"
+                color: app.accent_blue
+                halign: "left"
+                text_size: self.size
+                valign: "middle"
+            Label:
+                text: root.gold_text
                 font_size: "18sp"
                 bold: True
-                color: 0.5, 0.7, 1, 1
-            Label:
-                text: "💰 " + root.gold_text
-                font_size: "16sp"
-                color: 1, 0.9, 0.3, 1
+                color: app.accent_gold
                 halign: "right"
                 text_size: self.size
+                valign: "middle"
 
+        # Idle rate
         Label:
             text: root.idle_rate_text
-            font_size: "14sp"
-            color: 0.7, 0.9, 0.7, 1
+            font_size: "13sp"
+            color: app.accent_green
             size_hint_y: 0.04
 
         # Shop items
         ScrollView:
-            size_hint_y: 0.74
+            size_hint_y: 0.73
+            bar_width: 2
+            bar_color: app.text_muted
             GridLayout:
                 id: shop_grid
                 cols: 1
-                spacing: 5
+                spacing: 8
+                padding: [12, 8]
                 size_hint_y: None
                 height: self.minimum_height
 
         # Bottom nav
         BoxLayout:
             size_hint_y: 0.08
-            spacing: 5
-            Button:
-                text: "Arena"
-                background_color: 0.6, 0.3, 0.3, 1
+            canvas.before:
+                Color:
+                    rgba: app.nav_bg
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                Color:
+                    rgba: app.divider
+                Rectangle:
+                    pos: self.x, self.top - 1
+                    size: self.width, 1
+
+            MinimalButton:
+                text: "ARENA"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 13
                 on_press: app.root.current = "arena"
-            Button:
-                text: "Roster"
-                background_color: 0.3, 0.5, 0.3, 1
+            MinimalButton:
+                text: "ROSTER"
+                btn_color: 0, 0, 0, 0
+                text_color: app.text_secondary
+                font_size: 13
                 on_press: app.root.current = "roster"
-            Button:
-                text: "Shop"
-                background_color: 0.3, 0.3, 0.6, 1
+            MinimalButton:
+                text: "SHOP"
+                btn_color: 0, 0, 0, 0
+                text_color: app.accent_gold
+                font_size: 13
