@@ -1,6 +1,6 @@
 """
-Gladiator Idle Manager — hyper-casual idle game.
-Minimalist geometric style inspired by The Tower.
+Gladiator Idle Manager — roguelike-manager.
+Permadeath resets the run. Stats distributed manually. Fighter classes.
 """
 
 from kivy.app import App
@@ -13,6 +13,7 @@ from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.core.window import Window
 
 from game.engine import GameEngine
+from game.models import FIGHTER_CLASSES
 from game.theme import *
 from game.widgets import (
     MinimalBar, GladiatorAvatar, MinimalButton,
@@ -49,11 +50,13 @@ class ArenaScreen(Screen):
     enemy_summary = StringProperty("")
     player_hp_pct = NumericProperty(1.0)
     enemy_hp_pct = NumericProperty(1.0)
-    can_fight = StringProperty("true")
+    record_text = StringProperty("Best: ---")
+    run_text = StringProperty("Run #1")
 
     def on_enter(self):
         self.refresh_ui()
         self._check_tutorial()
+        self._check_pending_reset()
 
     def refresh_ui(self):
         engine = App.get_running_app().engine
@@ -64,11 +67,17 @@ class ArenaScreen(Screen):
         self.idle_rate_text = f"+{engine.effective_idle_rate:.1f}/s"
         self.ad_bonus_text = engine.get_rewarded_ad_time_left()
 
+        # Record & run
+        if engine.best_record_tier > 0:
+            self.record_text = f"Best: T{engine.best_record_tier} / {engine.best_record_kills} kills"
+        else:
+            self.record_text = "Best: ---"
+        self.run_text = f"Run #{engine.run_number}  |  T{engine.run_max_tier}  |  {engine.run_kills} kills"
+
         fighters = [f for f in engine.fighters if f.alive and not f.on_expedition]
         self.player_summary = f"{len(fighters)} fighters ready"
 
         if engine.battle_active:
-            self.can_fight = "false"
             s = engine.battle_mgr.state
             alive_f = sum(1 for f in s.player_fighters if f.alive and f.hp > 0)
             alive_e = sum(1 for e in s.enemies if e.hp > 0)
@@ -83,14 +92,56 @@ class ArenaScreen(Screen):
                 total_emax = sum(e.max_hp for e in s.enemies) or 1
                 self.enemy_hp_pct = total_ehp / total_emax
         else:
-            self.can_fight = "true"
             self.player_hp_pct = 1.0
             self.enemy_hp_pct = 1.0
             e = engine.current_enemy
-            if e:
-                self.enemy_summary = f"{e.name} T{e.tier}"
-            else:
-                self.enemy_summary = ""
+            self.enemy_summary = f"{e.name} T{e.tier}" if e else ""
+
+    def _check_pending_reset(self):
+        engine = App.get_running_app().engine
+        if engine.pending_reset:
+            self._show_reset_popup(engine)
+
+    def _show_reset_popup(self, engine):
+        content = BoxLayout(orientation="vertical", spacing=10, padding=[16, 12])
+        content.add_widget(Label(
+            text="ALL FIGHTERS DEAD!", font_size="18sp", bold=True,
+            color=ACCENT_RED, size_hint_y=None, height=35,
+        ))
+        content.add_widget(Label(
+            text=f"Run #{engine.run_number} ended.", font_size="13sp",
+            color=TEXT_PRIMARY, size_hint_y=None, height=25,
+        ))
+        content.add_widget(Label(
+            text=f"Reached Tier {engine.run_max_tier}  |  {engine.run_kills} kills",
+            font_size="13sp", color=ACCENT_GOLD, size_hint_y=None, height=25,
+        ))
+        content.add_widget(Label(
+            text="Gold and equipment are lost.\nDiamonds and achievements persist.",
+            font_size="11sp", color=TEXT_SECONDARY, size_hint_y=None, height=40,
+            text_size=(280, None), halign="center",
+        ))
+
+        restart_btn = MinimalButton(
+            text="NEW RUN", btn_color=ACCENT_RED, font_size=15,
+            size_hint_y=None, height=48,
+        )
+        content.add_widget(restart_btn)
+
+        popup = Popup(
+            title="PERMADEATH", title_color=ACCENT_RED, title_size="16sp",
+            content=content, size_hint=(0.9, None), height=280,
+            background_color=(0.08, 0.08, 0.11, 0.97),
+            separator_color=ACCENT_RED, auto_dismiss=False,
+        )
+
+        def on_restart(inst):
+            popup.dismiss()
+            engine.execute_pending_reset()
+            App.get_running_app().show_class_selection()
+
+        restart_btn.bind(on_press=on_restart)
+        popup.open()
 
     def start_auto_battle(self):
         engine = App.get_running_app().engine
@@ -99,7 +150,6 @@ class ArenaScreen(Screen):
         events = engine.start_auto_battle()
         self.battle_status = "AUTO BATTLE!"
         self._display_events(events)
-        # Schedule auto-advance turns
         Clock.schedule_interval(self._auto_turn, 0.8)
 
     def start_boss_fight(self):
@@ -109,7 +159,6 @@ class ArenaScreen(Screen):
         events = engine.start_boss_fight()
         self.battle_status = "BOSS CHALLENGE!"
         self._display_events(events)
-        # Boss fight is manual — player presses NEXT TURN or SKIP
 
     def next_turn(self):
         engine = App.get_running_app().engine
@@ -134,6 +183,7 @@ class ArenaScreen(Screen):
         engine = App.get_running_app().engine
         if not engine.battle_active:
             Clock.unschedule(self._auto_turn)
+            self._check_pending_reset()
             return
         events = engine.battle_next_turn()
         self._display_events(events)
@@ -153,6 +203,7 @@ class ArenaScreen(Screen):
             Clock.unschedule(self._auto_turn)
             self.battle_status = "DEFEAT!"
             self._spawn_float("DEFEATED!", ACCENT_RED)
+            Clock.schedule_once(lambda dt: self._check_pending_reset(), 1.0)
 
     def _display_events(self, events):
         lines = []
@@ -161,6 +212,8 @@ class ArenaScreen(Screen):
                 lines.append(f"[CRIT] {ev.message}")
             elif ev.is_kill:
                 lines.append(f"[KILL] {ev.message}")
+            elif ev.damage == 0 and "DODGE" in ev.message:
+                lines.append(f"[DODGE] {ev.message}")
             else:
                 lines.append(ev.message)
         self.battle_log_text = "\n".join(lines)
@@ -197,7 +250,7 @@ class ArenaScreen(Screen):
 
 
 # ============================================================
-#  ROSTER (SQUAD)
+#  ROSTER (SQUAD) — with stat distribution
 # ============================================================
 
 class RosterScreen(Screen):
@@ -215,8 +268,13 @@ class RosterScreen(Screen):
         self.graveyard_text = f"Fallen: {deaths}" if deaths > 0 else ""
         self.gladiators_data = [
             {
-                "name": f.name, "level": f.level, "atk": f.attack,
-                "def": f.defense, "hp": f.max_hp, "cost": f.upgrade_cost,
+                "name": f.name, "level": f.level,
+                "fighter_class": f.class_name,
+                "str": f.strength, "agi": f.agility, "vit": f.vitality,
+                "unused_points": f.unused_points,
+                "atk": f.attack, "def": f.defense, "hp": f.max_hp,
+                "crit": f.crit_chance, "dodge": f.dodge_chance,
+                "cost": f.upgrade_cost,
                 "index": i, "active": i == engine.active_fighter_idx,
                 "alive": f.alive, "injuries": f.injuries, "kills": f.kills,
                 "death_chance": f.death_chance,
@@ -239,11 +297,22 @@ class RosterScreen(Screen):
         self.refresh_roster()
 
     def hire(self):
-        App.get_running_app().engine.hire_gladiator()
-        self.refresh_roster()
+        App.get_running_app().show_class_selection()
 
     def dismiss(self, index):
         App.get_running_app().engine.dismiss_dead(index)
+        self.refresh_roster()
+
+    def add_str(self, index):
+        App.get_running_app().engine.distribute_stat(index, "strength")
+        self.refresh_roster()
+
+    def add_agi(self, index):
+        App.get_running_app().engine.distribute_stat(index, "agility")
+        self.refresh_roster()
+
+    def add_vit(self, index):
+        App.get_running_app().engine.distribute_stat(index, "vitality")
         self.refresh_roster()
 
 
@@ -270,7 +339,7 @@ class ForgeScreen(Screen):
                 item = f.equipment.get(slot)
                 equip_names.append(item["name"] if item else "---")
             self.active_fighter_text = (
-                f"{f.name} Lv.{f.level}  |  "
+                f"{f.name} [{f.class_name}] Lv.{f.level}  |  "
                 f"W: {equip_names[0]}  A: {equip_names[1]}  R: {equip_names[2]}"
             )
         else:
@@ -334,7 +403,6 @@ class LoreScreen(Screen):
         engine = App.get_running_app().engine
         self.diamond_text = f"{engine.diamonds}"
 
-        # Story
         chapter = engine.get_current_story()
         if chapter:
             self.story_title = f"Ch.{chapter['chapter']}: {chapter['title']}"
@@ -350,11 +418,8 @@ class LoreScreen(Screen):
             self.story_boss_text = ""
             self.story_available = "false"
 
-        # Achievements
         self.achievements_data = engine.get_achievements()
         refresh_achievement_grid(self)
-
-        # Diamond shop
         self.diamond_shop_data = engine.get_diamond_shop()
         refresh_diamond_shop_grid(self)
 
@@ -372,7 +437,7 @@ class LoreScreen(Screen):
     def buy_diamond_item(self, item_id):
         engine = App.get_running_app().engine
         msg = engine.buy_diamond_item(item_id)
-        self.story_boss_text = msg  # reuse as status
+        self.story_boss_text = msg
         self.refresh_lore()
 
 
@@ -498,7 +563,6 @@ class GladiatorIdleApp(App):
         self.engine = GameEngine()
         self.engine.load()
 
-        # Init monetization
         ad_manager.init()
         iap_manager.init()
         cloud_save_manager.init()
@@ -533,29 +597,87 @@ class GladiatorIdleApp(App):
     def on_stop(self):
         self.engine.save()
 
-    def show_tutorial(self, step):
-        """Show a tutorial dialog popup."""
-        self.engine.mark_tutorial_shown(step["id"])
+    def show_class_selection(self):
+        """Show popup to choose fighter class before hiring."""
+        content = BoxLayout(orientation="vertical", spacing=8, padding=[12, 10])
 
+        content.add_widget(Label(
+            text="Choose a starter class:", font_size="14sp",
+            color=ACCENT_GOLD, size_hint_y=None, height=30,
+        ))
+
+        for cls_id, cls_data in FIGHTER_CLASSES.items():
+            row = BoxLayout(size_hint_y=None, height=60, spacing=6)
+
+            info = BoxLayout(orientation="vertical", size_hint_x=0.65)
+            info.add_widget(Label(
+                text=cls_data["name"], font_size="14sp", bold=True,
+                color=ACCENT_GREEN if cls_id == "mercenary" else
+                      ACCENT_RED if cls_id == "assassin" else ACCENT_BLUE,
+                halign="left", text_size=(200, None),
+                size_hint_y=0.5,
+            ))
+            stat_line = f"STR {cls_data['base_str']}  AGI {cls_data['base_agi']}  VIT {cls_data['base_vit']}"
+            info.add_widget(Label(
+                text=stat_line, font_size="10sp", color=TEXT_SECONDARY,
+                halign="left", text_size=(200, None),
+                size_hint_y=0.25,
+            ))
+            info.add_widget(Label(
+                text=cls_data["desc"], font_size="9sp", color=TEXT_MUTED,
+                halign="left", text_size=(200, None),
+                size_hint_y=0.25,
+            ))
+
+            btn = MinimalButton(
+                text="SELECT", font_size=12, size_hint_x=0.35,
+                btn_color=ACCENT_GOLD, text_color=BG_DARK,
+            )
+
+            row.add_widget(info)
+            row.add_widget(btn)
+            content.add_widget(row)
+
+            # Bind must capture cls_id
+            btn.bind(on_press=lambda inst, cid=cls_id: self._hire_with_class(cid))
+
+        popup = Popup(
+            title="Recruit Fighter",
+            title_color=ACCENT_GOLD, title_size="16sp",
+            content=content,
+            size_hint=(0.9, None), height=320,
+            background_color=(0.08, 0.08, 0.11, 0.97),
+            separator_color=ACCENT_GOLD,
+        )
+        self._class_popup = popup
+        popup.open()
+
+    def _hire_with_class(self, class_id):
+        if hasattr(self, '_class_popup'):
+            self._class_popup.dismiss()
+        self.engine.hire_gladiator(class_id)
+        scr = self.root.current_screen
+        if hasattr(scr, "refresh_roster"):
+            scr.refresh_roster()
+        elif hasattr(scr, "refresh_ui"):
+            scr.refresh_ui()
+
+    def show_tutorial(self, step):
+        self.engine.mark_tutorial_shown(step["id"])
         content = BoxLayout(orientation="vertical", spacing=8, padding=[16, 12])
         for line in step["lines"]:
             content.add_widget(Label(
                 text=line, font_size="13sp", color=TEXT_PRIMARY,
                 text_size=(300, None), halign="left", size_hint_y=None, height=30,
             ))
-
         close_btn = MinimalButton(
             text="GOT IT", btn_color=ACCENT_GOLD, text_color=BG_DARK,
             font_size=14, size_hint_y=None, height=44,
         )
         content.add_widget(close_btn)
-
         popup = Popup(
-            title=step["title"],
-            title_color=ACCENT_GOLD,
-            title_size="16sp",
-            content=content,
-            size_hint=(0.85, None),
+            title=step["title"], title_color=ACCENT_GOLD, title_size="16sp",
+            content=content, size_hint=(0.85, None),
             height=min(100 + len(step["lines"]) * 35, 350),
             background_color=(0.08, 0.08, 0.11, 0.95),
             separator_color=ACCENT_GOLD,
@@ -564,26 +686,20 @@ class GladiatorIdleApp(App):
         popup.open()
 
     def show_story_completion(self, completion_lines):
-        """Show story chapter completion dialog."""
         content = BoxLayout(orientation="vertical", spacing=8, padding=[16, 12])
         for line in completion_lines:
             content.add_widget(Label(
                 text=line, font_size="13sp", color=ACCENT_GOLD,
                 text_size=(300, None), halign="center", size_hint_y=None, height=30,
             ))
-
         close_btn = MinimalButton(
             text="CONTINUE", btn_color=ACCENT_GREEN, text_color=BG_DARK,
             font_size=14, size_hint_y=None, height=44,
         )
         content.add_widget(close_btn)
-
         popup = Popup(
-            title="Chapter Complete!",
-            title_color=ACCENT_GOLD,
-            title_size="18sp",
-            content=content,
-            size_hint=(0.85, None),
+            title="Chapter Complete!", title_color=ACCENT_GOLD, title_size="18sp",
+            content=content, size_hint=(0.85, None),
             height=min(100 + len(completion_lines) * 35, 350),
             background_color=(0.08, 0.08, 0.11, 0.95),
             separator_color=ACCENT_GOLD,

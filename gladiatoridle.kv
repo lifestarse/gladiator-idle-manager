@@ -84,9 +84,28 @@
             padding: [12, 4]
             spacing: 2
 
+            # Record & run info
+            BoxLayout:
+                size_hint_y: 0.04
+                padding: [4, 0]
+                Label:
+                    text: root.record_text
+                    font_size: "9sp"
+                    color: app.accent_gold
+                    halign: "left"
+                    text_size: self.size
+                    valign: "middle"
+                Label:
+                    text: root.run_text
+                    font_size: "9sp"
+                    color: app.accent_cyan
+                    halign: "right"
+                    text_size: self.size
+                    valign: "middle"
+
             # Title + tier
             BoxLayout:
-                size_hint_y: 0.06
+                size_hint_y: 0.04
                 Label:
                     text: "T H E   P I T"
                     font_size: "10sp"

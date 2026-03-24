@@ -18,12 +18,13 @@ def _auto_text_size(label):
 # ============================================================
 
 def build_roster_card(data, roster_screen):
+    has_points = data.get("unused_points", 0) > 0
     card = CardWidget(
-        orientation="horizontal",
+        orientation="vertical",
         size_hint_y=None,
-        height=100,
-        padding=[12, 8],
-        spacing=10,
+        height=155 if has_points else 130,
+        padding=[10, 6],
+        spacing=3,
         active=data["active"],
     )
 
@@ -31,7 +32,8 @@ def build_roster_card(data, roster_screen):
         card.card_color = (0.15, 0.08, 0.08, 1)
         card.border_color = ACCENT_RED
 
-    info = BoxLayout(orientation="vertical", size_hint_x=0.55, spacing=1)
+    # --- Top row: name + class + buttons ---
+    top_row = BoxLayout(size_hint_y=None, height=32, spacing=6)
 
     # Name + status
     if not data["alive"]:
@@ -47,18 +49,93 @@ def build_roster_card(data, roster_screen):
         name_text = data["name"]
         name_color = TEXT_PRIMARY
 
-    info.add_widget(_auto_text_size(Label(
-        text=name_text, font_size="14sp", bold=True, color=name_color,
-        halign="left", size_hint_y=0.25,
+    top_row.add_widget(_auto_text_size(Label(
+        text=name_text, font_size="13sp", bold=True, color=name_color,
+        halign="left", size_hint_x=0.5,
+    )))
+    top_row.add_widget(_auto_text_size(Label(
+        text=f"[{data.get('fighter_class', 'Mercenary')}]",
+        font_size="10sp", color=TEXT_MUTED, halign="left", size_hint_x=0.25,
     )))
 
-    stats_text = f"LV {data['level']}  ATK {data['atk']}  DEF {data['def']}  HP {data['hp']}"
-    info.add_widget(_auto_text_size(Label(
-        text=stats_text, font_size="10sp", color=TEXT_SECONDARY,
-        halign="left", size_hint_y=0.2,
+    idx = data["index"]
+    if not data["alive"]:
+        dismiss_btn = MinimalButton(
+            text="X", btn_color=ACCENT_RED, font_size=10, size_hint_x=0.25,
+        )
+        dismiss_btn.bind(on_press=lambda inst, i=idx: roster_screen.dismiss(i))
+        top_row.add_widget(dismiss_btn)
+    elif not data["on_expedition"] and not data["active"]:
+        select_btn = MinimalButton(
+            text="SELECT", btn_color=BTN_PRIMARY, font_size=10, size_hint_x=0.25,
+        )
+        select_btn.bind(on_press=lambda inst, i=idx: roster_screen.set_active(i))
+        top_row.add_widget(select_btn)
+    else:
+        tag = "ACTIVE" if data["active"] else "AWAY"
+        tag_color = ACCENT_GOLD if data["active"] else ACCENT_CYAN
+        top_row.add_widget(_auto_text_size(Label(
+            text=tag, font_size="9sp", color=tag_color,
+            halign="right", size_hint_x=0.25,
+        )))
+    card.add_widget(top_row)
+
+    # --- Stats line: LV, ATK, DEF, HP, crit, dodge ---
+    stats_text = (
+        f"LV {data['level']}  ATK {data['atk']}  DEF {data['def']}  "
+        f"HP {data['hp']}  Crit {data.get('crit', 0):.0%}  Dodge {data.get('dodge', 0):.0%}"
+    )
+    card.add_widget(_auto_text_size(Label(
+        text=stats_text, font_size="9sp", color=TEXT_SECONDARY,
+        halign="left", size_hint_y=None, height=18,
     )))
 
-    # Equipment summary
+    # --- STR / AGI / VIT display ---
+    stat_row = BoxLayout(size_hint_y=None, height=18, spacing=4)
+    stat_row.add_widget(_auto_text_size(Label(
+        text=f"STR {data.get('str', 0)}", font_size="10sp",
+        color=ACCENT_RED, halign="center",
+    )))
+    stat_row.add_widget(_auto_text_size(Label(
+        text=f"AGI {data.get('agi', 0)}", font_size="10sp",
+        color=ACCENT_GREEN, halign="center",
+    )))
+    stat_row.add_widget(_auto_text_size(Label(
+        text=f"VIT {data.get('vit', 0)}", font_size="10sp",
+        color=ACCENT_BLUE, halign="center",
+    )))
+    card.add_widget(stat_row)
+
+    # --- Stat distribution buttons (if unused points > 0) ---
+    if has_points and data["alive"] and not data["on_expedition"]:
+        pts_row = BoxLayout(size_hint_y=None, height=30, spacing=4)
+        pts_row.add_widget(_auto_text_size(Label(
+            text=f"{data['unused_points']} pts", font_size="10sp",
+            color=ACCENT_GOLD, halign="center", size_hint_x=0.25,
+        )))
+        str_btn = MinimalButton(
+            text="+STR", btn_color=ACCENT_RED, text_color=TEXT_PRIMARY,
+            font_size=10, size_hint_x=0.25,
+        )
+        str_btn.bind(on_press=lambda inst, i=idx: roster_screen.add_str(i))
+        pts_row.add_widget(str_btn)
+
+        agi_btn = MinimalButton(
+            text="+AGI", btn_color=ACCENT_GREEN, text_color=BG_DARK,
+            font_size=10, size_hint_x=0.25,
+        )
+        agi_btn.bind(on_press=lambda inst, i=idx: roster_screen.add_agi(i))
+        pts_row.add_widget(agi_btn)
+
+        vit_btn = MinimalButton(
+            text="+VIT", btn_color=ACCENT_BLUE, text_color=TEXT_PRIMARY,
+            font_size=10, size_hint_x=0.25,
+        )
+        vit_btn.bind(on_press=lambda inst, i=idx: roster_screen.add_vit(i))
+        pts_row.add_widget(vit_btn)
+        card.add_widget(pts_row)
+
+    # --- Equipment summary ---
     equip_parts = []
     if data.get("weapon"):
         equip_parts.append(data["weapon"]["name"])
@@ -67,67 +144,32 @@ def build_roster_card(data, roster_screen):
     if data.get("accessory"):
         equip_parts.append(data["accessory"]["name"])
     equip_text = " | ".join(equip_parts) if equip_parts else "No equipment"
-    info.add_widget(_auto_text_size(Label(
+    card.add_widget(_auto_text_size(Label(
         text=equip_text, font_size="9sp", color=TEXT_MUTED,
-        halign="left", size_hint_y=0.15,
+        halign="left", size_hint_y=None, height=16,
     )))
 
-    # Injuries / kills / relics
+    # --- Injuries / kills / relics ---
     meta_parts = [f"Kills: {data['kills']}"]
     if data["relics"] > 0:
         meta_parts.append(f"Relics: {data['relics']}")
     if data["injuries"] > 0:
         meta_parts.append(f"Injuries: {data['injuries']} ({data['death_chance']:.0%} risk)")
-    info.add_widget(_auto_text_size(Label(
+    card.add_widget(_auto_text_size(Label(
         text="  ".join(meta_parts), font_size="9sp",
         color=ACCENT_RED if data["injuries"] > 2 else TEXT_MUTED,
-        halign="left", size_hint_y=0.15,
+        halign="left", size_hint_y=None, height=16,
     )))
 
-    # Power bar
-    info.add_widget(MinimalBar(
-        size_hint_y=0.1, value=min(1.0, data["level"] / 20),
-        bar_color=ACCENT_CYAN, bg_color=BG_ELEVATED,
-    ))
-
-    tag_text = "ACTIVE" if data["active"] else ""
-    info.add_widget(_auto_text_size(Label(
-        text=tag_text, font_size="9sp",
-        color=ACCENT_GOLD if data["active"] else TEXT_MUTED,
-        halign="left", size_hint_y=0.15,
-    )))
-
-    # Buttons
-    btns = BoxLayout(orientation="vertical", size_hint_x=0.45, spacing=4, padding=[0, 4])
-    idx = data["index"]
-
-    if not data["alive"]:
-        dismiss_btn = MinimalButton(
-            text="DISMISS", btn_color=ACCENT_RED, font_size=11, size_hint_y=1,
-        )
-        dismiss_btn.bind(on_press=lambda inst, i=idx: roster_screen.dismiss(i))
-        btns.add_widget(dismiss_btn)
-    elif data["on_expedition"]:
-        btns.add_widget(_auto_text_size(Label(
-            text="On expedition...", font_size="10sp", color=ACCENT_CYAN,
-        )))
-    else:
-        if not data["active"]:
-            select_btn = MinimalButton(
-                text="SELECT", btn_color=BTN_PRIMARY, font_size=11, size_hint_y=0.5,
-            )
-            select_btn.bind(on_press=lambda inst, i=idx: roster_screen.set_active(i))
-            btns.add_widget(select_btn)
-
+    # --- Train button ---
+    if data["alive"] and not data["on_expedition"]:
         upgrade_btn = MinimalButton(
-            text=f"TRAIN {data['cost']}g", btn_color=ACCENT_GOLD,
-            text_color=BG_DARK, font_size=11, size_hint_y=0.5,
+            text=f"TRAIN Lv.{data['level'] + 1}  ({data['cost']}g)", btn_color=ACCENT_GOLD,
+            text_color=BG_DARK, font_size=11, size_hint_y=None, height=32,
         )
         upgrade_btn.bind(on_press=lambda inst, i=idx: roster_screen.upgrade(i))
-        btns.add_widget(upgrade_btn)
+        card.add_widget(upgrade_btn)
 
-    card.add_widget(info)
-    card.add_widget(btns)
     return card
 
 

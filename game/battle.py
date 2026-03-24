@@ -179,8 +179,8 @@ class BattleManager:
             if not target:
                 break
 
-            # Attack
-            is_crit = random.random() < 0.15
+            # Attack — crit uses fighter's stat-based crit_chance
+            is_crit = random.random() < fighter.crit_chance
             raw = fighter.deal_damage()
             if is_crit:
                 raw = int(raw * 1.8)
@@ -242,6 +242,13 @@ class BattleManager:
                 raw = int(raw * 1.8)
             actual = target.take_damage(raw)
 
+            if actual == 0:
+                events.append(BattleEvent(
+                    "attack", attacker=enemy.name, defender=target.name,
+                    damage=0,
+                    message=f"{target.name} DODGED {enemy.name}'s attack!"
+                ))
+                continue
             events.append(BattleEvent(
                 "attack", attacker=enemy.name, defender=target.name,
                 damage=actual, is_crit=is_crit,

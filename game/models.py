@@ -1,4 +1,8 @@
-"""Game data models — fighters, enemies, equipment, expeditions, economy."""
+"""Game data models — fighters, enemies, equipment, expeditions, economy.
+
+Roguelike-manager: permadeath resets the run, stats distributed manually,
+fighters have classes with unique modifiers.
+"""
 
 import random
 import time
@@ -41,6 +45,38 @@ RARITY_MULTIPLIER = {
     RARITY_RARE: 1.7,
     RARITY_EPIC: 2.2,
     RARITY_LEGENDARY: 3.0,
+}
+
+# --- Fighter classes ---
+
+FIGHTER_CLASSES = {
+    "mercenary": {
+        "name": "Mercenary",
+        "desc": "Balanced fighter. +1 stat point per level.",
+        "base_str": 5, "base_agi": 5, "base_vit": 5,
+        "crit_bonus": 0.0,
+        "dodge_bonus": 0.0,
+        "hp_mult": 1.0,
+        "points_per_level": 4,
+    },
+    "assassin": {
+        "name": "Assassin",
+        "desc": "High crit, low HP. +20% crit chance.",
+        "base_str": 4, "base_agi": 8, "base_vit": 3,
+        "crit_bonus": 0.20,
+        "dodge_bonus": 0.05,
+        "hp_mult": 0.85,
+        "points_per_level": 3,
+    },
+    "tank": {
+        "name": "Tank",
+        "desc": "High HP & defense. Slow but durable.",
+        "base_str": 3, "base_agi": 2, "base_vit": 10,
+        "crit_bonus": -0.05,
+        "dodge_bonus": 0.0,
+        "hp_mult": 1.3,
+        "points_per_level": 3,
+    },
 }
 
 # --- Equipment ---
@@ -190,35 +226,27 @@ RELICS = {
 class DifficultyScaler:
     """Manages exponential difficulty curve and resource scarcity."""
 
-    # Enemy scaling — exponential growth
     ENEMY_ATK_BASE = 6
     ENEMY_ATK_PER_TIER = 4
-    ENEMY_ATK_EXPO = 1.12       # +12% compounding per tier
+    ENEMY_ATK_EXPO = 1.12
     ENEMY_DEF_BASE = 2
     ENEMY_DEF_PER_TIER = 2
     ENEMY_DEF_EXPO = 1.10
     ENEMY_HP_BASE = 30
     ENEMY_HP_PER_TIER = 20
-    ENEMY_HP_EXPO = 1.15        # HP grows fastest
+    ENEMY_HP_EXPO = 1.15
 
-    # Gold reward — grows slower than enemy power (diminishing returns)
     REWARD_BASE = 20
-    REWARD_EXPO = 1.18          # was 1.3 linear, now slower exponential
+    REWARD_EXPO = 1.18
 
-    # Costs — inflate faster than income
     HIRE_BASE = 50
-    HIRE_EXPO = 1.8             # each new fighter costs almost 2x more
+    HIRE_EXPO = 1.8
     UPGRADE_BASE = 50
-    UPGRADE_EXPO = 1.65         # steeper than before (was 1.5)
+    UPGRADE_EXPO = 1.65
 
-    # Idle income costs — exponential inflation
-    IDLE_COST_INFLATION = 1.35  # each purchase of same tier costs 35% more
-
-    # Heal cost scales with tier
     HEAL_BASE = 30
     HEAL_TIER_MULT = 1.25
 
-    # Surgeon scales with injuries cured total
     SURGEON_BASE = 200
     SURGEON_INFLATION = 1.4
 
@@ -259,34 +287,10 @@ class DifficultyScaler:
         return int(s.SURGEON_BASE * (s.SURGEON_INFLATION ** times_used))
 
 
-# --- Dynamic market items (costs scale) ---
+# --- Dynamic market items — equipment + consumables (no idle boosts) ---
 
-def get_dynamic_shop_items(arena_tier, idle_purchases, surgeon_uses):
-    """Generate shop items with inflating costs."""
-    s = DifficultyScaler
-
-    # Idle income items — each purchase inflates cost
-    idle_items = [
-        {
-            "id": "idle_boost_1", "name": "Street Bets",
-            "desc": f"+1 gold/sec (bought {idle_purchases.get('idle_boost_1', 0)}x)",
-            "cost": int(100 * (s.IDLE_COST_INFLATION ** idle_purchases.get("idle_boost_1", 0))),
-            "effect": {"idle_gold_rate": 1.0},
-        },
-        {
-            "id": "idle_boost_2", "name": "Fight Club",
-            "desc": f"+5 gold/sec (bought {idle_purchases.get('idle_boost_2', 0)}x)",
-            "cost": int(500 * (s.IDLE_COST_INFLATION ** idle_purchases.get("idle_boost_2", 0))),
-            "effect": {"idle_gold_rate": 5.0},
-        },
-        {
-            "id": "idle_boost_3", "name": "Noble Patron",
-            "desc": f"+25 gold/sec (bought {idle_purchases.get('idle_boost_3', 0)}x)",
-            "cost": int(2500 * (s.IDLE_COST_INFLATION ** idle_purchases.get("idle_boost_3", 0))),
-            "effect": {"idle_gold_rate": 25.0},
-        },
-    ]
-
+def get_dynamic_shop_items(arena_tier, surgeon_uses):
+    """Generate shop items: equipment and consumables. No idle boosts."""
     consumables = [
         {
             "id": "heal_potion", "name": "Blood Salve",
@@ -296,13 +300,13 @@ def get_dynamic_shop_items(arena_tier, idle_purchases, surgeon_uses):
         },
         {
             "id": "atk_tonic", "name": "Fury Tonic",
-            "desc": "+3 base ATK to active fighter",
+            "desc": "+3 base STR to active fighter",
             "cost": int(300 * (1.2 ** (arena_tier - 1))),
             "effect": {"base_attack": 3},
         },
         {
             "id": "def_tonic", "name": "Stone Brew",
-            "desc": "+3 base DEF to active fighter",
+            "desc": "+3 base VIT to active fighter",
             "cost": int(300 * (1.2 ** (arena_tier - 1))),
             "effect": {"base_defense": 3},
         },
@@ -314,22 +318,45 @@ def get_dynamic_shop_items(arena_tier, idle_purchases, surgeon_uses):
         },
     ]
 
-    return idle_items + consumables
+    return consumables
 
 
 # ============================================================
-#  FIGHTER
+#  FIGHTER (Roguelike with STR/AGI/VIT)
 # ============================================================
 
 class Fighter:
-    """Player-owned arena fighter. Can die permanently."""
+    """Player-owned arena fighter with stat distribution.
 
-    def __init__(self, name=None, level=1):
+    Stats:
+      STR → attack power
+      AGI → crit chance, dodge chance
+      VIT → max HP, defense
+    """
+
+    def __init__(self, name=None, level=1, fighter_class="mercenary"):
+        cls_data = FIGHTER_CLASSES.get(fighter_class, FIGHTER_CLASSES["mercenary"])
         self.name = name or random.choice(FIGHTER_NAMES)
+        self.fighter_class = fighter_class
         self.level = level
-        self.base_attack = random.randint(8, 12)
-        self.base_defense = random.randint(3, 7)
-        self.base_hp = random.randint(40, 60)
+
+        # Core stats (distributable)
+        self.strength = cls_data["base_str"]
+        self.agility = cls_data["base_agi"]
+        self.vitality = cls_data["base_vit"]
+        self.unused_points = 3  # starting bonus points
+
+        # Class modifiers (stored for reference)
+        self.crit_bonus = cls_data["crit_bonus"]
+        self.dodge_bonus = cls_data["dodge_bonus"]
+        self.hp_mult = cls_data["hp_mult"]
+        self.points_per_level = cls_data["points_per_level"]
+
+        # Legacy compat
+        self.base_attack = 0
+        self.base_defense = 0
+        self.base_hp = 0
+
         self.alive = True
         self.injuries = 0
         self.kills = 0
@@ -338,7 +365,9 @@ class Fighter:
         self.on_expedition = False
         self.expedition_id = None
         self.expedition_end = 0.0
-        self.hp = self.max_hp  # must be after equipment/relics init
+        self.hp = self.max_hp
+
+    # --- Stat-derived properties ---
 
     @property
     def equip_atk(self):
@@ -375,15 +404,29 @@ class Fighter:
 
     @property
     def attack(self):
-        return self.base_attack + (self.level - 1) * 3 + self.equip_atk
+        # STR is primary attack stat: each point = +2 ATK
+        return self.strength * 2 + self.base_attack + (self.level - 1) * 2 + self.equip_atk
 
     @property
     def defense(self):
-        return self.base_defense + (self.level - 1) * 2 + self.equip_def
+        # VIT gives defense: each point = +1 DEF
+        return self.vitality + self.base_defense + (self.level - 1) * 1 + self.equip_def
 
     @property
     def max_hp(self):
-        return self.base_hp + (self.level - 1) * 15 + self.equip_hp
+        # VIT is primary HP stat: each point = +8 HP, scaled by class hp_mult
+        base = 30 + self.vitality * 8 + self.base_hp + (self.level - 1) * 10
+        return int(base * self.hp_mult) + self.equip_hp
+
+    @property
+    def crit_chance(self):
+        # AGI gives crit: each point = +2% crit, + class bonus
+        return min(0.75, 0.05 + self.agility * 0.02 + self.crit_bonus)
+
+    @property
+    def dodge_chance(self):
+        # AGI gives dodge: each point = +1.5%
+        return min(0.40, self.agility * 0.015 + self.dodge_bonus)
 
     @property
     def upgrade_cost(self):
@@ -399,16 +442,49 @@ class Fighter:
         injury_bonus = self.injuries * 0.04
         return min(0.50, base + injury_bonus)
 
+    @property
+    def class_name(self):
+        return FIGHTER_CLASSES.get(self.fighter_class, {}).get("name", "Unknown")
+
+    # --- Actions ---
+
+    def distribute_point(self, stat: str) -> bool:
+        """Spend 1 unused point on STR, AGI, or VIT. Returns True if success."""
+        if self.unused_points <= 0:
+            return False
+        if stat == "strength":
+            self.strength += 1
+        elif stat == "agility":
+            self.agility += 1
+        elif stat == "vitality":
+            old_max = self.max_hp
+            self.vitality += 1
+            # Heal the HP difference so player doesn't lose effective HP
+            self.hp += self.max_hp - old_max
+        else:
+            return False
+        self.unused_points -= 1
+        return True
+
+    def level_up(self):
+        """Level up: gain stat points based on class."""
+        self.level += 1
+        self.unused_points += self.points_per_level
+        self.hp = self.max_hp
+
     def heal(self):
         self.hp = self.max_hp
 
     def take_damage(self, raw_dmg):
+        # Dodge check
+        if random.random() < self.dodge_chance:
+            return 0  # dodged
         reduced = max(1, raw_dmg - self.defense // 2)
         self.hp = max(0, self.hp - reduced)
         return reduced
 
     def deal_damage(self):
-        variance = random.uniform(0.8, 1.2)
+        variance = random.uniform(0.85, 1.15)
         return int(self.attack * variance)
 
     def check_permadeath(self) -> bool:
@@ -430,7 +506,16 @@ class Fighter:
     def to_dict(self):
         return {
             "name": self.name,
+            "fighter_class": self.fighter_class,
             "level": self.level,
+            "strength": self.strength,
+            "agility": self.agility,
+            "vitality": self.vitality,
+            "unused_points": self.unused_points,
+            "crit_bonus": self.crit_bonus,
+            "dodge_bonus": self.dodge_bonus,
+            "hp_mult": self.hp_mult,
+            "points_per_level": self.points_per_level,
             "base_attack": self.base_attack,
             "base_defense": self.base_defense,
             "base_hp": self.base_hp,
@@ -449,11 +534,21 @@ class Fighter:
     def from_dict(cls, data):
         g = cls.__new__(cls)
         g.name = data["name"]
+        g.fighter_class = data.get("fighter_class", "mercenary")
         g.level = data["level"]
-        g.base_attack = data["base_attack"]
-        g.base_defense = data["base_defense"]
-        g.base_hp = data["base_hp"]
-        g.hp = data["hp"]
+        g.strength = data.get("strength", 5)
+        g.agility = data.get("agility", 5)
+        g.vitality = data.get("vitality", 5)
+        g.unused_points = data.get("unused_points", 0)
+        cls_data = FIGHTER_CLASSES.get(g.fighter_class, FIGHTER_CLASSES["mercenary"])
+        g.crit_bonus = data.get("crit_bonus", cls_data["crit_bonus"])
+        g.dodge_bonus = data.get("dodge_bonus", cls_data["dodge_bonus"])
+        g.hp_mult = data.get("hp_mult", cls_data["hp_mult"])
+        g.points_per_level = data.get("points_per_level", cls_data["points_per_level"])
+        g.base_attack = data.get("base_attack", 0)
+        g.base_defense = data.get("base_defense", 0)
+        g.base_hp = data.get("base_hp", 0)
+        g.hp = data.get("hp", 50)
         g.alive = data.get("alive", True)
         g.injuries = data.get("injuries", 0)
         g.kills = data.get("kills", 0)
@@ -497,5 +592,4 @@ class Enemy:
         return int(self.attack * variance)
 
 
-# Legacy flat list for backward compat (forge still uses it)
 SHOP_ITEMS = []
