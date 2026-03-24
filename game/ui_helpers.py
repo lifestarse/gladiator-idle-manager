@@ -312,7 +312,7 @@ def refresh_expedition_grid(expedition_screen):
 
 
 # ============================================================
-#  MARKET (Shop)
+#  MARKET (Shop) — now inside MoreScreen
 # ============================================================
 
 def build_shop_card(item, shop_screen):
@@ -354,3 +354,108 @@ def refresh_shop_grid(shop_screen):
     grid.clear_widgets()
     for item in shop_screen.items_data:
         grid.add_widget(build_shop_card(item, shop_screen))
+
+
+# ============================================================
+#  BATTLE LOG (ArenaScreen)
+# ============================================================
+
+def refresh_battle_log(arena_screen):
+    """Update battle log label — already handled by property binding."""
+    pass
+
+
+# ============================================================
+#  ACHIEVEMENTS (LoreScreen)
+# ============================================================
+
+def build_achievement_card(ach):
+    unlocked = ach.get("unlocked", False)
+    card = CardWidget(
+        orientation="horizontal",
+        size_hint_y=None,
+        height=60,
+        padding=[10, 6],
+        spacing=8,
+    )
+    if unlocked:
+        card.border_color = ACCENT_GOLD
+        card.card_color = (0.12, 0.12, 0.08, 1)
+
+    info = BoxLayout(orientation="vertical", size_hint_x=0.7, spacing=1)
+    name_color = ACCENT_GOLD if unlocked else TEXT_SECONDARY
+    info.add_widget(_auto_text_size(Label(
+        text=ach["name"], font_size="13sp", bold=True,
+        color=name_color, halign="left", size_hint_y=0.5,
+    )))
+    info.add_widget(_auto_text_size(Label(
+        text=ach["desc"], font_size="9sp",
+        color=TEXT_MUTED, halign="left", size_hint_y=0.5,
+    )))
+
+    reward = BoxLayout(orientation="vertical", size_hint_x=0.3)
+    status_text = "DONE" if unlocked else f"{ach['diamonds']} dia"
+    status_color = ACCENT_GREEN if unlocked else ACCENT_CYAN
+    reward.add_widget(_auto_text_size(Label(
+        text=status_text, font_size="12sp", bold=True,
+        color=status_color, halign="center",
+    )))
+
+    card.add_widget(info)
+    card.add_widget(reward)
+    return card
+
+
+def refresh_achievement_grid(lore_screen):
+    grid = lore_screen.ids.get("achievement_grid")
+    if not grid:
+        return
+    grid.clear_widgets()
+    for ach in lore_screen.achievements_data:
+        grid.add_widget(build_achievement_card(ach))
+
+
+# ============================================================
+#  DIAMOND SHOP (LoreScreen)
+# ============================================================
+
+def build_diamond_shop_card(item, lore_screen):
+    card = CardWidget(
+        orientation="horizontal",
+        size_hint_y=None,
+        height=65,
+        padding=[10, 6],
+        spacing=8,
+    )
+    card.border_color = ACCENT_CYAN
+
+    info = BoxLayout(orientation="vertical", size_hint_x=0.6, spacing=1)
+    info.add_widget(_auto_text_size(Label(
+        text=item["name"], font_size="13sp", bold=True,
+        color=ACCENT_CYAN, halign="left", size_hint_y=0.45,
+    )))
+    info.add_widget(_auto_text_size(Label(
+        text=item["desc"], font_size="9sp",
+        color=TEXT_MUTED, halign="left", size_hint_y=0.55,
+    )))
+
+    affordable = item.get("affordable", False)
+    buy_btn = MinimalButton(
+        text=f"{item['cost']} dia", font_size=12, size_hint_x=0.4,
+        btn_color=ACCENT_CYAN if affordable else BTN_DISABLED,
+        text_color=BG_DARK if affordable else TEXT_MUTED,
+    )
+    buy_btn.bind(on_press=lambda inst, iid=item["id"]: lore_screen.buy_diamond_item(iid))
+
+    card.add_widget(info)
+    card.add_widget(buy_btn)
+    return card
+
+
+def refresh_diamond_shop_grid(lore_screen):
+    grid = lore_screen.ids.get("diamond_shop_grid")
+    if not grid:
+        return
+    grid.clear_widgets()
+    for item in lore_screen.diamond_shop_data:
+        grid.add_widget(build_diamond_shop_card(item, lore_screen))

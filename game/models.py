@@ -330,7 +330,6 @@ class Fighter:
         self.base_attack = random.randint(8, 12)
         self.base_defense = random.randint(3, 7)
         self.base_hp = random.randint(40, 60)
-        self.hp = self.max_hp
         self.alive = True
         self.injuries = 0
         self.kills = 0
@@ -339,6 +338,7 @@ class Fighter:
         self.on_expedition = False
         self.expedition_id = None
         self.expedition_end = 0.0
+        self.hp = self.max_hp  # must be after equipment/relics init
 
     @property
     def equip_atk(self):
