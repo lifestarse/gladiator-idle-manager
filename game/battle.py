@@ -1,12 +1,12 @@
 """
-Turn-based battle system with animated phases.
+Turn-based battle system with luck-based combat.
 
 Two battle modes:
-1. Auto-Battle (The Pit) — all available fighters vs waves of enemies
-2. Boss Challenge — turn-by-turn tactical boss fight with skip option
+1. Auto-Battle (The Pit) -- all available fighters vs waves of enemies
+2. Boss Challenge -- turn-by-turn tactical boss fight with skip option
 
-Battle flows as a state machine:
-  IDLE -> STARTING -> TURN_PLAYER -> TURN_ENEMY -> (NEXT_TURN | VICTORY | DEFEAT)
+Combat is luck-heavy: crits deal scaling damage, dodges negate hits entirely.
+A weak but agile assassin can outperform a strong brute through fortunate rolls.
 """
 
 import random
@@ -15,20 +15,21 @@ from enum import Enum, auto
 
 class BattlePhase(Enum):
     IDLE = auto()
-    STARTING = auto()         # intro animation
-    TURN_PLAYER = auto()      # player's fighter attacks
-    TURN_ENEMY = auto()       # enemy attacks
-    TURN_RESOLVE = auto()     # resolve damage, check deaths
+    STARTING = auto()
+    TURN_PLAYER = auto()
+    TURN_ENEMY = auto()
+    TURN_RESOLVE = auto()
     VICTORY = auto()
     DEFEAT = auto()
-    BOSS_INTRO = auto()       # boss special intro
+    BOSS_INTRO = auto()
 
 
 class BattleEvent:
     """Single event in the battle log (for animation)."""
     def __init__(self, event_type, attacker="", defender="", damage=0,
-                 message="", is_kill=False, is_crit=False, is_boss=False):
-        self.event_type = event_type  # "attack", "death", "victory", "boss_intro", "heal"
+                 message="", is_kill=False, is_crit=False, is_boss=False,
+                 is_dodge=False):
+        self.event_type = event_type
         self.attacker = attacker
         self.defender = defender
         self.damage = damage
@@ -36,6 +37,7 @@ class BattleEvent:
         self.is_kill = is_kill
         self.is_crit = is_crit
         self.is_boss = is_boss
+        self.is_dodge = is_dodge
 
 
 class BattleState:
@@ -44,11 +46,11 @@ class BattleState:
     def __init__(self):
         self.phase = BattlePhase.IDLE
         self.turn_number = 0
-        self.player_fighters = []    # list of Fighter refs (alive, not on expedition)
+        self.player_fighters = []
         self.current_fighter_idx = 0
-        self.enemies = []            # list of Enemy refs
+        self.enemies = []
         self.current_enemy_idx = 0
-        self.events: list[BattleEvent] = []
+        self.events = []
         self.is_boss_fight = False
         self.boss_defeated = False
         self.all_defeated = False
@@ -72,7 +74,6 @@ class BattleState:
         return None
 
     def next_alive_fighter(self):
-        """Move to next alive fighter. Returns False if none left."""
         for i in range(len(self.player_fighters)):
             idx = (self.current_fighter_idx + 1 + i) % len(self.player_fighters)
             f = self.player_fighters[idx]
@@ -82,7 +83,6 @@ class BattleState:
         return False
 
     def next_alive_enemy(self):
-        """Move to next alive enemy. Returns False if none left."""
         for i in range(len(self.enemies)):
             idx = (self.current_enemy_idx + 1 + i) % len(self.enemies)
             if self.enemies[idx].hp > 0:
@@ -98,21 +98,19 @@ class BattleState:
 
 
 class BattleManager:
-    """Manages turn-based battles with event generation for animation."""
+    """Manages turn-based battles with luck-based combat."""
 
     def __init__(self, engine):
         self.engine = engine
         self.state = BattleState()
 
     def start_auto_battle(self):
-        """Start auto-battle: all fighters vs wave of enemies."""
         fighters = [f for f in self.engine.fighters
                     if f.alive and not f.on_expedition]
         if not fighters:
             return [BattleEvent("message", message="No fighters available!")]
 
         from game.models import Enemy
-        # Spawn enemies = number of fighters (wave)
         num_enemies = max(1, len(fighters))
         enemies = [Enemy(tier=self.engine.arena_tier) for _ in range(num_enemies)]
 
@@ -125,21 +123,21 @@ class BattleManager:
         return [BattleEvent("message", message=f"BATTLE START! {len(fighters)}v{len(enemies)}")]
 
     def start_boss_fight(self):
-        """Start boss challenge: all fighters vs 1 mega-boss."""
         fighters = [f for f in self.engine.fighters
                     if f.alive and not f.on_expedition]
         if not fighters:
             return [BattleEvent("message", message="No fighters available!")]
 
-        from game.models import Enemy, DifficultyScaler
+        from game.models import Enemy
         boss_tier = self.engine.arena_tier + 2
         boss = Enemy(tier=boss_tier)
-        # Boss has 3x HP and 1.5x stats
         boss.max_hp = int(boss.max_hp * 3)
         boss.hp = boss.max_hp
         boss.attack = int(boss.attack * 1.5)
         boss.defense = int(boss.defense * 1.3)
         boss.gold_reward = int(boss.gold_reward * 5)
+        boss.crit_chance = min(0.35, boss.crit_chance + 0.10)
+        boss.dodge_chance = 0  # bosses don't dodge (tank fantasy)
         boss.name = f"BOSS: {boss.name}"
 
         self.state = BattleState()
@@ -151,8 +149,8 @@ class BattleManager:
         return [BattleEvent("boss_intro", message=f"{boss.name} appears! HP: {boss.hp}",
                             is_boss=True)]
 
-    def do_turn(self) -> list[BattleEvent]:
-        """Execute one turn of combat. Returns list of events for animation."""
+    def do_turn(self):
+        """Execute one turn. Returns list of events for animation."""
         s = self.state
         events = []
 
@@ -170,7 +168,6 @@ class BattleManager:
             if not fighter.alive or fighter.hp <= 0:
                 continue
 
-            # Pick target: current enemy or first alive
             target = s.current_enemy
             if not target or target.hp <= 0:
                 if not s.next_alive_enemy():
@@ -179,19 +176,27 @@ class BattleManager:
             if not target:
                 break
 
-            # Attack — crit uses fighter's stat-based crit_chance
+            # Crit check — uses fighter's AGI-based crit_chance
             is_crit = random.random() < fighter.crit_chance
             raw = fighter.deal_damage()
             if is_crit:
-                raw = int(raw * 1.8)
+                raw = int(raw * fighter.crit_mult)  # scaling crit multiplier
+
             actual = target.take_damage(raw)
 
-            event = BattleEvent(
-                "attack", attacker=fighter.name, defender=target.name,
-                damage=actual, is_crit=is_crit,
-                message=f"{fighter.name} {'CRIT! ' if is_crit else ''}hits {target.name} for {actual}"
-            )
-            events.append(event)
+            if actual == 0:
+                # Enemy dodged!
+                events.append(BattleEvent(
+                    "attack", attacker=fighter.name, defender=target.name,
+                    damage=0, is_dodge=True,
+                    message=f"{target.name} DODGED {fighter.name}'s attack!"
+                ))
+            else:
+                events.append(BattleEvent(
+                    "attack", attacker=fighter.name, defender=target.name,
+                    damage=actual, is_crit=is_crit,
+                    message=f"{fighter.name} {'CRIT! ' if is_crit else ''}hits {target.name} for {actual}"
+                ))
 
             if target.hp <= 0:
                 events.append(BattleEvent(
@@ -215,10 +220,9 @@ class BattleManager:
             self.engine.wins += len(s.enemies)
             if self.engine.wins % 3 == 0:
                 self.engine.arena_tier += 1
-            # Heal fighters partially
             for f in s.player_fighters:
                 if f.alive:
-                    f.hp = min(f.hp + f.max_hp // 7, f.max_hp)
+                    f.hp = min(f.hp + f.max_hp // 5, f.max_hp)
             events.append(BattleEvent(
                 "victory", message=f"VICTORY! +{s.gold_earned}g",
                 damage=s.gold_earned,
@@ -230,25 +234,27 @@ class BattleManager:
             if enemy.hp <= 0:
                 continue
 
-            # Pick a random alive fighter
             alive_fighters = [f for f in s.player_fighters if f.alive and f.hp > 0]
             if not alive_fighters:
                 break
             target = random.choice(alive_fighters)
 
-            is_crit = random.random() < 0.10
+            # Enemy crit — luck swings both ways!
+            is_crit = random.random() < enemy.crit_chance
             raw = enemy.deal_damage()
             if is_crit:
                 raw = int(raw * 1.8)
+
             actual = target.take_damage(raw)
 
             if actual == 0:
                 events.append(BattleEvent(
                     "attack", attacker=enemy.name, defender=target.name,
-                    damage=0,
+                    damage=0, is_dodge=True,
                     message=f"{target.name} DODGED {enemy.name}'s attack!"
                 ))
                 continue
+
             events.append(BattleEvent(
                 "attack", attacker=enemy.name, defender=target.name,
                 damage=actual, is_crit=is_crit,
@@ -256,7 +262,6 @@ class BattleManager:
             ))
 
             if target.hp <= 0:
-                # Permadeath check
                 died_forever = target.check_permadeath()
                 if died_forever:
                     self.engine.total_deaths += 1
@@ -281,25 +286,23 @@ class BattleManager:
             events.append(BattleEvent(
                 "defeat", message="ALL FIGHTERS DOWN!",
             ))
-            # Heal survivors for next battle
             for f in s.player_fighters:
                 if f.alive:
                     f.heal()
             return events
 
-        # Next turn
         s.turn_number += 1
         events.append(BattleEvent("message", message=f"Turn {s.turn_number}"))
         return events
 
-    def do_full_battle(self) -> list[BattleEvent]:
-        """Run entire battle instantly (skip mode). Returns all events."""
+    def do_full_battle(self):
+        """Run entire battle instantly (skip mode)."""
         all_events = []
         while self.state.phase not in (BattlePhase.VICTORY, BattlePhase.DEFEAT,
                                         BattlePhase.IDLE):
             events = self.do_turn()
             all_events.extend(events)
-            if len(all_events) > 200:  # safety limit
+            if len(all_events) > 200:
                 break
         return all_events
 

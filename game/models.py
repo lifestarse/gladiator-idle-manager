@@ -1,7 +1,8 @@
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
-fighters have classes with unique modifiers.
+fighters have classes with unique modifiers. Luck-based combat where
+crits and dodge can turn the tide — weak but agile fighters can win.
 """
 
 import random
@@ -32,11 +33,11 @@ RARITY_EPIC = "epic"
 RARITY_LEGENDARY = "legendary"
 
 RARITY_COLORS = {
-    RARITY_COMMON: (0.6, 0.6, 0.6, 1),
-    RARITY_UNCOMMON: (0.3, 0.8, 0.3, 1),
-    RARITY_RARE: (0.3, 0.5, 1.0, 1),
-    RARITY_EPIC: (0.7, 0.3, 0.9, 1),
-    RARITY_LEGENDARY: (1.0, 0.78, 0.2, 1),
+    RARITY_COMMON: (0.45, 0.40, 0.35, 1),
+    RARITY_UNCOMMON: (0.30, 0.50, 0.25, 1),
+    RARITY_RARE: (0.25, 0.40, 0.65, 1),
+    RARITY_EPIC: (0.50, 0.25, 0.55, 1),
+    RARITY_LEGENDARY: (0.72, 0.58, 0.22, 1),
 }
 
 RARITY_MULTIPLIER = {
@@ -79,51 +80,51 @@ FIGHTER_CLASSES = {
     },
 }
 
-# --- Equipment ---
+# --- Equipment (lost on permadeath reset) ---
 
 EQUIPMENT_SLOTS = ["weapon", "armor", "accessory"]
 
 FORGE_WEAPONS = [
     {"id": "rusty_blade", "name": "Rusty Blade", "slot": "weapon", "rarity": RARITY_COMMON,
-     "atk": 3, "def": 0, "hp": 0, "cost": 60},
+     "atk": 3, "def": 0, "hp": 0, "cost": 40},
     {"id": "iron_sword", "name": "Iron Sword", "slot": "weapon", "rarity": RARITY_COMMON,
-     "atk": 6, "def": 0, "hp": 0, "cost": 150},
+     "atk": 5, "def": 0, "hp": 0, "cost": 90},
     {"id": "steel_falcata", "name": "Steel Falcata", "slot": "weapon", "rarity": RARITY_UNCOMMON,
-     "atk": 10, "def": 0, "hp": 5, "cost": 350},
+     "atk": 8, "def": 0, "hp": 5, "cost": 200},
     {"id": "obsidian_edge", "name": "Obsidian Edge", "slot": "weapon", "rarity": RARITY_RARE,
-     "atk": 16, "def": 2, "hp": 0, "cost": 800},
+     "atk": 12, "def": 2, "hp": 0, "cost": 500},
     {"id": "inferno_cleaver", "name": "Inferno Cleaver", "slot": "weapon", "rarity": RARITY_EPIC,
-     "atk": 24, "def": 0, "hp": 10, "cost": 2000},
+     "atk": 18, "def": 0, "hp": 10, "cost": 1200},
     {"id": "blade_of_ruin", "name": "Blade of Ruin", "slot": "weapon", "rarity": RARITY_LEGENDARY,
-     "atk": 35, "def": 5, "hp": 20, "cost": 5000},
+     "atk": 28, "def": 5, "hp": 20, "cost": 3000},
 ]
 
 FORGE_ARMOR = [
     {"id": "leather_vest", "name": "Leather Vest", "slot": "armor", "rarity": RARITY_COMMON,
-     "atk": 0, "def": 3, "hp": 10, "cost": 80},
+     "atk": 0, "def": 3, "hp": 10, "cost": 50},
     {"id": "chain_mail", "name": "Chain Mail", "slot": "armor", "rarity": RARITY_COMMON,
-     "atk": 0, "def": 6, "hp": 15, "cost": 200},
+     "atk": 0, "def": 5, "hp": 15, "cost": 120},
     {"id": "bronze_plate", "name": "Bronze Plate", "slot": "armor", "rarity": RARITY_UNCOMMON,
-     "atk": 0, "def": 10, "hp": 25, "cost": 450},
+     "atk": 0, "def": 8, "hp": 25, "cost": 280},
     {"id": "shadow_guard", "name": "Shadow Guard", "slot": "armor", "rarity": RARITY_RARE,
-     "atk": 3, "def": 15, "hp": 30, "cost": 1000},
+     "atk": 3, "def": 12, "hp": 30, "cost": 650},
     {"id": "titan_shell", "name": "Titan Shell", "slot": "armor", "rarity": RARITY_EPIC,
-     "atk": 0, "def": 22, "hp": 50, "cost": 2500},
+     "atk": 0, "def": 18, "hp": 50, "cost": 1500},
     {"id": "dragonscale", "name": "Dragonscale Aegis", "slot": "armor", "rarity": RARITY_LEGENDARY,
-     "atk": 5, "def": 30, "hp": 80, "cost": 6000},
+     "atk": 5, "def": 25, "hp": 70, "cost": 3500},
 ]
 
 FORGE_ACCESSORIES = [
     {"id": "bone_charm", "name": "Bone Charm", "slot": "accessory", "rarity": RARITY_COMMON,
-     "atk": 2, "def": 2, "hp": 5, "cost": 70},
+     "atk": 2, "def": 2, "hp": 5, "cost": 45},
     {"id": "iron_ring", "name": "Iron Ring", "slot": "accessory", "rarity": RARITY_UNCOMMON,
-     "atk": 4, "def": 4, "hp": 10, "cost": 250},
+     "atk": 4, "def": 4, "hp": 10, "cost": 160},
     {"id": "blood_pendant", "name": "Blood Pendant", "slot": "accessory", "rarity": RARITY_RARE,
-     "atk": 8, "def": 3, "hp": 20, "cost": 600},
+     "atk": 7, "def": 3, "hp": 20, "cost": 400},
     {"id": "void_amulet", "name": "Void Amulet", "slot": "accessory", "rarity": RARITY_EPIC,
-     "atk": 12, "def": 8, "hp": 30, "cost": 1500},
+     "atk": 10, "def": 7, "hp": 30, "cost": 1000},
     {"id": "crown_of_ash", "name": "Crown of Ash", "slot": "accessory", "rarity": RARITY_LEGENDARY,
-     "atk": 18, "def": 12, "hp": 50, "cost": 4000},
+     "atk": 15, "def": 10, "hp": 50, "cost": 2500},
 ]
 
 ALL_FORGE_ITEMS = FORGE_WEAPONS + FORGE_ARMOR + FORGE_ACCESSORIES
@@ -137,8 +138,8 @@ EXPEDITIONS = [
         "desc": "Scout the tunnels beneath the arena",
         "duration": 60,
         "min_level": 1,
-        "danger": 0.05,
-        "gold_range": (30, 80),
+        "danger": 0.08,
+        "gold_range": (20, 60),
         "relic_chance": 0.15,
         "relic_pool": [RARITY_COMMON, RARITY_UNCOMMON],
     },
@@ -148,8 +149,8 @@ EXPEDITIONS = [
         "desc": "Raid a bandit camp in the hills",
         "duration": 180,
         "min_level": 3,
-        "danger": 0.10,
-        "gold_range": (80, 200),
+        "danger": 0.15,
+        "gold_range": (50, 150),
         "relic_chance": 0.25,
         "relic_pool": [RARITY_UNCOMMON, RARITY_RARE],
     },
@@ -159,8 +160,8 @@ EXPEDITIONS = [
         "desc": "Ancient temple with deadly traps",
         "duration": 300,
         "min_level": 5,
-        "danger": 0.18,
-        "gold_range": (150, 400),
+        "danger": 0.22,
+        "gold_range": (100, 300),
         "relic_chance": 0.35,
         "relic_pool": [RARITY_RARE, RARITY_EPIC],
     },
@@ -170,8 +171,8 @@ EXPEDITIONS = [
         "desc": "Scorched lands where few return",
         "duration": 600,
         "min_level": 8,
-        "danger": 0.25,
-        "gold_range": (300, 800),
+        "danger": 0.30,
+        "gold_range": (200, 600),
         "relic_chance": 0.45,
         "relic_pool": [RARITY_EPIC, RARITY_LEGENDARY],
     },
@@ -181,8 +182,8 @@ EXPEDITIONS = [
         "desc": "A tear in reality. Maximum risk.",
         "duration": 900,
         "min_level": 12,
-        "danger": 0.35,
-        "gold_range": (500, 1500),
+        "danger": 0.40,
+        "gold_range": (400, 1000),
         "relic_chance": 0.55,
         "relic_pool": [RARITY_LEGENDARY],
     },
@@ -220,35 +221,46 @@ RELICS = {
 
 
 # ============================================================
-#  DIFFICULTY & ECONOMY SCALING
+#  DIFFICULTY & ECONOMY SCALING — roguelike balanced
 # ============================================================
 
 class DifficultyScaler:
-    """Manages exponential difficulty curve and resource scarcity."""
+    """Roguelike economy: tighter scaling, runs end around tier 10-20.
 
-    ENEMY_ATK_BASE = 6
-    ENEMY_ATK_PER_TIER = 4
-    ENEMY_ATK_EXPO = 1.12
+    Strange math: enemy stats scale steeply so luck (crits, dodge)
+    becomes the deciding factor at higher tiers. Raw power alone
+    won't carry you — you need agility and fortunate rolls.
+    """
+
+    # Enemy stats — steep but not insane
+    ENEMY_ATK_BASE = 7
+    ENEMY_ATK_PER_TIER = 3
+    ENEMY_ATK_EXPO = 1.08
+
     ENEMY_DEF_BASE = 2
     ENEMY_DEF_PER_TIER = 2
-    ENEMY_DEF_EXPO = 1.10
-    ENEMY_HP_BASE = 30
-    ENEMY_HP_PER_TIER = 20
-    ENEMY_HP_EXPO = 1.15
+    ENEMY_DEF_EXPO = 1.06
 
-    REWARD_BASE = 20
-    REWARD_EXPO = 1.18
+    ENEMY_HP_BASE = 35
+    ENEMY_HP_PER_TIER = 15
+    ENEMY_HP_EXPO = 1.10
 
-    HIRE_BASE = 50
-    HIRE_EXPO = 1.8
-    UPGRADE_BASE = 50
-    UPGRADE_EXPO = 1.65
+    # Rewards — grow slower than enemy difficulty (intentional scarcity)
+    REWARD_BASE = 15
+    REWARD_EXPO = 1.12
 
-    HEAL_BASE = 30
-    HEAL_TIER_MULT = 1.25
+    # Costs
+    HIRE_BASE = 40
+    HIRE_EXPO = 1.6
 
-    SURGEON_BASE = 200
-    SURGEON_INFLATION = 1.4
+    UPGRADE_BASE = 35
+    UPGRADE_EXPO = 1.45
+
+    HEAL_BASE = 20
+    HEAL_TIER_MULT = 1.12
+
+    SURGEON_BASE = 80
+    SURGEON_INFLATION = 1.25
 
     @staticmethod
     def enemy_stats(tier):
@@ -287,10 +299,10 @@ class DifficultyScaler:
         return int(s.SURGEON_BASE * (s.SURGEON_INFLATION ** times_used))
 
 
-# --- Dynamic market items — equipment + consumables (no idle boosts) ---
+# --- Dynamic market items — consumables only ---
 
 def get_dynamic_shop_items(arena_tier, surgeon_uses):
-    """Generate shop items: equipment and consumables. No idle boosts."""
+    """Generate shop items: consumables. Equipment is in the Forge."""
     consumables = [
         {
             "id": "heal_potion", "name": "Blood Salve",
@@ -300,15 +312,15 @@ def get_dynamic_shop_items(arena_tier, surgeon_uses):
         },
         {
             "id": "atk_tonic", "name": "Fury Tonic",
-            "desc": "+3 base STR to active fighter",
-            "cost": int(300 * (1.2 ** (arena_tier - 1))),
-            "effect": {"base_attack": 3},
+            "desc": "+2 base STR to active fighter",
+            "cost": int(150 * (1.10 ** (arena_tier - 1))),
+            "effect": {"base_attack": 2},
         },
         {
             "id": "def_tonic", "name": "Stone Brew",
-            "desc": "+3 base VIT to active fighter",
-            "cost": int(300 * (1.2 ** (arena_tier - 1))),
-            "effect": {"base_defense": 3},
+            "desc": "+2 base VIT to active fighter",
+            "cost": int(150 * (1.10 ** (arena_tier - 1))),
+            "effect": {"base_defense": 2},
         },
         {
             "id": "injury_cure", "name": "Surgeon's Kit",
@@ -322,16 +334,19 @@ def get_dynamic_shop_items(arena_tier, surgeon_uses):
 
 
 # ============================================================
-#  FIGHTER (Roguelike with STR/AGI/VIT)
+#  FIGHTER (Roguelike with STR/AGI/VIT, luck-based combat)
 # ============================================================
 
 class Fighter:
     """Player-owned arena fighter with stat distribution.
 
-    Stats:
-      STR → attack power
-      AGI → crit chance, dodge chance
-      VIT → max HP, defense
+    Luck-based combat:
+      STR -> attack power (linear)
+      AGI -> crit chance (3% per point), dodge (2% per point)
+      VIT -> max HP, minor defense
+
+    A high-AGI fighter can dodge lethal hits and crit for massive
+    damage, making agility builds viable even against stronger enemies.
     """
 
     def __init__(self, name=None, level=1, fighter_class="mercenary"):
@@ -361,7 +376,7 @@ class Fighter:
         self.injuries = 0
         self.kills = 0
         self.equipment = {"weapon": None, "armor": None, "accessory": None}
-        self.relics: list[dict] = []
+        self.relics: list = []
         self.on_expedition = False
         self.expedition_id = None
         self.expedition_end = 0.0
@@ -404,29 +419,38 @@ class Fighter:
 
     @property
     def attack(self):
-        # STR is primary attack stat: each point = +2 ATK
-        return self.strength * 2 + self.base_attack + (self.level - 1) * 2 + self.equip_atk
+        # STR is primary: each point = +2 ATK
+        return self.strength * 2 + self.base_attack + (self.level - 1) * 1 + self.equip_atk
 
     @property
     def defense(self):
         # VIT gives defense: each point = +1 DEF
-        return self.vitality + self.base_defense + (self.level - 1) * 1 + self.equip_def
+        return self.vitality + self.base_defense + self.equip_def
 
     @property
     def max_hp(self):
-        # VIT is primary HP stat: each point = +8 HP, scaled by class hp_mult
-        base = 30 + self.vitality * 8 + self.base_hp + (self.level - 1) * 10
+        # VIT is primary HP stat: each point = +8 HP
+        base = 30 + self.vitality * 8 + self.base_hp + (self.level - 1) * 5
         return int(base * self.hp_mult) + self.equip_hp
 
     @property
     def crit_chance(self):
-        # AGI gives crit: each point = +2% crit, + class bonus
-        return min(0.75, 0.05 + self.agility * 0.02 + self.crit_bonus)
+        # AGI gives crit: each point = +3% crit (up from 2%)
+        # Luck matters: high AGI can reach 50%+ crit
+        return min(0.75, 0.03 + self.agility * 0.03 + self.crit_bonus)
+
+    @property
+    def crit_mult(self):
+        # Crit multiplier scales with AGI — more agile = harder crits
+        base = 1.8
+        bonus = self.agility * 0.02  # +2% per AGI point
+        return min(3.0, base + bonus)
 
     @property
     def dodge_chance(self):
-        # AGI gives dodge: each point = +1.5%
-        return min(0.40, self.agility * 0.015 + self.dodge_bonus)
+        # AGI gives dodge: each point = +2% (up from 1.5%)
+        # High AGI builds can dodge ~30-40% of attacks
+        return min(0.50, self.agility * 0.02 + self.dodge_bonus)
 
     @property
     def upgrade_cost(self):
@@ -438,9 +462,10 @@ class Fighter:
 
     @property
     def death_chance(self):
-        base = 0.03
-        injury_bonus = self.injuries * 0.04
-        return min(0.50, base + injury_bonus)
+        # Roguelike: higher base death chance, injuries stack faster
+        base = 0.05
+        injury_bonus = self.injuries * 0.06
+        return min(0.60, base + injury_bonus)
 
     @property
     def class_name(self):
@@ -448,7 +473,7 @@ class Fighter:
 
     # --- Actions ---
 
-    def distribute_point(self, stat: str) -> bool:
+    def distribute_point(self, stat):
         """Spend 1 unused point on STR, AGI, or VIT. Returns True if success."""
         if self.unused_points <= 0:
             return False
@@ -459,7 +484,6 @@ class Fighter:
         elif stat == "vitality":
             old_max = self.max_hp
             self.vitality += 1
-            # Heal the HP difference so player doesn't lose effective HP
             self.hp += self.max_hp - old_max
         else:
             return False
@@ -476,31 +500,34 @@ class Fighter:
         self.hp = self.max_hp
 
     def take_damage(self, raw_dmg):
-        # Dodge check
+        # Dodge check — luck decides!
         if random.random() < self.dodge_chance:
             return 0  # dodged
-        reduced = max(1, raw_dmg - self.defense // 2)
+        # Defense reduces damage, but minimum 1
+        reduced = max(1, raw_dmg - self.defense // 3)
         self.hp = max(0, self.hp - reduced)
         return reduced
 
     def deal_damage(self):
-        variance = random.uniform(0.85, 1.15)
-        return int(self.attack * variance)
+        # High variance: 0.7x - 1.3x (was 0.85-1.15)
+        # Luck-based: wider range means more surprise outcomes
+        variance = random.uniform(0.70, 1.30)
+        return max(1, int(self.attack * variance))
 
-    def check_permadeath(self) -> bool:
+    def check_permadeath(self):
         if random.random() < self.death_chance:
             self.alive = False
             return True
         self.injuries += 1
         return False
 
-    def equip_item(self, item: dict):
+    def equip_item(self, item):
         slot = item["slot"]
         self.equipment[slot] = item
         if self.hp > self.max_hp:
             self.hp = self.max_hp
 
-    def add_relic(self, relic: dict):
+    def add_relic(self, relic):
         self.relics.append(relic)
 
     def to_dict(self):
@@ -564,11 +591,15 @@ Gladiator = Fighter
 
 
 # ============================================================
-#  ENEMY (with exponential scaling)
+#  ENEMY (luck-based: enemies also have crit/dodge)
 # ============================================================
 
 class Enemy:
-    """Arena opponent with exponential stat growth."""
+    """Arena opponent with exponential stat growth.
+
+    Enemies get a small crit and dodge chance that scales with tier,
+    making high-tier fights unpredictable and dangerous.
+    """
 
     def __init__(self, tier=1):
         self.tier = tier
@@ -582,14 +613,22 @@ class Enemy:
         self.hp = self.max_hp
         self.gold_reward = DifficultyScaler.enemy_reward(tier)
 
+        # Enemies get luck too — tier-scaling crit/dodge
+        self.crit_chance = min(0.30, 0.05 + tier * 0.015)
+        self.dodge_chance = min(0.20, tier * 0.01)
+
     def take_damage(self, raw_dmg):
-        reduced = max(1, raw_dmg - self.defense // 2)
+        # Enemy dodge
+        if random.random() < self.dodge_chance:
+            return 0  # dodged
+        reduced = max(1, raw_dmg - self.defense // 3)
         self.hp = max(0, self.hp - reduced)
         return reduced
 
     def deal_damage(self):
-        variance = random.uniform(0.8, 1.2)
-        return int(self.attack * variance)
+        # Same wide variance as fighters
+        variance = random.uniform(0.70, 1.30)
+        return max(1, int(self.attack * variance))
 
 
 SHOP_ITEMS = []

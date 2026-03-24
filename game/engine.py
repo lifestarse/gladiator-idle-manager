@@ -242,11 +242,15 @@ class GameEngine:
         # Crit check using fighter stats
         is_crit = random.random() < fighter.crit_chance
         if is_crit:
-            raw = int(raw * 1.8)
-            log.append(f"CRIT! ", )
+            raw = int(raw * fighter.crit_mult)
         actual = enemy.take_damage(raw)
-        log.append(f"{fighter.name} hits {enemy.name} for {actual}")
-        if enemy.hp <= 0:
+        if actual == 0:
+            log.append(f"{enemy.name} DODGED {fighter.name}'s attack!")
+            # Enemy still attacks
+        else:
+            crit_tag = "CRIT! " if is_crit else ""
+            log.append(f"{crit_tag}{fighter.name} hits {enemy.name} for {actual}")
+        if actual > 0 and enemy.hp <= 0:
             reward = enemy.gold_reward
             if time.time() < self.rewarded_ad_bonus_until:
                 reward = int(reward * 2)
@@ -260,16 +264,21 @@ class GameEngine:
                 if self.arena_tier > self.run_max_tier:
                     self.run_max_tier = self.arena_tier
             log.append(f"Victory! +{reward} gold")
-            fighter.hp = min(fighter.hp + fighter.max_hp // 7, fighter.max_hp)
+            fighter.hp = min(fighter.hp + fighter.max_hp // 5, fighter.max_hp)
             self._spawn_enemy()
             self.check_achievements()
             return "\n".join(log)
+        # Enemy attacks back
+        e_crit = random.random() < enemy.crit_chance
         raw = enemy.deal_damage()
+        if e_crit:
+            raw = int(raw * 1.8)
         actual = fighter.take_damage(raw)
         if actual == 0:
             log.append(f"{fighter.name} DODGED!")
         else:
-            log.append(f"{enemy.name} hits {fighter.name} for {actual}")
+            crit_tag = "CRIT! " if e_crit else ""
+            log.append(f"{crit_tag}{enemy.name} hits {fighter.name} for {actual}")
         if fighter.hp <= 0:
             died = fighter.check_permadeath()
             if died:

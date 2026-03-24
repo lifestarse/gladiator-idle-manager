@@ -212,7 +212,7 @@ class ArenaScreen(Screen):
                 lines.append(f"[CRIT] {ev.message}")
             elif ev.is_kill:
                 lines.append(f"[KILL] {ev.message}")
-            elif ev.damage == 0 and "DODGE" in ev.message:
+            elif getattr(ev, "is_dodge", False) or (ev.damage == 0 and "DODGE" in ev.message):
                 lines.append(f"[DODGE] {ev.message}")
             else:
                 lines.append(ev.message)
