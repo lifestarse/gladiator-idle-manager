@@ -3,27 +3,50 @@ title = Gladiator Idle
 package.name = gladiatoridle
 package.domain = com.gladiator
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json
-version = 0.2.0
-requirements = python3,kivy,kivmob,android,pyjnius,google-auth,google-api-python-client
+source.include_exts = py,png,jpg,kv,atlas,json,wav
+source.exclude_dirs = fonts,bin,.buildozer,.git
+source.exclude_patterns = generate_icons.py
+version = 1.2.0
+requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype
 orientation = portrait
-fullscreen = 0
+fullscreen = 1
+
+# Icon & presplash
+icon.filename = %(source.dir)s/icons/icon_512.png
+presplash.filename = %(source.dir)s/presplash.png
+android.presplash_color = #0D0D12
 
 # Android
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,BILLING,GET_ACCOUNTS
-android.api = 34
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,com.android.vending.BILLING
+android.api = 35
 android.minapi = 21
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
+android.allow_backup = True
 
-# AdMob — add your real app ID here
-android.meta_data = com.google.android.gms.ads.APPLICATION_ID=ca-app-pub-3940256099942544~3347511713
+# 16KB page alignment required for Android 15 (API 35).
+android.env = LDFLAGS=-Wl,-z,max-page-size=16384
 
-# Google Play Billing
-android.gradle_dependencies = com.google.android.gms:play-services-ads:23.0.0,com.android.billingclient:billing:6.1.0
+# Google Play Services + Billing
+android.gradle_dependencies = com.google.android.gms:play-services-auth:21.0.0,com.google.android.gms:play-services-auth-base:18.0.10,com.google.android.gms:play-services-games-v2:20.1.2,com.android.billingclient:billing:6.2.1
+android.enable_androidx = True
 
-# iOS
-ios.kivy_ios_url = https://github.com/kivy/kivy-ios
-ios.kivy_ios_branch = master
+# Play Games Services APP_ID — replace YOUR_APP_ID with the numeric ID from
+# Play Console > Play Games Services > Setup and management > Configuration.
+# Without this the GMS SDK throws "failed to include the Play Games Services
+# application id in their AndroidManifest" and online leaderboards are unavailable.
+# The leaderboard button shows a local stats popup regardless of this setting.
+# APP_ID from Play Games Services (Project ID: 581538611127)
+android.meta_data = com.google.android.gms.games.APP_ID=581538611127
+
+# Release build — AAB for Google Play
+android.release_artifact = aab
+
+# Signing — generate a real keystore before release:
+# keytool -genkey -v -keystore gladiator-release.keystore -alias gladiator -keyalg RSA -keysize 2048 -validity 10000
+android.keystore = gladiator-release.keystore
+android.keyalias = gladiator
+android.keystore_password = gladiator123
+android.keyalias_password = gladiator123
 
 [buildozer]
 log_level = 2

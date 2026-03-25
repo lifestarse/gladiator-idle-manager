@@ -14,3 +14,8 @@ bin/
 .gladiator_idle_save.json
 .vscode/
 .idea/
+
+*.keystore
+build.log
+screen*.png
+feature_graphic.png

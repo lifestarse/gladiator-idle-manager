@@ -1,3 +1,4 @@
+# Build: 2
 """
 Turn-based battle system with luck-based combat.
 
@@ -112,7 +113,12 @@ class BattleManager:
 
         from game.models import Enemy
         num_enemies = max(1, len(fighters))
-        enemies = [Enemy(tier=self.engine.arena_tier) for _ in range(num_enemies)]
+        # First enemy is the previewed current_enemy, rest are new
+        enemies = []
+        if self.engine.current_enemy:
+            enemies.append(self.engine.current_enemy)
+        while len(enemies) < num_enemies:
+            enemies.append(Enemy(tier=self.engine.arena_tier))
 
         self.state = BattleState()
         self.state.player_fighters = fighters
@@ -218,11 +224,11 @@ class BattleManager:
         if not s.any_enemies_alive():
             s.phase = BattlePhase.VICTORY
             self.engine.wins += len(s.enemies)
-            if self.engine.wins % 3 == 0:
+            if s.is_boss_fight:
                 self.engine.arena_tier += 1
             for f in s.player_fighters:
                 if f.alive:
-                    f.hp = min(f.hp + f.max_hp // 5, f.max_hp)
+                    f.hp = f.max_hp
             events.append(BattleEvent(
                 "victory", message=f"VICTORY! +{s.gold_earned}g",
                 damage=s.gold_earned,
@@ -270,6 +276,12 @@ class BattleManager:
                         "level": target.level,
                         "kills": target.kills,
                     })
+                    # Save equipment to inventory
+                    for slot in ["weapon", "armor", "accessory"]:
+                        item = target.equipment.get(slot)
+                        if item:
+                            self.engine.inventory.append(dict(item))
+                            target.equipment[slot] = None
                     events.append(BattleEvent(
                         "death", defender=target.name, is_kill=True,
                         message=f"{target.name} has FALLEN FOREVER!",

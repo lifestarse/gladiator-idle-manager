@@ -1,3 +1,4 @@
+# Build: 4
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -8,16 +9,21 @@ import time
 from game.models import (
     Fighter, Enemy, ALL_FORGE_ITEMS, FIGHTER_CLASSES,
     EXPEDITIONS, RELICS, DifficultyScaler,
-    get_dynamic_shop_items,
+    get_dynamic_shop_items, fmt_num,
 )
+from game.localization import t
 from game.battle import BattleManager, BattlePhase
 from game.achievements import ACHIEVEMENTS, DIAMOND_SHOP, DIAMOND_BUNDLES
-from game.story import (
-    STORY_CHAPTERS, TUTORIAL_STEPS,
-    get_current_chapter, get_pending_tutorial,
-)
+from game.story import TUTORIAL_STEPS, get_pending_tutorial
 
-SAVE_PATH = os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
+def _get_save_path():
+    from kivy.utils import platform
+    if platform == "android":
+        from android.storage import app_storage_path  # noqa
+        return os.path.join(app_storage_path(), ".gladiator_idle_save.json")
+    return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
+
+SAVE_PATH = _get_save_path()
 
 
 class GameEngine:
@@ -53,16 +59,14 @@ class GameEngine:
         self.extra_expedition_slots = 0
         self.war_drums_until = 0.0
 
+        # Inventory: list of item dicts (unequipped equipment)
+        self.inventory: list[dict] = []
+
         # Battle manager
         self.battle_mgr = BattleManager(self)
 
         # Monetization
         self.ads_removed = False
-        self.vip_idle_boost = False
-        self.rewarded_ad_bonus_until = 0.0
-        self.ad_watches_today = 0
-        self.last_ad_day = ""
-        self.last_tick_time = time.time()
 
     # --- Roguelike reset ---
 
@@ -75,8 +79,9 @@ class GameEngine:
             self.best_record_kills = self.run_kills
         self.total_runs += 1
 
-        # Reset run state
+        # Reset run state — full wipe including inventory
         self.gold = 100.0
+        self.inventory = []
         self.fighters = []
         self.active_fighter_idx = 0
         self.arena_tier = 1
@@ -100,15 +105,6 @@ class GameEngine:
 
     # --- Properties ---
 
-    @property
-    def effective_idle_rate(self):
-        """Roguelike: minimal passive income from arena tier."""
-        rate = self.arena_tier * 0.5
-        if self.vip_idle_boost:
-            rate *= 1.5
-        if time.time() < self.rewarded_ad_bonus_until:
-            rate *= 2.0
-        return rate
 
     # --- Fighter management ---
 
@@ -139,34 +135,34 @@ class GameEngine:
             f = Fighter(fighter_class=fighter_class)
             self.fighters.append(f)
             self.check_achievements()
-            return f"Recruited {f.name} [{f.class_name}]!"
-        return f"Need {cost}g!"
+            return t("recruited_msg", name=f.name, cls=f.class_name)
+        return t("need_gold", cost=f"{fmt_num(cost)}g")
 
     def upgrade_gladiator(self, index):
         if index >= len(self.fighters):
-            return "Invalid fighter"
+            return ""
         f = self.fighters[index]
         if not f.alive:
-            return f"{f.name} is dead..."
+            return t("fighter_dead", name=f.name)
         if self.gold >= f.upgrade_cost:
             self.gold -= f.upgrade_cost
             f.level_up()
             self.check_achievements()
-            return f"{f.name} reached Lv.{f.level}! +{f.points_per_level} stat points"
-        return "Not enough gold!"
+            return t("reached_level", name=f.name, lv=f.level, pts=f.points_per_level)
+        return t("not_enough_gold")
 
     def distribute_stat(self, fighter_idx, stat_name):
         """Distribute 1 unused point to a stat."""
         if fighter_idx >= len(self.fighters):
-            return "Invalid fighter"
+            return ""
         f = self.fighters[fighter_idx]
         if not f.alive:
-            return f"{f.name} is dead"
+            return t("fighter_dead", name=f.name)
         if f.unused_points <= 0:
-            return "No unused points!"
+            return t("no_unused_points")
         if f.distribute_point(stat_name):
-            return f"{f.name}: {stat_name.upper()} +1 ({f.unused_points} pts left)"
-        return "Invalid stat"
+            return t("stat_distributed", name=f.name, stat=stat_name.upper(), pts=f.unused_points)
+        return ""
 
     def dismiss_dead(self, index):
         if index < len(self.fighters) and not self.fighters[index].alive:
@@ -201,15 +197,25 @@ class GameEngine:
         """After battle turn: check permadeath → roguelike reset."""
         state = self.battle_mgr.state
         if state.phase == BattlePhase.VICTORY:
+            self.wins += 1
             if state.is_boss_fight:
                 self.bosses_killed += 1
+                self.arena_tier += 1
             self.run_kills += len([e for e in state.enemies if e.hp <= 0])
             if self.arena_tier > self.run_max_tier:
                 self.run_max_tier = self.arena_tier
+            for f in self.fighters:
+                if f.alive:
+                    f.hp = f.max_hp
+            # Spawn a fresh enemy at the current tier so the preview is correct
+            self._spawn_enemy()
             self.check_achievements()
 
         # Check if all fighters are dead → roguelike reset
         if state.phase == BattlePhase.DEFEAT:
+            for f in self.fighters:
+                if f.alive:
+                    f.hp = f.max_hp
             all_dead = not any(f.alive for f in self.fighters)
             if all_dead:
                 # Defer reset so UI can show defeat screen first
@@ -233,7 +239,7 @@ class GameEngine:
     def do_battle_tick(self) -> str:
         fighter = self.get_active_gladiator()
         if not fighter:
-            return "No fighters available!"
+            return t("no_fighters")
         if not self.current_enemy or self.current_enemy.hp <= 0:
             self._spawn_enemy()
         enemy = self.current_enemy
@@ -252,19 +258,15 @@ class GameEngine:
             log.append(f"{crit_tag}{fighter.name} hits {enemy.name} for {actual}")
         if actual > 0 and enemy.hp <= 0:
             reward = enemy.gold_reward
-            if time.time() < self.rewarded_ad_bonus_until:
-                reward = int(reward * 2)
             self.gold += reward
             self.total_gold_earned += reward
             self.wins += 1
             self.run_kills += 1
             fighter.kills += 1
-            if self.wins % 3 == 0:
-                self.arena_tier += 1
-                if self.arena_tier > self.run_max_tier:
-                    self.run_max_tier = self.arena_tier
             log.append(f"Victory! +{reward} gold")
-            fighter.hp = min(fighter.hp + fighter.max_hp // 5, fighter.max_hp)
+            for f in self.fighters:
+                if f.alive:
+                    f.hp = f.max_hp
             self._spawn_enemy()
             self.check_achievements()
             return "\n".join(log)
@@ -284,6 +286,12 @@ class GameEngine:
             if died:
                 self.total_deaths += 1
                 self.graveyard.append({"name": fighter.name, "level": fighter.level, "kills": fighter.kills})
+                # Save equipment to inventory
+                for slot in ["weapon", "armor", "accessory"]:
+                    item = fighter.equipment.get(slot)
+                    if item:
+                        self.inventory.append(dict(item))
+                        fighter.equipment[slot] = None
                 log.append(f"{fighter.name} has FALLEN forever!")
                 # Check if all dead → trigger reset
                 if not any(f.alive for f in self.fighters):
@@ -304,31 +312,68 @@ class GameEngine:
         return [{**item, "affordable": self.gold >= item["cost"]} for item in ALL_FORGE_ITEMS]
 
     def buy_forge_item(self, item_id):
+        """Buy item from forge → goes to inventory."""
         item = next((i for i in ALL_FORGE_ITEMS if i["id"] == item_id), None)
         if not item:
-            return "Item not found"
+            return t("item_not_found")
         if self.gold < item["cost"]:
-            return "Not enough gold"
-        fighter = self.get_active_gladiator()
-        if not fighter:
-            return "No active fighter"
+            return t("not_enough_gold")
         self.gold -= item["cost"]
-        fighter.equip_item(dict(item))
+        self.inventory.append(dict(item))
+        self.save()
         self.check_achievements()
-        return f"Equipped {item['name']} on {fighter.name}!"
+        return f"Bought {item['name']}"
 
     def equip_item_on(self, fighter_idx, item_id):
         item = next((i for i in ALL_FORGE_ITEMS if i["id"] == item_id), None)
         if not item or fighter_idx >= len(self.fighters):
-            return "Invalid"
+            return ""
         f = self.fighters[fighter_idx]
         if not f.alive:
-            return "Fighter is dead"
+            return t("fighter_dead", name=f.name)
         if self.gold < item["cost"]:
-            return "Not enough gold"
+            return t("not_enough_gold")
         self.gold -= item["cost"]
-        f.equip_item(dict(item))
-        return f"Equipped {item['name']} on {f.name}!"
+        old = f.equip_item(dict(item))
+        if old:
+            self.inventory.append(dict(old))
+        self.save()
+        return t("equipped_msg", item=item['name'], name=f.name)
+
+    def equip_from_inventory(self, fighter_idx, inv_index):
+        """Equip item from inventory onto a fighter. Old item goes to inventory."""
+        if fighter_idx >= len(self.fighters) or inv_index >= len(self.inventory):
+            return ""
+        f = self.fighters[fighter_idx]
+        if not f.alive:
+            return ""
+        item = self.inventory.pop(inv_index)
+        old = f.equip_item(dict(item))
+        if old:
+            self.inventory.append(dict(old))
+        self.save()
+        return t("equipped_msg", item=item['name'], name=f.name)
+
+    def sell_inventory_item(self, inv_index):
+        """Sell an item from inventory for half its cost."""
+        if inv_index >= len(self.inventory):
+            return 0
+        item = self.inventory.pop(inv_index)
+        sell_price = item.get("cost", 0) // 2
+        self.gold += sell_price
+        self.save()
+        return sell_price
+
+    def get_inventory_count(self, item_id):
+        """Count how many of an item are in inventory."""
+        return sum(1 for i in self.inventory if i.get("id") == item_id)
+
+    def find_inventory_index(self, item_id):
+        """Find the first inventory index for an item id, or -1."""
+        for idx, item in enumerate(self.inventory):
+            if item.get("id") == item_id:
+                return idx
+        return -1
 
     # --- Expeditions ---
 
@@ -337,27 +382,27 @@ class GameEngine:
 
     def send_on_expedition(self, fighter_idx, expedition_id):
         if fighter_idx >= len(self.fighters):
-            return "Invalid fighter"
+            return ""
         f = self.fighters[fighter_idx]
         if not f.alive:
-            return f"{f.name} is dead"
+            return t("fighter_dead", name=f.name)
         if f.on_expedition:
-            return f"{f.name} already on expedition"
+            return t("already_on_expedition", name=f.name)
         on_exp_count = sum(1 for fi in self.fighters if fi.on_expedition)
         max_slots = 1 + self.extra_expedition_slots
         if on_exp_count >= max_slots:
-            return f"Max {max_slots} expedition(s) at once!"
+            return t("max_expeditions", n=max_slots)
         exp = next((e for e in EXPEDITIONS if e["id"] == expedition_id), None)
         if not exp:
-            return "Unknown expedition"
+            return ""
         if f.level < exp["min_level"]:
-            return f"Need Lv.{exp['min_level']}+"
+            return t("need_level", lv=exp['min_level'])
         f.on_expedition = True
         f.expedition_id = expedition_id
         f.expedition_end = time.time() + exp["duration"]
         if self.fighters[self.active_fighter_idx] == f:
             self.get_active_gladiator()
-        return f"{f.name} departed for {exp['name']}!"
+        return t("departed_msg", name=f.name, exp=exp['name'])
 
     def check_expeditions(self):
         results = []
@@ -380,6 +425,12 @@ class GameEngine:
                 if died:
                     self.total_deaths += 1
                     self.graveyard.append({"name": f.name, "level": f.level, "kills": f.kills})
+                    # Save equipment to inventory
+                    for slot in ["weapon", "armor", "accessory"]:
+                        item = f.equipment.get(slot)
+                        if item:
+                            self.inventory.append(dict(item))
+                            f.equipment[slot] = None
                     msg = f"{f.name} KILLED during {exp['name']}!"
                     results.append(msg)
                     self.expedition_log.append(msg)
@@ -432,9 +483,55 @@ class GameEngine:
     # --- Idle (minimal in roguelike) ---
 
     def idle_tick(self, dt):
-        self.gold += self.effective_idle_rate * dt
-        self.total_gold_earned += self.effective_idle_rate * dt
         self.check_expeditions()
+
+    def get_heal_cost(self):
+        return DifficultyScaler.heal_cost(self.arena_tier)
+
+    # --- Injury healing ---
+
+    def heal_fighter_injury(self, index):
+        """Heal one injury from fighter at index. Returns (success, message)."""
+        if 0 <= index < len(self.fighters):
+            f = self.fighters[index]
+            if f.injuries <= 0:
+                return False, "No injuries"
+            cost = f.get_injury_heal_cost()
+            if self.gold < cost:
+                return False, "Not enough gold"
+            self.gold -= cost
+            f.injuries -= 1
+            f.injuries_healed += 1
+            self.save()
+            return True, f"Healed {f.name} (-1 injury, cost {cost}g)"
+        return False, "Invalid fighter"
+
+    def heal_all_injuries_cost(self):
+        """Total cost to heal ALL injuries from ALL fighters."""
+        total = 0
+        for f in self.fighters:
+            if f.alive:
+                for i in range(f.injuries):
+                    total += 50 * (1 + f.injuries_healed + i) * max(1, f.level)
+        return total
+
+    def heal_all_injuries(self):
+        """Heal all injuries from all fighters. Returns (success, message)."""
+        cost = self.heal_all_injuries_cost()
+        if cost <= 0:
+            return False, "No injuries to heal"
+        if self.gold < cost:
+            return False, "Not enough gold"
+        self.gold -= cost
+        healed = 0
+        for f in self.fighters:
+            if f.alive:
+                while f.injuries > 0:
+                    f.injuries -= 1
+                    f.injuries_healed += 1
+                    healed += 1
+        self.save()
+        return True, f"Healed {healed} injuries for {cost}g"
 
     # --- Market (consumables only, no idle boosts) ---
 
@@ -446,9 +543,9 @@ class GameEngine:
         items = get_dynamic_shop_items(self.arena_tier, self.surgeon_uses)
         item = next((i for i in items if i["id"] == item_id), None)
         if not item:
-            return "Item not found"
+            return t("item_not_found")
         if self.gold < item["cost"]:
-            return "Not enough gold"
+            return t("not_enough_gold")
         self.gold -= item["cost"]
         effect = item["effect"]
         if "heal" in effect:
@@ -465,7 +562,7 @@ class GameEngine:
             if f and f.injuries > 0:
                 f.injuries = max(0, f.injuries - effect["cure_injury"])
                 self.surgeon_uses += 1
-        return f"Bought {item['name']}!"
+        return t("bought_msg", name=item['name'])
 
     # --- Achievements ---
 
@@ -499,7 +596,7 @@ class GameEngine:
         if not item:
             return "Not found"
         if self.diamonds < item["cost"]:
-            return "Not enough diamonds"
+            return t("not_enough_diamonds")
         self.diamonds -= item["cost"]
 
         if item_id == "revive_token":
@@ -509,44 +606,41 @@ class GameEngine:
                 revived.alive = True
                 revived.injuries = 0
                 revived.hp = revived.max_hp
-                return f"Revived {revived.name}!"
-            return "No dead fighters to revive"
+                return t("revived_msg", name=revived.name)
+            return t("no_dead_fighters")
         elif item_id == "instant_heal_all":
             for f in self.fighters:
                 if f.alive:
                     f.heal()
-            return "All fighters healed!"
+            return t("healed_all")
         elif item_id == "double_exp_1h":
             self.war_drums_until = time.time() + 3600
-            return "War Drums active for 1 hour!"
+            return t("war_drums")
         elif item_id == "extra_expedition_slot":
             self.extra_expedition_slots += 1
-            return f"Expedition slots: {1 + self.extra_expedition_slots}!"
+            return t("expedition_slots", n=1 + self.extra_expedition_slots)
         elif item_id == "golden_armor":
             f = self.get_active_gladiator()
             if f:
                 golden = {"id": "golden_set", "name": "Golden War Set", "slot": "weapon",
                           "rarity": "legendary", "atk": 20, "def": 20, "hp": 40, "cost": 0}
                 f.equip_item(golden)
-                return f"Golden War Set equipped on {f.name}!"
-            return "No active fighter"
+                return t("golden_set_equipped", name=f.name)
+            return t("no_active_fighter")
         elif item_id == "skip_tier":
             self.arena_tier += 1
             if self.arena_tier > self.run_max_tier:
                 self.run_max_tier = self.arena_tier
             self._spawn_enemy()
-            return f"Advanced to tier {self.arena_tier}!"
+            return t("tier_advanced", tier=self.arena_tier)
         elif item_id == "name_change":
-            return "Use SQUAD to rename (feature coming)"
-        return f"Bought {item['name']}!"
+            return t("bought_msg", name=item['name'])
+        return t("bought_msg", name=item['name'])
 
     def get_diamond_bundles(self):
         return DIAMOND_BUNDLES
 
     # --- Story & Tutorial ---
-
-    def get_current_story(self):
-        return get_current_chapter(self.story_chapter)
 
     def get_pending_tutorial(self):
         return get_pending_tutorial(self)
@@ -554,39 +648,6 @@ class GameEngine:
     def mark_tutorial_shown(self, step_id):
         if step_id not in self.tutorial_shown:
             self.tutorial_shown.append(step_id)
-
-    def start_story_boss(self):
-        chapter = self.get_current_story()
-        if not chapter:
-            return None, "Story complete!"
-        fighters = [f for f in self.fighters if f.alive and not f.on_expedition]
-        if not fighters:
-            return None, "No fighters!"
-        boss = Enemy(tier=self.arena_tier + chapter["boss_tier_bonus"])
-        boss.max_hp = int(boss.max_hp * chapter["boss_hp_mult"])
-        boss.hp = boss.max_hp
-        boss.attack = int(boss.attack * 1.5)
-        boss.defense = int(boss.defense * 1.3)
-        boss.gold_reward = int(boss.gold_reward * 5)
-        boss.name = chapter["boss_name"]
-
-        from game.battle import BattleState, BattlePhase as BP
-        self.battle_mgr.state = BattleState()
-        self.battle_mgr.state.player_fighters = fighters
-        self.battle_mgr.state.enemies = [boss]
-        self.battle_mgr.state.phase = BP.BOSS_INTRO
-        self.battle_mgr.state.is_boss_fight = True
-
-        return chapter, f"{boss.name} appears!"
-
-    def complete_story_chapter(self):
-        chapter = self.get_current_story()
-        if chapter:
-            self.diamonds += chapter.get("reward_diamonds", 100)
-            self.story_chapter += 1
-            self.check_achievements()
-            return chapter["completion"]
-        return []
 
     # --- Ads ---
 
@@ -598,44 +659,22 @@ class GameEngine:
     def should_show_banner(self):
         return not self.ads_removed
 
-    def on_rewarded_ad_watched(self):
-        self.rewarded_ad_bonus_until = time.time() + 60
-        today = time.strftime("%Y-%m-%d")
-        if self.last_ad_day != today:
-            self.ad_watches_today = 0
-            self.last_ad_day = today
-        self.ad_watches_today += 1
-        return "2x gold for 60 seconds!"
-
-    def can_watch_rewarded_ad(self):
-        today = time.strftime("%Y-%m-%d")
-        if self.last_ad_day != today:
-            return True
-        return self.ad_watches_today < 10
-
-    def get_rewarded_ad_time_left(self):
-        remaining = self.rewarded_ad_bonus_until - time.time()
-        return f"2x GOLD: {int(remaining)}s" if remaining > 0 else ""
 
     # --- IAP ---
 
     def purchase_remove_ads(self):
         self.ads_removed = True
 
-    def purchase_vip_idle(self):
-        self.vip_idle_boost = True
-
     def purchase_diamonds(self, bundle_id):
         bundle = next((b for b in DIAMOND_BUNDLES if b["id"] == bundle_id), None)
         if bundle:
             self.diamonds += bundle["diamonds"]
-            return f"+{bundle['diamonds']} diamonds!"
-        return "Unknown bundle"
+            return t("diamonds_earned", n=bundle['diamonds'])
+        return ""
 
     def restore_purchases(self, purchase_ids: list[str]):
         for pid in purchase_ids:
             if pid == "remove_ads": self.ads_removed = True
-            elif pid == "vip_idle": self.vip_idle_boost = True
 
     # --- Save / Load ---
 
@@ -667,11 +706,7 @@ class GameEngine:
             "extra_expedition_slots": self.extra_expedition_slots,
             "war_drums_until": self.war_drums_until,
             "ads_removed": self.ads_removed,
-            "vip_idle_boost": self.vip_idle_boost,
-            "rewarded_ad_bonus_until": self.rewarded_ad_bonus_until,
-            "ad_watches_today": self.ad_watches_today,
-            "last_ad_day": self.last_ad_day,
-            "last_save_time": time.time(),
+            "inventory": self.inventory,
         }
         with open(SAVE_PATH, "w") as f:
             json.dump(data, f)
@@ -713,11 +748,8 @@ class GameEngine:
         self.extra_expedition_slots = data.get("extra_expedition_slots", 0)
         self.war_drums_until = data.get("war_drums_until", 0.0)
         self.ads_removed = data.get("ads_removed", False)
-        self.vip_idle_boost = data.get("vip_idle_boost", False)
-        self.rewarded_ad_bonus_until = data.get("rewarded_ad_bonus_until", 0.0)
-        self.ad_watches_today = data.get("ad_watches_today", 0)
-        self.last_ad_day = data.get("last_ad_day", "")
 
+        self.inventory = data.get("inventory", [])
         fighters_data = data.get("fighters", data.get("gladiators", []))
         self.fighters = [Fighter.from_dict(fd) for fd in fighters_data]
         if not self.fighters or not any(f.alive for f in self.fighters):
@@ -725,10 +757,6 @@ class GameEngine:
 
         self.battle_mgr = BattleManager(self)
         self.check_expeditions()
-        last_save = data.get("last_save_time", time.time())
-        offline_gold = self.effective_idle_rate * min(time.time() - last_save, 3600 * 2)
-        if offline_gold > 0:
-            self.gold += offline_gold
         self._spawn_enemy()
 
     def get_save_data_json(self) -> str:

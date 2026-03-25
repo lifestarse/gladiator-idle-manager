@@ -1,3 +1,4 @@
+# Build: 1
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
@@ -8,6 +9,20 @@ crits and dodge can turn the tide — weak but agile fighters can win.
 import random
 import time
 import math
+
+
+def fmt_num(n):
+    """Format large numbers: 1500 -> 1.5K, 1500000 -> 1.5M, etc."""
+    if n is None:
+        return "0"
+    n = float(n)
+    if abs(n) < 1000:
+        return f"{n:.0f}"
+    for suffix, threshold in [("B", 1e9), ("M", 1e6), ("K", 1e3)]:
+        if abs(n) >= threshold:
+            val = n / threshold
+            return f"{val:.1f}{suffix}" if val != int(val) else f"{int(val)}{suffix}"
+    return f"{n:.0f}"
 
 # --- Name pools ---
 
@@ -303,28 +318,29 @@ class DifficultyScaler:
 
 def get_dynamic_shop_items(arena_tier, surgeon_uses):
     """Generate shop items: consumables. Equipment is in the Forge."""
+    from game.localization import t
     consumables = [
         {
-            "id": "heal_potion", "name": "Blood Salve",
-            "desc": "Fully heal active fighter",
+            "id": "heal_potion", "name": t("blood_salve"),
+            "desc": t("blood_salve_desc"),
             "cost": DifficultyScaler.heal_cost(arena_tier),
             "effect": {"heal": True},
         },
         {
-            "id": "atk_tonic", "name": "Fury Tonic",
-            "desc": "+2 base STR to active fighter",
+            "id": "atk_tonic", "name": t("fury_tonic"),
+            "desc": t("fury_tonic_desc"),
             "cost": int(150 * (1.10 ** (arena_tier - 1))),
             "effect": {"base_attack": 2},
         },
         {
-            "id": "def_tonic", "name": "Stone Brew",
-            "desc": "+2 base VIT to active fighter",
+            "id": "def_tonic", "name": t("stone_brew"),
+            "desc": t("stone_brew_desc"),
             "cost": int(150 * (1.10 ** (arena_tier - 1))),
             "effect": {"base_defense": 2},
         },
         {
-            "id": "injury_cure", "name": "Surgeon's Kit",
-            "desc": f"Remove 1 injury (used {surgeon_uses}x)",
+            "id": "injury_cure", "name": t("surgeon_kit"),
+            "desc": t("surgeon_kit_desc", n=surgeon_uses),
             "cost": DifficultyScaler.surgeon_cost(surgeon_uses),
             "effect": {"cure_injury": 1},
         },
@@ -374,6 +390,7 @@ class Fighter:
 
         self.alive = True
         self.injuries = 0
+        self.injuries_healed = 0
         self.kills = 0
         self.equipment = {"weapon": None, "armor": None, "accessory": None}
         self.relics: list = []
@@ -435,9 +452,8 @@ class Fighter:
 
     @property
     def crit_chance(self):
-        # AGI gives crit: each point = +3% crit (up from 2%)
-        # Luck matters: high AGI can reach 50%+ crit
-        return min(0.75, 0.03 + self.agility * 0.03 + self.crit_bonus)
+        # AGI gives crit: each point = +3% — no hard cap
+        return 0.03 + self.agility * 0.03 + self.crit_bonus
 
     @property
     def crit_mult(self):
@@ -448,9 +464,10 @@ class Fighter:
 
     @property
     def dodge_chance(self):
-        # AGI gives dodge: each point = +2% (up from 1.5%)
-        # High AGI builds can dodge ~30-40% of attacks
-        return min(0.50, self.agility * 0.02 + self.dodge_bonus)
+        # Diminishing returns: dodge = 1 - 1/(1 + raw*0.6)
+        # Never reaches 100%. At raw=1.0 → 37.5%, raw=2.0 → 54.5%
+        raw = self.agility * 0.02 + self.dodge_bonus
+        return 1.0 - 1.0 / (1.0 + raw * 0.6)
 
     @property
     def upgrade_cost(self):
@@ -521,11 +538,17 @@ class Fighter:
         self.injuries += 1
         return False
 
+    def get_injury_heal_cost(self):
+        return 50 * (1 + self.injuries_healed) * max(1, self.level)
+
     def equip_item(self, item):
+        """Equip item, returns the old item (or None) for inventory."""
         slot = item["slot"]
+        old = self.equipment.get(slot)
         self.equipment[slot] = item
         if self.hp > self.max_hp:
             self.hp = self.max_hp
+        return old
 
     def add_relic(self, relic):
         self.relics.append(relic)
@@ -549,6 +572,7 @@ class Fighter:
             "hp": self.hp,
             "alive": self.alive,
             "injuries": self.injuries,
+            "injuries_healed": self.injuries_healed,
             "kills": self.kills,
             "equipment": self.equipment,
             "relics": self.relics,
@@ -578,6 +602,7 @@ class Fighter:
         g.hp = data.get("hp", 50)
         g.alive = data.get("alive", True)
         g.injuries = data.get("injuries", 0)
+        g.injuries_healed = data.get("injuries_healed", 0)
         g.kills = data.get("kills", 0)
         g.equipment = data.get("equipment", {"weapon": None, "armor": None, "accessory": None})
         g.relics = data.get("relics", [])
