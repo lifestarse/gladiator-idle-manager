@@ -1,4 +1,4 @@
-# Build: 23
+# Build: 24
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -25,6 +25,7 @@ from game.constants import (
     HP_HEAL_TIER_MULT, HP_HEAL_DIVISOR, INJURY_HEAL_BASE_COST,
 )
 from game.story import TUTORIAL_STEPS, STORY_CHAPTERS, get_pending_tutorial
+from game.data_loader import data_loader
 
 def _get_save_path():
     from kivy.utils import platform
@@ -39,6 +40,10 @@ SAVE_PATH = _get_save_path()
 class GameEngine:
 
     def __init__(self):
+        # --- Load data from JSON files ---
+        data_loader.load_all()
+        self._wire_data()
+
         # --- Run state (resets on permadeath) ---
         self.gold = STARTING_GOLD
         self.fighters: list[Fighter] = []
@@ -83,6 +88,32 @@ class GameEngine:
 
         # Monetization
         self.ads_removed = False
+
+    @staticmethod
+    def _wire_data():
+        """Override hardcoded module-level data in models.py with JSON data."""
+        import game.models as m
+        dl = data_loader
+        if dl.fighter_names:
+            m.FIGHTER_NAMES = dl.fighter_names
+        if dl.weapons:
+            m.FORGE_WEAPONS = dl.weapons
+        if dl.armor:
+            m.FORGE_ARMOR = dl.armor
+        if dl.accessories:
+            m.FORGE_ACCESSORIES = dl.accessories
+        if dl.weapons or dl.armor or dl.accessories:
+            m.ALL_FORGE_ITEMS = m.FORGE_WEAPONS + m.FORGE_ARMOR + m.FORGE_ACCESSORIES
+        if dl.relics:
+            # Rebuild RELICS dict grouped by rarity
+            m.RELICS = {}
+            for r in dl.relics:
+                rarity = r.get("rarity", "common")
+                m.RELICS.setdefault(rarity, []).append(r)
+        if dl.enchantments:
+            m.ENCHANTMENT_TYPES = dl.enchantments
+        if dl.fighter_classes:
+            m.FIGHTER_CLASSES = dl.fighter_classes
 
     # --- Roguelike reset ---
 
