@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -122,3 +122,41 @@ HP_HEAL_DIVISOR = 10            # cost = missing_hp / divisor
 # --- Dynamic shop: tonics (models.py) ---
 TONIC_BASE_COST = 150
 TONIC_TIER_EXPO = 1.10
+
+# --- Procedural enemy generation (T1-T100) ---
+PROC_BASE_STR_T1 = 3
+PROC_BASE_AGI_T1 = 2
+PROC_BASE_VIT_T1 = 5
+PROC_GROWTH_RATE = 1.18
+
+# Role multipliers: overall stat multiplier for each enemy role
+ROLE_MULT = {
+    "swarm": 0.6,
+    "soldier": 1.0,
+    "bruiser": 1.3,
+    "elite": 1.6,
+    "assassin": 0.9,
+    "guardian": 1.1,
+}
+
+# Role stat biases: per-stat multiplier for each role
+ROLE_STAT_MULT = {
+    "swarm": {"str": 1.0, "agi": 1.0, "vit": 1.0},
+    "soldier": {"str": 1.0, "agi": 1.0, "vit": 1.0},
+    "bruiser": {"str": 1.2, "agi": 0.8, "vit": 1.0},
+    "elite": {"str": 1.1, "agi": 1.1, "vit": 1.0},
+    "assassin": {"str": 1.4, "agi": 1.0, "vit": 0.6},
+    "guardian": {"str": 0.7, "agi": 0.8, "vit": 1.5},
+}
+
+# Stat bias multipliers: boost primary, reduce others
+STAT_BIAS_MULT = {
+    "balanced": {"str": 1.0, "agi": 1.0, "vit": 1.0},
+    "str": {"str": 1.3, "agi": 0.9, "vit": 0.9},
+    "agi": {"str": 0.9, "agi": 1.3, "vit": 0.9},
+    "vit": {"str": 0.9, "agi": 0.9, "vit": 1.3},
+}
+
+# Boss HP multipliers (procedural enemies)
+PROC_BOSS_HP_MULT = 10
+PROC_MILESTONE_BOSS_HP_MULT = 15  # every 10 tiers

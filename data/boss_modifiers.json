@@ -1,0 +1,198 @@
+{
+  "modifiers": [
+    {
+      "id": "regeneration",
+      "name": "Regeneration",
+      "description": "Restores HP each turn",
+      "effect_type": "passive",
+      "params": {
+        "heal_pct": 0.03
+      }
+    },
+    {
+      "id": "enrage",
+      "name": "Enrage",
+      "description": "Gains bonus ATK when wounded",
+      "effect_type": "triggered",
+      "params": {
+        "hp_threshold_pct": 0.5,
+        "atk_bonus_pct": 0.20
+      }
+    },
+    {
+      "id": "shield",
+      "name": "Shield",
+      "description": "Takes reduced damage for the first few turns",
+      "effect_type": "passive",
+      "params": {
+        "damage_reduction_pct": 0.30,
+        "duration_turns": 3
+      }
+    },
+    {
+      "id": "summoner",
+      "name": "Summoner",
+      "description": "Periodically spawns a minion to fight alongside the boss",
+      "effect_type": "periodic",
+      "params": {
+        "interval_turns": 5,
+        "minion_stat_pct": 0.25
+      }
+    },
+    {
+      "id": "thorns",
+      "name": "Thorns",
+      "description": "Reflects a portion of damage taken back to the attacker",
+      "effect_type": "passive",
+      "params": {
+        "reflect_pct": 0.15
+      }
+    },
+    {
+      "id": "lifesteal",
+      "name": "Lifesteal",
+      "description": "Heals for a portion of damage dealt",
+      "effect_type": "passive",
+      "params": {
+        "heal_pct": 0.20
+      }
+    },
+    {
+      "id": "berserk",
+      "name": "Berserk",
+      "description": "ATK increases every turn, stacking indefinitely",
+      "effect_type": "passive",
+      "params": {
+        "atk_bonus_per_turn_pct": 0.05
+      }
+    },
+    {
+      "id": "freezing_aura",
+      "name": "Freezing Aura",
+      "description": "Chance to weaken the attacker's next hit",
+      "effect_type": "triggered",
+      "params": {
+        "proc_chance": 0.20,
+        "damage_reduction_pct": 0.40
+      }
+    },
+    {
+      "id": "poison_cloud",
+      "name": "Poison Cloud",
+      "description": "Deals poison damage to all fighters each turn",
+      "effect_type": "periodic",
+      "params": {
+        "interval_turns": 1,
+        "damage_max_hp_pct": 0.02
+      }
+    },
+    {
+      "id": "reflect",
+      "name": "Reflect",
+      "description": "Chance to fully reflect an incoming attack",
+      "effect_type": "triggered",
+      "params": {
+        "proc_chance": 0.10
+      }
+    },
+    {
+      "id": "fortify",
+      "name": "Fortify",
+      "description": "Gains bonus DEF while at high HP",
+      "effect_type": "passive",
+      "params": {
+        "hp_threshold_pct": 0.75,
+        "def_bonus_pct": 0.50
+      }
+    },
+    {
+      "id": "rally",
+      "name": "Rally",
+      "description": "ATK increases each time an ally falls in battle",
+      "effect_type": "triggered",
+      "params": {
+        "atk_bonus_per_death_pct": 0.10
+      }
+    },
+    {
+      "id": "execute",
+      "name": "Execute",
+      "description": "Deals massive damage to low-HP fighters",
+      "effect_type": "triggered",
+      "params": {
+        "hp_threshold_pct": 0.20,
+        "damage_multiplier": 3.0
+      }
+    },
+    {
+      "id": "vampiric",
+      "name": "Vampiric",
+      "description": "Heals heavily when striking wounded fighters",
+      "effect_type": "triggered",
+      "params": {
+        "target_hp_threshold_pct": 0.30,
+        "heal_pct": 0.50
+      }
+    },
+    {
+      "id": "earthquake",
+      "name": "Earthquake",
+      "description": "Periodically slams the ground, damaging all fighters",
+      "effect_type": "periodic",
+      "params": {
+        "interval_turns": 4,
+        "damage_max_hp_pct": 0.08
+      }
+    },
+    {
+      "id": "lightning_storm",
+      "name": "Lightning Storm",
+      "description": "Periodically strikes a random fighter with lightning",
+      "effect_type": "periodic",
+      "params": {
+        "interval_turns": 3,
+        "damage_max_hp_pct": 0.15
+      }
+    },
+    {
+      "id": "death_mark",
+      "name": "Death Mark",
+      "description": "Marks a fighter for delayed lethal damage",
+      "effect_type": "triggered",
+      "params": {
+        "delay_turns": 3,
+        "damage_max_hp_pct": 0.30
+      }
+    },
+    {
+      "id": "iron_skin",
+      "name": "Iron Skin",
+      "description": "Reduces all incoming damage by a flat amount",
+      "effect_type": "passive",
+      "params": {
+        "flat_reduction": 10,
+        "min_damage": 1
+      }
+    },
+    {
+      "id": "time_warp",
+      "name": "Time Warp",
+      "description": "Chance to take an extra turn",
+      "effect_type": "triggered",
+      "params": {
+        "proc_chance": 0.25
+      }
+    },
+    {
+      "id": "final_stand",
+      "name": "Final Stand",
+      "description": "Survives the first lethal hit and enters a frenzy",
+      "effect_type": "triggered",
+      "params": {
+        "survive_hp": 1,
+        "atk_bonus_pct": 1.0,
+        "buff_duration_turns": 3
+      }
+    }
+  ]
+}

@@ -1,0 +1,6004 @@
+{
+  "enemies": [
+    {
+      "id": "pit_rat",
+      "name": "Pit Rat",
+      "tier": 1,
+      "description": "A wretched creature fighting for scraps in the lowest pits.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "starving_slave",
+      "name": "Starving Slave",
+      "tier": 1,
+      "description": "Thrown into the arena with nothing but desperation and brittle bones.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "gutter_thief",
+      "name": "Gutter Thief",
+      "tier": 1,
+      "description": "A pickpocket sentenced to die on the sands. Quick hands, weak spirit.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "chained_wretch",
+      "name": "Chained Wretch",
+      "tier": 1,
+      "description": "Still dragging broken shackles, this prisoner fights with blind fury.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "sewer_crawler",
+      "name": "Sewer Crawler",
+      "tier": 1,
+      "description": "A pale, twitching thing that crawled up from the drains beneath the arena.",
+      "role": "swarm",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t1_groth",
+      "name": "Groth the Mangler",
+      "tier": 1,
+      "description": "A hulking brute who earned his title by destroying opponents with his bare hands.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "disgraced_legionary",
+      "name": "Disgraced Legionary",
+      "tier": 2,
+      "description": "A former soldier stripped of rank, now forced to earn death or glory.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "pit_brawler",
+      "name": "Pit Brawler",
+      "tier": 2,
+      "description": "Fists like hammers and a skull thick enough to stop a blade.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "branded_convict",
+      "name": "Branded Convict",
+      "tier": 2,
+      "description": "Burn marks cover his face. Whatever crime earned them, he fights like he has nothing left.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "bone_picker",
+      "name": "Bone Picker",
+      "tier": 2,
+      "description": "Wields weapons fashioned from the remains of previous losers.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "feral_slave",
+      "name": "Feral Slave",
+      "tier": 2,
+      "description": "Years in the pits have stripped away all humanity. Only teeth and claws remain.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t2_varka",
+      "name": "Varka Ironjaw",
+      "tier": 2,
+      "description": "Lost her lower jaw to a mace and had it replaced with hammered iron. She bites through shields now.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": true
+    },
+    {
+      "id": "sand_lurker",
+      "name": "Sand Lurker",
+      "tier": 3,
+      "description": "Burrows beneath the arena floor and strikes from below without warning.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "bloodpit_veteran",
+      "name": "Bloodpit Veteran",
+      "tier": 3,
+      "description": "Survived a dozen matches through sheer stubbornness and a tolerance for pain.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "rusted_retiarius",
+      "name": "Rusted Retiarius",
+      "tier": 3,
+      "description": "A net fighter with corroded gear but sharp instincts honed in the lower tiers.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "plague_bearer",
+      "name": "Plague Bearer",
+      "tier": 3,
+      "description": "Diseased and rotting, his touch alone makes warriors recoil in disgust.",
+      "role": "swarm",
+      "stat_bias": "vit",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "scarred_murmillo",
+      "name": "Scarred Murmillo",
+      "tier": 3,
+      "description": "Heavy shield, heavier scars. Every wound tells the story of a fight he refused to lose.",
+      "role": "guardian",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t3_skarn",
+      "name": "Skarn Bloodfist",
+      "tier": 3,
+      "description": "Wraps his fists in barbed wire before every fight. The blood that drips is never only his own.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "iron_secutor",
+      "name": "Iron Secutor",
+      "tier": 4,
+      "description": "Encased in battered iron plate, slow but punishing with every swing.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "desert_jackal",
+      "name": "Desert Jackal",
+      "tier": 4,
+      "description": "A raider from the wastes, quick with a curved blade and quicker to flee.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "arena_hound_alpha",
+      "name": "Arena Hound Alpha",
+      "tier": 4,
+      "description": "Leader of the beast packs kept beneath the arena. Trained to kill on command.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "blood_oath_gladiator",
+      "name": "Blood Oath Gladiator",
+      "tier": 4,
+      "description": "Swore to kill or die every match. The oath tattoo on his chest still bleeds.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "whip_dancer",
+      "name": "Whip Dancer",
+      "tier": 4,
+      "description": "Graceful and cruel, she flays skin at distance before closing for the kill.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t4_molgur",
+      "name": "Molgur the Rotten",
+      "tier": 4,
+      "description": "A walking corpse animated by dark will. His flesh sloughs off but he never slows down.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "poison_cloud",
+      "is_boss": true
+    },
+    {
+      "id": "sellsword_deserter",
+      "name": "Sellsword Deserter",
+      "tier": 5,
+      "description": "Abandoned his company and was caught. The arena is his court-martial.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "gore_stained_provocator",
+      "name": "Gore-Stained Provocator",
+      "tier": 5,
+      "description": "His armor is permanently stained crimson. He enjoys his work far too much.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "razorback_hyena",
+      "name": "Razorback Hyena",
+      "tier": 5,
+      "description": "A hulking scavenger beast with bone-crushing jaws and a laugh that echoes through the pits.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shacklebreaker",
+      "name": "Shacklebreaker",
+      "tier": 5,
+      "description": "Broke free during a prison transfer and killed six guards. Now he breaks opponents.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "corsair_gladiator",
+      "name": "Corsair Gladiator",
+      "tier": 5,
+      "description": "A pirate who chose the arena over the noose. Fights with twin blades and no honor.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t5_draven",
+      "name": "Draven Ashclaw",
+      "tier": 5,
+      "description": "Burns everything he touches. His claws leave smoldering gashes that never fully heal.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "thorns",
+      "is_boss": true
+    },
+    {
+      "id": "blackiron_centurion",
+      "name": "Blackiron Centurion",
+      "tier": 6,
+      "description": "Commands respect even in chains. His tactical mind turns every fight into a slaughter.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "sand_scorpion",
+      "name": "Sand Scorpion",
+      "tier": 6,
+      "description": "A giant arachnid dragged from the desert depths. Its tail drips with paralytic venom.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "crimson_thraex",
+      "name": "Crimson Thraex",
+      "tier": 6,
+      "description": "Favors a curved sica blade and fights in a blood-red cloak stiff with dried gore.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "chain_devil",
+      "name": "Chain Devil",
+      "tier": 6,
+      "description": "Wrapped in spiked chains that serve as both armor and weapon. The rattling warns of death.",
+      "role": "guardian",
+      "stat_bias": "balanced",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "warbeast_handler",
+      "name": "Warbeast Handler",
+      "tier": 6,
+      "description": "Enters the arena with two starved wolves on chain leashes. Releases them at the horn.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t6_toruk",
+      "name": "Toruk Bonecrusher",
+      "tier": 6,
+      "description": "Wields a maul made from a giant's femur. Every swing is accompanied by the crack of shattering bone.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": true
+    },
+    {
+      "id": "blind_berserker",
+      "name": "Blind Berserker",
+      "tier": 7,
+      "description": "Eyes burned out by a rival, he fights by sound alone. His rage compensates for his blindness.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "ember_wraith",
+      "name": "Ember Wraith",
+      "tier": 7,
+      "description": "A spectral warrior wreathed in smoldering flame. Its touch chars flesh to the bone.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "champion_of_the_pit",
+      "name": "Champion of the Pit",
+      "tier": 7,
+      "description": "Undefeated in fifty matches. The crowd chants his name, but he hears only the dead.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "gore_minotaur",
+      "name": "Gore Minotaur",
+      "tier": 7,
+      "description": "Half-bull, half-nightmare. Its horns are stained black with the blood of a hundred gladiators.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_assassin",
+      "name": "Shadow Assassin",
+      "tier": 7,
+      "description": "Moves between the torchlight gaps. You see the blade only after it's already inside you.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t7_haldor",
+      "name": "Haldor the Grim",
+      "tier": 7,
+      "description": "Has never smiled, never spoken, never shown mercy. He fights with the cold precision of winter itself.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": true
+    },
+    {
+      "id": "ironclad_warden",
+      "name": "Ironclad Warden",
+      "tier": 8,
+      "description": "Former prison guard turned gladiator. His shield is a cell door ripped from its hinges.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "bloodfire_elemental",
+      "name": "Bloodfire Elemental",
+      "tier": 8,
+      "description": "Conjured from the blood-soaked sands, it burns with the fury of every soul who died here.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "carrion_knight",
+      "name": "Carrion Knight",
+      "tier": 8,
+      "description": "Rides a skeletal warhorse into the arena. His lance is tipped with a cursed barb.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "twin_fang_serpent",
+      "name": "Twin Fang Serpent",
+      "tier": 8,
+      "description": "A two-headed snake the size of a chariot. Each head strikes independently.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "dread_hoplomachus",
+      "name": "Dread Hoplomachus",
+      "tier": 8,
+      "description": "His spear technique is flawless. He fights not for freedom, but for the art of killing.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t8_razek",
+      "name": "Razek Deathbringer",
+      "tier": 8,
+      "description": "Every kill strengthens him. The arena darkens when he enters, as if the light itself fears him.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "flesh_golem",
+      "name": "Flesh Golem",
+      "tier": 9,
+      "description": "Stitched together from fallen gladiators by the arena's mad surgeon. It feels no pain.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "infernal_gladiator",
+      "name": "Infernal Gladiator",
+      "tier": 9,
+      "description": "Summoned from a lower plane to entertain the crowd. Hellfire drips from his trident.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "bone_colossus",
+      "name": "Bone Colossus",
+      "tier": 9,
+      "description": "An amalgamation of thousands of skeletons fused into a towering monstrosity.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "wailing_banshee",
+      "name": "Wailing Banshee",
+      "tier": 9,
+      "description": "Her scream shatters eardrums and will. Men have dropped their swords just to cover their ears.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "blackscale_drake",
+      "name": "Blackscale Drake",
+      "tier": 9,
+      "description": "A young dragon, wings clipped, but its acid breath still dissolves steel.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t9_ulgor",
+      "name": "Ulgor Flamemaw",
+      "tier": 9,
+      "description": "A demon whose mouth is a furnace. He swallows swords whole and spits them back as molten slag.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "doom_centurion",
+      "name": "Doom Centurion",
+      "tier": 10,
+      "description": "Returned from the dead to serve the arena eternally. His eyes burn with cursed purpose.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "abyssal_stalker",
+      "name": "Abyssal Stalker",
+      "tier": 10,
+      "description": "A demon that hunts by scent. It toys with prey, savoring their terror before the kill.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "war_elephant",
+      "name": "Ruined War Elephant",
+      "tier": 10,
+      "description": "An undead pachyderm armored in blackened bronze. The ground shakes with each step.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "crimson_revenant",
+      "name": "Crimson Revenant",
+      "tier": 10,
+      "description": "A fallen champion raised by blood magic. He remembers every technique from his living days.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "siege_automaton",
+      "name": "Siege Automaton",
+      "tier": 10,
+      "description": "A dwarven war machine repurposed for arena combat. Its gears grind with mechanical fury.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t10_krovak",
+      "name": "Krovak the Impaler",
+      "tier": 10,
+      "description": "Lines the arena entrance with the impaled bodies of his victims. The forest of stakes grows daily.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "soul_flayer",
+      "name": "Soul Flayer",
+      "tier": 11,
+      "description": "Strips the spirit from the body before the body even falls. Its victims die twice.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "hellforged_titan",
+      "name": "Hellforged Titan",
+      "tier": 11,
+      "description": "A giant forged in the foundries of the underworld. Molten iron runs through its veins.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "plague_chimera",
+      "name": "Plague Chimera",
+      "tier": 11,
+      "description": "Three diseased heads spit venom, fire, and necrotic bile in alternating waves.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "dread_imperator",
+      "name": "Dread Imperator",
+      "tier": 11,
+      "description": "An emperor who refused to die. His ghostly legion materializes at his command.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_stalker",
+      "name": "Void Stalker",
+      "tier": 11,
+      "description": "Phases between reality and the void. Blades pass through it unless timed perfectly.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t11_sethara",
+      "name": "Sethara Venomtongue",
+      "tier": 11,
+      "description": "Her whispered words are literal poison. Warriors have died mid-charge from a single sentence.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": true
+    },
+    {
+      "id": "iron_lich",
+      "name": "Iron Lich",
+      "tier": 12,
+      "description": "Bound its soul to an iron phylactery embedded in its chest. Destroying it only makes it angrier.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "wrath_hydra",
+      "name": "Wrath Hydra",
+      "tier": 12,
+      "description": "Seven heads, each more furious than the last. Cut one off and two more rise screaming.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "obsidian_executioner",
+      "name": "Obsidian Executioner",
+      "tier": 12,
+      "description": "Carved from volcanic glass and animated by ancient spite. Its axe never dulls.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "blood_archon",
+      "name": "Blood Archon",
+      "tier": 12,
+      "description": "A demon lord that regenerates by drinking the blood that soaks the arena sands.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "ruinbringer_colossus",
+      "name": "Ruinbringer Colossus",
+      "tier": 12,
+      "description": "A siege engine given sentience. It remembers the cities it destroyed and craves more.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t12_brakka",
+      "name": "Brakka Stonehorn",
+      "tier": 12,
+      "description": "A demon bull-lord whose stone horns can gore through fortress walls. The arena quakes at his charge.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "void_reaper",
+      "name": "Void Reaper",
+      "tier": 13,
+      "description": "Harvests souls with a scythe forged from condensed nothingness. Reality frays where it walks.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "elder_wyrm",
+      "name": "Elder Wyrm",
+      "tier": 13,
+      "description": "An ancient dragon too massive for the arena. The walls crack when it shifts its weight.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "god_eater",
+      "name": "God Eater",
+      "tier": 13,
+      "description": "A being that consumed a minor deity and absorbed its power. Divinity rots inside it.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "doomweaver",
+      "name": "Doomweaver",
+      "tier": 13,
+      "description": "Spins fate itself into razor threads. Those caught in its web see their own death before it comes.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "avatar_of_slaughter",
+      "name": "Avatar of Slaughter",
+      "tier": 13,
+      "description": "The embodiment of every death that ever occurred on these sands, given terrible form.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t13_nythgor",
+      "name": "Nythgor Soulreaper",
+      "tier": 13,
+      "description": "Collects souls in a lantern that hangs from his scythe. Each one makes him stronger.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "eternity_warden",
+      "name": "Eternity Warden",
+      "tier": 14,
+      "description": "Has guarded the gate between life and death for millennia. Now something has angered it.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "primordial_horror",
+      "name": "Primordial Horror",
+      "tier": 14,
+      "description": "A thing from before the gods existed. Its form is wrong in ways the mind refuses to process.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "world_serpent_spawn",
+      "name": "World Serpent Spawn",
+      "tier": 14,
+      "description": "A fragment of the serpent that encircles the world. Even this shard could swallow the arena whole.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "throne_phantom",
+      "name": "Throne Phantom",
+      "tier": 14,
+      "description": "The ghost of every emperor who ever watched gladiators die, fused into one screaming specter.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "annihilation_engine",
+      "name": "Annihilation Engine",
+      "tier": 14,
+      "description": "A machine built by a dead civilization to unmake matter. Its purpose is absolute destruction.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t14_durn",
+      "name": "Durn the Faceless",
+      "tier": 14,
+      "description": "No one has ever seen his face and lived. Mirrors crack in his presence.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "arena_god_fragment",
+      "name": "Arena God Fragment",
+      "tier": 15,
+      "description": "A shard of the deity that sleeps beneath the arena floor. Its awakening heralds the end.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "omega_gladiator",
+      "name": "Omega Gladiator",
+      "tier": 15,
+      "description": "The last gladiator standing at the end of time. He has killed everything, and still hungers.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cataclysm_wyrm",
+      "name": "Cataclysm Wyrm",
+      "tier": 15,
+      "description": "A dragon whose breath erases history itself. Cities it destroys are forgotten by all who knew them.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "undying_colosseum",
+      "name": "Undying Colosseum",
+      "tier": 15,
+      "description": "The arena itself made flesh. Every pillar is a bone, every archway a rib. It fights to consume.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "entropy_incarnate",
+      "name": "Entropy Incarnate",
+      "tier": 15,
+      "description": "The concept of decay given physical form. Armor rusts, swords shatter, hope dies in its presence.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t15_grimjaw",
+      "name": "Grimjaw the Butcher",
+      "tier": 15,
+      "description": "The final challenge of the Colosseum. A being of pure carnage that has ended ten thousand careers.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "bone_shambler",
+      "name": "Bone Shambler",
+      "tier": 16,
+      "description": "A loose collection of skeletons wired together with sinew. It lurches forward in a rattling heap.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "crypt_stalker",
+      "name": "Crypt Stalker",
+      "tier": 16,
+      "description": "A gaunt undead that hunts through the catacomb darkness with pinpoint hearing.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "grave_warden",
+      "name": "Grave Warden",
+      "tier": 16,
+      "description": "An armored skeleton bound to protect the burial chambers. Its oath outlasted its flesh.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "marrow_gnawer",
+      "name": "Marrow Gnawer",
+      "tier": 16,
+      "description": "Feeds on the bones of the dead to strengthen its own frame. Each victim makes it harder to kill.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "catacomb_wraith",
+      "name": "Catacomb Wraith",
+      "tier": 16,
+      "description": "Drifts through solid stone and strikes from within the walls. Blades pass through its ghostly form.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t16_osseus",
+      "name": "Osseus the Unyielding",
+      "tier": 16,
+      "description": "A massive skeletal knight fused from the remains of a hundred warriors. Its greatsword cleaves through stone.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": true
+    },
+    {
+      "id": "skeletal_legionnaire",
+      "name": "Skeletal Legionnaire",
+      "tier": 17,
+      "description": "An undead soldier still marching in formation centuries after its legion fell.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ghoul_pack_runner",
+      "name": "Ghoul Pack Runner",
+      "tier": 17,
+      "description": "Hunts in packs through the tunnels, dragging the living into the dark to be devoured slowly.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "tomb_guardian",
+      "name": "Tomb Guardian",
+      "tier": 17,
+      "description": "An ancient construct of bone and bronze, animated by funerary rites long forgotten.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "death_cultist",
+      "name": "Death Cultist",
+      "tier": 17,
+      "description": "A living fanatic who worships the dead. Channels necrotic energy through ritual scarification.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "hollow_revenant",
+      "name": "Hollow Revenant",
+      "tier": 17,
+      "description": "A vengeful spirit wearing its own corpse like a suit. Its empty eye sockets burn with hatred.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t17_morgrath",
+      "name": "Morgrath the Entombed",
+      "tier": 17,
+      "description": "A pharaoh-king sealed alive in his own tomb. Centuries of rage concentrated into undying malice.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "wight_horde",
+      "name": "Wight Horde",
+      "tier": 18,
+      "description": "A writhing mass of lesser undead that moves as one, overwhelming prey through sheer numbers.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "corpse_stitcher",
+      "name": "Corpse Stitcher",
+      "tier": 18,
+      "description": "A necromancer who sews the fallen back together mid-battle, creating new minions from the slain.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "bone_colossus_lesser",
+      "name": "Lesser Bone Colossus",
+      "tier": 18,
+      "description": "A towering skeleton assembled from catacomb remains. Each step shakes loose dust from the ceiling.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "spectral_duelist",
+      "name": "Spectral Duelist",
+      "tier": 18,
+      "description": "The ghost of a master swordsman who refuses to accept defeat, even in death.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "cursed_sentinel",
+      "name": "Cursed Sentinel",
+      "tier": 18,
+      "description": "An undead guardian bound by dark runes. Its armor regenerates from the bones littering the floor.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t18_veldris",
+      "name": "Veldris the Bonelord",
+      "tier": 18,
+      "description": "Commands an army of skeletons from a throne of skulls. The catacombs bend to his will.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "crypt_spider",
+      "name": "Crypt Spider",
+      "tier": 19,
+      "description": "A bloated arachnid that nests in burial alcoves, wrapping corpses in silk to feed its young.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "lich_apprentice",
+      "name": "Lich Apprentice",
+      "tier": 19,
+      "description": "A sorcerer who traded mortality for power but never finished the transformation. Half-alive, wholly dangerous.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "skeletal_juggernaut",
+      "name": "Skeletal Juggernaut",
+      "tier": 19,
+      "description": "A massive war-skeleton reinforced with iron bolts and fueled by a trapped soul screaming inside its ribcage.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_ghoul",
+      "name": "Shadow Ghoul",
+      "tier": 19,
+      "description": "Moves through darkness like water and solidifies only to feed. Its claws drain warmth from the living.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "undead_centurion",
+      "name": "Undead Centurion",
+      "tier": 19,
+      "description": "Still barks orders to phantom soldiers. Its tactical formations make it lethal even without a legion.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t19_nethara",
+      "name": "Nethara the Deathmaw",
+      "tier": 19,
+      "description": "A colossal undead serpent that tunnels through the catacomb walls, swallowing the dead and living alike.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "poison_cloud",
+      "is_boss": true
+    },
+    {
+      "id": "plague_zombie_swarm",
+      "name": "Plague Zombie Swarm",
+      "tier": 20,
+      "description": "A shambling tide of diseased corpses. What they lack in speed they make up for in sheer rot.",
+      "role": "swarm",
+      "stat_bias": "vit",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "death_knight",
+      "name": "Death Knight",
+      "tier": 20,
+      "description": "A fallen paladin reforged in darkness. Its cursed blade drinks the light from torches as it passes.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "bone_dragon_hatchling",
+      "name": "Bone Dragon Hatchling",
+      "tier": 20,
+      "description": "A skeletal drake assembled from ancient wyrm remains. Its breath is a gale of bone shards.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "phantom_executioner",
+      "name": "Phantom Executioner",
+      "tier": 20,
+      "description": "The ghost of the catacomb's chief torturer. Its spectral axe severs not flesh but the will to live.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "ossuary_golem",
+      "name": "Ossuary Golem",
+      "tier": 20,
+      "description": "Built from the contents of a mass grave, fused with dark mortar. Each fist contains a hundred skulls.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t20_archlich_verantus",
+      "name": "Archlich Verantus",
+      "tier": 20,
+      "description": "Master of the Catacombs, a lich of immense power who has ruled the dead for a thousand years.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "feral_lion",
+      "name": "Feral Lion",
+      "tier": 21,
+      "description": "A starved lion released into the arena. Hunger has made it faster and more desperate than any trained beast.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "venom_viper",
+      "name": "Venom Viper",
+      "tier": 21,
+      "description": "A serpent the length of three men, its fangs drip with a toxin that liquefies muscle.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "armored_rhino",
+      "name": "Armored Rhino",
+      "tier": 21,
+      "description": "A rhinoceros fitted with iron plates by its handlers. Its charge is an unstoppable wall of horn and steel.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "beast_tamer_initiate",
+      "name": "Beast-Tamer Initiate",
+      "tier": 21,
+      "description": "A young tamer who fights alongside a trained wolf. The pair move as one lethal unit.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "razor_hawk_flock",
+      "name": "Razor Hawk Flock",
+      "tier": 21,
+      "description": "A swirling cloud of trained raptors with steel-tipped talons. They strip flesh in seconds.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t21_rex_sanguinus",
+      "name": "Rex Sanguinus",
+      "tier": 21,
+      "description": "The Blood King of Beasts. A massive lion with a scarred mane matted with the blood of gladiators.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "dire_wolf_pack",
+      "name": "Dire Wolf Pack",
+      "tier": 22,
+      "description": "Three enormous wolves that coordinate attacks with eerie intelligence. They herd prey into corners.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ironhide_gorilla",
+      "name": "Ironhide Gorilla",
+      "tier": 22,
+      "description": "A mountain ape with skin like cured leather. It rips arena gates off their hinges for sport.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "whip_master",
+      "name": "Whip Master",
+      "tier": 22,
+      "description": "A veteran beast-tamer who fights with a barbed whip in each hand. The beasts obey out of terror.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "thunder_boar",
+      "name": "Thunder Boar",
+      "tier": 22,
+      "description": "A tusked beast bred for size and fury. The impact of its charge sends shockwaves through the sand.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "pit_crocodile",
+      "name": "Pit Crocodile",
+      "tier": 22,
+      "description": "Dragged from a river delta and starved for weeks. Its jaws lock shut and never release.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t22_gorath_beastlord",
+      "name": "Gorath the Beastlord",
+      "tier": 22,
+      "description": "A scarred tamer who merged with his beasts through forbidden ritual. Half-man, half-predator, all fury.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "sabertooth_stalker",
+      "name": "Sabertooth Stalker",
+      "tier": 23,
+      "description": "A prehistoric predator thawed from glacial ice. Its fangs are longer than a gladiator's forearm.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "war_elephant_bull",
+      "name": "War Elephant Bull",
+      "tier": 23,
+      "description": "A bull elephant in full war harness. Its tusks are capped with bronze and dripping with oil.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "serpent_charmer",
+      "name": "Serpent Charmer",
+      "tier": 23,
+      "description": "Commands a nest of cobras with a bone flute. The snakes strike in unison at a single note.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "cave_bear",
+      "name": "Cave Bear",
+      "tier": 23,
+      "description": "A bear from the deep mountain caves, twice the size of its lowland cousins. One swipe breaks spines.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "scorpion_swarm",
+      "name": "Scorpion Swarm",
+      "tier": 23,
+      "description": "Hundreds of venomous scorpions released from clay jars. They blanket the arena floor in clicking chitin.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t23_titanotaur",
+      "name": "Titanotaur the Unbroken",
+      "tier": 23,
+      "description": "A colossal bull-beast that has shattered every cage ever built to hold it. Chains are decorations to this monster.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "thorns",
+      "is_boss": true
+    },
+    {
+      "id": "chimera_spawn",
+      "name": "Chimera Spawn",
+      "tier": 24,
+      "description": "Lion head, goat body, serpent tail. Each part attacks independently with savage coordination.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "alpha_raptor",
+      "name": "Alpha Raptor",
+      "tier": 24,
+      "description": "A feathered predator bred in captivity for maximum aggression. It hunts with terrifying intelligence.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "mammoth_warbeast",
+      "name": "Mammoth Warbeast",
+      "tier": 24,
+      "description": "A woolly mammoth outfitted with a spiked howdah. The ground trembles under its every footfall.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "hydra_youngling",
+      "name": "Hydra Youngling",
+      "tier": 24,
+      "description": "Only three heads so far, but each one regrows within moments of being severed.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "beast_master_veteran",
+      "name": "Beast Master Veteran",
+      "tier": 24,
+      "description": "Fights with a trained panther and a war hawk simultaneously. Twenty years of taming forged his reflexes.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t24_fenrax",
+      "name": "Fenrax the Devourer",
+      "tier": 24,
+      "description": "A monstrous wolf-beast the size of a siege tower. Entire squads have vanished down its gullet.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "phoenix_hatchling",
+      "name": "Phoenix Hatchling",
+      "tier": 25,
+      "description": "A newborn firebird that immolates everything nearby. Killing it only triggers a rebirth in hotter flame.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "kraken_tentacle",
+      "name": "Kraken Tentacle",
+      "tier": 25,
+      "description": "A single appendage of a sea-beast too vast to contain. It thrashes and crushes from beneath the flooded arena floor.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "grand_beast_tamer",
+      "name": "Grand Beast-Tamer",
+      "tier": 25,
+      "description": "The master of the Colosseum of Beasts. Commands every creature within earshot with a single gesture.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "manticore",
+      "name": "Manticore",
+      "tier": 25,
+      "description": "Human face, lion body, scorpion tail. Its venomous spines fire like arrows and its grin never fades.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "ancient_wyvern",
+      "name": "Ancient Wyvern",
+      "tier": 25,
+      "description": "A wingless dragon with scales like fortress stone. Its tail sweep flattens columns and warriors alike.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t25_typhon",
+      "name": "Typhon, Father of Monsters",
+      "tier": 25,
+      "description": "The progenitor of all beasts. A titan of scale, fang, and fury whose roar silences the heavens.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "rabid_arena_wolf",
+      "name": "Rabid Arena Wolf",
+      "tier": 26,
+      "description": "A foam-mouthed wolf driven mad by the roar of the crowd.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "tusked_war_boar",
+      "name": "Tusked War Boar",
+      "tier": 26,
+      "description": "An armored boar bred for carnage, its tusks filed to deadly points.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "beastpit_handler",
+      "name": "Beastpit Handler",
+      "tier": 26,
+      "description": "A scarred trainer who fights alongside his feral charges.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "venomfang_cobra",
+      "name": "Venomfang Cobra",
+      "tier": 26,
+      "description": "A massive serpent that spits blinding venom before striking.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "ironhide_beetle",
+      "name": "Ironhide Beetle",
+      "tier": 26,
+      "description": "A giant beetle with a carapace harder than forged steel.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t26_gorgara",
+      "name": "Gorgara the Beast Queen",
+      "tier": 26,
+      "description": "She commands every creature in the colosseum with a mere growl. Even lions kneel before her.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "rally",
+      "is_boss": true
+    },
+    {
+      "id": "mane_ripper_lion",
+      "name": "Mane-Ripper Lion",
+      "tier": 27,
+      "description": "A massive lion trained to tear through armor and flesh alike.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "carrion_vulture_flock",
+      "name": "Carrion Vulture Flock",
+      "tier": 27,
+      "description": "A swirling mass of hungry vultures that descend on the wounded.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "horned_rhino_charger",
+      "name": "Horned Rhino Charger",
+      "tier": 27,
+      "description": "A thundering rhino that tramples everything in its path.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "serpent_tamer",
+      "name": "Serpent Tamer",
+      "tier": 27,
+      "description": "A whip-wielding handler who sics venomous snakes on foes.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_panther",
+      "name": "Shadow Panther",
+      "tier": 27,
+      "description": "A sleek predator that strikes from the shadows with lethal precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t27_brutusk",
+      "name": "Brutusk the Goring Terror",
+      "tier": 27,
+      "description": "A colossal tusked beast covered in battle scars, said to have killed a hundred gladiators.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "thunderstrike_eagle",
+      "name": "Thunderstrike Eagle",
+      "tier": 28,
+      "description": "A giant raptor whose talons crackle with static electricity.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "pitbull_pack",
+      "name": "Pitbull Pack",
+      "tier": 28,
+      "description": "A savage pack of war dogs trained to drag opponents to the ground.",
+      "role": "swarm",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "armored_tortoise",
+      "name": "Armored Tortoise",
+      "tier": 28,
+      "description": "A lumbering titan shielded by layers of natural plating.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "beast_gladiator",
+      "name": "Beast Gladiator",
+      "tier": 28,
+      "description": "A warrior who wears pelts and fights with the savagery of an animal.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "venom_scorpion_giant",
+      "name": "Giant Venom Scorpion",
+      "tier": 28,
+      "description": "Its stinger drips with paralyzing toxin potent enough to fell a horse.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t28_chimera_rex",
+      "name": "Chimera Rex, the Triple Maw",
+      "tier": 28,
+      "description": "A monstrous chimera with three ravenous heads, each hungering for a different cut of flesh.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "dire_hyena",
+      "name": "Dire Hyena",
+      "tier": 29,
+      "description": "Its cackling laugh echoes through the arena as it circles the wounded.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "bull_mammoth",
+      "name": "Bull Mammoth",
+      "tier": 29,
+      "description": "A towering beast whose every step shakes the colosseum foundations.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "hawk_rider",
+      "name": "Hawk Rider",
+      "tier": 29,
+      "description": "A nimble fighter mounted on a trained war hawk that swoops from above.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "croc_jaws",
+      "name": "Croc Jaws",
+      "tier": 29,
+      "description": "An enormous crocodile that lurches from the arena pools to crush bones in its maw.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "porcupine_titan",
+      "name": "Porcupine Titan",
+      "tier": 29,
+      "description": "Covered in razor quills that punish anyone foolish enough to strike it.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t29_skarath",
+      "name": "Skarath the Untamed",
+      "tier": 29,
+      "description": "A legendary beast-king that no chain can hold, leaving a trail of shattered cages in its wake.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": true
+    },
+    {
+      "id": "feral_ape_pack",
+      "name": "Feral Ape Pack",
+      "tier": 30,
+      "description": "Barrel-chested primates that hurl stones and charge in coordinated fury.",
+      "role": "swarm",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "basilisk_hatchling",
+      "name": "Basilisk Hatchling",
+      "tier": 30,
+      "description": "Even young, its gaze can slow and weaken the bravest warriors.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "grizzled_beast_master",
+      "name": "Grizzled Beast Master",
+      "tier": 30,
+      "description": "A veteran tamer who has survived more beasts than any gladiator has opponents.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "saberfang_tiger",
+      "name": "Saberfang Tiger",
+      "tier": 30,
+      "description": "A prehistoric predator resurrected through dark arts, all muscle and fang.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "thornback_lizard",
+      "name": "Thornback Lizard",
+      "tier": 30,
+      "description": "Its spiked hide turns every clash into a mutual bloodletting.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t30_fengor",
+      "name": "Fengor the Alpha Predator",
+      "tier": 30,
+      "description": "The apex beast of the colosseum, it has devoured every challenger thrown before it.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "jungle_serpent",
+      "name": "Jungle Serpent",
+      "tier": 31,
+      "description": "A constrictor large enough to crush armored men inside their shells.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "stampede_buffalo",
+      "name": "Stampede Buffalo",
+      "tier": 31,
+      "description": "Charges blindly at anything that moves, horns lowered for maximum devastation.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "razorwing_bat_swarm",
+      "name": "Razorwing Bat Swarm",
+      "tier": 31,
+      "description": "A cloud of screeching bats with wings sharp enough to slice flesh.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "beast_shaman",
+      "name": "Beast Shaman",
+      "tier": 31,
+      "description": "A wild mystic who channels primal fury to strengthen nearby creatures.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "ambush_chameleon",
+      "name": "Ambush Chameleon",
+      "tier": 31,
+      "description": "A massive lizard that blends with the arena walls before striking.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t31_vorrak",
+      "name": "Vorrak the Living Stampede",
+      "tier": 31,
+      "description": "A beast so enormous that its charge collapses arena walls. The ground itself flees from its hooves.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": true
+    },
+    {
+      "id": "electric_eel_horror",
+      "name": "Electric Eel Horror",
+      "tier": 32,
+      "description": "A writhing monstrosity from flooded pits that shocks everything it touches.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "mountain_gorilla",
+      "name": "Mountain Gorilla",
+      "tier": 32,
+      "description": "Beats its chest before each fight, then crushes opponents with terrifying strength.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "spider_brood",
+      "name": "Spider Brood",
+      "tier": 32,
+      "description": "Hundreds of venomous spiderlings that swarm over victims in seconds.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "ironbeak_cassowary",
+      "name": "Ironbeak Cassowary",
+      "tier": 32,
+      "description": "A flightless bird with a kick that can shatter ribcages and a beak like a dagger.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shellshock_crab",
+      "name": "Shellshock Crab",
+      "tier": 32,
+      "description": "A colossal crustacean with pincers that can snap iron bars in two.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t32_manticora",
+      "name": "Manticora the Devourer",
+      "tier": 32,
+      "description": "Part lion, part scorpion, entirely lethal. Its barbed tail launches poisoned spines at range.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "poison_cloud",
+      "is_boss": true
+    },
+    {
+      "id": "griffin_fledgling",
+      "name": "Griffin Fledgling",
+      "tier": 33,
+      "description": "Young but fierce, its talons carve steel and its beak snaps spears.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "tusk_elephant",
+      "name": "Tusk Elephant",
+      "tier": 33,
+      "description": "A war elephant fitted with bladed tusks that sweep through formations.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "viper_den_swarm",
+      "name": "Viper Den Swarm",
+      "tier": 33,
+      "description": "A writhing pit of vipers released onto the arena floor.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "beast_warden",
+      "name": "Beast Warden",
+      "tier": 33,
+      "description": "An elite trainer wielding a spiked whip and commanding beasts mid-battle.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "nightstalker_jaguar",
+      "name": "Nightstalker Jaguar",
+      "tier": 33,
+      "description": "Moves like a shadow and strikes like lightning. By the time you see it, you are already bleeding.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t33_cerberak",
+      "name": "Cerberak the Three-Headed Hound",
+      "tier": 33,
+      "description": "Each head snaps independently, making it impossible to guard against all three jaws at once.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "dire_condor",
+      "name": "Dire Condor",
+      "tier": 34,
+      "description": "A massive carrion bird that rakes with talons the size of swords.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "war_rhino",
+      "name": "War Rhino",
+      "tier": 34,
+      "description": "Clad in spiked iron plates, each charge is a small avalanche of steel and muscle.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "plague_rat_horde",
+      "name": "Plague Rat Horde",
+      "tier": 34,
+      "description": "Thousands of diseased rats that pour from the arena drains.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "colosseum_falconer",
+      "name": "Colosseum Falconer",
+      "tier": 34,
+      "description": "Commands a flock of razor-taloned raptors from the safety of distance.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "crystal_armadillo",
+      "name": "Crystal Armadillo",
+      "tier": 34,
+      "description": "Its crystalline shell reflects blows back at attackers.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t34_hydranax",
+      "name": "Hydranax the Regenerator",
+      "tier": 34,
+      "description": "Sever a head and two more grow in its place. The arena has never been able to kill it permanently.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "mythic_pegasus",
+      "name": "Mythic Pegasus",
+      "tier": 35,
+      "description": "A winged stallion of legend, its hooves strike with the force of thunderbolts.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "behemoth_ox",
+      "name": "Behemoth Ox",
+      "tier": 35,
+      "description": "A titanic bovine that has shattered every gate and cage ever built for it.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "swarm_locusts",
+      "name": "Swarm Locusts",
+      "tier": 35,
+      "description": "A biblical cloud of devouring insects that strips flesh from bone.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "primal_druid",
+      "name": "Primal Druid",
+      "tier": 35,
+      "description": "A shapeshifting mystic who transforms into whatever beast the battle demands.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "deathmaw_crocodilian",
+      "name": "Deathmaw Crocodilian",
+      "tier": 35,
+      "description": "An ancient armored reptile with jaws powerful enough to bisect a man.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t35_typhonix",
+      "name": "Typhonix the World Serpent",
+      "tier": 35,
+      "description": "A serpent of myth whose coils can encircle the entire arena. Its venom dissolves stone.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "magma_imp",
+      "name": "Magma Imp",
+      "tier": 36,
+      "description": "A cackling little fiend that hurls globs of molten rock.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cinder_brute",
+      "name": "Cinder Brute",
+      "tier": 36,
+      "description": "A hulking creature forged from volcanic ash and smoldering rage.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "flame_cultist",
+      "name": "Flame Cultist",
+      "tier": 36,
+      "description": "A fanatical worshipper who sets himself ablaze before charging into battle.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "lava_salamander",
+      "name": "Lava Salamander",
+      "tier": 36,
+      "description": "A fire-breathing amphibian that swims through magma pools with ease.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "obsidian_sentinel",
+      "name": "Obsidian Sentinel",
+      "tier": 36,
+      "description": "A volcanic golem of razor-sharp obsidian that cuts anything it touches.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t36_ignarus",
+      "name": "Ignarus the Emberlord",
+      "tier": 36,
+      "description": "Born in the heart of an eruption, his very presence turns the arena floor to lava.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "ember_sprite_swarm",
+      "name": "Ember Sprite Swarm",
+      "tier": 37,
+      "description": "Tiny fire spirits that swirl in burning clouds, igniting everything they touch.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "volcanic_golem",
+      "name": "Volcanic Golem",
+      "tier": 37,
+      "description": "A walking mountain of cooling magma, its fists hit like eruptions.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "hellfire_archer",
+      "name": "Hellfire Archer",
+      "tier": 37,
+      "description": "Fires arrows tipped with ever-burning brimstone from the volcanic ridges.",
+      "role": "soldier",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "smoke_phantom",
+      "name": "Smoke Phantom",
+      "tier": 37,
+      "description": "A wraith made of volcanic smoke that chokes its victims before they see it.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "molten_shell_tortoise",
+      "name": "Molten Shell Tortoise",
+      "tier": 37,
+      "description": "Its shell glows red-hot, burning anyone who dares strike it.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t37_pyraxis",
+      "name": "Pyraxis the Ashen Titan",
+      "tier": 37,
+      "description": "A towering fire giant whose footsteps leave pools of lava in the arena.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "fortify",
+      "is_boss": true
+    },
+    {
+      "id": "fire_beetle_cluster",
+      "name": "Fire Beetle Cluster",
+      "tier": 38,
+      "description": "Explosive insects that detonate on contact, scattering burning shrapnel.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "inferno_gladiator",
+      "name": "Inferno Gladiator",
+      "tier": 38,
+      "description": "A warrior who embraced the flames, now wielding weapons of solidified fire.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "magma_wurm",
+      "name": "Magma Wurm",
+      "tier": 38,
+      "description": "Burrows through molten rock and erupts beneath its prey without warning.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ash_stalker",
+      "name": "Ash Stalker",
+      "tier": 38,
+      "description": "Moves unseen in clouds of volcanic ash, striking with searing blades.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "basalt_guardian",
+      "name": "Basalt Guardian",
+      "tier": 38,
+      "description": "An ancient construct of cooled basalt that absorbs punishment like the mountain itself.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t38_vulkrath",
+      "name": "Vulkrath the Molten Fist",
+      "tier": 38,
+      "description": "His arms are rivers of lava shaped into crushing fists. One blow liquefies armor.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "cinder_wasp_swarm",
+      "name": "Cinder Wasp Swarm",
+      "tier": 39,
+      "description": "Burning wasps whose stings inject liquid fire into the bloodstream.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "flame_berserker",
+      "name": "Flame Berserker",
+      "tier": 39,
+      "description": "A warrior consumed by volcanic madness, feeling no pain as fire courses through his veins.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "sulfur_priest",
+      "name": "Sulfur Priest",
+      "tier": 39,
+      "description": "Channels the toxic fumes of the volcanic pits into devastating rituals.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "magma_serpent",
+      "name": "Magma Serpent",
+      "tier": 39,
+      "description": "A snake of living lava that leaves a burning trail wherever it slithers.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "fireforged_juggernaut",
+      "name": "Fireforged Juggernaut",
+      "tier": 39,
+      "description": "An immense construct hammered together in the volcanic forges, impervious to all but the mightiest blows.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t39_solareth",
+      "name": "Solareth the Sun Eater",
+      "tier": 39,
+      "description": "A demon so hot that light bends around him. Looking directly at him scorches the eyes.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "lava_elemental_lesser",
+      "name": "Lesser Lava Elemental",
+      "tier": 40,
+      "description": "A churning mass of molten rock given crude sentience by volcanic magic.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "hell_hound_pair",
+      "name": "Hell Hound Pair",
+      "tier": 40,
+      "description": "Twin fire-breathing hounds that coordinate their attacks with predatory cunning.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "pyroclast_mage",
+      "name": "Pyroclast Mage",
+      "tier": 40,
+      "description": "Hurls bolts of superheated rock that explode on impact.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "ember_assassin",
+      "name": "Ember Assassin",
+      "tier": 40,
+      "description": "Wreathed in flickering flame, each dagger strike cauterizes and sears.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "slag_colossus",
+      "name": "Slag Colossus",
+      "tier": 40,
+      "description": "Formed from the refuse of a thousand forgings, it is nearly indestructible.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t40_magmaron",
+      "name": "Magmaron the Eruption Incarnate",
+      "tier": 40,
+      "description": "When Magmaron fights, the arena itself erupts. Pillars of flame burst from every crack in the stone.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "fire_ant_colony",
+      "name": "Fire Ant Colony",
+      "tier": 41,
+      "description": "Millions of burning insects that reduce opponents to bone in minutes.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "demon_footsoldier",
+      "name": "Demon Footsoldier",
+      "tier": 41,
+      "description": "A rank-and-file demon armed with a jagged obsidian blade and hatred.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "volcanic_drake",
+      "name": "Volcanic Drake",
+      "tier": 41,
+      "description": "A wingless dragon that breathes streams of lava hot enough to melt iron.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "smoke_wraith",
+      "name": "Smoke Wraith",
+      "tier": 41,
+      "description": "An incorporeal spirit of volcanic gas that suffocates before consuming.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "magma_crust_titan",
+      "name": "Magma Crust Titan",
+      "tier": 41,
+      "description": "Its body is a shell of cooling magma that regenerates as fast as it cracks.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t41_infernus",
+      "name": "Infernus the Pit Lord",
+      "tier": 41,
+      "description": "Rules the lowest volcanic caverns where even demons fear to tread. His whip is a river of fire.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": true
+    },
+    {
+      "id": "spark_wisp_cloud",
+      "name": "Spark Wisp Cloud",
+      "tier": 42,
+      "description": "Floating orbs of compressed heat that explode violently when disturbed.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ashborn_knight",
+      "name": "Ashborn Knight",
+      "tier": 42,
+      "description": "A warrior reforged from volcanic ash, wielding a blade of crystallized fire.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "molten_minotaur",
+      "name": "Molten Minotaur",
+      "tier": 42,
+      "description": "A bull-headed demon of dripping magma that charges with volcanic fury.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "flamestrike_viper",
+      "name": "Flamestrike Viper",
+      "tier": 42,
+      "description": "Its bite injects superheated venom that boils blood from the inside.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "caldera_warden",
+      "name": "Caldera Warden",
+      "tier": 42,
+      "description": "An ancient volcanic guardian that absorbs fire attacks and grows stronger.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t42_charrath",
+      "name": "Charrath the Cinderstorm",
+      "tier": 42,
+      "description": "A living firestorm that rains burning debris on every corner of the arena.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "thorns",
+      "is_boss": true
+    },
+    {
+      "id": "scoria_scarab_swarm",
+      "name": "Scoria Scarab Swarm",
+      "tier": 43,
+      "description": "Volcanic beetles that burrow under skin and ignite from within.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "hellgate_centurion",
+      "name": "Hellgate Centurion",
+      "tier": 43,
+      "description": "A demon officer commanding legions from the volcanic depths.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "obsidian_berserker",
+      "name": "Obsidian Berserker",
+      "tier": 43,
+      "description": "Coated in razor-sharp volcanic glass, every strike leaves shards in the wound.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "flame_wraith_duelist",
+      "name": "Flame Wraith Duelist",
+      "tier": 43,
+      "description": "The ghost of a gladiator who died in the volcanic pits, now burning eternally.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "magma_tortoise_ancient",
+      "name": "Ancient Magma Tortoise",
+      "tier": 43,
+      "description": "Has slumbered in lava for centuries, its shell fused with volcanic mineral.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t43_balgoreth",
+      "name": "Balgoreth the Lava Drinker",
+      "tier": 43,
+      "description": "Drinks molten rock like water and spews it as devastating geysers. The volcanic pits are his domain.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "fire_elemental_core",
+      "name": "Fire Elemental Core",
+      "tier": 44,
+      "description": "A pure concentration of elemental fire that incinerates anything it touches.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "demon_pit_fighter",
+      "name": "Demon Pit Fighter",
+      "tier": 44,
+      "description": "A skilled combatant from the hells, wielding flames as extensions of its limbs.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "lava_hydra_spawn",
+      "name": "Lava Hydra Spawn",
+      "tier": 44,
+      "description": "A multi-headed serpent of living magma, each head striking independently.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "volcanic_shade",
+      "name": "Volcanic Shade",
+      "tier": 44,
+      "description": "A heat mirage given lethal form, impossible to pin down.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ember_barricade",
+      "name": "Ember Barricade",
+      "tier": 44,
+      "description": "A massive wall of living cinders that absorbs all attacks and returns them as fire.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t44_ashkhan",
+      "name": "Ashkhan the Pyre Emperor",
+      "tier": 44,
+      "description": "An ancient demon emperor entombed in volcanic rock. His awakening melts the very walls of the arena.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": true
+    },
+    {
+      "id": "phoenix_ember_flock",
+      "name": "Phoenix Ember Flock",
+      "tier": 45,
+      "description": "A blazing flock of lesser phoenixes that reignite after every death.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "infernal_champion",
+      "name": "Infernal Champion",
+      "tier": 45,
+      "description": "The mightiest warrior of the volcanic pits, wreathed in unquenchable hellfire.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "magma_behemoth",
+      "name": "Magma Behemoth",
+      "tier": 45,
+      "description": "A titanic creature of lava and stone that reshapes the battlefield with every step.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_flame_dancer",
+      "name": "Shadow Flame Dancer",
+      "tier": 45,
+      "description": "Moves between dimensions of fire and shadow, striking from impossible angles.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "eternal_flame_guardian",
+      "name": "Eternal Flame Guardian",
+      "tier": 45,
+      "description": "A sentient bonfire that has burned since the dawn of time, guarding the deepest pit.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t45_ragnavok",
+      "name": "Ragnavok the Worldburner",
+      "tier": 45,
+      "description": "The final demon of the volcanic pits. His flames have consumed entire civilizations and left only ash.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "frost_wolf",
+      "name": "Frost Wolf",
+      "tier": 46,
+      "description": "A pale wolf with breath that freezes blood mid-flow.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "glacier_brute",
+      "name": "Glacier Brute",
+      "tier": 46,
+      "description": "A hulking warrior carved from living ice, slow but devastatingly powerful.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "nordic_shieldmaiden",
+      "name": "Nordic Shieldmaiden",
+      "tier": 46,
+      "description": "A fierce warrior of the frozen north wielding axe and frost-rimmed shield.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ice_stalker",
+      "name": "Ice Stalker",
+      "tier": 46,
+      "description": "Blends perfectly with the frozen arena, striking from behind walls of ice.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "permafrost_sentinel",
+      "name": "Permafrost Sentinel",
+      "tier": 46,
+      "description": "An ancient ice golem that has stood guard for a thousand frozen winters.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t46_frostgar",
+      "name": "Frostgar the Winterborn",
+      "tier": 46,
+      "description": "A Nordic warlord reborn as a creature of pure ice. His war cry freezes opponents in place.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "snowdrift_wraith_pack",
+      "name": "Snowdrift Wraith Pack",
+      "tier": 47,
+      "description": "Ghostly wolves of wind and snow that phase through solid defenses.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ice_troll",
+      "name": "Ice Troll",
+      "tier": 47,
+      "description": "A massive frost troll whose wounds seal over with fresh ice as fast as they are dealt.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "frozen_berserker",
+      "name": "Frozen Berserker",
+      "tier": 47,
+      "description": "A Norse warrior who channels the fury of blizzards into each devastating swing.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "blizzard_fox",
+      "name": "Blizzard Fox",
+      "tier": 47,
+      "description": "An arctic fox spirit that creates whiteout conditions before ambushing prey.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "icewall_golem",
+      "name": "Icewall Golem",
+      "tier": 47,
+      "description": "A walking glacier that forms protective barriers of solid ice.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t47_jotunhelm",
+      "name": "Jotunhelm the Frost Giant",
+      "tier": 47,
+      "description": "A towering giant from the frozen wastes whose club is a frozen oak tree. Each swing sends shockwaves of ice.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": true
+    },
+    {
+      "id": "ice_sprite_flurry",
+      "name": "Ice Sprite Flurry",
+      "tier": 48,
+      "description": "Tiny frost fairies whose collective cold can freeze a man solid in seconds.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "avalanche_bear",
+      "name": "Avalanche Bear",
+      "tier": 48,
+      "description": "A colossal polar bear whose charge triggers miniature avalanches in the arena.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "rune_viking",
+      "name": "Rune Viking",
+      "tier": 48,
+      "description": "A Nordic warrior inscribed with frost runes that empower his strikes with biting cold.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "glacial_assassin",
+      "name": "Glacial Assassin",
+      "tier": 48,
+      "description": "Wields daggers of never-melting ice that leave frostbitten wounds.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "frozen_bulwark",
+      "name": "Frozen Bulwark",
+      "tier": 48,
+      "description": "An immense shield of enchanted ice that regenerates faster than it can be broken.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t48_hrimfaxi",
+      "name": "Hrimfaxi the Night Frost",
+      "tier": 48,
+      "description": "A spectral horse of Norse legend whose mane drips with rime. Where it gallops, eternal winter follows.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "frost_bat_colony",
+      "name": "Frost Bat Colony",
+      "tier": 49,
+      "description": "Frozen bats that shatter on impact, embedding ice shards deep in flesh.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "glacier_mammoth",
+      "name": "Glacier Mammoth",
+      "tier": 49,
+      "description": "A mammoth encased in ancient ice, still fighting with primordial fury.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "valkyrie_warrior",
+      "name": "Valkyrie Warrior",
+      "tier": 49,
+      "description": "A divine shieldmaiden who judges the worthy and condemns the weak to frozen death.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "whiteout_shade",
+      "name": "Whiteout Shade",
+      "tier": 49,
+      "description": "Invisible in blizzard conditions, it strikes with crystalline precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "frost_colossus",
+      "name": "Frost Colossus",
+      "tier": 49,
+      "description": "A titan of compacted ice and frozen stone that towers over the arena walls.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t49_skadi",
+      "name": "Skadi the Eternal Winter",
+      "tier": 49,
+      "description": "A goddess of the frost who commands blizzards with a wave of her hand. Her spear never misses.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "ice_elemental_shard",
+      "name": "Ice Elemental Shard",
+      "tier": 50,
+      "description": "A fragment of pure elemental ice that radiates lethal cold in all directions.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "frozen_wyvern",
+      "name": "Frozen Wyvern",
+      "tier": 50,
+      "description": "A dragon of ice whose breath flash-freezes opponents into brittle statues.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "einherjar_champion",
+      "name": "Einherjar Champion",
+      "tier": 50,
+      "description": "A fallen warrior risen from Valhalla, fighting with the skill of ages past.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "snowblind_stalker",
+      "name": "Snowblind Stalker",
+      "tier": 50,
+      "description": "Hunts using vibrations in the ice, utterly silent and utterly lethal.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "crystal_ice_bastion",
+      "name": "Crystal Ice Bastion",
+      "tier": 50,
+      "description": "A living fortress of diamond-hard ice that reflects attacks with amplified force.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t50_niflgor",
+      "name": "Niflgor the Heart of Winter",
+      "tier": 50,
+      "description": "Born from the primordial ice at the center of the frozen wastes. His mere presence extinguishes all warmth.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "hailstorm_imp_swarm",
+      "name": "Hailstorm Imp Swarm",
+      "tier": 51,
+      "description": "Tiny frost demons that pelt opponents with razor-sharp hailstones.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "tundra_giant",
+      "name": "Tundra Giant",
+      "tier": 51,
+      "description": "A colossal being of frozen earth that uproots glaciers to use as weapons.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "frost_druid",
+      "name": "Frost Druid",
+      "tier": 51,
+      "description": "Commands the frozen wilderness itself, calling ice storms and frozen beasts to battle.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "icicle_wraith",
+      "name": "Icicle Wraith",
+      "tier": 51,
+      "description": "A spectral being that hurls icicle spears from the shadows with deadly accuracy.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "glacial_fortress",
+      "name": "Glacial Fortress",
+      "tier": 51,
+      "description": "A walking citadel of enchanted ice, nearly impervious to conventional weapons.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t51_ymirson",
+      "name": "Ymirson the Worldfreezer",
+      "tier": 51,
+      "description": "Descendant of the primordial frost giant. His heartbeat slows time itself in the frozen arena.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "polar_wind_spirits",
+      "name": "Polar Wind Spirits",
+      "tier": 52,
+      "description": "Howling spirits of arctic wind that slice through armor like paper.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "rimefang_drake",
+      "name": "Rimefang Drake",
+      "tier": 52,
+      "description": "An ice dragon whose scales are harder than steel and colder than death.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "nordic_jarl",
+      "name": "Nordic Jarl",
+      "tier": 52,
+      "description": "A legendary northern chieftain who rallies frozen warriors from their graves.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "permafrost_phantom",
+      "name": "Permafrost Phantom",
+      "tier": 52,
+      "description": "The frozen ghost of a warrior entombed in ice for millennia, now free and furious.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "ice_crystal_monolith",
+      "name": "Ice Crystal Monolith",
+      "tier": 52,
+      "description": "A towering pillar of sentient crystal ice that redirects all force back at attackers.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t52_glacius",
+      "name": "Glacius the Absolute Zero",
+      "tier": 52,
+      "description": "The temperature drops to impossible levels in his presence. Even fire itself freezes solid.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "frost_revenant_host",
+      "name": "Frost Revenant Host",
+      "tier": 53,
+      "description": "An army of frozen undead warriors that march in eerie silence across the ice.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ice_wyrm",
+      "name": "Ice Wyrm",
+      "tier": 53,
+      "description": "A serpentine ice dragon that burrows through frozen ground and erupts beneath its prey.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "runebound_skald",
+      "name": "Runebound Skald",
+      "tier": 53,
+      "description": "A Nordic bard whose war songs freeze the blood and shatter morale.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "aurora_blade",
+      "name": "Aurora Blade",
+      "tier": 53,
+      "description": "A spirit warrior forged from the northern lights, striking with prismatic frost.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cryogenic_titan",
+      "name": "Cryogenic Titan",
+      "tier": 53,
+      "description": "An ancient ice construct powered by a core of absolute zero energy.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t53_helkara",
+      "name": "Helkara the Blizzard Witch",
+      "tier": 53,
+      "description": "A sorceress who became one with the eternal blizzard. Her storms have buried entire kingdoms in ice.",
+      "role": "elite",
+      "stat_bias": "agi",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "frozen_soul_swarm",
+      "name": "Frozen Soul Swarm",
+      "tier": 54,
+      "description": "Tortured spirits trapped in ice crystals that wail and shatter against foes.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "frostfang_berserker",
+      "name": "Frostfang Berserker",
+      "tier": 54,
+      "description": "A warrior who has transcended mortal cold, his body half-frozen but his rage infinite.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "ice_valkyrie",
+      "name": "Ice Valkyrie",
+      "tier": 54,
+      "description": "An immortal chooser of the slain who descends on frozen wings to claim her kills.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "frostbite_specter",
+      "name": "Frostbite Specter",
+      "tier": 54,
+      "description": "Its touch causes instant necrotic frostbite that spreads until nothing remains.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "eternal_ice_guardian",
+      "name": "Eternal Ice Guardian",
+      "tier": 54,
+      "description": "The final protector of the frozen throne, forged from ice older than the world.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t54_thrymjord",
+      "name": "Thrymjord the Frost Tyrant",
+      "tier": 54,
+      "description": "A frozen demigod whose throne sits atop a mountain of frozen enemies. His gaze alone can encase warriors in ice.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": true
+    },
+    {
+      "id": "ragnarok_frost_horde",
+      "name": "Ragnarok Frost Horde",
+      "tier": 55,
+      "description": "The final wave of frozen warriors heralding the end of all warm-blooded life.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "ancient_frost_dragon",
+      "name": "Ancient Frost Dragon",
+      "tier": 55,
+      "description": "The oldest and most powerful ice dragon, whose wings blot out the sun with howling blizzards.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "odin_einherjar",
+      "name": "Odin's Einherjar",
+      "tier": 55,
+      "description": "The greatest warriors ever chosen by the Allfather, fighting with divine frozen fury.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "nidhogg_frostkin",
+      "name": "Nidhogg Frostkin",
+      "tier": 55,
+      "description": "A spawn of the world-serpent adapted to the frozen depths, striking with cosmic cold.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "yggdrasil_ice_root",
+      "name": "Yggdrasil Ice Root",
+      "tier": 55,
+      "description": "A frozen root of the world tree given sentience, shielding itself with layers of primordial ice.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t55_fimbulvinter",
+      "name": "Fimbulvinter the Endless Cold",
+      "tier": 55,
+      "description": "The personification of the great winter that ends all things. No flame, no hope, no warmth survives in his presence.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "shadow_wisp_swarm",
+      "name": "Shadow Wisp Swarm",
+      "tier": 56,
+      "description": "Tiny motes of living darkness that cluster and suffocate the light.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "umbral_soldier",
+      "name": "Umbral Soldier",
+      "tier": 56,
+      "description": "A warrior forged from solidified shadow, wielding blades of condensed darkness.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shade_hulk",
+      "name": "Shade Hulk",
+      "tier": 56,
+      "description": "A massive shadow entity that grows larger and more violent when enraged.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "gloom_sentinel",
+      "name": "Gloom Sentinel",
+      "tier": 56,
+      "description": "A guardian of the shadow realm that generates barriers of impenetrable darkness.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "dark_whisper",
+      "name": "Dark Whisper",
+      "tier": 56,
+      "description": "An invisible shadow killer that whispers a victim's name before striking.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t56_umbraxis",
+      "name": "Umbraxis, Lord of the Dark Veil",
+      "tier": 56,
+      "description": "The sovereign of the shadow realm's outer darkness, whose gaze marks souls for oblivion.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "death_mark",
+      "is_boss": true
+    },
+    {
+      "id": "void_imp_cluster",
+      "name": "Void Imp Cluster",
+      "tier": 57,
+      "description": "Small void creatures that swarm from tears in reality, nipping and clawing.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_knight",
+      "name": "Shadow Knight",
+      "tier": 57,
+      "description": "A knight consumed by shadow, draining life with every strike of his dark blade.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "nightfall_brute",
+      "name": "Nightfall Brute",
+      "tier": 57,
+      "description": "A towering shadow beast that embodies the crushing weight of eternal night.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "gloom_weaver",
+      "name": "Gloom Weaver",
+      "tier": 57,
+      "description": "A dark mage who weaves protective spells from strands of living shadow.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "penumbra_stalker",
+      "name": "Penumbra Stalker",
+      "tier": 57,
+      "description": "A predator that exists in the space between light and dark, striking from twilight.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t57_noctherion",
+      "name": "Noctherion, the Eternal Eclipse",
+      "tier": 57,
+      "description": "A shadow titan that eclipses all light, feeding on the life force of everything in its darkness.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": true
+    },
+    {
+      "id": "dark_tendril_mass",
+      "name": "Dark Tendril Mass",
+      "tier": 58,
+      "description": "A writhing mass of shadow tendrils that ensnare and slowly drain victims.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "wraith_blade",
+      "name": "Wraith Blade",
+      "tier": 58,
+      "description": "A spectral warrior wielding a sword that cuts both flesh and spirit.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_crusher",
+      "name": "Void Crusher",
+      "tier": 58,
+      "description": "A being of condensed void energy, impossibly dense and crushingly powerful.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "eclipse_witch",
+      "name": "Eclipse Witch",
+      "tier": 58,
+      "description": "A sorceress who draws power from eclipses, cursing foes with shadow marks.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "shade_runner",
+      "name": "Shade Runner",
+      "tier": 58,
+      "description": "The fastest shadow predator, finishing wounded targets before they can react.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t58_tenebrus",
+      "name": "Tenebrus, the Darkness Between Stars",
+      "tier": 58,
+      "description": "An ancient void entity that represents the darkness between stars, erasing existence with a touch.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "death_mark",
+      "is_boss": true
+    },
+    {
+      "id": "shadow_vermin_tide",
+      "name": "Shadow Vermin Tide",
+      "tier": 59,
+      "description": "A carpet of shadow rats that devour everything in their path.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dark_paladin",
+      "name": "Dark Paladin",
+      "tier": 59,
+      "description": "A holy warrior corrupted by shadow, channeling darkness instead of light.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "umbral_colossus",
+      "name": "Umbral Colossus",
+      "tier": 59,
+      "description": "A giant made of living shadow that grows more solid as it absorbs attacks.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "nightmare_herald",
+      "name": "Nightmare Herald",
+      "tier": 59,
+      "description": "A shadow caster that empowers nearby dark creatures with nightmare energy.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "void_assassin",
+      "name": "Void Assassin",
+      "tier": 59,
+      "description": "A killer who steps through the void between moments to strike unseen.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t59_morpheus_shadow",
+      "name": "Morpheus, the Shadow That Walks",
+      "tier": 59,
+      "description": "A sentient shadow that commands all dark creatures, walking through dreams and darkness alike.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": true
+    },
+    {
+      "id": "dark_matter_swarm",
+      "name": "Dark Matter Swarm",
+      "tier": 60,
+      "description": "Particles of antimatter-shadow that dissolve matter on contact.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_reaver",
+      "name": "Shadow Reaver",
+      "tier": 60,
+      "description": "A reaper of shadows that claims souls with a blade of pure darkness.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dusk_behemoth",
+      "name": "Dusk Behemoth",
+      "tier": 60,
+      "description": "A titanic shadow beast that blots out all light as it charges.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_oracle",
+      "name": "Void Oracle",
+      "tier": 60,
+      "description": "A seer who perceives all possible shadow timelines and manipulates them.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "phantom_blade_master",
+      "name": "Phantom Blade Master",
+      "tier": 60,
+      "description": "A grandmaster of shadow combat whose blade strikes are invisible to the eye.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t60_nihilum",
+      "name": "Nihilum, the Consuming Void",
+      "tier": 60,
+      "description": "A sentient black hole of shadow energy that consumes time, space, and meaning.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "time_warp",
+      "is_boss": true
+    },
+    {
+      "id": "shadow_hatchlings",
+      "name": "Shadow Hatchlings",
+      "tier": 61,
+      "description": "Newborn void creatures that erupt from shadow eggs in ravenous swarms.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dark_warden",
+      "name": "Dark Warden",
+      "tier": 61,
+      "description": "A shadow guardian whose body retaliates with dark energy against every blow.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "gloom_titan",
+      "name": "Gloom Titan",
+      "tier": 61,
+      "description": "A massive creature of congealed darkness that rampages when threatened.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "twilight_enchantress",
+      "name": "Twilight Enchantress",
+      "tier": 61,
+      "description": "A shadow mage who freezes foes in stasis with spells of eternal twilight.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": false
+    },
+    {
+      "id": "nightshade_striker",
+      "name": "Nightshade Striker",
+      "tier": 61,
+      "description": "A shadow warrior armed with weapons coated in soul-numbing darkness.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t61_erebos",
+      "name": "Erebos, the Primordial Dark",
+      "tier": 61,
+      "description": "The first shadow that existed before light was born, a primordial entity of absolute darkness.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "shadow_bat_swarm",
+      "name": "Shadow Bat Swarm",
+      "tier": 62,
+      "description": "A cloud of darkness bats that swirl and buffet foes into disorientation.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dusk_champion",
+      "name": "Dusk Champion",
+      "tier": 62,
+      "description": "An elite shadow warrior who wields a shield of crystallized darkness.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "void_mammoth",
+      "name": "Void Mammoth",
+      "tier": 62,
+      "description": "A prehistoric beast resurrected from shadow, trampling all in its path.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_necromancer",
+      "name": "Shadow Necromancer",
+      "tier": 62,
+      "description": "A dark spellcaster who raises fallen shadow creatures to fight again.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "umbral_blade",
+      "name": "Umbral Blade",
+      "tier": 62,
+      "description": "An assassin who becomes one with shadow, a living weapon of darkness.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t62_shade_empress",
+      "name": "The Shade Empress, Sovereign of Gloom",
+      "tier": 62,
+      "description": "The queen of all shadow creatures, commanding an empire of eternal night.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": true
+    },
+    {
+      "id": "void_mites",
+      "name": "Void Mites",
+      "tier": 63,
+      "description": "Microscopic void parasites that swarm in visible clouds, erasing matter.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_centurion",
+      "name": "Shadow Centurion",
+      "tier": 63,
+      "description": "A commanding shadow warrior that fights with the fury of a condemned army.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "darkness_incarnate",
+      "name": "Darkness Incarnate",
+      "tier": 63,
+      "description": "A being of absolute darkness given physical form, impossibly resilient.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "shadow_seer",
+      "name": "Shadow Seer",
+      "tier": 63,
+      "description": "A prophet of the void who foresees and hastens the doom of all it gazes upon.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "dark_razor",
+      "name": "Dark Razor",
+      "tier": 63,
+      "description": "A shadow so sharp it cuts through reality, eliminating targets with surgical precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t63_void_king",
+      "name": "The Void King, Ruler of Nothingness",
+      "tier": 63,
+      "description": "The king of the void itself, who reduces all he touches to empty nothingness.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "death_mark",
+      "is_boss": true
+    },
+    {
+      "id": "shadow_scarab_plague",
+      "name": "Shadow Scarab Plague",
+      "tier": 64,
+      "description": "Swarms of void-touched beetles that spread a decaying shadow miasma.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dread_wraith_shadow",
+      "name": "Dread Wraith",
+      "tier": 64,
+      "description": "A powerful undead shadow that drains the very essence of life.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "shadow_juggernaut",
+      "name": "Shadow Juggernaut",
+      "tier": 64,
+      "description": "An unstoppable mass of dark energy that barrels through all obstacles.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_channeler",
+      "name": "Void Channeler",
+      "tier": 64,
+      "description": "A shadow caster who channels the void into protective barriers.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "midnight_fang",
+      "name": "Midnight Fang",
+      "tier": 64,
+      "description": "A vampiric shadow predator that hunts exclusively in total darkness.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t64_darkfather",
+      "name": "The Darkfather, Progenitor of Shadows",
+      "tier": 64,
+      "description": "The original shadow from which all others spawned, wrathful and absolute in power.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "entropy_mote_cloud",
+      "name": "Entropy Mote Cloud",
+      "tier": 65,
+      "description": "A swirling cloud of shadow particles that erode the fabric of existence.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "shadow_lord_knight",
+      "name": "Shadow Lord Knight",
+      "tier": 65,
+      "description": "The most elite warrior of the shadow realm, forged in absolute darkness.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "abyssal_shadow_beast",
+      "name": "Abyssal Shadow Beast",
+      "tier": 65,
+      "description": "A monstrous shadow creature that feeds on ambient darkness to grow stronger.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "oblivion_sage",
+      "name": "Oblivion Sage",
+      "tier": 65,
+      "description": "A master of shadow magic who can slow time within zones of darkness.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "nether_phantom",
+      "name": "Nether Phantom",
+      "tier": 65,
+      "description": "The deadliest shadow assassin, a phantom that erases targets from existence.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t65_oblivion_itself",
+      "name": "Oblivion Incarnate, the End of All Light",
+      "tier": 65,
+      "description": "The living embodiment of oblivion, an entity that represents the ultimate end of all light and hope.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": true
+    },
+    {
+      "id": "cherub_squadron",
+      "name": "Cherub Squadron",
+      "tier": 66,
+      "description": "Small winged celestials that attack in coordinated flight formations.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "temple_guardian_divine",
+      "name": "Temple Guardian",
+      "tier": 66,
+      "description": "A divine warrior tasked with guarding sacred places from the unworthy.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "radiant_golem",
+      "name": "Radiant Golem",
+      "tier": 66,
+      "description": "A construct of divine marble infused with holy light, nearly unbreakable.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "celestial_archer",
+      "name": "Celestial Archer",
+      "tier": 66,
+      "description": "A divine marksman whose arrows of light strike with perfect precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "prayer_sentinel",
+      "name": "Prayer Sentinel",
+      "tier": 66,
+      "description": "A construct sustained by collective prayer, generating divine barriers.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t66_seraphiel",
+      "name": "Seraphiel, Guardian of the First Gate",
+      "tier": 66,
+      "description": "An angelic guardian of immense power who tests all who seek the divine path.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": true
+    },
+    {
+      "id": "holy_sprite_flock",
+      "name": "Holy Sprite Flock",
+      "tier": 67,
+      "description": "Tiny beings of pure divine light that swarm and blind intruders.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "divine_legionnaire",
+      "name": "Divine Legionnaire",
+      "tier": 67,
+      "description": "A heavenly soldier wielding a golden shield blessed by the gods.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "alabaster_giant",
+      "name": "Alabaster Giant",
+      "tier": 67,
+      "description": "A towering divine construct of white stone that strikes with holy force.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "light_weaver",
+      "name": "Light Weaver",
+      "tier": 67,
+      "description": "A celestial healer who weaves threads of divine light to mend wounds.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "judgment_blade",
+      "name": "Judgment Blade",
+      "tier": 67,
+      "description": "A divine executioner whose blade passes judgment on the unworthy.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t67_high_arbiter",
+      "name": "The High Arbiter, Voice of Judgment",
+      "tier": 67,
+      "description": "A celestial judge who pronounces divine sentences that become reality.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "death_mark",
+      "is_boss": true
+    },
+    {
+      "id": "golden_scarab_swarm",
+      "name": "Golden Scarab Swarm",
+      "tier": 68,
+      "description": "Blessed scarabs of golden carapace that swarm in dazzling clouds.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "valkyrie_champion",
+      "name": "Valkyrie Champion",
+      "tier": 68,
+      "description": "A divine warrior maiden who fights with celestial fury on the battlefield.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "celestial_bull",
+      "name": "Celestial Bull",
+      "tier": 68,
+      "description": "A massive divine beast of pure white that charges with unstoppable force.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "sanctuary_warden",
+      "name": "Sanctuary Warden",
+      "tier": 68,
+      "description": "A divine protector that strengthens its defenses the more it is attacked.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "grace_phantom",
+      "name": "Grace Phantom",
+      "tier": 68,
+      "description": "A celestial spirit that moves with divine grace, striking before mortals can react.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t68_auriel",
+      "name": "Auriel, the Dawn Bringer",
+      "tier": 68,
+      "description": "A divine warrior whose fury channels the power of the rising sun itself.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": true
+    },
+    {
+      "id": "light_wisp_storm",
+      "name": "Light Wisp Storm",
+      "tier": 69,
+      "description": "A maelstrom of divine sparks that overwhelm with blinding radiance.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "angel_knight",
+      "name": "Angel Knight",
+      "tier": 69,
+      "description": "A fully armored celestial knight wielding a blade of solidified starlight.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "divine_charger",
+      "name": "Divine Charger",
+      "tier": 69,
+      "description": "A celestial war beast clad in divine plate, charging with thunderous impact.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "oracle_of_light",
+      "name": "Oracle of Light",
+      "tier": 69,
+      "description": "A divine seer who strengthens allies by revealing the path to victory.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "holy_ghost_blade",
+      "name": "Holy Ghost Blade",
+      "tier": 69,
+      "description": "A spectral divine warrior that claims life force to sustain its holy mission.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t69_solarius",
+      "name": "Solarius, the Radiant Judge",
+      "tier": 69,
+      "description": "A celestial magistrate whose radiance empowers all divine servants in his presence.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": true
+    },
+    {
+      "id": "seraph_wing_flock",
+      "name": "Seraph Wing Flock",
+      "tier": 70,
+      "description": "Disembodied divine wings that swarm and buffet foes with holy wind.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "crusader_of_light",
+      "name": "Crusader of Light",
+      "tier": 70,
+      "description": "An elite divine warrior bearing an unbreakable shield of pure light.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "righteous_colossus",
+      "name": "Righteous Colossus",
+      "tier": 70,
+      "description": "A towering divine statue given life, its fists delivering heaven's wrath.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "purifier_divine",
+      "name": "Purifier",
+      "tier": 70,
+      "description": "A celestial healer-warrior that purifies corruption and mends wounds simultaneously.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "divine_avenger",
+      "name": "Divine Avenger",
+      "tier": 70,
+      "description": "A celestial agent of retribution who eliminates those marked for divine punishment.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t70_archangel_mikhael",
+      "name": "Archangel Mikhael, the Sword of Heaven",
+      "tier": 70,
+      "description": "The supreme warrior of the celestial host, whose sword calls down divine lightning.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "lightning_storm",
+      "is_boss": true
+    },
+    {
+      "id": "divine_spark_cluster",
+      "name": "Divine Spark Cluster",
+      "tier": 71,
+      "description": "Clusters of divine energy that pelt foes with bolts of holy fire.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "throne_guard_divine",
+      "name": "Throne Guard",
+      "tier": 71,
+      "description": "An elite celestial protector that reflects attacks with divine mirrors.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "sacred_mammoth",
+      "name": "Sacred Mammoth",
+      "tier": 71,
+      "description": "A blessed beast of enormous size that tramples everything in its path.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "star_caller",
+      "name": "Star Caller",
+      "tier": 71,
+      "description": "A celestial mage who calls down strikes of stellar energy.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "lightning_storm",
+      "is_boss": false
+    },
+    {
+      "id": "holy_shadow_hunter",
+      "name": "Holy Shadow Hunter",
+      "tier": 71,
+      "description": "A divine agent trained to hunt shadow creatures, equally deadly against mortals.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t71_celestine",
+      "name": "Celestine, the Star Forger",
+      "tier": 71,
+      "description": "A celestial being who forges stars and hurls them as weapons of divine judgment.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "lightning_storm",
+      "is_boss": true
+    },
+    {
+      "id": "glory_mote_swarm",
+      "name": "Glory Mote Swarm",
+      "tier": 72,
+      "description": "Tiny fragments of divine glory that burn mortals with their radiance.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "divine_templar",
+      "name": "Divine Templar",
+      "tier": 72,
+      "description": "A holy warrior clad in divinely forged armor that resists all mortal weapons.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "empyrean_beast",
+      "name": "Empyrean Beast",
+      "tier": 72,
+      "description": "A great beast from the highest heavens, wrathful when its domain is invaded.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "divine_constructor",
+      "name": "Divine Constructor",
+      "tier": 72,
+      "description": "A celestial architect that builds divine fortifications in real-time.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "astral_assassin",
+      "name": "Astral Assassin",
+      "tier": 72,
+      "description": "A divine killer who strikes from the astral plane with perfect timing.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t72_empyrean_lord",
+      "name": "The Empyrean Lord, Keeper of the Gates",
+      "tier": 72,
+      "description": "The divine gatekeeper who has never been overcome, defending heaven's entrance for eternity.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": true
+    },
+    {
+      "id": "angel_feather_storm",
+      "name": "Angel Feather Storm",
+      "tier": 73,
+      "description": "Razor-sharp divine feathers that swirl in cutting cyclones.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "heaven_champion",
+      "name": "Heaven's Champion",
+      "tier": 73,
+      "description": "The greatest warrior of the divine trials, fighting with righteous fury.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "celestial_dragon",
+      "name": "Celestial Dragon",
+      "tier": 73,
+      "description": "A divine dragon of pure gold that heals its wounds with celestial energy.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "fate_weaver_angel",
+      "name": "Fate Weaver Angel",
+      "tier": 73,
+      "description": "A celestial being that manipulates the threads of fate and time.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "radiance_stalker",
+      "name": "Radiance Stalker",
+      "tier": 73,
+      "description": "A divine hunter that conceals itself within blinding light.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t73_divinus_rex",
+      "name": "Divinus Rex, the God-Blooded",
+      "tier": 73,
+      "description": "A being with the blood of gods running through its veins, regenerating from any wound dealt by mortals.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": true
+    },
+    {
+      "id": "sanctified_swarm",
+      "name": "Sanctified Swarm",
+      "tier": 74,
+      "description": "A horde of blessed insects that strip corruption and flesh alike.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "eternal_crusader",
+      "name": "Eternal Crusader",
+      "tier": 74,
+      "description": "An immortal divine warrior who has fought since the dawn of creation.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "holy_titan_construct",
+      "name": "Holy Titan Construct",
+      "tier": 74,
+      "description": "A massive divine automaton built to withstand the forces of apocalypse.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "divine_chorus",
+      "name": "Divine Chorus",
+      "tier": 74,
+      "description": "A collective of singing angels whose hymns empower all divine beings nearby.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "judgment_phantom",
+      "name": "Judgment Phantom",
+      "tier": 74,
+      "description": "A spectral judge that marks the guilty for immediate divine execution.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t74_supreme_seraph",
+      "name": "The Supreme Seraph, Heaven's Wrath",
+      "tier": 74,
+      "description": "The highest-ranking seraph, whose war cry rallies the entire celestial host to battle.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "rally",
+      "is_boss": true
+    },
+    {
+      "id": "divine_essence_cloud",
+      "name": "Divine Essence Cloud",
+      "tier": 75,
+      "description": "A cloud of pure divine energy that burns the profane on contact.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "god_sworn_champion",
+      "name": "God-Sworn Champion",
+      "tier": 75,
+      "description": "The ultimate divine warrior, sworn to a deity and given a fraction of their power.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "celestial_leviathan",
+      "name": "Celestial Leviathan",
+      "tier": 75,
+      "description": "A titanic divine beast whose movements shake the foundations of heaven.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": false
+    },
+    {
+      "id": "ascendant_oracle",
+      "name": "Ascendant Oracle",
+      "tier": 75,
+      "description": "A mortal who has ascended to divine status, seeing all possible futures.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "divine_reaper",
+      "name": "Divine Reaper",
+      "tier": 75,
+      "description": "Heaven's final executioner, whose scythe severs the thread of life.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t75_god_emperor",
+      "name": "The God-Emperor, Pinnacle of Divinity",
+      "tier": 75,
+      "description": "The supreme ruler of the divine trials, a being of such power that reality bends to his will.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "time_warp",
+      "is_boss": true
+    },
+    {
+      "id": "boulder_imp_swarm",
+      "name": "Boulder Imp Swarm",
+      "tier": 76,
+      "description": "Tiny earth spirits that hurl rocks and swarm around the feet of titans.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "titan_footsoldier",
+      "name": "Titan Footsoldier",
+      "tier": 76,
+      "description": "A giant warrior standing three times the height of a man, wielding a crude boulder-club.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "earth_colossus",
+      "name": "Earth Colossus",
+      "tier": 76,
+      "description": "A massive stone giant that causes earthquakes with every step.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": false
+    },
+    {
+      "id": "mountain_sage",
+      "name": "Mountain Sage",
+      "tier": 76,
+      "description": "An ancient giant wizard who fortifies allies with the strength of mountains.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "cliff_stalker_giant",
+      "name": "Cliff Stalker Giant",
+      "tier": 76,
+      "description": "A surprisingly agile giant that leaps from cliffsides to crush unsuspecting prey.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t76_atlas_reborn",
+      "name": "Atlas Reborn, Bearer of Worlds",
+      "tier": 76,
+      "description": "A primordial titan reborn, whose shoulders once bore the weight of the world itself.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": true
+    },
+    {
+      "id": "rubble_swarm",
+      "name": "Rubble Swarm",
+      "tier": 77,
+      "description": "Animated chunks of titan-worked stone that crush and grind intruders.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "storm_giant",
+      "name": "Storm Giant",
+      "tier": 77,
+      "description": "A giant who commands the power of storms, hurling lightning with each strike.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "lightning_storm",
+      "is_boss": false
+    },
+    {
+      "id": "iron_titan",
+      "name": "Iron Titan",
+      "tier": 77,
+      "description": "A giant clad in plates of primordial iron, virtually immune to mortal weapons.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "primordial_shaman",
+      "name": "Primordial Shaman",
+      "tier": 77,
+      "description": "A titan mystic who channels the primal forces of creation to empower allies.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "avalanche_giant",
+      "name": "Avalanche Giant",
+      "tier": 77,
+      "description": "A giant of ice and stone that barrels down slopes, consuming everything in its path.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t77_kronarch",
+      "name": "The Kronarch, Father of Giants",
+      "tier": 77,
+      "description": "The primordial patriarch of all giantkind, whose roar commands every titan to war.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "rally",
+      "is_boss": true
+    },
+    {
+      "id": "titan_spawn_brood",
+      "name": "Titan Spawn Brood",
+      "tier": 78,
+      "description": "The offspring of titans, each the size of a horse and ravenously hungry.",
+      "role": "swarm",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "world_breaker_giant",
+      "name": "World Breaker Giant",
+      "tier": 78,
+      "description": "A colossal giant whose rage can shatter continents.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "titan_war_shielder",
+      "name": "Titan War Shielder",
+      "tier": 78,
+      "description": "A giant bearing a shield the size of a castle gate, protecting its kin.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "elder_titan_mystic",
+      "name": "Elder Titan Mystic",
+      "tier": 78,
+      "description": "An ancient titan who manipulates time, having lived since before recorded history.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "sky_giant_diver",
+      "name": "Sky Giant Diver",
+      "tier": 78,
+      "description": "A giant that dwells in the clouds and plummets earthward to crush foes on impact.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t78_gaia_wrath",
+      "name": "Gaia's Wrath, the Living Mountain",
+      "tier": 78,
+      "description": "A titan so vast it is mistaken for a mountain range, and when it wakes, continents tremble.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": true
+    },
+    {
+      "id": "primordial_mite_swarm",
+      "name": "Primordial Mite Swarm",
+      "tier": 79,
+      "description": "Ancient parasites that feed on titan blood, draining the life from any creature.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "titan_executioner",
+      "name": "Titan Executioner",
+      "tier": 79,
+      "description": "A titan warrior whose axe has felled gods, fighting with primal fury.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "continent_crusher",
+      "name": "Continent Crusher",
+      "tier": 79,
+      "description": "A titan whose body is made of compressed planetary matter, nearly indestructible.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "cosmic_sage",
+      "name": "Cosmic Sage",
+      "tier": 79,
+      "description": "A primordial sage who reflects any force directed at it using cosmic energy.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "void_titan_scout",
+      "name": "Void Titan Scout",
+      "tier": 79,
+      "description": "A titan that moves between dimensions, striking from the void with lethal precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t79_hyperion_reborn",
+      "name": "Hyperion Reborn, the Sun Titan",
+      "tier": 79,
+      "description": "A primordial titan of light and fire reborn, whose body blazes with the fury of a dying star.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "reflect",
+      "is_boss": true
+    },
+    {
+      "id": "cosmic_dust_swarm",
+      "name": "Cosmic Dust Swarm",
+      "tier": 80,
+      "description": "Remnants of destroyed worlds that swirl in aggressive clouds of annihilation.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "titan_of_war",
+      "name": "Titan of War",
+      "tier": 80,
+      "description": "A primordial being born solely for combat, the ultimate expression of conflict.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "world_eater",
+      "name": "World Eater",
+      "tier": 80,
+      "description": "A titan that devours planets to sustain itself, regenerating endlessly from consumed matter.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "primordial_oracle",
+      "name": "Primordial Oracle",
+      "tier": 80,
+      "description": "A being that existed before time itself, manipulating causality with a thought.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "eon_stalker",
+      "name": "Eon Stalker",
+      "tier": 80,
+      "description": "A primordial hunter that has stalked prey across eons, never failing to make the kill.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t80_cosmogon",
+      "name": "Cosmogon, the World Forger",
+      "tier": 80,
+      "description": "The primordial titan who forged worlds from raw chaos. To face him is to challenge creation itself.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": true
+    },
+    {
+      "id": "colossal_footfall_swarm",
+      "name": "Colossal Footfall Swarm",
+      "tier": 81,
+      "description": "Tiny parasites shaken loose from a titan body, each carrying devastating plague.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "mountain_strider",
+      "name": "Mountain Strider",
+      "tier": 81,
+      "description": "A titan so vast its legs resemble moving mountain ranges crushing everything below.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "earthshatter_brute",
+      "name": "Earthshatter Brute",
+      "tier": 81,
+      "description": "Every step cracks the continental shelf. Its fists reshape geography.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "titanic_warseer",
+      "name": "Titanic Warseer",
+      "tier": 81,
+      "description": "An ancient titan oracle who reads fate in the cracks of splitting tectonic plates.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "skyreach_stalker",
+      "name": "Skyreach Stalker",
+      "tier": 81,
+      "description": "A lean titan hunter that ambushes from cloud cover, striking with continent-splitting precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t81_tethys_worldbearer",
+      "name": "Tethys the Worldbearer",
+      "tier": 81,
+      "description": "A primordial titan who carries a dying world on her shoulders. When she fights, continents tremble.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": true
+    },
+    {
+      "id": "titan_bone_swarm",
+      "name": "Titan Bone Swarm",
+      "tier": 82,
+      "description": "Shards of fallen titans animate into a whirlwind of colossal bone fragments.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "planetary_sentinel",
+      "name": "Planetary Sentinel",
+      "tier": 82,
+      "description": "A guardian titan forged from the core of a dead planet, burning with stellar heat.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "continental_mauler",
+      "name": "Continental Mauler",
+      "tier": 82,
+      "description": "Its claws carve new coastlines. Oceans flood in the wake of its attacks.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "rift_titan_soldier",
+      "name": "Rift Titan Soldier",
+      "tier": 82,
+      "description": "Marches through dimensional tears, wielding weapons forged in collapsed realities.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "gravity_well_stalker",
+      "name": "Gravity Well Stalker",
+      "tier": 82,
+      "description": "Bends spacetime around itself to become invisible, then strikes with gravitational force.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t82_ouranox",
+      "name": "Ouranox, Pillar of the Sky",
+      "tier": 82,
+      "description": "His spine is the axis of the heavens. To topple him is to unpin the stars from the firmament.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "lightning_storm",
+      "is_boss": true
+    },
+    {
+      "id": "orbital_mite_cloud",
+      "name": "Orbital Mite Cloud",
+      "tier": 83,
+      "description": "Microscopic titan parasites that orbit in swarms dense enough to blot out the sun.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "tectonic_legionnaire",
+      "name": "Tectonic Legionnaire",
+      "tier": 83,
+      "description": "A disciplined titan warrior whose shield is a slab of mantle rock still glowing with heat.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "magma_heart_colossus",
+      "name": "Magma Heart Colossus",
+      "tier": 83,
+      "description": "Its chest cavity is an active volcano. Each heartbeat sends lava surging through its veins.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "singularity_hunter",
+      "name": "Singularity Hunter",
+      "tier": 83,
+      "description": "Collapses space around its prey, trapping them in micro-gravity wells before the killing blow.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "ancient_worldforge_keeper",
+      "name": "Ancient Worldforge Keeper",
+      "tier": 83,
+      "description": "Tends the cosmic forge where planets are hammered into shape by titanic hands.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t83_gaiathron",
+      "name": "Gaiathron, the Living Continent",
+      "tier": 83,
+      "description": "An entire landmass given sentience and fury. Cities crumble to dust in the shadow of its rising.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "earthquake",
+      "is_boss": true
+    },
+    {
+      "id": "stellar_dust_horde",
+      "name": "Stellar Dust Horde",
+      "tier": 84,
+      "description": "Remnants of a shattered star titan that attack as a billion burning fragments.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "world_anvil_guardian",
+      "name": "World Anvil Guardian",
+      "tier": 84,
+      "description": "Protects the primordial forge where new worlds are shaped from cosmic debris.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "horizon_breaker",
+      "name": "Horizon Breaker",
+      "tier": 84,
+      "description": "So tall that its silhouette bends the visible horizon. It fights by reshaping the curvature of the world.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_touched_titan",
+      "name": "Void-Touched Titan",
+      "tier": 84,
+      "description": "A once-noble titan corrupted by the abyss, leaking void energy from cracked skin.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "eclipse_hunter_titan",
+      "name": "Eclipse Hunter Titan",
+      "tier": 84,
+      "description": "Hunts during eclipses, using the shadow of moons to mask its strikes.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t84_pangaeus_prime",
+      "name": "Pangaeus Prime, Father of Landmasses",
+      "tier": 84,
+      "description": "The original supercontinent given form. His body is every landmass that ever existed, unified in wrath.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "iron_skin",
+      "is_boss": true
+    },
+    {
+      "id": "gravity_shard_swarm",
+      "name": "Gravity Shard Swarm",
+      "tier": 85,
+      "description": "Fragments of a titan gravitational core that warp reality as they swirl.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "titan_warlord_remnant",
+      "name": "Titan Warlord Remnant",
+      "tier": 85,
+      "description": "The ghost of a fallen titan general, still commanding phantom legions across dead worlds.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "planet_crusher_beast",
+      "name": "Planet Crusher Beast",
+      "tier": 85,
+      "description": "A primal titan beast that devours moons and excretes asteroid belts.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dimensional_rift_guard",
+      "name": "Dimensional Rift Guard",
+      "tier": 85,
+      "description": "Stationed at the border between the Titan Domain and the Eternal Abyss, holding back the void.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "celestial_nerve_assassin",
+      "name": "Celestial Nerve Assassin",
+      "tier": 85,
+      "description": "Targets the cosmic nerve clusters of other titans, paralyzing worlds with surgical precision.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t85_atlas_ultimus",
+      "name": "Atlas Ultimus, the Last Pillar",
+      "tier": 85,
+      "description": "The final titan standing between reality and the void. His fall opens the gate to the Eternal Abyss.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "final_stand",
+      "is_boss": true
+    },
+    {
+      "id": "void_spore_drift",
+      "name": "Void Spore Drift",
+      "tier": 86,
+      "description": "Mindless cosmic spores that dissolve matter on contact, drifting through the abyss in endless clouds.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "abyssal_legionnaire",
+      "name": "Abyssal Legionnaire",
+      "tier": 86,
+      "description": "A soldier forged from compressed darkness, wielding a blade that cuts through dimensional barriers.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "entropy_hulk",
+      "name": "Entropy Hulk",
+      "tier": 86,
+      "description": "A shambling mass of decaying realities, growing stronger as it consumes more existence.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "nullspace_infiltrator",
+      "name": "Nullspace Infiltrator",
+      "tier": 86,
+      "description": "Exists between dimensions, phasing in only to deliver killing strikes before vanishing.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "event_horizon_warden",
+      "name": "Event Horizon Warden",
+      "tier": 86,
+      "description": "Guards the boundary of a cosmic singularity, dragging attackers past the point of no return.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t86_nihilos_gatekeeper",
+      "name": "Nihilos, Gatekeeper of the Abyss",
+      "tier": 86,
+      "description": "The first horror encountered upon entering the Eternal Abyss. It exists to ensure nothing leaves.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "death_mark",
+      "is_boss": true
+    },
+    {
+      "id": "quantum_parasite_flock",
+      "name": "Quantum Parasite Flock",
+      "tier": 87,
+      "description": "Exists in superposition, attacking from every possible angle simultaneously.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "dread_void_knight",
+      "name": "Dread Void Knight",
+      "tier": 87,
+      "description": "An ancient warrior who surrendered his soul to the abyss in exchange for power beyond mortal comprehension.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cosmic_devourer",
+      "name": "Cosmic Devourer",
+      "tier": 87,
+      "description": "A beast that feeds on the fabric of spacetime itself, leaving nothingness in its wake.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "phantom_dimension_walker",
+      "name": "Phantom Dimension Walker",
+      "tier": 87,
+      "description": "Walks through collapsed realities, harvesting the last screams of dying universes.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "reality_anchor_sentinel",
+      "name": "Reality Anchor Sentinel",
+      "tier": 87,
+      "description": "The last stabilizing force in a region of total cosmic decay.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t87_xentharr",
+      "name": "Xentharr, the Unraveler",
+      "tier": 87,
+      "description": "Pulls at the threads of reality until existence frays. Entire timelines collapse in its presence.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": true
+    },
+    {
+      "id": "abyss_mote_tempest",
+      "name": "Abyss Mote Tempest",
+      "tier": 88,
+      "description": "A storm of void particles that erases anything caught within from the memory of the universe.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "oblivion_centurion",
+      "name": "Oblivion Centurion",
+      "tier": 88,
+      "description": "Commands legions of the forgotten, warriors erased from all timelines yet still fighting.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "rally",
+      "is_boss": false
+    },
+    {
+      "id": "void_leviathan_spawn",
+      "name": "Void Leviathan Spawn",
+      "tier": 88,
+      "description": "A juvenile cosmic horror already large enough to swallow stars.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "chrono_predator",
+      "name": "Chrono Predator",
+      "tier": 88,
+      "description": "Hunts by traveling backward through time to strike before its prey is born.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "null_bastion",
+      "name": "Null Bastion",
+      "tier": 88,
+      "description": "A fortress of anti-matter given consciousness, annihilating all who approach.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t88_vorthane",
+      "name": "Vorthane, Eater of Echoes",
+      "tier": 88,
+      "description": "Consumes the echoes of every sound ever made, growing stronger from the accumulated sorrow of eternity.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "vampiric",
+      "is_boss": true
+    },
+    {
+      "id": "reality_fragment_swarm",
+      "name": "Reality Fragment Swarm",
+      "tier": 89,
+      "description": "Broken shards of destroyed realities that slash through existence like cosmic shrapnel.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "doom_herald_knight",
+      "name": "Doom Herald Knight",
+      "tier": 89,
+      "description": "Announces the end of worlds with a horn whose sound disintegrates stars.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dimension_eater",
+      "name": "Dimension Eater",
+      "tier": 89,
+      "description": "Has consumed so many realities that its body is a patchwork of contradicting physics.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_phase_killer",
+      "name": "Void Phase Killer",
+      "tier": 89,
+      "description": "Shifts between states of existence and non-existence, impossible to fully hit.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "paradox_sentinel",
+      "name": "Paradox Sentinel",
+      "tier": 89,
+      "description": "Exists in a temporal loop, regenerating by reverting to an earlier state of being.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "regeneration",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t89_malachar_voidborn",
+      "name": "Malachar the Voidborn",
+      "tier": 89,
+      "description": "Born from pure nothingness, Malachar is the abyss given form. Where he walks, existence simply stops.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": true
+    },
+    {
+      "id": "extinction_mote_cloud",
+      "name": "Extinction Mote Cloud",
+      "tier": 90,
+      "description": "The collected dying breaths of a billion extinguished civilizations, compressed into a killing fog.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "apocalypse_knight",
+      "name": "Apocalypse Knight",
+      "tier": 90,
+      "description": "The embodiment of every apocalypse that has ever occurred, armored in the ashes of dead worlds.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "world_ender_titan",
+      "name": "World Ender Titan",
+      "tier": 90,
+      "description": "Has destroyed so many worlds it has lost count. Each step echoes with planetary death rattles.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "eternity_stalker",
+      "name": "Eternity Stalker",
+      "tier": 90,
+      "description": "Hunts across infinite timelines, always finding its prey regardless of when or where they flee.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cosmic_bulwark_ancient",
+      "name": "Cosmic Bulwark Ancient",
+      "tier": 90,
+      "description": "An elder void entity that has hardened itself into an impenetrable fortress of condensed spacetime.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "iron_skin",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t90_omnideus_the_undying",
+      "name": "Omnideus the Undying",
+      "tier": 90,
+      "description": "A god that has died and resurrected across a thousand realities. Each death made it stronger, each rebirth more terrible.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "regeneration, final_stand",
+      "is_boss": true
+    },
+    {
+      "id": "void_locust_plague",
+      "name": "Void Locust Plague",
+      "tier": 91,
+      "description": "Cosmic insects that devour the energy binding atoms together, dissolving matter at a fundamental level.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "terminus_blade_warrior",
+      "name": "Terminus Blade Warrior",
+      "tier": 91,
+      "description": "Wields a sword forged from the last moment of a dying universe.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "singularity_beast",
+      "name": "Singularity Beast",
+      "tier": 91,
+      "description": "A predator whose core is a black hole. Nothing that enters its maw ever returns.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "timeline_assassin",
+      "name": "Timeline Assassin",
+      "tier": 91,
+      "description": "Erases targets from history itself, making it as if they never existed.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "entropy_wall_construct",
+      "name": "Entropy Wall Construct",
+      "tier": 91,
+      "description": "A barrier built from crystallized entropy, growing more chaotic and dangerous the harder it is struck.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t91_khaelos_entropy_king",
+      "name": "Khaelos, the Entropy King",
+      "tier": 91,
+      "description": "Rules over the slow heat death of all things. His crown is the last light of a universe going dark.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "dark_energy_wisps",
+      "name": "Dark Energy Wisps",
+      "tier": 92,
+      "description": "Manifestations of the force driving the universe apart, tearing at the bonds of reality.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_crusader",
+      "name": "Void Crusader",
+      "tier": 92,
+      "description": "A fanatical warrior devoted to spreading the abyss into every remaining pocket of existence.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "antimatter_colossus",
+      "name": "Antimatter Colossus",
+      "tier": 92,
+      "description": "A walking annihilation event. Contact with normal matter triggers catastrophic energy releases.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "warp_shade_killer",
+      "name": "Warp Shade Killer",
+      "tier": 92,
+      "description": "Slips through warped space to appear inside an opponent guard, striking from impossible angles.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cosmic_aegis_golem",
+      "name": "Cosmic Aegis Golem",
+      "tier": 92,
+      "description": "Constructed from the shields of fallen reality guardians, layered into an impenetrable defense.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t92_vexarion_starbreaker",
+      "name": "Vexarion the Starbreaker",
+      "tier": 92,
+      "description": "Shatters suns with his bare hands and bathes in their dying light. Entire solar systems are his kindling.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": true
+    },
+    {
+      "id": "null_field_parasites",
+      "name": "Null Field Parasites",
+      "tier": 93,
+      "description": "Microscopic void creatures that generate fields where the laws of physics cease to function.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "eschaton_soldier",
+      "name": "Eschaton Soldier",
+      "tier": 93,
+      "description": "A warrior from the end of time, fighting backward through history to ensure nothing survives.",
+      "role": "soldier",
+      "stat_bias": "balanced",
+      "special_ability": "time_warp",
+      "is_boss": false
+    },
+    {
+      "id": "reality_breaker_brute",
+      "name": "Reality Breaker Brute",
+      "tier": 93,
+      "description": "Punches holes in the fabric of existence with every blow, leaving wounds in spacetime.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": false
+    },
+    {
+      "id": "entropy_phantom",
+      "name": "Entropy Phantom",
+      "tier": 93,
+      "description": "The ghost of a dead universe, still hunting for life to extinguish.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "dimensional_fortress",
+      "name": "Dimensional Fortress",
+      "tier": 93,
+      "description": "A guardian that exists across multiple dimensions simultaneously, blocking attacks from every reality.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t93_nethrazul",
+      "name": "Nethrazul, Lord of Null",
+      "tier": 93,
+      "description": "Commands the spaces between realities where nothing exists. He is the silence between heartbeats of the cosmos.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "reflect",
+      "is_boss": true
+    },
+    {
+      "id": "cosmic_cancer_swarm",
+      "name": "Cosmic Cancer Swarm",
+      "tier": 94,
+      "description": "A malignant growth on reality itself, spreading and consuming healthy spacetime.",
+      "role": "swarm",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "doom_paladin",
+      "name": "Doom Paladin",
+      "tier": 94,
+      "description": "Once a champion of light who gazed too long into the abyss. Now he serves the void with holy fervor.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "shield",
+      "is_boss": false
+    },
+    {
+      "id": "gravity_eater_hulk",
+      "name": "Gravity Eater Hulk",
+      "tier": 94,
+      "description": "Consumes gravitational force, causing everything around it to lose cohesion and float apart.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "void_wraith_prime",
+      "name": "Void Wraith Prime",
+      "tier": 94,
+      "description": "The alpha predator of the abyss, an apex hunter that has consumed a thousand lesser horrors.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "execute",
+      "is_boss": false
+    },
+    {
+      "id": "eternity_shield_bearer",
+      "name": "Eternity Shield Bearer",
+      "tier": 94,
+      "description": "Carries a shield forged from frozen time, halting all attacks in temporal stasis.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t94_aeonshatter",
+      "name": "Aeonshatter, Breaker of Ages",
+      "tier": 94,
+      "description": "Has destroyed every golden age of every civilization across every timeline. Progress itself fears his name.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "time_warp",
+      "is_boss": true
+    },
+    {
+      "id": "primordial_void_spores",
+      "name": "Primordial Void Spores",
+      "tier": 95,
+      "description": "The oldest organisms in the abyss, predating the first stars. They remember when there was only nothing.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "armageddon_soldier",
+      "name": "Armageddon Soldier",
+      "tier": 95,
+      "description": "Forged in the fires of a final moment, carrying weapons made from collapsed neutron stars.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "enrage",
+      "is_boss": false
+    },
+    {
+      "id": "oblivion_engine",
+      "name": "Oblivion Engine",
+      "tier": 95,
+      "description": "A mechanical horror constructed to systematically dismantle reality piece by piece.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "berserk",
+      "is_boss": false
+    },
+    {
+      "id": "fate_severer",
+      "name": "Fate Severer",
+      "tier": 95,
+      "description": "Cuts the threads of destiny itself, removing all possible futures from its targets.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "nexus_guardian_prime",
+      "name": "Nexus Guardian Prime",
+      "tier": 95,
+      "description": "The supreme defender of the last junction between surviving realities.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t95_voidmother_xylara",
+      "name": "Voidmother Xylara",
+      "tier": 95,
+      "description": "The mother of all void horrors, birthing new cosmic nightmares from the corpses of dead galaxies.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "summoner",
+      "is_boss": true
+    },
+    {
+      "id": "dark_matter_locust_horde",
+      "name": "Dark Matter Locust Horde",
+      "tier": 96,
+      "description": "Invisible swarms that consume the unseen scaffolding holding the universe together.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "lifesteal",
+      "is_boss": false
+    },
+    {
+      "id": "omega_void_knight",
+      "name": "Omega Void Knight",
+      "tier": 96,
+      "description": "The final evolution of void warriors, wielding a blade that cuts causality itself.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "universe_hammer_beast",
+      "name": "Universe Hammer Beast",
+      "tier": 96,
+      "description": "Its tail swing generates shockwaves that ripple across dimensional boundaries.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": false
+    },
+    {
+      "id": "causality_assassin",
+      "name": "Causality Assassin",
+      "tier": 96,
+      "description": "Kills by severing cause from effect, making wounds appear without strikes ever landing.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "infinite_wall_entity",
+      "name": "Infinite Wall Entity",
+      "tier": 96,
+      "description": "A defensive entity that extends infinitely in all directions across dimensional planes.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t96_cataklysmos",
+      "name": "Cataklysmos, the Living Apocalypse",
+      "tier": 96,
+      "description": "Not a being but an event given consciousness. It is the concept of total destruction made flesh.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "earthquake",
+      "is_boss": true
+    },
+    {
+      "id": "void_neuron_swarm",
+      "name": "Void Neuron Swarm",
+      "tier": 97,
+      "description": "The neural network of a dead cosmic entity, still firing phantom signals that burn reality.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "lightning_storm",
+      "is_boss": false
+    },
+    {
+      "id": "eschaton_champion",
+      "name": "Eschaton Champion",
+      "tier": 97,
+      "description": "The greatest warrior to ever emerge from the end of time, armored in crystallized entropy.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "final_stand",
+      "is_boss": false
+    },
+    {
+      "id": "multiverse_devourer",
+      "name": "Multiverse Devourer",
+      "tier": 97,
+      "description": "Feeds on parallel realities, growing larger with each universe consumed.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": "vampiric",
+      "is_boss": false
+    },
+    {
+      "id": "existential_phantom",
+      "name": "Existential Phantom",
+      "tier": 97,
+      "description": "Attacks the concept of its target existence rather than the physical form.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "last_bastion_golem",
+      "name": "Last Bastion Golem",
+      "tier": 97,
+      "description": "Built from the ruins of every civilization that tried to stand against the void and failed.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "fortify",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t97_entropis_supreme",
+      "name": "Entropis Supreme, the Heat Death",
+      "tier": 97,
+      "description": "The physical manifestation of the final state: total thermodynamic equilibrium, absolute stillness.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "annihilation_particle_storm",
+      "name": "Annihilation Particle Storm",
+      "tier": 98,
+      "description": "A hurricane of matter-antimatter reactions, erasing everything caught in its radius.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": "thorns",
+      "is_boss": false
+    },
+    {
+      "id": "infinity_blade_warrior",
+      "name": "Infinity Blade Warrior",
+      "tier": 98,
+      "description": "Wields a sword with infinite length folded into finite space. Every cut opens a wound across all realities.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "cosmic_horror_leviathan",
+      "name": "Cosmic Horror Leviathan",
+      "tier": 98,
+      "description": "So vast that entire galaxies orbit within its body. To fight it is to wage war against the cosmos itself.",
+      "role": "bruiser",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "probability_zero_killer",
+      "name": "Probability Zero Killer",
+      "tier": 98,
+      "description": "Makes the probability of its target survival exactly zero. A mathematical certainty of death.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": "death_mark",
+      "is_boss": false
+    },
+    {
+      "id": "omniguard_construct",
+      "name": "Omniguard Construct",
+      "tier": 98,
+      "description": "Defends by existing in all possible states simultaneously, countering every conceivable attack.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": "reflect",
+      "is_boss": false
+    },
+    {
+      "id": "boss_t98_absolute_zero_king",
+      "name": "The Absolute Zero King",
+      "tier": 98,
+      "description": "Rules the frozen heart of the void where even quantum fluctuations cease. In his domain, nothing moves, nothing lives.",
+      "role": "elite",
+      "stat_bias": "vit",
+      "special_ability": "freezing_aura",
+      "is_boss": true
+    },
+    {
+      "id": "reality_ash_drift",
+      "name": "Reality Ash Drift",
+      "tier": 99,
+      "description": "The burned remains of consumed realities, still smoldering with the ghost light of dead suns.",
+      "role": "swarm",
+      "stat_bias": "balanced",
+      "special_ability": "poison_cloud",
+      "is_boss": false
+    },
+    {
+      "id": "penultimate_warrior",
+      "name": "The Penultimate Warrior",
+      "tier": 99,
+      "description": "The second-to-last fighter standing before the end of all things. Battle-hardened across infinite apocalypses.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "genesis_destroyer",
+      "name": "Genesis Destroyer",
+      "tier": 99,
+      "description": "Exists solely to prevent new realities from forming, crushing creation in its cradle.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "omega_point_stalker",
+      "name": "Omega Point Stalker",
+      "tier": 99,
+      "description": "Hunts at the convergence point where all timelines end, catching prey with nowhere left to run.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "final_threshold_guardian",
+      "name": "Final Threshold Guardian",
+      "tier": 99,
+      "description": "The last line of defense before the throne of the ultimate void god.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t99_oblivion_incarnate",
+      "name": "Oblivion Incarnate",
+      "tier": 99,
+      "description": "The concept of non-existence given physical form. To look upon it is to understand what nothing truly means.",
+      "role": "elite",
+      "stat_bias": "balanced",
+      "special_ability": "final_stand",
+      "is_boss": true
+    },
+    {
+      "id": "end_of_all_swarm",
+      "name": "The End of All Swarm",
+      "tier": 100,
+      "description": "Every destroyed particle from every annihilated universe, gathered into one final devastating storm.",
+      "role": "swarm",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "last_soldier_of_reality",
+      "name": "Last Soldier of Reality",
+      "tier": 100,
+      "description": "The final defender of existence, burning the last of reality as fuel to fight one more moment.",
+      "role": "soldier",
+      "stat_bias": "str",
+      "special_ability": "final_stand",
+      "is_boss": false
+    },
+    {
+      "id": "cosmic_extinction_beast",
+      "name": "Cosmic Extinction Beast",
+      "tier": 100,
+      "description": "The apex predator of all creation, a beast that has hunted gods to extinction across every reality.",
+      "role": "bruiser",
+      "stat_bias": "str",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "death_of_death",
+      "name": "The Death of Death",
+      "tier": 100,
+      "description": "An assassin so lethal it killed the concept of mortality itself, becoming something beyond ending.",
+      "role": "assassin",
+      "stat_bias": "agi",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "eternal_gate_sentinel",
+      "name": "Eternal Gate Sentinel",
+      "tier": 100,
+      "description": "Guards the threshold of absolute nothingness with a will that has outlasted every star ever born.",
+      "role": "guardian",
+      "stat_bias": "vit",
+      "special_ability": null,
+      "is_boss": false
+    },
+    {
+      "id": "boss_t100_azrathor_devourer",
+      "name": "Azrathor, Devourer of Worlds",
+      "tier": 100,
+      "description": "The ultimate enemy. A void god older than time itself, who has consumed more universes than stars in the sky. To defeat Azrathor is to prove that existence deserves to continue.",
+      "role": "elite",
+      "stat_bias": "str",
+      "special_ability": "berserk, vampiric, final_stand",
+      "is_boss": true
+    }
+  ]
+}
