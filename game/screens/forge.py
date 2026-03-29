@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -36,6 +36,7 @@ class ForgeScreen(BaseScreen):
     forge_tab = StringProperty("weapon")
     inventory_tab = StringProperty("weapon")
     inventory_rarity_filter = StringProperty("all")
+    shop_rarity_filter = StringProperty("all")
     shard_text = StringProperty("")
     inv_detail_idx = NumericProperty(-1)
     eq_detail_fighter = NumericProperty(-1)
@@ -64,6 +65,7 @@ class ForgeScreen(BaseScreen):
         self._preview_item = None
         self._nav_from = None
         self._inv_tabs_key = None
+        self._shop_tabs_key = None
         self._inv_grid_key = None
         self._shard_grid_key = None
         self._inv_card_cache = {}
@@ -71,7 +73,7 @@ class ForgeScreen(BaseScreen):
     def _scroll_key(self):
         if self.show_inventory:
             return f"inv_{self.inventory_tab}_{self.inventory_rarity_filter}"
-        return f"shop_{self.forge_tab}"
+        return f"shop_{self.forge_tab}_{self.shop_rarity_filter}"
 
     def _save_scroll(self):
         sv = self.ids.get("forge_scroll")
@@ -111,9 +113,27 @@ class ForgeScreen(BaseScreen):
         if self._preview_item is not None:
             self._show_shop_preview(self._preview_item)
             return
-        self._show_inv_tabs = False; self._inv_tabs_key = None
+        # Show rarity filter tabs for shop
+        self._show_inv_tabs = True
+        self._inv_tabs_key = None  # clear inventory tabs key
+        tabs_box = self.ids.get("inv_tabs_box")
+        tabs_key = ("shop", self.forge_tab, self.shop_rarity_filter)
+        if tabs_box and getattr(self, '_shop_tabs_key', None) != tabs_key:
+            self._shop_tabs_key = tabs_key
+            tabs_box.clear_widgets()
+            rarity_tabs = [(r, t(k)) for r, k in [
+                ("all", "filter_all"), ("common", "filter_common"),
+                ("uncommon", "filter_uncommon"), ("rare", "filter_rare"),
+                ("epic", "filter_epic"), ("legendary", "filter_legendary"),
+            ]]
+            tabs_box.add_widget(build_tab_row(
+                rarity_tabs, self.shop_rarity_filter, self.set_shop_rarity_filter,
+                active_color=ACCENT_GOLD, height=dp(30),
+            ))
         all_items = engine.get_forge_items()
         self.forge_items = [i for i in all_items if i["slot"] == self.forge_tab]
+        if self.shop_rarity_filter != "all":
+            self.forge_items = [i for i in self.forge_items if i.get("rarity") == self.shop_rarity_filter]
         inv_count = len(engine.inventory)
         self.inventory_btn_text = t("inventory_count", n=inv_count) if inv_count > 0 else t("inventory_label")
         refresh_forge_grid(self)
@@ -146,6 +166,13 @@ class ForgeScreen(BaseScreen):
         self._save_scroll()
         self.inventory_rarity_filter = rarity
         self._inv_grid_key = None
+        self.refresh_forge()
+        self._restore_scroll()
+
+    def set_shop_rarity_filter(self, rarity):
+        self._save_scroll()
+        self.shop_rarity_filter = rarity
+        self._forge_card_cache = {}  # invalidate shop card cache
         self.refresh_forge()
         self._restore_scroll()
 
