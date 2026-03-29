@@ -1,4 +1,4 @@
-# Build: 26
+# Build: 27
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -76,6 +76,8 @@ class GameEngine:
         self.tutorial_shown: list[str] = []
         self.extra_expedition_slots = 0
         self.prestige_level = 0
+        self.fastest_t15_time = 0  # seconds, 0 = not achieved
+        self.run_start_time = 0.0  # timestamp when current run started
 
         # Prestige manager
         self.prestige_manager = PrestigeManager(self)
@@ -153,6 +155,7 @@ class GameEngine:
         self.run_kills = 0
         self.run_max_tier = 1
         self.active_mutators = []
+        self.run_start_time = time.time()
 
         # Reset battle
         self.battle_mgr = BattleManager(self)
@@ -162,6 +165,13 @@ class GameEngine:
 
         self.check_achievements()
         self.save()
+
+    def check_t15_clear(self):
+        """Record fastest T15 clear time if this is a new best."""
+        if self.arena_tier == 15 and self.run_start_time > 0:
+            elapsed = int(time.time() - self.run_start_time)
+            if self.fastest_t15_time == 0 or elapsed < self.fastest_t15_time:
+                self.fastest_t15_time = elapsed
 
     # --- Properties ---
 
@@ -944,6 +954,8 @@ class GameEngine:
             "tutorial_shown": self.tutorial_shown,
             "extra_expedition_slots": self.extra_expedition_slots,
             "prestige_level": self.prestige_level,
+            "fastest_t15_time": self.fastest_t15_time,
+            "run_start_time": self.run_start_time,
             "ads_removed": self.ads_removed,
             "active_mutators": self.active_mutators,
             "inventory": self.inventory,
@@ -990,6 +1002,8 @@ class GameEngine:
         self.tutorial_shown = data.get("tutorial_shown", [])
         self.extra_expedition_slots = data.get("extra_expedition_slots", 0)
         self.prestige_level = data.get("prestige_level", 0)
+        self.fastest_t15_time = data.get("fastest_t15_time", 0)
+        self.run_start_time = data.get("run_start_time", 0.0)
         # war_drums_until removed — kept for backward compat on load
         self.ads_removed = data.get("ads_removed", False)
         self.active_mutators = data.get("active_mutators", [])

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 5
 """
 Google Play Games Services leaderboard integration.
 
@@ -6,6 +6,9 @@ Uses polling instead of PythonJavaClass callbacks to avoid
 SIGBUS crashes in jnius when GMS callbacks fire on non-Python threads.
 """
 
+import logging
+
+_log = logging.getLogger(__name__)
 import threading
 import time as _time
 from kivy.utils import platform
@@ -15,6 +18,8 @@ from kivy.clock import Clock
 LEADERBOARD_BEST_TIER = "CgkIt_-bs_YQEAIQAQ"
 LEADERBOARD_TOTAL_KILLS = "CgkIt_-bs_YQEAIQAg"
 LEADERBOARD_STRONGEST_GLADIATOR = "CgkIt_-bs_YQEAIQAw"
+LEADERBOARD_HIGHEST_PRESTIGE = "TBD_HIGHEST_PRESTIGE"
+LEADERBOARD_FASTEST_T15 = "TBD_FASTEST_T15"
 
 RC_SIGN_IN = 9001
 RC_LEADERBOARD = 9002
@@ -30,7 +35,7 @@ def _fix_classloader():
         ct = Thread.currentThread()
         ct.setContextClassLoader(activity.getClassLoader())
     except Exception as exc:
-        print(f"[Leaderboard] ClassLoader fix failed: {exc}")
+        _log.info("[Leaderboard] ClassLoader fix failed: %s", exc)
 
 
 class LeaderboardManager:
@@ -39,6 +44,7 @@ class LeaderboardManager:
         self._initialized = False
         self._java = {}
         self._account = None
+        self._signing_in = False
         self.status = ""
 
     def init(self):
@@ -85,7 +91,7 @@ class LeaderboardManager:
                     self.status = "Sign-in required"
                     print("[Leaderboard] No existing account — sign-in required")
             except Exception as exc:
-                print(f"[Leaderboard] Account check failed: {exc}")
+                _log.info("[Leaderboard] Account check failed: %s", exc)
                 self.status = "Not available"
                 return
 
@@ -98,7 +104,7 @@ class LeaderboardManager:
                 print("[Leaderboard] PlayGames class not available")
 
         except Exception as exc:
-            print(f"[Leaderboard] Init failed: {exc}")
+            _log.info("[Leaderboard] Init failed: %s", exc)
             self.status = "Not available"
 
     @property
@@ -117,6 +123,11 @@ class LeaderboardManager:
                 callback(True)
             return
 
+        if self._signing_in:
+            print("[Leaderboard] Sign-in already in progress, skipping")
+            return
+
+        self._signing_in = True
         try:
             activity = self._java["PythonActivity"].mActivity
             DEFAULT_GAMES_SIGN_IN = self._java[
@@ -132,37 +143,39 @@ class LeaderboardManager:
             self.status = "Signing in..."
             print("[Leaderboard] Interactive sign-in launched")
 
-            # Poll for result in background
-            def _poll():
-                GoogleSignIn = self._java["GoogleSignIn"]
-                act = self._java["PythonActivity"].mActivity
-                for _ in range(30):
-                    _time.sleep(1)
-                    try:
-                        acc = GoogleSignIn.getLastSignedInAccount(act)
-                        if acc is not None:
-                            self._account = acc
-                            self._initialized = True
-                            Clock.schedule_once(
-                                lambda dt: setattr(self, 'status', 'Play Games ready'), 0
-                            )
-                            print("[Leaderboard] Sign-in success (poll)")
-                            if callback:
-                                Clock.schedule_once(lambda dt: callback(True), 0)
-                            return
-                    except Exception:
-                        pass
+            # Poll on main thread via Clock — avoids background thread + sleep
+            GoogleSignIn = self._java["GoogleSignIn"]
+            act = self._java["PythonActivity"].mActivity
+            _attempts = [0]
 
-                Clock.schedule_once(
-                    lambda dt: setattr(self, 'status', 'Sign-in timeout'), 0
-                )
-                if callback:
-                    Clock.schedule_once(lambda dt: callback(False), 0)
+            def _check_sign_in(dt):
+                _attempts[0] += 1
+                if _attempts[0] > 30:
+                    Clock.unschedule(_check_sign_in)
+                    self._signing_in = False
+                    self.status = "Sign-in timeout"
+                    if callback:
+                        callback(False)
+                    return
+                try:
+                    acc = GoogleSignIn.getLastSignedInAccount(act)
+                    if acc is not None:
+                        Clock.unschedule(_check_sign_in)
+                        self._account = acc
+                        self._initialized = True
+                        self.status = "Play Games ready"
+                        self._signing_in = False
+                        print("[Leaderboard] Sign-in success (poll)")
+                        if callback:
+                            callback(True)
+                except Exception as _e:
+                    _log.warning("Sign-in poll error: %s", _e)
 
-            threading.Thread(target=_poll, daemon=True).start()
+            Clock.schedule_interval(_check_sign_in, 1.0)
 
         except Exception as exc:
-            print(f"[Leaderboard] Interactive sign-in error: {exc}")
+            self._signing_in = False
+            _log.info("[Leaderboard] Interactive sign-in error: %s", exc)
             self.status = "Sign-in failed"
             if callback:
                 callback(False)
@@ -178,8 +191,8 @@ class LeaderboardManager:
             if "PlayGames" in self._java:
                 try:
                     return self._java["PlayGames"].getLeaderboardsClient(activity)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _log.warning("Suppressed exception: %s", _e)
 
             # Fallback
             from jnius import autoclass
@@ -193,11 +206,12 @@ class LeaderboardManager:
                 return None
             return Games.getLeaderboardsClient(activity, account)
         except Exception as exc:
-            print(f"[Leaderboard] Get client error: {exc}")
+            _log.info("[Leaderboard] Get client error: %s", exc)
             return None
 
     def submit_score(self, leaderboard_id, score):
         if not self._initialized or not leaderboard_id:
+            _log.info("[Leaderboard] Submit skipped: initialized=%s", self._initialized)
             return
 
         def _do(dt):
@@ -207,13 +221,14 @@ class LeaderboardManager:
                 if client is None:
                     return
                 client.submitScore(leaderboard_id, int(score))
-                print(f"[Leaderboard] Submitted {score} to {leaderboard_id}")
+                _log.info("[Leaderboard] Submitted %s to %s", score, leaderboard_id)
             except Exception as exc:
-                print(f"[Leaderboard] Submit error: {exc}")
+                _log.info("[Leaderboard] Submit error: %s", exc)
 
         Clock.schedule_once(_do, 0)
 
-    def submit_all(self, best_tier=0, total_kills=0, strongest_gladiator_kills=0):
+    def submit_all(self, best_tier=0, total_kills=0, strongest_gladiator_kills=0,
+                    prestige_level=0, fastest_t15=0):
         if not self._initialized:
             return
         if best_tier > 0:
@@ -224,6 +239,10 @@ class LeaderboardManager:
             self.submit_score(
                 LEADERBOARD_STRONGEST_GLADIATOR, strongest_gladiator_kills
             )
+        if prestige_level > 0:
+            self.submit_score(LEADERBOARD_HIGHEST_PRESTIGE, prestige_level)
+        if fastest_t15 > 0:
+            self.submit_score(LEADERBOARD_FASTEST_T15, fastest_t15)
 
     def show_leaderboard(self, leaderboard_id=None, on_failure=None):
         """Show Play Games leaderboard UI (fullscreen).
@@ -258,44 +277,38 @@ class LeaderboardManager:
                 else:
                     task = client.getAllLeaderboardsIntent()
 
-                # Poll task completion in background thread
-                def _poll_task():
-                    for _ in range(100):  # 10 seconds max
-                        _time.sleep(0.1)
-                        try:
-                            if task.isComplete():
-                                if task.isSuccessful():
-                                    intent = task.getResult()
-                                    Clock.schedule_once(
-                                        lambda dt, i=intent: self._launch_intent(i), 0
-                                    )
-                                else:
-                                    exc = task.getException()
-                                    err = str(exc) if exc else "Unknown error"
-                                    print(f"[Leaderboard] Task failed: {err}")
-                                    Clock.schedule_once(
-                                        lambda dt: setattr(self, 'status', f'Error: {err}'), 0
-                                    )
-                                    if on_failure:
-                                        Clock.schedule_once(
-                                            lambda dt, e=err: on_failure(e), 0
-                                        )
-                                return
-                        except Exception as e:
-                            print(f"[Leaderboard] Poll error: {e}")
-                            break
+                # Poll task completion on main thread via Clock
+                _ticks = [0]
 
-                    print("[Leaderboard] Task timeout")
-                    if on_failure:
-                        Clock.schedule_once(
-                            lambda dt: on_failure("Timeout"), 0
-                        )
+                def _check_task(dt):
+                    _ticks[0] += 1
+                    if _ticks[0] > 100:  # 10 seconds max
+                        Clock.unschedule(_check_task)
+                        print("[Leaderboard] Task timeout")
+                        if on_failure:
+                            on_failure("Timeout")
+                        return
+                    try:
+                        if task.isComplete():
+                            Clock.unschedule(_check_task)
+                            if task.isSuccessful():
+                                self._launch_intent(task.getResult())
+                            else:
+                                exc = task.getException()
+                                err = str(exc) if exc else "Unknown error"
+                                _log.info("[Leaderboard] Task failed: %s", err)
+                                self.status = f"Error: {err}"
+                                if on_failure:
+                                    on_failure(err)
+                    except Exception as e:
+                        Clock.unschedule(_check_task)
+                        _log.info("[Leaderboard] Poll error: %s", e)
 
-                threading.Thread(target=_poll_task, daemon=True).start()
+                Clock.schedule_interval(_check_task, 0.1)
 
             except Exception as exc:
                 err_msg = str(exc)
-                print(f"[Leaderboard] Show error: {err_msg}")
+                _log.info("[Leaderboard] Show error: %s", err_msg)
                 self.status = f"Error: {err_msg}"
 
         Clock.schedule_once(_do, 0)
@@ -308,7 +321,7 @@ class LeaderboardManager:
             self.status = "Showing leaderboard"
             print("[Leaderboard] Showing leaderboard UI")
         except Exception as e:
-            print(f"[Leaderboard] Launch error: {e}")
+            _log.info("[Leaderboard] Launch error: %s", e)
             self.status = f"Error: {e}"
 
     def show_all_leaderboards(self, on_failure=None):
