@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -122,6 +122,15 @@ HP_HEAL_DIVISOR = 10            # cost = missing_hp / divisor
 # --- Dynamic shop: tonics (models.py) ---
 TONIC_BASE_COST = 150
 TONIC_TIER_EXPO = 1.10
+
+# --- Economy tier-band scaling ---
+# Healing/reward multiplier per tier band (lower = slower cost growth at high tiers)
+TIER_BAND_MULT = {
+    (1, 15): 1.20,     # early game: steep growth
+    (16, 30): 1.12,    # mid game: moderate
+    (31, 50): 1.08,    # late game: gentle
+    (51, 100): 1.05,   # endgame: near-flat
+}
 
 # --- Procedural enemy generation (T1-T100) ---
 PROC_BASE_STR_T1 = 3

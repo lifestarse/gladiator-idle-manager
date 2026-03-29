@@ -1,0 +1,164 @@
+{
+  "mutators": [
+    {
+      "id": "fragile",
+      "name": "Fragile",
+      "description": "+30% incoming damage",
+      "type": "negative",
+      "reward_mult": 1.5,
+      "effect": {"incoming_damage_mult": 1.3}
+    },
+    {
+      "id": "poverty",
+      "name": "Poverty",
+      "description": "All prices x2",
+      "type": "negative",
+      "reward_mult": 1.5,
+      "effect": {"price_mult": 2.0}
+    },
+    {
+      "id": "no_healing",
+      "name": "No Healing",
+      "description": "Cannot heal between fights",
+      "type": "negative",
+      "reward_mult": 2.0,
+      "effect": {"healing_disabled": true}
+    },
+    {
+      "id": "glass_cannon",
+      "name": "Glass Cannon",
+      "description": "-50% HP, +50% ATK",
+      "type": "negative",
+      "reward_mult": 1.3,
+      "effect": {"hp_mult": 0.5, "atk_mult": 1.5}
+    },
+    {
+      "id": "permadeath_plus",
+      "name": "Permadeath+",
+      "description": "First injury = instant death",
+      "type": "negative",
+      "reward_mult": 2.0,
+      "effect": {"instant_death_on_injury": true}
+    },
+    {
+      "id": "cursed_arena",
+      "name": "Cursed Arena",
+      "description": "Random debuff every 3 waves",
+      "type": "negative",
+      "reward_mult": 1.5,
+      "effect": {"debuff_every_n_waves": 3}
+    },
+    {
+      "id": "iron_foes",
+      "name": "Iron Foes",
+      "description": "Enemies +25% DEF",
+      "type": "negative",
+      "reward_mult": 1.3,
+      "effect": {"enemy_def_mult": 1.25}
+    },
+    {
+      "id": "swift_enemies",
+      "name": "Swift Enemies",
+      "description": "Enemies +20% dodge",
+      "type": "negative",
+      "reward_mult": 1.4,
+      "effect": {"enemy_dodge_bonus": 0.2}
+    },
+    {
+      "id": "crit_immune",
+      "name": "Crit Immune",
+      "description": "Enemies immune to crits",
+      "type": "negative",
+      "reward_mult": 1.6,
+      "effect": {"enemy_crit_immune": true}
+    },
+    {
+      "id": "berserker_foes",
+      "name": "Berserker Foes",
+      "description": "Enemies enrage below 30% HP",
+      "type": "negative",
+      "reward_mult": 1.3,
+      "effect": {"enemy_enrage_threshold": 0.3}
+    },
+    {
+      "id": "no_equipment",
+      "name": "No Equipment",
+      "description": "Cannot equip items",
+      "type": "negative",
+      "reward_mult": 2.5,
+      "effect": {"equipment_disabled": true}
+    },
+    {
+      "id": "one_fighter",
+      "name": "One Fighter",
+      "description": "Can only hire 1 fighter",
+      "type": "negative",
+      "reward_mult": 1.8,
+      "effect": {"max_fighters": 1}
+    },
+    {
+      "id": "toxic_arena",
+      "name": "Toxic Arena",
+      "description": "2% HP poison each turn to all fighters",
+      "type": "negative",
+      "reward_mult": 1.5,
+      "effect": {"poison_per_turn_pct": 0.02}
+    },
+    {
+      "id": "gold_drain",
+      "name": "Gold Drain",
+      "description": "Lose 5% gold each fight",
+      "type": "negative",
+      "reward_mult": 1.3,
+      "effect": {"gold_drain_pct": 0.05}
+    },
+    {
+      "id": "escalation",
+      "name": "Escalation",
+      "description": "Enemy stats +5% per fight won",
+      "type": "negative",
+      "reward_mult": 1.6,
+      "effect": {"enemy_scaling_per_win_pct": 0.05}
+    },
+    {
+      "id": "blessed",
+      "name": "Blessed",
+      "description": "+20% all stats",
+      "type": "positive",
+      "reward_mult": 0.7,
+      "effect": {"all_stats_mult": 1.2}
+    },
+    {
+      "id": "rich_start",
+      "name": "Rich Start",
+      "description": "x3 starting gold",
+      "type": "positive",
+      "reward_mult": 0.8,
+      "effect": {"starting_gold_mult": 3.0}
+    },
+    {
+      "id": "regeneration",
+      "name": "Regeneration",
+      "description": "Heal 5% HP per turn",
+      "type": "positive",
+      "reward_mult": 0.7,
+      "effect": {"regen_per_turn_pct": 0.05}
+    },
+    {
+      "id": "lucky",
+      "name": "Lucky",
+      "description": "+15% crit chance",
+      "type": "positive",
+      "reward_mult": 0.8,
+      "effect": {"crit_chance_bonus": 0.15}
+    },
+    {
+      "id": "armored",
+      "name": "Armored",
+      "description": "+25% DEF",
+      "type": "positive",
+      "reward_mult": 0.85,
+      "effect": {"def_mult": 1.25}
+    }
+  ]
+}

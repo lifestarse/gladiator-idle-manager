@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Centralized data loader — singleton that loads all JSON data at startup."""
 
 import json
@@ -51,6 +51,7 @@ class DataLoader:
         self._boss_modifiers = self._load_keyed(base, "boss_modifiers.json", "modifiers")
 
         self._enemies_by_tier = self._build_tier_index(self._enemies)
+        self._mutators = self._load_keyed(base, "mutators.json", "mutators")
 
         self._loaded = True
         _log.info("[DataLoader] All data loaded successfully")
@@ -188,6 +189,10 @@ class DataLoader:
     @property
     def boss_modifiers(self) -> dict:
         return self._boss_modifiers
+
+    @property
+    def mutators(self) -> dict:
+        return self._mutators
 
 
 # Module-level convenience instance

@@ -1,4 +1,4 @@
-# Build: 13
+# Build: 15
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
@@ -28,7 +28,7 @@ from game.constants import (
     ENEMY_DODGE_CAP, ENEMY_DODGE_PER_TIER, ENEMY_CRIT_MULT,
     BOSS_TIER_OFFSET, BOSS_HP_MULT, BOSS_ATK_MULT, BOSS_DEF_MULT,
     BOSS_GOLD_MULT, BOSS_CRIT_BONUS, BOSS_CRIT_MIN,
-    INJURY_HEAL_BASE_COST, TONIC_BASE_COST, TONIC_TIER_EXPO,
+    INJURY_HEAL_BASE_COST, TONIC_BASE_COST, TONIC_TIER_EXPO, TIER_BAND_MULT,
     MAX_UPGRADE_COMMON, MAX_UPGRADE_UNCOMMON, MAX_UPGRADE_RARE,
     MAX_UPGRADE_EPIC, MAX_UPGRADE_LEGENDARY,
 )
@@ -496,8 +496,20 @@ class DifficultyScaler:
         return int(UPGRADE_COST_BASE * (UPGRADE_COST_EXPO ** (level - 1)))
 
     @staticmethod
+    def _tier_band_mult(arena_tier):
+        """Get the growth multiplier for a given tier band."""
+        for (lo, hi), mult in TIER_BAND_MULT.items():
+            if lo <= arena_tier <= hi:
+                return mult
+        return 1.05  # fallback for beyond T100
+
+    @staticmethod
     def heal_cost(arena_tier):
-        return int(HEAL_BASE * (HEAL_TIER_MULT ** (arena_tier - 1)))
+        """Heal cost with tier-band scaling: steeper early, flatter late."""
+        cost = HEAL_BASE
+        for t in range(2, arena_tier + 1):
+            cost *= DifficultyScaler._tier_band_mult(t)
+        return int(cost)
 
     @staticmethod
     def surgeon_cost(times_used):
@@ -572,7 +584,7 @@ class Fighter(CombatUnit):
     damage, making agility builds viable even against stronger enemies.
     """
 
-    def __init__(self, name=None, level=1, fighter_class="mercenary"):
+    def __init__(self, name=None, level=1, fighter_class="mercenary", prestige_bonus=1.0):
         cls_data = FIGHTER_CLASSES.get(fighter_class, FIGHTER_CLASSES["mercenary"])
         self.name = name or random.choice(FIGHTER_NAMES)
         self.fighter_class = fighter_class
@@ -589,6 +601,9 @@ class Fighter(CombatUnit):
         self.dodge_bonus = cls_data["dodge_bonus"]
         self.hp_mult = cls_data["hp_mult"]
         self.points_per_level = cls_data["points_per_level"]
+
+        # Prestige bonus multiplier (set by engine from PrestigeManager)
+        self.prestige_bonus = prestige_bonus
 
         # Legacy compat
         self.base_attack = 0
@@ -696,18 +711,20 @@ class Fighter(CombatUnit):
 
     @property
     def attack(self):
-        return (self.strength * FIGHTER_ATK_PER_STR + self.base_attack
-                + (self.level - 1) * FIGHTER_ATK_PER_LEVEL + self.equip_atk)
+        raw = (self.strength * FIGHTER_ATK_PER_STR + self.base_attack
+               + (self.level - 1) * FIGHTER_ATK_PER_LEVEL + self.equip_atk)
+        return int(raw * self.prestige_bonus)
 
     @property
     def defense(self):
-        return self.vitality + self.base_defense + self.equip_def
+        raw = self.vitality + self.base_defense + self.equip_def
+        return int(raw * self.prestige_bonus)
 
     @property
     def max_hp(self):
         base = (FIGHTER_BASE_HP + self.vitality * FIGHTER_HP_PER_VIT
                 + self.base_hp + (self.level - 1) * FIGHTER_HP_PER_LEVEL)
-        return int(base * self.hp_mult) + self.equip_hp
+        return int(int(base * self.hp_mult) * self.prestige_bonus) + self.equip_hp
 
     @property
     def crit_chance(self):
@@ -844,6 +861,7 @@ class Fighter(CombatUnit):
         g.dodge_bonus = data.get("dodge_bonus", cls_data["dodge_bonus"])
         g.hp_mult = data.get("hp_mult", cls_data["hp_mult"])
         g.points_per_level = data.get("points_per_level", cls_data["points_per_level"])
+        g.prestige_bonus = 1.0  # Engine sets actual value after load
         g.base_attack = data.get("base_attack", 0)
         g.base_defense = data.get("base_defense", 0)
         g.base_hp = data.get("base_hp", 0)

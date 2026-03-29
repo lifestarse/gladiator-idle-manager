@@ -1,4 +1,4 @@
-# Build: 24
+# Build: 26
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -26,6 +26,8 @@ from game.constants import (
 )
 from game.story import TUTORIAL_STEPS, STORY_CHAPTERS, get_pending_tutorial
 from game.data_loader import data_loader
+from game.prestige import PrestigeManager
+from game.mutators import mutator_registry
 
 def _get_save_path():
     from kivy.utils import platform
@@ -73,6 +75,10 @@ class GameEngine:
         self.quests_completed: list[str] = []
         self.tutorial_shown: list[str] = []
         self.extra_expedition_slots = 0
+        self.prestige_level = 0
+
+        # Prestige manager
+        self.prestige_manager = PrestigeManager(self)
 
         # Inventory: list of item dicts (unequipped equipment)
         self.inventory: list[dict] = []
@@ -85,6 +91,9 @@ class GameEngine:
 
         # Battle manager
         self.battle_mgr = BattleManager(self)
+
+        # Mutators for current run
+        self.active_mutators: list[str] = []
 
         # Monetization
         self.ads_removed = False
@@ -114,6 +123,8 @@ class GameEngine:
             m.ENCHANTMENT_TYPES = dl.enchantments
         if dl.fighter_classes:
             m.FIGHTER_CLASSES = dl.fighter_classes
+        if dl.mutators:
+            mutator_registry.load(list(dl.mutators.values()))
 
     # --- Roguelike reset ---
 
@@ -141,6 +152,7 @@ class GameEngine:
         self.run_number += 1
         self.run_kills = 0
         self.run_max_tier = 1
+        self.active_mutators = []
 
         # Reset battle
         self.battle_mgr = BattleManager(self)
@@ -181,6 +193,7 @@ class GameEngine:
         if self.gold >= cost:
             self.gold -= cost
             f = Fighter(fighter_class=fighter_class)
+            f.prestige_bonus = self.prestige_manager.get_stat_bonus()
             self.fighters.append(f)
             self.check_achievements()
             return Result(True, t("recruited_msg", name=f.name, cls=f.class_name))
@@ -930,7 +943,9 @@ class GameEngine:
             "quests_completed": self.quests_completed,
             "tutorial_shown": self.tutorial_shown,
             "extra_expedition_slots": self.extra_expedition_slots,
+            "prestige_level": self.prestige_level,
             "ads_removed": self.ads_removed,
+            "active_mutators": self.active_mutators,
             "inventory": self.inventory,
             "shards": self.shards,
             "language": get_language(),
@@ -974,8 +989,10 @@ class GameEngine:
         self.quests_completed = data.get("quests_completed", [])
         self.tutorial_shown = data.get("tutorial_shown", [])
         self.extra_expedition_slots = data.get("extra_expedition_slots", 0)
+        self.prestige_level = data.get("prestige_level", 0)
         # war_drums_until removed — kept for backward compat on load
         self.ads_removed = data.get("ads_removed", False)
+        self.active_mutators = data.get("active_mutators", [])
 
         saved_lang = data.get("language")
         if saved_lang:
@@ -994,6 +1011,11 @@ class GameEngine:
                 f._overflow_relics = []
         if not self.fighters or not any(f.alive for f in self.fighters):
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
+
+        # Apply prestige bonus to loaded fighters
+        bonus = self.prestige_manager.get_stat_bonus()
+        for f in self.fighters:
+            f.prestige_bonus = bonus
 
         self.battle_mgr = BattleManager(self)
         self.check_expeditions()
