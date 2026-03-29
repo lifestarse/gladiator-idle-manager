@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 4
 """
 In-App Purchase module.
 
@@ -10,8 +10,12 @@ On iOS: uses StoreKit via pyobjus
 On desktop: stub mode (purchases always succeed for testing)
 """
 
+import logging
+
 from kivy.utils import platform
 from kivy.clock import Clock
+
+_log = logging.getLogger(__name__)
 
 # --- Product definitions ---
 PRODUCTS = {
@@ -21,6 +25,47 @@ PRODUCTS = {
         "desc": "Remove all banner & interstitial ads forever",
         "price": "100 UAH",
         "price_usd": "$2.50",
+        "consumable": False,
+    },
+    "gems_100": {
+        "id": "com.gladiator.gems_100",
+        "name": "100 Diamonds",
+        "desc": "100 diamonds",
+        "price": "20 UAH",
+        "price_usd": "$0.49",
+        "consumable": True,
+    },
+    "gems_500": {
+        "id": "com.gladiator.gems_500",
+        "name": "500 Diamonds",
+        "desc": "500 diamonds",
+        "price": "59 UAH",
+        "price_usd": "$1.49",
+        "consumable": True,
+    },
+    "gems_1000": {
+        "id": "com.gladiator.gems_1000",
+        "name": "1000 Diamonds",
+        "desc": "1000 diamonds",
+        "price": "79 UAH",
+        "price_usd": "$1.99",
+        "consumable": True,
+    },
+    "gems_2500": {
+        "id": "com.gladiator.gems_2500",
+        "name": "2500 Diamonds (+10%)",
+        "desc": "2500 diamonds",
+        "price": "179 UAH",
+        "price_usd": "$4.49",
+        "consumable": True,
+    },
+    "gems_6000": {
+        "id": "com.gladiator.gems_6000",
+        "name": "6000 Diamonds (+20%)",
+        "desc": "6000 diamonds",
+        "price": "399 UAH",
+        "price_usd": "$9.99",
+        "consumable": True,
     },
 }
 
@@ -47,7 +92,7 @@ class IAPManager:
         elif platform == "ios":
             self._init_ios()
         else:
-            print("[IAP] Desktop stub mode — purchases auto-succeed")
+            _log.info("[IAP] Desktop stub mode — purchases auto-succeed")
             self._initialized = False
 
     # ================================================================
@@ -87,7 +132,8 @@ class IAPManager:
                 def onPurchasesUpdated(self_inner, billing_result, purchases):
                     try:
                         code = billing_result.getResponseCode()
-                    except Exception:
+                    except Exception as e:
+                        _log.error("[IAP] onPurchasesUpdated: failed to get response code: %s", e)
                         code = -1
                     Clock.schedule_once(
                         lambda dt: manager._on_purchases_updated(
@@ -107,7 +153,8 @@ class IAPManager:
                 def onBillingSetupFinished(self_inner, billing_result):
                     try:
                         code = billing_result.getResponseCode()
-                    except Exception:
+                    except Exception as e:
+                        _log.error("[IAP] onBillingSetupFinished: failed to get response code: %s", e)
                         code = -1
                     Clock.schedule_once(
                         lambda dt: manager._on_billing_setup(code), 0
@@ -115,7 +162,7 @@ class IAPManager:
 
                 @java_method("()V")
                 def onBillingServiceDisconnected(self_inner):
-                    print("[IAP] Billing service disconnected")
+                    _log.warning("[IAP] Billing service disconnected")
                     manager._initialized = False
 
             self._purchase_listener = _PurchaseListener()
@@ -127,10 +174,10 @@ class IAPManager:
             builder.enablePendingPurchases()
             self._billing_client = builder.build()
             self._billing_client.startConnection(self._state_listener)
-            print("[IAP] Android billing: connecting...")
+            _log.info("[IAP] Android billing: connecting...")
 
         except Exception as e:
-            print(f"[IAP] Android billing init failed: {e}")
+            _log.error("[IAP] Android billing init failed: %s", e)
             self._initialized = False
 
     def _on_billing_setup(self, response_code):
@@ -143,10 +190,10 @@ class IAPManager:
 
         if response_code == OK:
             self._initialized = True
-            print("[IAP] Billing connected — querying products")
+            _log.info("[IAP] Billing connected — querying products")
             self._query_product_details()
         else:
-            print(f"[IAP] Billing setup failed, code={response_code}")
+            _log.error("[IAP] Billing setup failed, code=%s", response_code)
             self._initialized = False
 
     def _query_product_details(self):
@@ -206,7 +253,7 @@ class IAPManager:
                                 pid = detail.getProductId()
                                 details_snapshot[pid] = detail
                     except Exception as e:
-                        print(f"[IAP] Error reading product details: {e}")
+                        _log.error("[IAP] Error reading product details: %s", e)
                     Clock.schedule_once(
                         lambda dt: manager._on_product_details_safe(
                             details_snapshot
@@ -220,16 +267,16 @@ class IAPManager:
             )
 
         except Exception as e:
-            print(f"[IAP] Query product details failed: {e}")
+            _log.error("[IAP] Query product details failed: %s", e)
 
     def _on_product_details_safe(self, details_snapshot):
         """Cache product details for later use in purchase flow."""
         if not details_snapshot:
-            print("[IAP] No product details returned")
+            _log.warning("[IAP] No product details returned")
             return
         for pid, detail in details_snapshot.items():
             self._product_details[pid] = detail
-            print(f"[IAP] Product loaded: {pid}")
+            _log.info("[IAP] Product loaded: %s", pid)
 
     def _on_purchases_updated(self, response_code, purchases):
         """Handle purchase result from Google Play."""
@@ -244,69 +291,137 @@ class IAPManager:
                 purchase = purchases.get(i)
                 self._handle_purchase(purchase)
         elif response_code == BRC.USER_CANCELED:
-            print("[IAP] User canceled purchase")
+            _log.info("[IAP] User canceled purchase")
             self._fire_failure("User canceled")
         else:
-            print(f"[IAP] Purchase failed, code={response_code}")
+            _log.error("[IAP] Purchase failed, code=%s", response_code)
             self._fire_failure(f"Error code: {response_code}")
 
+    def _is_consumable(self, product_id):
+        """Check if a product is consumable (diamonds etc)."""
+        key = _PRODUCT_ID_TO_KEY.get(product_id)
+        if key and key in PRODUCTS:
+            return PRODUCTS[key].get("consumable", False)
+        return False
+
     def _handle_purchase(self, purchase):
-        """Acknowledge and deliver a purchase."""
+        """Acknowledge or consume and deliver a purchase."""
         from jnius import autoclass, PythonJavaClass, java_method
 
         PurchaseState = autoclass(
             "com.android.billingclient.api.Purchase$PurchaseState"
         )
-        AcknowledgePurchaseParams = autoclass(
-            "com.android.billingclient.api.AcknowledgePurchaseParams"
-        )
 
         state = purchase.getPurchaseState()
         if state != PurchaseState.PURCHASED:
-            print(f"[IAP] Purchase not in PURCHASED state: {state}")
+            _log.info("[IAP] Purchase not in PURCHASED state: %s", state)
             return
 
         # Get the product IDs from purchase
         products = purchase.getProducts()
         product_id = products.get(0) if products.size() > 0 else None
 
-        if not purchase.isAcknowledged():
-            params = (
-                AcknowledgePurchaseParams.newBuilder()
-                .setPurchaseToken(purchase.getPurchaseToken())
-                .build()
-            )
-            manager = self
-
-            class _AckListener(PythonJavaClass):
-                __javainterfaces__ = [
-                    "com/android/billingclient/api/"
-                    "AcknowledgePurchaseResponseListener"
-                ]
-                __javacontext__ = "app"
-
-                @java_method(
-                    "(Lcom/android/billingclient/api/BillingResult;)V"
-                )
-                def onAcknowledgePurchaseResponse(
-                    self_inner, billing_result
-                ):
-                    try:
-                        code = billing_result.getResponseCode()
-                    except Exception:
-                        code = -1
-                    Clock.schedule_once(
-                        lambda dt: manager._on_acknowledged(
-                            product_id, code
-                        ),
-                        0,
-                    )
-
-            self._ack_listener = _AckListener()
-            self._billing_client.acknowledgePurchase(params, self._ack_listener)
+        if self._is_consumable(product_id):
+            # Consumable: must call consumeAsync to allow re-purchase
+            self._consume_purchase(purchase, product_id)
+        elif not purchase.isAcknowledged():
+            # Non-consumable: acknowledge
+            self._acknowledge_purchase(purchase, product_id)
         else:
             # Already acknowledged — just deliver
             self._deliver_product(product_id)
+
+    def _consume_purchase(self, purchase, product_id):
+        """Consume a consumable purchase (diamonds) so it can be bought again."""
+        from jnius import autoclass, PythonJavaClass, java_method
+
+        ConsumeParams = autoclass(
+            "com.android.billingclient.api.ConsumeParams"
+        )
+        params = (
+            ConsumeParams.newBuilder()
+            .setPurchaseToken(purchase.getPurchaseToken())
+            .build()
+        )
+        manager = self
+
+        class _ConsumeListener(PythonJavaClass):
+            __javainterfaces__ = [
+                "com/android/billingclient/api/"
+                "ConsumeResponseListener"
+            ]
+            __javacontext__ = "app"
+
+            @java_method(
+                "(Lcom/android/billingclient/api/BillingResult;"
+                "Ljava/lang/String;)V"
+            )
+            def onConsumeResponse(self_inner, billing_result, token):
+                try:
+                    code = billing_result.getResponseCode()
+                except Exception as e:
+                    _log.warning("[IAP] onConsumeResponse error: %s", e)
+                    code = -1
+                Clock.schedule_once(
+                    lambda dt: manager._on_consumed(product_id, code), 0,
+                )
+
+        self._consume_listener = _ConsumeListener()
+        self._billing_client.consumeAsync(params, self._consume_listener)
+
+    def _on_consumed(self, product_id, response_code):
+        from jnius import autoclass
+        OK = autoclass(
+            "com.android.billingclient.api.BillingClient$BillingResponseCode"
+        ).OK
+        if response_code == OK:
+            _log.info("[IAP] Purchase consumed: %s", product_id)
+            self._deliver_product(product_id)
+        else:
+            _log.error("[IAP] Consume failed: %s", response_code)
+            self._fire_failure(f"Consume error: {response_code}")
+
+    def _acknowledge_purchase(self, purchase, product_id):
+        """Acknowledge a non-consumable purchase (remove ads)."""
+        from jnius import autoclass, PythonJavaClass, java_method
+
+        AcknowledgePurchaseParams = autoclass(
+            "com.android.billingclient.api.AcknowledgePurchaseParams"
+        )
+        params = (
+            AcknowledgePurchaseParams.newBuilder()
+            .setPurchaseToken(purchase.getPurchaseToken())
+            .build()
+        )
+        manager = self
+
+        class _AckListener(PythonJavaClass):
+            __javainterfaces__ = [
+                "com/android/billingclient/api/"
+                "AcknowledgePurchaseResponseListener"
+            ]
+            __javacontext__ = "app"
+
+            @java_method(
+                "(Lcom/android/billingclient/api/BillingResult;)V"
+            )
+            def onAcknowledgePurchaseResponse(
+                self_inner, billing_result
+            ):
+                try:
+                    code = billing_result.getResponseCode()
+                except Exception as e:
+                    _log.warning("[IAP] onAcknowledgePurchaseResponse error: %s", e)
+                    code = -1
+                Clock.schedule_once(
+                    lambda dt: manager._on_acknowledged(
+                        product_id, code
+                    ),
+                    0,
+                )
+
+        self._ack_listener = _AckListener()
+        self._billing_client.acknowledgePurchase(params, self._ack_listener)
 
     def _on_acknowledged(self, product_id, response_code):
         from jnius import autoclass
@@ -315,10 +430,10 @@ class IAPManager:
             "com.android.billingclient.api.BillingClient$BillingResponseCode"
         ).OK
         if response_code == OK:
-            print(f"[IAP] Purchase acknowledged: {product_id}")
+            _log.info("[IAP] Purchase acknowledged: %s", product_id)
             self._deliver_product(product_id)
         else:
-            print(f"[IAP] Acknowledge failed: {response_code}")
+            _log.error("[IAP] Acknowledge failed: %s", response_code)
             self._fire_failure(f"Acknowledge error: {response_code}")
 
     def _deliver_product(self, product_id):
@@ -328,9 +443,9 @@ class IAPManager:
             on_success, _ = self._purchase_callbacks.pop(key)
             if on_success:
                 on_success()
-            print(f"[IAP] Delivered: {key}")
+            _log.info("[IAP] Delivered: %s", key)
         else:
-            print(f"[IAP] Delivered (no callback): {product_id}")
+            _log.error("[IAP] Delivered (no callback): %s", product_id)
 
     def _fire_failure(self, reason):
         """Call failure callback for the most recent purchase attempt."""
@@ -379,10 +494,10 @@ class IAPManager:
             activity = PythonActivity.mActivity
             result = self._billing_client.launchBillingFlow(activity, params)
             code = result.getResponseCode()
-            print(f"[IAP] launchBillingFlow code={code}")
+            _log.info("[IAP] launchBillingFlow code=%s", code)
 
         except Exception as e:
-            print(f"[IAP] Android purchase error: {e}")
+            _log.error("[IAP] Android purchase error: %s", e)
             if on_failure:
                 on_failure(str(e))
 
@@ -440,23 +555,21 @@ class IAPManager:
                         prod = products.objectAtIndex_(i)
                         pid = prod.productIdentifier().UTF8String()
                         manager._product_details[pid] = prod
-                        print(f"[IAP] iOS product loaded: {pid}")
+                        _log.info("[IAP] iOS product loaded: %s", pid)
 
                 def request_didFailWithError_(self_inner, request, error):
-                    print(
-                        f"[IAP] iOS product request failed: "
-                        f"{error.localizedDescription().UTF8String()}"
-                    )
+                    _log.error("[IAP] iOS product request failed: %s",
+                               error.localizedDescription().UTF8String())
 
             self._ios_delegate = _ProductDelegate()
             request.setDelegate_(self._ios_delegate)
             request.start()
 
             self._initialized = True
-            print("[IAP] iOS StoreKit initialized")
+            _log.info("[IAP] iOS StoreKit initialized")
 
         except Exception as e:
-            print(f"[IAP] iOS StoreKit init failed: {e}")
+            _log.error("[IAP] iOS StoreKit init failed: %s", e)
             self._initialized = False
 
     def _ios_handle_transaction(self, state, product_id, transaction):
@@ -478,7 +591,7 @@ class IAPManager:
                     on_success, _ = self._purchase_callbacks.pop(key)
                     if on_success:
                         on_success()
-                print(f"[IAP] iOS purchase success: {product_id}")
+                _log.info("[IAP] iOS purchase success: %s", product_id)
                 queue.finishTransaction_(transaction)
 
             elif state == FAILED:
@@ -487,11 +600,11 @@ class IAPManager:
                     _, on_failure = self._purchase_callbacks.pop(key)
                     if on_failure:
                         on_failure("Purchase failed or canceled")
-                print(f"[IAP] iOS purchase failed: {product_id}")
+                _log.error("[IAP] iOS purchase failed: %s", product_id)
                 queue.finishTransaction_(transaction)
 
         except Exception as e:
-            print(f"[IAP] iOS transaction handling error: {e}")
+            _log.error("[IAP] iOS transaction handling error: %s", e)
 
     def _purchase_ios(self, product, on_success, on_failure):
         """Launch StoreKit payment on iOS."""
@@ -509,10 +622,10 @@ class IAPManager:
 
             payment = SKPayment.paymentWithProduct_(sk_product)
             SKPaymentQueue.defaultQueue().addPayment_(payment)
-            print(f"[IAP] iOS payment queued: {product['id']}")
+            _log.info("[IAP] iOS payment queued: %s", product['id'])
 
         except Exception as e:
-            print(f"[IAP] iOS purchase error: {e}")
+            _log.error("[IAP] iOS purchase error: %s", e)
             if on_failure:
                 on_failure(str(e))
 
@@ -535,7 +648,7 @@ class IAPManager:
 
         if not self._initialized:
             # Stub mode — auto succeed (desktop testing)
-            print(f"[IAP] Stub purchase: {product_key}")
+            _log.info("[IAP] Stub purchase: %s", product_key)
             if on_success:
                 on_success()
             return
@@ -555,7 +668,7 @@ class IAPManager:
         on_restored: callback(list_of_product_keys)
         """
         if not self._initialized:
-            print("[IAP] Stub: nothing to restore")
+            _log.info("[IAP] Stub: nothing to restore")
             on_restored([])
             return
 
@@ -613,7 +726,7 @@ class IAPManager:
                                         if key:
                                             restored.append(key)
                     except Exception as e:
-                        print(f"[IAP] Error reading purchases: {e}")
+                        _log.error("[IAP] Error reading purchases: %s", e)
                     Clock.schedule_once(
                         lambda dt: on_restored(restored), 0
                     )
@@ -622,7 +735,7 @@ class IAPManager:
             self._billing_client.queryPurchasesAsync(params, self._purchases_cb)
 
         except Exception as e:
-            print(f"[IAP] Restore failed: {e}")
+            _log.error("[IAP] Restore failed: %s", e)
             on_restored([])
 
     def _restore_ios(self, on_restored):
@@ -651,7 +764,7 @@ class IAPManager:
             Clock.schedule_once(_finish_restore, 5.0)
 
         except Exception as e:
-            print(f"[IAP] iOS restore failed: {e}")
+            _log.error("[IAP] iOS restore failed: %s", e)
             on_restored([])
 
     def get_products(self):

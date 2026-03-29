@@ -1,0 +1,124 @@
+# Build: 2
+"""
+Game-wide constants — replaces magic numbers scattered across the codebase.
+
+Naming convention: CATEGORY_NAME, e.g. HEAL_GOLD_PER_HP, BATTLE_AUTO_INTERVAL.
+"""
+
+# --- Economy ---
+STARTING_GOLD = 100.0
+HEAL_GOLD_PER_HP = 10          # 1 gold heals 10 HP (cost = missing / 10)
+UPGRADE_BONUS_PER_LEVEL = 20   # +20% per upgrade level
+
+# --- Battle ---
+BATTLE_AUTO_INTERVAL = 0.8     # seconds between auto-battle turns
+POPUP_DISMISS_DELAY = 3.0      # seconds before auto-dismissing popups
+
+# --- Relic / Accessory multipliers ---
+RELIC_STAT_SPLIT = 3           # relic bonus is split 3 ways (ATK/DEF/HP)
+ACCESSORY_HP_MULT = 10         # accessory HP bonus multiplied by 10
+
+# --- Status effects (battle.py) ---
+STATUS_BUILDUP_POISON = 0.15
+STATUS_BUILDUP_BLEED = 0.10
+STATUS_BUILDUP_WEAKEN = 0.20
+STATUS_DOT_FRACTION = 0.05     # 5% max HP per DOT tick
+STATUS_DURATION_POISON = 3     # turns
+STATUS_DURATION_BLEED = 4      # turns
+STATUS_DURATION_WEAKEN = 3     # turns
+
+# --- Economy: diamond shop / expedition ---
+RENAME_COST_DIAMONDS = 25
+EXPEDITION_SLOT_BASE_COST = 200  # doubles each purchase
+
+# --- Injury healing ---
+INJURY_HEAL_DIAMOND_RATE = 10    # 10 diamonds per injury
+INJURY_HEAL_BASE_COST = 50       # base gold cost to heal an injury
+
+# --- Shard tiers ---
+SHARD_TIER_COUNT = 5             # tier 1-5
+
+# --- Fighter base stats (models.py) ---
+FIGHTER_BASE_HP = 30             # base HP before vitality/level
+FIGHTER_HP_PER_VIT = 8           # +8 HP per vitality point
+FIGHTER_HP_PER_LEVEL = 5         # +5 HP per level above 1
+FIGHTER_ATK_PER_STR = 2          # +2 ATK per strength point
+FIGHTER_ATK_PER_LEVEL = 1        # +1 ATK per level above 1
+FIGHTER_STARTING_POINTS = 3      # unused stat points on creation
+
+# --- Crit / Dodge / Death (models.py) ---
+CRIT_K = 5                       # agility / (agility + K)
+CRIT_MULT_BASE = 1.8            # base crit damage multiplier
+CRIT_MULT_PER_AGI = 0.04        # extra crit mult per agility point
+DODGE_AGI_FACTOR = 0.02          # agility contribution to dodge
+DODGE_DIMINISH_FACTOR = 0.6      # diminishing-returns exponent
+DEATH_CHANCE_BASE = 0.05         # base death chance per injury check
+DEATH_CHANCE_PER_INJURY = 0.06   # +6% per existing injury
+DEATH_CHANCE_CAP = 0.60          # hard cap on death chance
+
+# --- Combat damage (models.py) ---
+DAMAGE_VARIANCE_LOW = 0.70       # min damage roll multiplier
+DAMAGE_VARIANCE_HIGH = 1.30      # max damage roll multiplier
+DEFENSE_DIVISOR = 100            # damage / (1 + def/DIVISOR)
+
+# --- Rarity multipliers (models.py) ---
+RARITY_MULT_COMMON = 1.0
+RARITY_MULT_UNCOMMON = 1.3
+RARITY_MULT_RARE = 1.7
+RARITY_MULT_EPIC = 2.2
+RARITY_MULT_LEGENDARY = 3.0
+
+# --- Rarity max upgrade levels (models.py) ---
+MAX_UPGRADE_COMMON = 5
+MAX_UPGRADE_UNCOMMON = 10
+MAX_UPGRADE_RARE = 15
+MAX_UPGRADE_EPIC = 20
+MAX_UPGRADE_LEGENDARY = 25
+
+# --- DifficultyScaler: enemy stats (models.py) ---
+ENEMY_ATK_BASE = 7
+ENEMY_ATK_PER_TIER = 3
+ENEMY_ATK_EXPO = 1.08
+ENEMY_DEF_BASE = 2
+ENEMY_DEF_PER_TIER = 2
+ENEMY_DEF_EXPO = 1.06
+ENEMY_HP_BASE = 35
+ENEMY_HP_PER_TIER = 15
+ENEMY_HP_EXPO = 1.10
+
+# --- DifficultyScaler: economy scaling (models.py) ---
+REWARD_BASE = 15
+REWARD_EXPO = 1.12
+HIRE_BASE = 40
+HIRE_EXPO = 1.6
+UPGRADE_COST_BASE = 35
+UPGRADE_COST_EXPO = 1.45
+HEAL_BASE = 20
+HEAL_TIER_MULT = 1.12
+SURGEON_BASE = 80
+SURGEON_INFLATION = 1.25
+
+# --- Enemy crit / dodge (models.py) ---
+ENEMY_CRIT_CAP = 0.30
+ENEMY_CRIT_BASE = 0.05
+ENEMY_CRIT_PER_TIER = 0.015
+ENEMY_DODGE_CAP = 0.20
+ENEMY_DODGE_PER_TIER = 0.01
+ENEMY_CRIT_MULT = 1.8
+
+# --- Boss multipliers (models.py) ---
+BOSS_TIER_OFFSET = 2
+BOSS_HP_MULT = 10
+BOSS_ATK_MULT = 1.5
+BOSS_DEF_MULT = 1.3
+BOSS_GOLD_MULT = 10
+BOSS_CRIT_BONUS = 0.10
+BOSS_CRIT_MIN = 0.35
+
+# --- HP healing costs (engine.py) ---
+HP_HEAL_TIER_MULT = 1.2         # heal cost scales with tier
+HP_HEAL_DIVISOR = 10            # cost = missing_hp / divisor
+
+# --- Dynamic shop: tonics (models.py) ---
+TONIC_BASE_COST = 150
+TONIC_TIER_EXPO = 1.10

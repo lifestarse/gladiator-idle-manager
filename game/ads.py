@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 5
 """
 Ad integration module — AdMob via KivMob.
 
@@ -13,18 +13,22 @@ For testing use Google's test ad unit IDs (already set below).
 Replace with real IDs before publishing to stores.
 """
 
+import logging
 import time
+from kivy.clock import Clock
 from kivy.utils import platform
+
+_log = logging.getLogger(__name__)
 
 # --- AdMob Unit IDs ---
 # TEST IDs (safe for development). Replace before release!
-ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713"  # test
-BANNER_ID = "ca-app-pub-3940256099942544/6300978111"      # test banner
-INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"  # test interstitial
-REWARDED_ID = "ca-app-pub-3940256099942544/5224354917"      # test rewarded
+ADMOB_APP_ID = "ca-app-pub-9899076646540406~3867094053"
+BANNER_ID = "ca-app-pub-9899076646540406/9566843992"
+INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"  # test ID — replace with real before release
+REWARDED_ID = "ca-app-pub-3940256099942544/5224354917"      # test ID — replace with real before release
 
-# Set to True after replacing with real IDs
-USING_REAL_ADS = False
+# Real ads enabled for banner
+USING_REAL_ADS = True
 
 
 class AdManager:
@@ -107,7 +111,7 @@ class AdManager:
 
                 def on_rewarded(self, reward_type, amount):
                     if self._cb:
-                        self._cb()
+                        Clock.schedule_once(lambda dt: self._cb(), 0)
 
                 def on_rewarded_video_ad_closed(self):
                     pass
@@ -131,9 +135,13 @@ class AdManager:
                 on_reward_callback()
 
     def is_rewarded_loaded(self):
-        if not self._initialized:
-            return True  # stub always "loaded"
-        return True  # KivMob auto-loads
+        if not self._initialized or not self._kivmob:
+            return False  # no ads on desktop / uninitialised
+        try:
+            return self._kivmob.is_rewarded_ad_loaded()
+        except Exception as e:
+            _log.warning("[Ads] is_rewarded_loaded error: %s", e)
+            return False
 
 
 # Singleton
