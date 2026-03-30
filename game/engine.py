@@ -121,7 +121,6 @@ class GameEngine:
             best_tier=self.best_record_tier,
             total_kills=self.wins,
             strongest_gladiator_kills=self.best_record_kills,
-            prestige_level=0,
             fastest_t15=self.fastest_t15_time,
         )
 
@@ -1307,7 +1306,6 @@ class GameEngine:
         self.quests_completed = data.get("quests_completed", [])
         self.tutorial_shown = data.get("tutorial_shown", [])
         self.extra_expedition_slots = data.get("extra_expedition_slots", 0)
-        # prestige_level removed — kept for backward compat on load
         self.fastest_t15_time = data.get("fastest_t15_time", 0)
         self.run_start_time = data.get("run_start_time", 0.0)
         # war_drums_until removed — kept for backward compat on load

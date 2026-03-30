@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """
 Google Play Games Services leaderboard integration.
 
@@ -18,7 +18,6 @@ from kivy.clock import Clock
 LEADERBOARD_BEST_TIER = "CgkIt_-bs_YQEAIQAQ"
 LEADERBOARD_TOTAL_KILLS = "CgkIt_-bs_YQEAIQAg"
 LEADERBOARD_STRONGEST_GLADIATOR = "CgkIt_-bs_YQEAIQAw"
-LEADERBOARD_HIGHEST_PRESTIGE = "TBD_HIGHEST_PRESTIGE"
 LEADERBOARD_FASTEST_T15 = "TBD_FASTEST_T15"
 
 RC_SIGN_IN = 9001
@@ -228,7 +227,7 @@ class LeaderboardManager:
         Clock.schedule_once(_do, 0)
 
     def submit_all(self, best_tier=0, total_kills=0, strongest_gladiator_kills=0,
-                    prestige_level=0, fastest_t15=0):
+                    fastest_t15=0):
         if not self._initialized:
             return
         if best_tier > 0:
@@ -239,8 +238,6 @@ class LeaderboardManager:
             self.submit_score(
                 LEADERBOARD_STRONGEST_GLADIATOR, strongest_gladiator_kills
             )
-        if prestige_level > 0:
-            self.submit_score(LEADERBOARD_HIGHEST_PRESTIGE, prestige_level)
         if fastest_t15 > 0:
             self.submit_score(LEADERBOARD_FASTEST_T15, fastest_t15)
 
