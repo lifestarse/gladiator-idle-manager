@@ -1,0 +1,555 @@
+{
+  "classes": {
+    "mercenary": {
+      "name": "Mercenary",
+      "description": "A balanced sword-for-hire who thrives on versatility. The Mercenary gains more stat points per level than any specialist, allowing adaptation to any combat situation.",
+      "base_str": 5,
+      "base_agi": 5,
+      "base_vit": 5,
+      "crit_bonus": 0.0,
+      "dodge_bonus": 0.0,
+      "hp_mult": 1.0,
+      "points_per_level": 4,
+      "passive_ability": {
+        "id": "versatile",
+        "name": "Versatile",
+        "description": "Gains +1 bonus stat point per level.",
+        "effect": {"type": "bonus_points", "value": 1}
+      },
+      "perk_tree": [
+        {
+          "id": "merc_iron_will",
+          "name": "Iron Will",
+          "description": "Reduces incoming damage by 5%. Years of thankless contracts have hardened this fighter's resolve.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "damage_reduction", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_opportunist",
+          "name": "Opportunist",
+          "description": "Increases critical hit chance by 5%. A mercenary learns to strike when the enemy falters.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "crit_chance_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_battle_scarred",
+          "name": "Battle-Scarred",
+          "description": "Increases maximum HP by 10%. Each scar is a lesson paid for in blood.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "hp_bonus_pct", "value": 0.10},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_coin_hunter",
+          "name": "Coin Hunter",
+          "description": "Earns 15% more gold from victories. The mercenary always knows the value of a kill.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "bonus_gold_pct", "value": 0.15},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_adaptive_combat",
+          "name": "Adaptive Combat",
+          "description": "Gains +1 defense for each hit taken during a fight, stacking up to 10. The mercenary reads the enemy's patterns mid-battle.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "def_per_hit_taken", "value": 1, "max_stacks": 10},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_dirty_fighting",
+          "name": "Dirty Fighting",
+          "description": "Deals 10% bonus damage. No rules in the arena -- only survivors.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "damage_bonus", "value": 0.10},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_sellsword_mastery",
+          "name": "Sellsword Mastery",
+          "description": "Steals 8% of damage dealt as HP. The crowd pays in gold; the blade pays in life.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "lifesteal_pct", "value": 0.08},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "merc_jack_of_all",
+          "name": "Jack of All Trades",
+          "description": "Reduces injury severity by 30%. A mercenary who can't fight tomorrow is a dead mercenary.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "reduce_injury_severity", "value": 0.30},
+          "cross_class_cost_mult": 2.0
+        }
+      ]
+    },
+
+    "assassin": {
+      "name": "Assassin",
+      "description": "A shadow-born killer who trades resilience for lethality. The Assassin strikes from blind angles, ending fights before the enemy can react.",
+      "base_str": 4,
+      "base_agi": 8,
+      "base_vit": 3,
+      "crit_bonus": 0.20,
+      "dodge_bonus": 0.05,
+      "hp_mult": 0.85,
+      "points_per_level": 3,
+      "passive_ability": {
+        "id": "shadow_strike",
+        "name": "Shadow Strike",
+        "description": "Critical hits deal 25% bonus damage beyond the normal critical multiplier.",
+        "effect": {"type": "crit_damage_bonus", "value": 0.25}
+      },
+      "perk_tree": [
+        {
+          "id": "assa_keen_edge",
+          "name": "Keen Edge",
+          "description": "Increases critical hit chance by 5%. The blade whispers where to bite deepest.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "crit_chance_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_fleet_foot",
+          "name": "Fleet Foot",
+          "description": "Increases dodge chance by 5%. The assassin is never where the blade falls.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "dodge_chance_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_poisoned_blade",
+          "name": "Poisoned Blade",
+          "description": "Deals 7% bonus damage. A thin coat of hemlock on the steel does the rest.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "damage_bonus", "value": 0.07},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_evasion",
+          "name": "Evasion",
+          "description": "Reduces incoming damage by 5%. Moving targets are harder to wound.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "damage_reduction", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_throat_cutter",
+          "name": "Throat Cutter",
+          "description": "Heals 10% of max HP on kill. The arterial spray is warm and invigorating.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "on_kill_heal_pct", "value": 0.10},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_expose_weakness",
+          "name": "Expose Weakness",
+          "description": "Gains +2 attack for each kill in a tournament round, stacking indefinitely. Each corpse reveals where the next will fall.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "atk_per_kill", "value": 2},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_death_mark",
+          "name": "Death Mark",
+          "description": "Critical hits ignore 20% of the target's defense. The assassin knows every gap in the armor.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "crit_armor_pen", "value": 0.20},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "assa_vanish",
+          "name": "Vanish",
+          "description": "Resists 40% of status effects. Chains, poisons, curses -- none can hold a true shadow.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "status_resist_pct", "value": 0.40},
+          "cross_class_cost_mult": 2.0
+        }
+      ]
+    },
+
+    "tank": {
+      "name": "Tank",
+      "description": "An immovable wall of scarred flesh and rusted iron. The Tank outlasts every opponent, turning the arena into a war of attrition that only the patient can win.",
+      "base_str": 3,
+      "base_agi": 2,
+      "base_vit": 10,
+      "crit_bonus": -0.05,
+      "dodge_bonus": 0.0,
+      "hp_mult": 1.3,
+      "points_per_level": 3,
+      "passive_ability": {
+        "id": "unbreakable",
+        "name": "Unbreakable",
+        "description": "Takes 10% less damage from all sources.",
+        "effect": {"type": "damage_reduction", "value": 0.10}
+      },
+      "perk_tree": [
+        {
+          "id": "tank_thick_skin",
+          "name": "Thick Skin",
+          "description": "Increases maximum HP by 10%. The scar tissue is thicker than most men's shields.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "hp_bonus_pct", "value": 0.10},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_brace",
+          "name": "Brace",
+          "description": "Reduces incoming damage by an additional 5%. Plant the feet. Endure.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "damage_reduction", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_retribution",
+          "name": "Retribution",
+          "description": "Deals 5% bonus damage. Slow strikes still break bones.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "damage_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_fortified",
+          "name": "Fortified",
+          "description": "Gains +1 defense for each hit taken during a fight, stacking up to 15. Every blow tempers the iron beneath the skin.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "def_per_hit_taken", "value": 1, "max_stacks": 15},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_undying",
+          "name": "Undying",
+          "description": "Steals 5% of damage dealt as HP. The arena floor drinks blood; the Tank reclaims it.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "lifesteal_pct", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_iron_body",
+          "name": "Iron Body",
+          "description": "Reduces injury severity by 25%. Bones knit crooked but they knit fast.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "reduce_injury_severity", "value": 0.25},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_colossus",
+          "name": "Colossus",
+          "description": "Increases maximum HP by 20%. The crowd goes silent when the colossus enters the arena.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "hp_bonus_pct", "value": 0.20},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "tank_last_stand",
+          "name": "Last Stand",
+          "description": "Resists 50% of status effects. Poison slows but does not stop. Fire burns but does not fell.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "status_resist_pct", "value": 0.50},
+          "cross_class_cost_mult": 2.0
+        }
+      ]
+    },
+
+    "berserker": {
+      "name": "Berserker",
+      "description": "A frothing brute who channels agony into annihilation. The Berserker grows deadlier as wounds mount, transforming the arena into a blood-soaked altar of rage.",
+      "base_str": 8,
+      "base_agi": 3,
+      "base_vit": 4,
+      "crit_bonus": 0.05,
+      "dodge_bonus": 0.0,
+      "hp_mult": 1.1,
+      "points_per_level": 3,
+      "passive_ability": {
+        "id": "blood_fury",
+        "name": "Blood Fury",
+        "description": "Damage increases as HP drops, up to +50% at 10% HP.",
+        "effect": {"type": "damage_bonus_on_low_hp", "max_value": 0.50, "hp_threshold": 0.10}
+      },
+      "perk_tree": [
+        {
+          "id": "berserk_brute_force",
+          "name": "Brute Force",
+          "description": "Deals 5% bonus damage. Subtlety is for the living.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "damage_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_thick_skull",
+          "name": "Thick Skull",
+          "description": "Increases maximum HP by 8%. The skull is dented but intact -- always intact.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "hp_bonus_pct", "value": 0.08},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_bloodlust",
+          "name": "Bloodlust",
+          "description": "Heals 8% of max HP on kill. The taste of death fuels the frenzy.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "on_kill_heal_pct", "value": 0.08},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_reckless_swing",
+          "name": "Reckless Swing",
+          "description": "Increases critical hit chance by 8%. Wild swings find soft places between the ribs.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "crit_chance_bonus", "value": 0.08},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_gore_stacks",
+          "name": "Gore",
+          "description": "Gains +3 attack for each kill in a tournament round, stacking indefinitely. Each death feeds the next.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "atk_per_kill", "value": 3},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_pain_is_fuel",
+          "name": "Pain is Fuel",
+          "description": "Steals 6% of damage dealt as HP. The berserker drinks from his own wounds.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "lifesteal_pct", "value": 0.06},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_rampage",
+          "name": "Rampage",
+          "description": "Deals 15% bonus damage. When the red mist descends, even iron screams.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "damage_bonus", "value": 0.15},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "berserk_defy_death",
+          "name": "Defy Death",
+          "description": "Reduces injury severity by 35%. Broken bones mend wrong, but the berserker fights on regardless.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "reduce_injury_severity", "value": 0.35},
+          "cross_class_cost_mult": 2.0
+        }
+      ]
+    },
+
+    "retiarius": {
+      "name": "Retiarius",
+      "description": "A net-and-trident fighter who dances at the edge of reach. The Retiarius punishes aggression, turning the enemy's momentum into a weapon.",
+      "base_str": 5,
+      "base_agi": 6,
+      "base_vit": 4,
+      "crit_bonus": 0.10,
+      "dodge_bonus": 0.10,
+      "hp_mult": 0.9,
+      "points_per_level": 3,
+      "passive_ability": {
+        "id": "net_mastery",
+        "name": "Net Mastery",
+        "description": "Counter-attacks on successful dodge, dealing 50% of normal damage.",
+        "effect": {"type": "on_dodge_counter", "damage_pct": 0.50}
+      },
+      "perk_tree": [
+        {
+          "id": "ret_nimble",
+          "name": "Nimble",
+          "description": "Increases dodge chance by 5%. The net-fighter flows like water around the blade.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "dodge_chance_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_trident_thrust",
+          "name": "Trident Thrust",
+          "description": "Increases critical hit chance by 5%. Three prongs, three chances to find the gap.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "crit_chance_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_entangle",
+          "name": "Entangle",
+          "description": "Deals 7% bonus damage. The net tightens; the trident follows.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "damage_bonus", "value": 0.07},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_slippery",
+          "name": "Slippery",
+          "description": "Reduces incoming damage by 5%. What the net-fighter cannot dodge, he deflects.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "damage_reduction", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_riposte",
+          "name": "Riposte",
+          "description": "Counter-attacks on dodge deal 75% damage instead of 50%. The trident punishes every missed swing.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "on_dodge_counter_upgrade", "damage_pct": 0.75},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_crowd_favorite",
+          "name": "Crowd Favorite",
+          "description": "Earns 20% more gold from victories. The mob adores the dancing killer.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "bonus_gold_pct", "value": 0.20},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_web_of_steel",
+          "name": "Web of Steel",
+          "description": "Increases dodge chance by 10%. The net-fighter becomes untouchable -- a phantom draped in iron mesh.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "dodge_chance_bonus", "value": 0.10},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "ret_crippling_snare",
+          "name": "Crippling Snare",
+          "description": "Resists 35% of status effects and reduces enemy dodge by 10%. The net binds more than flesh.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "status_resist_pct", "value": 0.35, "enemy_dodge_reduction": 0.10},
+          "cross_class_cost_mult": 2.0
+        }
+      ]
+    },
+
+    "medicus": {
+      "name": "Medicus",
+      "description": "A battlefield surgeon turned gladiator, wielding anatomical knowledge as a weapon. The Medicus outlasts foes through relentless self-repair, bleeding them dry while stitching his own wounds between blows.",
+      "base_str": 3,
+      "base_agi": 5,
+      "base_vit": 7,
+      "crit_bonus": 0.0,
+      "dodge_bonus": 0.0,
+      "hp_mult": 1.0,
+      "points_per_level": 4,
+      "passive_ability": {
+        "id": "field_surgery",
+        "name": "Field Surgery",
+        "description": "Heals 3% of max HP per turn in battle.",
+        "effect": {"type": "regen_per_turn_pct", "value": 0.03}
+      },
+      "perk_tree": [
+        {
+          "id": "med_triage",
+          "name": "Triage",
+          "description": "Increases maximum HP by 8%. Knowing where the blood flows means knowing how to keep it inside.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "hp_bonus_pct", "value": 0.08},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_anatomical_precision",
+          "name": "Anatomical Precision",
+          "description": "Increases critical hit chance by 5%. The medicus knows exactly where to cut.",
+          "tier": 1,
+          "cost": 1,
+          "effect": {"type": "crit_chance_bonus", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_numbing_salve",
+          "name": "Numbing Salve",
+          "description": "Reduces incoming damage by 5%. A poultice applied mid-fight dulls the sharpest wound.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "damage_reduction", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_leech_craft",
+          "name": "Leech Craft",
+          "description": "Steals 4% of damage dealt as HP. The scalpel takes and the surgeon reclaims.",
+          "tier": 2,
+          "cost": 2,
+          "effect": {"type": "lifesteal_pct", "value": 0.04},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_bone_setter",
+          "name": "Bone Setter",
+          "description": "Reduces injury severity by 30%. Dislocations reset mid-round, fractures splinted between bouts.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "reduce_injury_severity", "value": 0.30},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_venom_knowledge",
+          "name": "Venom Knowledge",
+          "description": "Resists 35% of status effects. The medicus has swallowed every poison in small doses.",
+          "tier": 3,
+          "cost": 3,
+          "effect": {"type": "status_resist_pct", "value": 0.35},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_resurgence",
+          "name": "Resurgence",
+          "description": "Per-turn healing increases to 5% of max HP. The body becomes a furnace of renewal -- flesh knits before the crowd can gasp.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "regen_per_turn_pct_upgrade", "value": 0.05},
+          "cross_class_cost_mult": 2.0
+        },
+        {
+          "id": "med_do_no_harm",
+          "name": "Do No Harm",
+          "description": "Deals 12% bonus damage. The oath was abandoned long ago -- now the scalpel serves only the arena.",
+          "tier": 4,
+          "cost": 4,
+          "effect": {"type": "damage_bonus", "value": 0.12},
+          "cross_class_cost_mult": 2.0
+        }
+      ]
+    }
+  }
+}

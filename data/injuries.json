@@ -1,0 +1,1004 @@
+{
+  "injuries": [
+    {
+      "id": "split_lip",
+      "name": "Split Lip",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.05}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A blade caught the mouth, splitting the lip wide open. Blood trickles down the chin.",
+      "chance_weight": 40
+    },
+    {
+      "id": "bruised_jaw",
+      "name": "Bruised Jaw",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A heavy blow rattled the jaw loose. Chewing brings agony.",
+      "chance_weight": 40
+    },
+    {
+      "id": "minor_scalp_cut",
+      "name": "Scalp Cut",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.07}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A shallow cut across the scalp bleeds profusely but looks worse than it is.",
+      "chance_weight": 40
+    },
+    {
+      "id": "ringing_ears",
+      "name": "Ringing Ears",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A pommel strike to the temple has left a constant ringing that muddles awareness.",
+      "chance_weight": 40
+    },
+    {
+      "id": "swollen_eye",
+      "name": "Swollen Eye",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "crit_chance", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The eye is puffed shut from a blunt strike, halving the field of vision.",
+      "chance_weight": 40
+    },
+    {
+      "id": "chipped_tooth",
+      "name": "Chipped Tooth",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.06}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A fist found its mark and cracked a tooth. Every breath of cold air stings.",
+      "chance_weight": 40
+    },
+    {
+      "id": "nose_bleed",
+      "name": "Broken Nose",
+      "body_part": "head",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Cartilage crunched under a headbutt. Breathing comes in ragged, wet gasps.",
+      "chance_weight": 40
+    },
+    {
+      "id": "fractured_cheekbone",
+      "name": "Fractured Cheekbone",
+      "body_part": "head",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.18}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The cheekbone cracked under a mace blow, leaving the face grotesquely swollen.",
+      "chance_weight": 30
+    },
+    {
+      "id": "broken_nose_severe",
+      "name": "Shattered Nose",
+      "body_part": "head",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The nose is flattened beyond recognition, a ruin of crushed cartilage and dried blood.",
+      "chance_weight": 30
+    },
+    {
+      "id": "cracked_skull",
+      "name": "Cracked Skull",
+      "body_part": "head",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A hairline fracture runs across the skull. Blackouts come without warning.",
+      "chance_weight": 30
+    },
+    {
+      "id": "jaw_dislocation",
+      "name": "Dislocated Jaw",
+      "body_part": "head",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.22}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The jaw hangs loose, popped from its socket by an uppercut. Speech is impossible.",
+      "chance_weight": 30
+    },
+    {
+      "id": "severe_concussion",
+      "name": "Severe Concussion",
+      "body_part": "head",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The world spins and blurs. Memory of the fight is gone, replaced by throbbing pain.",
+      "chance_weight": 30
+    },
+    {
+      "id": "caved_in_temple",
+      "name": "Caved-In Temple",
+      "body_part": "head",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.45}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The temple is dented inward from a devastating blow. The gladiator's gaze is forever unfocused.",
+      "chance_weight": 15
+    },
+    {
+      "id": "shattered_jaw",
+      "name": "Shattered Jaw",
+      "body_part": "head",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The jawbone is broken in three places, wired shut with gut string. Feeding is agony.",
+      "chance_weight": 15
+    },
+    {
+      "id": "lost_ear",
+      "name": "Severed Ear",
+      "body_part": "head",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.35}],
+      "heal_cost_multiplier": 2.5,
+      "description": "A blade took the ear clean off. Spatial awareness is permanently diminished.",
+      "chance_weight": 15
+    },
+    {
+      "id": "lost_eye",
+      "name": "Lost Eye",
+      "body_part": "head",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "crit_chance", "modifier_type": "percent", "value": 0.50}],
+      "heal_cost_multiplier": 0,
+      "description": "The eye was gouged out in the pit. The empty socket weeps, and depth perception is gone forever.",
+      "chance_weight": 5
+    },
+    {
+      "id": "brain_damage",
+      "name": "Brain Damage",
+      "body_part": "head",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.55}],
+      "heal_cost_multiplier": 0,
+      "description": "Repeated blows to the skull have left permanent damage. Reactions are slow, thoughts muddled.",
+      "chance_weight": 5
+    },
+    {
+      "id": "bruised_ribs",
+      "name": "Bruised Ribs",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Every breath sends a dull ache through the ribcage. Fighting through it is misery.",
+      "chance_weight": 40
+    },
+    {
+      "id": "shallow_chest_wound",
+      "name": "Shallow Chest Wound",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A blade traced a red line across the chest. Shallow, but it weeps blood with every movement.",
+      "chance_weight": 40
+    },
+    {
+      "id": "winded",
+      "name": "Solar Plexus Bruise",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A knee to the gut knocked the air out. Deep breathing still triggers spasms.",
+      "chance_weight": 40
+    },
+    {
+      "id": "scraped_back",
+      "name": "Scraped Back",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.07}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Gravel from the arena floor has torn the skin off the back in ragged strips.",
+      "chance_weight": 40
+    },
+    {
+      "id": "stomach_bruise",
+      "name": "Stomach Bruise",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A dark bruise blooms across the abdomen. Core strength is sapped.",
+      "chance_weight": 40
+    },
+    {
+      "id": "minor_side_laceration",
+      "name": "Side Laceration",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A glancing slash opened the flank. It stings like fire but the organs are untouched.",
+      "chance_weight": 40
+    },
+    {
+      "id": "hip_bruise",
+      "name": "Bruised Hip",
+      "body_part": "torso",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.09}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The hip took a heavy blow and throbs with every step. Pivoting is painful.",
+      "chance_weight": 40
+    },
+    {
+      "id": "cracked_rib",
+      "name": "Cracked Rib",
+      "body_part": "torso",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A rib cracked under the force of a shield bash. Guarding the body invites stabbing pain.",
+      "chance_weight": 30
+    },
+    {
+      "id": "deep_abdominal_gash",
+      "name": "Deep Abdominal Gash",
+      "body_part": "torso",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The belly was sliced open deep enough to see fat and muscle. Stitched shut with crude thread.",
+      "chance_weight": 30
+    },
+    {
+      "id": "dislocated_collarbone",
+      "name": "Dislocated Collarbone",
+      "body_part": "torso",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.22}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The collarbone juts at an unnatural angle. Raising either arm above the shoulder is impossible.",
+      "chance_weight": 30
+    },
+    {
+      "id": "punctured_lung",
+      "name": "Punctured Lung",
+      "body_part": "torso",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.28}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A spear pierced between the ribs and nicked the lung. Every breath bubbles with blood.",
+      "chance_weight": 30
+    },
+    {
+      "id": "herniated_gut",
+      "name": "Herniated Gut",
+      "body_part": "torso",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The abdominal wall ruptured under strain. A bulge of intestine presses against the skin.",
+      "chance_weight": 30
+    },
+    {
+      "id": "shattered_ribs",
+      "name": "Shattered Ribs",
+      "body_part": "torso",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "Multiple ribs are broken into fragments. Bone splinters grind with every breath.",
+      "chance_weight": 15
+    },
+    {
+      "id": "impaled_torso",
+      "name": "Impaled Torso",
+      "body_part": "torso",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.45}],
+      "heal_cost_multiplier": 2.5,
+      "description": "A spear ran clean through the abdomen and out the back. The wound refuses to fully close.",
+      "chance_weight": 15
+    },
+    {
+      "id": "crushed_spine",
+      "name": "Crushed Spine",
+      "body_part": "torso",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.50}],
+      "heal_cost_multiplier": 0,
+      "description": "The spine was crushed by a warhammer blow. Feeling below the waist flickers in and out like a dying flame.",
+      "chance_weight": 5
+    },
+    {
+      "id": "ruined_organs",
+      "name": "Ruined Organs",
+      "body_part": "torso",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.55}],
+      "heal_cost_multiplier": 0,
+      "description": "Internal organs were perforated beyond repair. The body slowly poisons itself from within.",
+      "chance_weight": 5
+    },
+    {
+      "id": "bruised_left_forearm",
+      "name": "Bruised Left Forearm",
+      "body_part": "left_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A deep purple bruise marks the forearm where a blow was barely blocked.",
+      "chance_weight": 40
+    },
+    {
+      "id": "sprained_left_wrist",
+      "name": "Sprained Left Wrist",
+      "body_part": "left_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The wrist bent the wrong way during a parry. Gripping a weapon sends jolts of pain up the arm.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_knuckle_scrape",
+      "name": "Scraped Left Knuckles",
+      "body_part": "left_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.06}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Skin was scraped off the knuckles against arena stone. Blood makes the grip slippery.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_shoulder_strain",
+      "name": "Left Shoulder Strain",
+      "body_part": "left_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The shoulder was wrenched in a grapple. Raising a shield brings a sharp protest.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_arm_slash",
+      "name": "Left Arm Slash",
+      "body_part": "left_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A sword kissed the left arm and left a shallow but stinging wound.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_elbow_sprain",
+      "name": "Hyperextended Left Elbow",
+      "body_part": "left_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The elbow was forced backward in a lock. Full extension brings a sickening pop.",
+      "chance_weight": 40
+    },
+    {
+      "id": "fractured_left_forearm",
+      "name": "Fractured Left Forearm",
+      "body_part": "left_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.22}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A mace blow cracked the forearm bone. The arm bows unnaturally under pressure.",
+      "chance_weight": 30
+    },
+    {
+      "id": "dislocated_left_shoulder",
+      "name": "Dislocated Left Shoulder",
+      "body_part": "left_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The shoulder was ripped from its socket. It was pushed back in, but the joint is loose and unreliable.",
+      "chance_weight": 30
+    },
+    {
+      "id": "deep_left_arm_wound",
+      "name": "Deep Left Arm Wound",
+      "body_part": "left_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A blade cut to the bone on the upper arm. Muscle fibers are severed and the limb is weak.",
+      "chance_weight": 30
+    },
+    {
+      "id": "torn_left_bicep",
+      "name": "Torn Left Bicep",
+      "body_part": "left_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.28}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The bicep muscle tore partially from the bone during a desperate overhead block.",
+      "chance_weight": 30
+    },
+    {
+      "id": "broken_left_arm",
+      "name": "Broken Left Arm",
+      "body_part": "left_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.30}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The arm was snapped by a brutal overhead strike. Bone pierced through skin before being set.",
+      "chance_weight": 15
+    },
+    {
+      "id": "severed_left_fingers",
+      "name": "Severed Left Fingers",
+      "body_part": "left_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.35}],
+      "heal_cost_multiplier": 2.5,
+      "description": "Two fingers were cleaved off at the knuckle. The remaining grip is feeble and unreliable.",
+      "chance_weight": 15
+    },
+    {
+      "id": "crushed_left_hand",
+      "name": "Crushed Left Hand",
+      "body_part": "left_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "A warhammer pulverized the hand into a swollen mass of broken bone. Holding a shield is agony.",
+      "chance_weight": 15
+    },
+    {
+      "id": "amputated_left_hand",
+      "name": "Amputated Left Hand",
+      "body_part": "left_arm",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "defense", "modifier_type": "percent", "value": 0.50}],
+      "heal_cost_multiplier": 0,
+      "description": "The hand was hacked off at the wrist. A leather cap covers the stump, but no shield will sit there again.",
+      "chance_weight": 5
+    },
+    {
+      "id": "bruised_right_forearm",
+      "name": "Bruised Right Forearm",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A shield rim caught the forearm and left it swollen and tender.",
+      "chance_weight": 40
+    },
+    {
+      "id": "sprained_right_wrist",
+      "name": "Sprained Right Wrist",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The wrist twisted during a strike. Swinging a sword now takes conscious effort.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_knuckle_scrape",
+      "name": "Scraped Right Knuckles",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.06}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Raw knuckles weep from being dragged across stone. Every punch reopens the wound.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_shoulder_strain",
+      "name": "Right Shoulder Strain",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The weapon arm's shoulder was pulled out of alignment. Power swings are weakened.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_arm_slash",
+      "name": "Right Arm Slash",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A quick slash opened the weapon arm. Blood flows freely with each swing.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_elbow_sprain",
+      "name": "Hyperextended Right Elbow",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.14}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The elbow joint was bent backward. Thrusting strikes send lightning bolts of pain through the arm.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_bicep_tear",
+      "name": "Right Bicep Tear",
+      "body_part": "right_arm",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A partial tear in the bicep muscle limits the force behind every blow.",
+      "chance_weight": 40
+    },
+    {
+      "id": "fractured_right_forearm",
+      "name": "Fractured Right Forearm",
+      "body_part": "right_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A bone in the weapon arm cracked under a heavy parry. The arm trembles under strain.",
+      "chance_weight": 30
+    },
+    {
+      "id": "dislocated_right_shoulder",
+      "name": "Dislocated Right Shoulder",
+      "body_part": "right_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The weapon arm's shoulder was wrenched free. It grinds in the socket with each movement.",
+      "chance_weight": 30
+    },
+    {
+      "id": "deep_right_arm_wound",
+      "name": "Deep Right Arm Wound",
+      "body_part": "right_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.22}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A deep cut exposed bone on the weapon arm. The gladiator winces with every swing.",
+      "chance_weight": 30
+    },
+    {
+      "id": "torn_right_rotator",
+      "name": "Torn Right Rotator Cuff",
+      "body_part": "right_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.28}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The shoulder's tendons are shredded. Overhead swings are impossible without screaming.",
+      "chance_weight": 30
+    },
+    {
+      "id": "broken_right_arm",
+      "name": "Broken Right Arm",
+      "body_part": "right_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.30}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The weapon arm was broken clean in half by a warhammer. Bone grinds against bone beneath the splint.",
+      "chance_weight": 15
+    },
+    {
+      "id": "severed_right_fingers",
+      "name": "Severed Right Fingers",
+      "body_part": "right_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.30}],
+      "heal_cost_multiplier": 2.5,
+      "description": "Fingers were hacked from the weapon hand. Gripping a sword requires leather straps and willpower.",
+      "chance_weight": 15
+    },
+    {
+      "id": "shattered_right_elbow",
+      "name": "Shattered Right Elbow",
+      "body_part": "right_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The elbow joint was smashed into fragments. The arm bends at angles no arm should.",
+      "chance_weight": 15
+    },
+    {
+      "id": "amputated_right_hand",
+      "name": "Amputated Right Hand",
+      "body_part": "right_arm",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.60}],
+      "heal_cost_multiplier": 0,
+      "description": "The weapon hand was severed by an executioner's blade. A hook replaces it, but finesse is gone forever.",
+      "chance_weight": 5
+    },
+    {
+      "id": "bruised_left_shin",
+      "name": "Bruised Left Shin",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A kick caught the shin dead center. Walking is a limping affair.",
+      "chance_weight": 40
+    },
+    {
+      "id": "sprained_left_ankle",
+      "name": "Sprained Left Ankle",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The ankle rolled on loose sand. Every step is uncertain and tender.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_thigh_bruise",
+      "name": "Left Thigh Bruise",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A deep bruise on the thigh turns black and blue. Quick lateral movement is painful.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_calf_strain",
+      "name": "Left Calf Strain",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The calf muscle pulled tight during a dodge. Sprinting triggers sharp cramps.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_toe_fracture",
+      "name": "Fractured Left Toes",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Toes were stomped and cracked. Balance is compromised on that foot.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_knee_bruise",
+      "name": "Bruised Left Knee",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.09}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A blow to the knee left it swollen and stiff. Bending it takes effort.",
+      "chance_weight": 40
+    },
+    {
+      "id": "left_groin_pull",
+      "name": "Pulled Left Groin",
+      "body_part": "left_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The inner thigh muscle tore slightly during a wide stance. Sudden movements are agonizing.",
+      "chance_weight": 40
+    },
+    {
+      "id": "fractured_left_shin",
+      "name": "Fractured Left Shin",
+      "body_part": "left_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.22}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The shinbone cracked from a sweeping blow. Weight-bearing sends bolts of pain upward.",
+      "chance_weight": 30
+    },
+    {
+      "id": "torn_left_ligament",
+      "name": "Torn Left Knee Ligament",
+      "body_part": "left_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The knee buckled sideways and a ligament snapped. The joint is loose and gives way without warning.",
+      "chance_weight": 30
+    },
+    {
+      "id": "deep_left_thigh_gash",
+      "name": "Deep Left Thigh Gash",
+      "body_part": "left_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A blade opened the thigh to the muscle. Running leaves a trail of blood on the sand.",
+      "chance_weight": 30
+    },
+    {
+      "id": "left_hamstring_tear",
+      "name": "Torn Left Hamstring",
+      "body_part": "left_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.28}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The hamstring ripped during a desperate lunge. The leg drags with every stride.",
+      "chance_weight": 30
+    },
+    {
+      "id": "shattered_left_kneecap",
+      "name": "Shattered Left Kneecap",
+      "body_part": "left_leg",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The kneecap was smashed into pieces by a direct blow. The joint is a ruin of grinding bone.",
+      "chance_weight": 15
+    },
+    {
+      "id": "torn_left_tendon",
+      "name": "Torn Left Achilles Tendon",
+      "body_part": "left_leg",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The tendon was severed by a low slash. The foot flops uselessly without its anchor.",
+      "chance_weight": 15
+    },
+    {
+      "id": "amputated_left_foot",
+      "name": "Amputated Left Foot",
+      "body_part": "left_leg",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.55}],
+      "heal_cost_multiplier": 0,
+      "description": "The foot was hacked off above the ankle. A wooden peg replaces it, but speed is a memory.",
+      "chance_weight": 5
+    },
+    {
+      "id": "destroyed_left_knee",
+      "name": "Destroyed Left Knee",
+      "body_part": "left_leg",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.50}],
+      "heal_cost_multiplier": 0,
+      "description": "The knee was twisted backward and never recovered. The leg is locked stiff, evading blows is nearly impossible.",
+      "chance_weight": 5
+    },
+    {
+      "id": "bruised_right_shin",
+      "name": "Bruised Right Shin",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A low kick left the shin throbbing. Each step sends a dull ache up the leg.",
+      "chance_weight": 40
+    },
+    {
+      "id": "sprained_right_ankle",
+      "name": "Sprained Right Ankle",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The ankle buckled on uneven ground. It swells against the sandal straps.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_thigh_bruise",
+      "name": "Right Thigh Bruise",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "A dark bruise covers the right thigh from hip to knee. Sidestepping is sluggish.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_calf_strain",
+      "name": "Right Calf Strain",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.10}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The calf seized mid-combat. Quick movements trigger debilitating cramps.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_toe_fracture",
+      "name": "Fractured Right Toes",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.08}],
+      "heal_cost_multiplier": 1.0,
+      "description": "Crushed toes throb inside the sandal. Pushing off that foot is unreliable.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_knee_bruise",
+      "name": "Bruised Right Knee",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.09}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The knee took a direct hit and swelled to twice its size. Bending it requires gritting teeth.",
+      "chance_weight": 40
+    },
+    {
+      "id": "right_groin_pull",
+      "name": "Pulled Right Groin",
+      "body_part": "right_leg",
+      "severity": "minor",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.12}],
+      "heal_cost_multiplier": 1.0,
+      "description": "The inner thigh tore during a wide dodge. Any lateral movement brings blinding pain.",
+      "chance_weight": 40
+    },
+    {
+      "id": "fractured_right_shin",
+      "name": "Fractured Right Shin",
+      "body_part": "right_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.22}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A vicious kick cracked the shinbone. Standing requires a makeshift splint.",
+      "chance_weight": 30
+    },
+    {
+      "id": "torn_right_ligament",
+      "name": "Torn Right Knee Ligament",
+      "body_part": "right_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The knee popped sideways and a ligament gave way. The joint wobbles with every step.",
+      "chance_weight": 30
+    },
+    {
+      "id": "deep_right_thigh_gash",
+      "name": "Deep Right Thigh Gash",
+      "body_part": "right_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "Steel carved deep into the thigh muscle. The wound was cauterized but the flesh is ruined.",
+      "chance_weight": 30
+    },
+    {
+      "id": "right_hamstring_tear",
+      "name": "Torn Right Hamstring",
+      "body_part": "right_leg",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.28}],
+      "heal_cost_multiplier": 1.5,
+      "description": "The hamstring snapped like a bowstring during retreat. The leg is near useless at speed.",
+      "chance_weight": 30
+    },
+    {
+      "id": "shattered_right_kneecap",
+      "name": "Shattered Right Kneecap",
+      "body_part": "right_leg",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The kneecap exploded under a mace blow. Bone fragments grind inside the joint.",
+      "chance_weight": 15
+    },
+    {
+      "id": "torn_right_tendon",
+      "name": "Torn Right Achilles Tendon",
+      "body_part": "right_leg",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.40}],
+      "heal_cost_multiplier": 2.5,
+      "description": "A low blade severed the tendon. The gladiator can no longer rise on that foot.",
+      "chance_weight": 15
+    },
+    {
+      "id": "compound_right_leg_fracture",
+      "name": "Compound Right Leg Fracture",
+      "body_part": "right_leg",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.45}],
+      "heal_cost_multiplier": 2.5,
+      "description": "Bone tore through skin below the knee. The leg was set, but it will never be the same.",
+      "chance_weight": 15
+    },
+    {
+      "id": "amputated_right_foot",
+      "name": "Amputated Right Foot",
+      "body_part": "right_leg",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "agility", "modifier_type": "percent", "value": 0.55}],
+      "heal_cost_multiplier": 0,
+      "description": "The foot was lost to a cleaving axe blow. A crude wooden prosthetic thumps against the arena floor.",
+      "chance_weight": 5
+    },
+    {
+      "id": "destroyed_right_knee",
+      "name": "Destroyed Right Knee",
+      "body_part": "right_leg",
+      "severity": "permanent",
+      "stat_penalties": [{"stat": "dodge_chance", "modifier_type": "percent", "value": 0.50}],
+      "heal_cost_multiplier": 0,
+      "description": "The knee was obliterated beyond any healer's skill. The leg is a stiff, dead weight.",
+      "chance_weight": 5
+    },
+    {
+      "id": "left_arm_nerve_damage",
+      "name": "Left Arm Nerve Damage",
+      "body_part": "left_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A blade nicked a nerve bundle in the arm. Fingers twitch and tingle, refusing to obey.",
+      "chance_weight": 30
+    },
+    {
+      "id": "left_arm_infected_wound",
+      "name": "Infected Left Arm Wound",
+      "body_part": "left_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A cut on the arm has gone foul with infection. Pus seeps through the bandages and fever sets in.",
+      "chance_weight": 30
+    },
+    {
+      "id": "shattered_left_shoulder",
+      "name": "Shattered Left Shoulder",
+      "body_part": "left_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.45}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The shoulder joint was smashed by a warhammer. The arm dangles, held on by sinew alone.",
+      "chance_weight": 15
+    },
+    {
+      "id": "right_arm_infected_wound",
+      "name": "Infected Right Arm Wound",
+      "body_part": "right_arm",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "strength", "modifier_type": "percent", "value": 0.20}],
+      "heal_cost_multiplier": 1.5,
+      "description": "Rot has claimed a gash on the weapon arm. The flesh is hot and swollen, draining strength.",
+      "chance_weight": 30
+    },
+    {
+      "id": "shattered_right_shoulder",
+      "name": "Shattered Right Shoulder",
+      "body_part": "right_arm",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "attack", "modifier_type": "percent", "value": 0.45}],
+      "heal_cost_multiplier": 2.5,
+      "description": "The weapon arm's shoulder was pulverized. Swinging anything heavier than a dagger is impossible.",
+      "chance_weight": 15
+    },
+    {
+      "id": "infected_belly_wound",
+      "name": "Infected Belly Wound",
+      "body_part": "torso",
+      "severity": "moderate",
+      "stat_penalties": [{"stat": "vitality", "modifier_type": "percent", "value": 0.25}],
+      "heal_cost_multiplier": 1.5,
+      "description": "A gut wound has festered. The gladiator burns with fever and reeks of decay.",
+      "chance_weight": 30
+    },
+    {
+      "id": "severed_left_leg_artery",
+      "name": "Severed Left Leg Artery",
+      "body_part": "left_leg",
+      "severity": "severe",
+      "stat_penalties": [{"stat": "max_hp", "modifier_type": "percent", "value": 0.45}],
+      "heal_cost_multiplier": 2.5,
+      "description": "A deep cut severed an artery in the thigh. The wound was cauterized, but vitality drains like sand.",
+      "chance_weight": 15
+    }
+  ]
+}

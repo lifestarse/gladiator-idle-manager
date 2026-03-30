@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 6
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -12,27 +12,18 @@ UPGRADE_BONUS_PER_LEVEL = 20   # +20% per upgrade level
 
 # --- Battle ---
 BATTLE_AUTO_INTERVAL = 0.8     # seconds between auto-battle turns
+LOW_HP_THRESHOLD = 0.35        # HP fraction below which bars turn red
 POPUP_DISMISS_DELAY = 3.0      # seconds before auto-dismissing popups
 
 # --- Relic / Accessory multipliers ---
 RELIC_STAT_SPLIT = 3           # relic bonus is split 3 ways (ATK/DEF/HP)
 ACCESSORY_HP_MULT = 10         # accessory HP bonus multiplied by 10
 
-# --- Status effects (battle.py) ---
-STATUS_BUILDUP_POISON = 0.15
-STATUS_BUILDUP_BLEED = 0.10
-STATUS_BUILDUP_WEAKEN = 0.20
-STATUS_DOT_FRACTION = 0.05     # 5% max HP per DOT tick
-STATUS_DURATION_POISON = 3     # turns
-STATUS_DURATION_BLEED = 4      # turns
-STATUS_DURATION_WEAKEN = 3     # turns
-
 # --- Economy: diamond shop / expedition ---
 RENAME_COST_DIAMONDS = 25
 EXPEDITION_SLOT_BASE_COST = 200  # doubles each purchase
 
 # --- Injury healing ---
-INJURY_HEAL_DIAMOND_RATE = 10    # 10 diamonds per injury
 INJURY_HEAL_BASE_COST = 50       # base gold cost to heal an injury
 
 # --- Shard tiers ---
@@ -47,26 +38,30 @@ FIGHTER_ATK_PER_LEVEL = 1        # +1 ATK per level above 1
 FIGHTER_STARTING_POINTS = 3      # unused stat points on creation
 
 # --- Crit / Dodge / Death (models.py) ---
-CRIT_K = 5                       # agility / (agility + K)
+CRIT_K = 25                      # agility / (agility + K)
 CRIT_MULT_BASE = 1.8            # base crit damage multiplier
 CRIT_MULT_PER_AGI = 0.04        # extra crit mult per agility point
 DODGE_AGI_FACTOR = 0.02          # agility contribution to dodge
 DODGE_DIMINISH_FACTOR = 0.6      # diminishing-returns exponent
+FIGHTER_CRIT_CAP = 0.95          # max crit chance for fighters
+FIGHTER_DODGE_CAP = 0.85         # max dodge chance for fighters
+PERK_POINT_EVERY_N_LEVELS = 5    # earn 1 perk point every N levels
+
 DEATH_CHANCE_BASE = 0.05         # base death chance per injury check
-DEATH_CHANCE_PER_INJURY = 0.06   # +6% per existing injury
 DEATH_CHANCE_CAP = 0.60          # hard cap on death chance
+
+# --- Injury severity → death chance contribution ---
+SEVERITY_DEATH_CHANCE = {
+    "minor": 0.03,
+    "moderate": 0.06,
+    "severe": 0.10,
+    "permanent": 0.15,
+}
 
 # --- Combat damage (models.py) ---
 DAMAGE_VARIANCE_LOW = 0.70       # min damage roll multiplier
 DAMAGE_VARIANCE_HIGH = 1.30      # max damage roll multiplier
 DEFENSE_DIVISOR = 100            # damage / (1 + def/DIVISOR)
-
-# --- Rarity multipliers (models.py) ---
-RARITY_MULT_COMMON = 1.0
-RARITY_MULT_UNCOMMON = 1.3
-RARITY_MULT_RARE = 1.7
-RARITY_MULT_EPIC = 2.2
-RARITY_MULT_LEGENDARY = 3.0
 
 # --- Rarity max upgrade levels (models.py) ---
 MAX_UPGRADE_COMMON = 5

@@ -1,0 +1,69 @@
+{
+  "expeditions": [
+    {
+      "id": "dark_tunnels",
+      "name": "Dark Tunnels",
+      "desc": "Scout the tunnels beneath the arena",
+      "duration": 60,
+      "min_level": 11,
+      "danger": 0.43,
+      "gold_range": [20, 60],
+      "relic_chance": 0.15,
+      "relic_pool": ["common", "uncommon"],
+      "shard_tier": 1,
+      "shard_name": "Metal Shard (I)"
+    },
+    {
+      "id": "bandit_outpost",
+      "name": "Bandit Outpost",
+      "desc": "Raid a bandit camp in the hills",
+      "duration": 180,
+      "min_level": 13,
+      "danger": 0.50,
+      "gold_range": [50, 150],
+      "relic_chance": 0.25,
+      "relic_pool": ["uncommon", "rare"],
+      "shard_tier": 2,
+      "shard_name": "Metal Shard (II)"
+    },
+    {
+      "id": "cursed_ruins",
+      "name": "Cursed Ruins",
+      "desc": "Ancient temple with deadly traps",
+      "duration": 300,
+      "min_level": 15,
+      "danger": 0.57,
+      "gold_range": [100, 300],
+      "relic_chance": 0.35,
+      "relic_pool": ["rare", "epic"],
+      "shard_tier": 3,
+      "shard_name": "Metal Shard (III)"
+    },
+    {
+      "id": "dragon_wastes",
+      "name": "Dragon Wastes",
+      "desc": "Scorched lands where few return",
+      "duration": 600,
+      "min_level": 18,
+      "danger": 0.65,
+      "gold_range": [200, 600],
+      "relic_chance": 0.45,
+      "relic_pool": ["epic", "legendary"],
+      "shard_tier": 4,
+      "shard_name": "Metal Shard (IV)"
+    },
+    {
+      "id": "void_rift",
+      "name": "Void Rift",
+      "desc": "A tear in reality. Maximum risk.",
+      "duration": 900,
+      "min_level": 22,
+      "danger": 0.75,
+      "gold_range": [400, 1000],
+      "relic_chance": 0.55,
+      "relic_pool": ["legendary"],
+      "shard_tier": 5,
+      "shard_name": "Metal Shard (V)"
+    }
+  ]
+}

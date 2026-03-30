@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Tests for the battle system (game.battle)."""
 import random
 from unittest.mock import patch, MagicMock
@@ -35,7 +35,7 @@ def _make_engine_stub(fighters=None, arena_tier=1):
     eng.gold = 0
     eng.total_gold_earned = 0
     eng.award_gold = MagicMock(side_effect=lambda amt: None)
-    eng.handle_fighter_death = MagicMock(return_value=False)
+    eng.handle_fighter_death = MagicMock(return_value=(False, None))
     return eng
 
 
@@ -154,7 +154,7 @@ def test_enchantment_buildup():
     # Simulate hits below threshold
     hits_needed = ench["threshold"] // ench["buildup_per_hit"] - 1
     for _ in range(hits_needed):
-        tracker.status_buildup["bleeding"] += ench["buildup_per_hit"]
+        tracker.status_buildup["bleeding"] = tracker.status_buildup.get("bleeding", 0) + ench["buildup_per_hit"]
 
     assert tracker.status_buildup["bleeding"] == ench["buildup_per_hit"] * hits_needed
     assert tracker.status_buildup["bleeding"] < ench["threshold"]
@@ -201,7 +201,7 @@ def test_enchantment_frostbite():
     # ATK should be reduced
     assert e.attack == int(original_atk * (1 - ench["atk_reduction_pct"]))
     # Active effect should be appended
-    assert any(eff["type"] == "frostbite_debuff" for eff in tracker.active_effects)
+    assert any(eff["type"] == "atk_debuff" for eff in tracker.active_effects)
 
 
 # ===================================================================
@@ -249,7 +249,7 @@ def test_status_effect_expiry():
 
     # After expiry, ATK should be restored
     assert e.attack == tracker.original_attack
-    assert not any(eff["type"] == "frostbite_debuff" for eff in tracker.active_effects)
+    assert not any(eff["type"] == "atk_debuff" for eff in tracker.active_effects)
 
 
 # ===================================================================

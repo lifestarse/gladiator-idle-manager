@@ -1,11 +1,127 @@
-# Build: 1
+# Build: 6
 """
 Achievement system — earn diamonds for milestones.
 Diamonds are premium currency for special features.
 """
 
+import logging
 
-# --- Achievement definitions ---
+_log = logging.getLogger(__name__)
+
+
+def _build_check(condition):
+    """Convert a JSON condition dict into a callable check(engine) -> bool."""
+    ctype = condition.get("type", "")
+    val = condition.get("value")
+
+    # Simple engine attribute >= value
+    _ATTR_GTE = {
+        "wins_gte": "wins",
+        "bosses_killed_gte": "bosses_killed",
+        "tier_gte": "arena_tier",
+        "total_gold_gte": "total_gold_earned",
+        "total_deaths_gte": "total_deaths",
+        "story_chapter_gte": "story_chapter",
+        "runs_completed_gte": "runs_completed",
+        "expeditions_completed_gte": lambda e: len(e.expedition_log),
+        "lore_entries_gte": lambda e: len(getattr(e, "lore_unlocked", [])),
+        "injuries_healed_gte": lambda e: getattr(e, "total_injuries_healed", 0),
+        "enchantments_applied_gte": lambda e: getattr(e, "total_enchantments_applied", 0),
+        "enchantment_procs_gte": lambda e: getattr(e, "total_enchantment_procs", 0),
+        "gold_spent_equipment_gte": lambda e: getattr(e, "total_gold_spent_equipment", 0),
+    }
+
+    if ctype in _ATTR_GTE:
+        getter = _ATTR_GTE[ctype]
+        if callable(getter):
+            return lambda e, g=getter, v=val: g(e) >= v
+        return lambda e, a=getter, v=val: getattr(e, a, 0) >= v
+
+    if ctype == "fighters_alive_gte":
+        return lambda e, v=val: len([f for f in e.fighters if f.alive]) >= v
+
+    if ctype == "fighter_level_gte":
+        return lambda e, v=val: any(f.level >= v for f in e.fighters if f.alive)
+
+    if ctype == "fighter_injuries_gte":
+        return lambda e, v=val: any(f.injury_count >= v for f in e.fighters if f.alive)
+
+    if ctype == "unique_classes_gte":
+        return lambda e, v=val: len({
+            f.fighter_class for f in e.fighters if f.alive and f.fighter_class
+        }) >= v
+
+    if ctype == "has_class":
+        return lambda e, v=val: any(
+            f.fighter_class == v for f in e.fighters if f.alive
+        )
+
+    if ctype == "fighter_perks_gte":
+        return lambda e, v=val: any(
+            len(getattr(f, "perks", [])) >= v for f in e.fighters if f.alive
+        )
+
+    if ctype == "fighter_perk_tree_maxed":
+        return lambda e: any(
+            getattr(f, "perk_tree_maxed", False) for f in e.fighters if f.alive
+        )
+
+    if ctype == "has_equipped_item":
+        return lambda e: any(
+            any(f.equipment.get(s) for s in ["weapon", "armor", "accessory"])
+            for f in e.fighters if f.alive
+        )
+
+    if ctype == "has_equipped_rarity":
+        return lambda e, v=val: any(
+            any(
+                f.equipment.get(s, {}).get("rarity") == v
+                if f.equipment.get(s) else False
+                for s in ["weapon", "armor", "accessory"]
+            )
+            for f in e.fighters if f.alive
+        )
+
+    if ctype == "relics_collected_gte":
+        return lambda e, v=val: (
+            sum(1 for f in e.fighters if f.equipment.get("relic")) +
+            sum(1 for i in e.inventory if i.get("slot") == "relic")
+        ) >= v
+
+    if ctype == "has_permanent_injury":
+        return lambda e: any(
+            getattr(f, "has_permanent_injury", False)
+            for f in e.fighters if f.alive
+        )
+
+    if ctype == "expedition_completed_specific":
+        return lambda e, v=val: any(
+            v in log and "returned" in log for log in e.expedition_log
+        )
+
+    _log.warning("Unknown achievement condition type: %s", ctype)
+    return lambda e: False
+
+
+def build_achievements_from_json(json_list):
+    """Convert JSON achievement list to runtime format with check functions."""
+    result = []
+    for entry in json_list:
+        condition = entry.get("condition")
+        if not condition:
+            continue
+        ach = {
+            "id": entry["id"],
+            "name": entry["name"],
+            "desc": entry["desc"],
+            "diamonds": entry["diamonds"],
+            "check": _build_check(condition),
+        }
+        result.append(ach)
+    return result
+
+
+# --- Achievement definitions (hardcoded fallback) ---
 
 ACHIEVEMENTS = [
     # Combat achievements
@@ -76,7 +192,7 @@ ACHIEVEMENTS = [
      "check": lambda e: e.total_deaths >= 5},
     {"id": "survivor", "name": "Scarred Survivor",
      "desc": "Have a fighter survive with 5+ injuries", "diamonds": 100,
-     "check": lambda e: any(f.injuries >= 5 for f in e.fighters if f.alive)},
+     "check": lambda e: any(f.injury_count >= 5 for f in e.fighters if f.alive)},
 
     # Equipment & relics
     {"id": "first_equip", "name": "Armed & Ready",
@@ -94,10 +210,16 @@ ACHIEVEMENTS = [
      )},
     {"id": "relic_hunter", "name": "Relic Hunter",
      "desc": "Collect 5 relics", "diamonds": 75,
-     "check": lambda e: sum(len(f.relics) for f in e.fighters) >= 5},
+     "check": lambda e: (
+         sum(1 for f in e.fighters if f.equipment.get("relic")) +
+         sum(1 for i in e.inventory if i.get("slot") == "relic")
+     ) >= 5},
     {"id": "relic_hoarder", "name": "Relic Hoarder",
      "desc": "Collect 20 relics", "diamonds": 100,
-     "check": lambda e: sum(len(f.relics) for f in e.fighters) >= 20},
+     "check": lambda e: (
+         sum(1 for f in e.fighters if f.equipment.get("relic")) +
+         sum(1 for i in e.inventory if i.get("slot") == "relic")
+     ) >= 20},
 
     # Expeditions
     {"id": "explorer", "name": "Explorer",
@@ -132,18 +254,11 @@ DIAMOND_SHOP = [
         "category": "consumable",
     },
     {
-        "id": "instant_heal_all",
-        "name": "Divine Light",
-        "desc": "Fully heal ALL fighters instantly",
-        "cost": 50,
+        "id": "heal_all_injuries_diamond",
+        "name": "Divine Surgeon",
+        "desc": "Heal ALL injuries on ALL fighters (1 diamond per injury)",
+        "cost": 0,
         "category": "consumable",
-    },
-    {
-        "id": "double_exp_1h",
-        "name": "War Drums",
-        "desc": "2x upgrade XP efficiency for 1 hour",
-        "cost": 75,
-        "category": "boost",
     },
     {
         "id": "extra_expedition_slot",
@@ -155,8 +270,8 @@ DIAMOND_SHOP = [
     {
         "id": "golden_armor",
         "name": "Golden War Set",
-        "desc": "Unique equipment: +20 ATK, +20 DEF, +40 HP",
-        "cost": 300,
+        "desc": "Blade of Ruin + Dragonscale Aegis + Crown of Ash",
+        "cost": 3000,
         "category": "equipment",
     },
     {
@@ -166,22 +281,15 @@ DIAMOND_SHOP = [
         "cost": 25,
         "category": "cosmetic",
     },
-    {
-        "id": "skip_tier",
-        "name": "Arena Pass",
-        "desc": "Instantly advance 1 arena tier",
-        "cost": 150,
-        "category": "progression",
-    },
 ]
 
 # Diamond purchase tiers (real money)
 DIAMOND_BUNDLES = [
-    {"id": "gems_100", "diamonds": 100, "price": "29 UAH", "price_usd": "$0.99"},
-    {"id": "gems_500", "diamonds": 550, "price": "99 UAH", "price_usd": "$2.99",
+    {"id": "gems_100", "diamonds": 100, "price": "20 UAH", "price_usd": "$0.49"},
+    {"id": "gems_500", "diamonds": 500, "price": "59 UAH", "price_usd": "$1.49"},
+    {"id": "gems_1000", "diamonds": 1000, "price": "79 UAH", "price_usd": "$1.99"},
+    {"id": "gems_2500", "diamonds": 2500, "price": "179 UAH", "price_usd": "$4.49",
      "bonus": "+10%"},
-    {"id": "gems_1200", "diamonds": 1400, "price": "249 UAH", "price_usd": "$6.99",
-     "bonus": "+17%"},
-    {"id": "gems_3000", "diamonds": 3800, "price": "499 UAH", "price_usd": "$14.99",
-     "bonus": "+27%"},
+    {"id": "gems_6000", "diamonds": 6000, "price": "399 UAH", "price_usd": "$9.99",
+     "bonus": "+20%"},
 ]

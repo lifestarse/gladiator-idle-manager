@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Tests for data loading and JSON schema validation (~10 tests)."""
 import json
 import os
@@ -13,7 +13,7 @@ JSON_FILES = [
     "weapons.json", "armor.json", "accessories.json", "relics.json",
     "enchantments.json", "fighter_classes.json", "fighter_names.json",
     "enemies.json", "injuries.json", "achievements.json", "lore.json",
-    "boss_modifiers.json", "mutators.json", "prestige.json",
+    "boss_modifiers.json", "mutators.json", "expeditions.json",
 ]
 
 

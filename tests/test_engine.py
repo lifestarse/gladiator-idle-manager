@@ -1,5 +1,5 @@
-# Build: 1
-"""Tests for GameEngine (game/engine.py) — 20 tests."""
+# Build: 3
+"""Tests for GameEngine (game/engine.py) — 27 tests."""
 import json
 import os
 import tempfile
@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from game.engine import GameEngine, SAVE_PATH
-from game.models import Fighter, DifficultyScaler, FORGE_WEAPONS
+from game.models import Fighter, DifficultyScaler, FORGE_WEAPONS, ENCHANTMENT_TYPES
 from game.constants import STARTING_GOLD
 
 
@@ -161,11 +161,11 @@ def test_heal_injury(engine):
     engine.gold = 100_000
     engine.hire_gladiator("mercenary")
     f = engine.fighters[0]
-    f.injuries = 2
+    f.injuries = [{"id": "split_lip"}, {"id": "bruised_ribs"}]
     gold_before = engine.gold
     result = engine.heal_fighter_injury(0)
     assert result.ok is True
-    assert f.injuries == 1
+    assert f.injury_count == 1
     assert engine.gold < gold_before
 
 
@@ -207,21 +207,22 @@ def test_roguelike_reset(engine):
 def test_save_load_roundtrip(engine):
     tmp = tempfile.mktemp(suffix=".json")
     try:
-        with patch("game.engine.SAVE_PATH", tmp):
-            # Hire first, then set gold so deduction doesn't affect assertion
-            engine.hire_gladiator("assassin")
-            engine.gold = 777
-            engine.diamonds = 42
-            engine.arena_tier = 5
-            engine.save()
+        engine.SAVE_PATH = tmp
+        # Hire first, then set gold so deduction doesn't affect assertion
+        engine.hire_gladiator("assassin")
+        engine.gold = 777
+        engine.diamonds = 42
+        engine.arena_tier = 5
+        engine.save()
 
-            engine2 = GameEngine()
-            engine2.load()
-            assert engine2.gold == 777
-            assert engine2.diamonds == 42
-            assert engine2.arena_tier == 5
-            assert len(engine2.fighters) == 1
-            assert engine2.fighters[0].fighter_class == "assassin"
+        engine2 = GameEngine()
+        engine2.SAVE_PATH = tmp
+        engine2.load()
+        assert engine2.gold == 777
+        assert engine2.diamonds == 42
+        assert engine2.arena_tier == 5
+        assert len(engine2.fighters) == 1
+        assert engine2.fighters[0].fighter_class == "assassin"
     finally:
         if os.path.exists(tmp):
             os.remove(tmp)
@@ -235,8 +236,9 @@ def test_handle_fighter_death_permadeath(engine):
     f = engine.fighters[0]
     with patch("random.random", return_value=0.01):
         # death_chance at 0 injuries = 0.05, random=0.01 < 0.05 => dies
-        died = engine.handle_fighter_death(f)
+        died, injury_id = engine.handle_fighter_death(f)
     assert died is True
+    assert injury_id is None
     assert f.alive is False
     assert engine.total_deaths == 1
     assert len(engine.graveyard) == 1
@@ -248,13 +250,14 @@ def test_handle_fighter_death_injury(engine):
     engine.gold = 500
     engine.hire_gladiator("mercenary")
     f = engine.fighters[0]
-    old_injuries = f.injuries
+    old_count = f.injury_count
     with patch("random.random", return_value=0.99):
         # death_chance=0.05, random=0.99 > 0.05 => survives, gets injury
-        died = engine.handle_fighter_death(f)
+        died, injury_id = engine.handle_fighter_death(f)
     assert died is False
+    assert injury_id is not None
     assert f.alive is True
-    assert f.injuries == old_injuries + 1
+    assert f.injury_count == old_count + 1
 
 
 # ---- 19. Check achievements ----
@@ -283,3 +286,86 @@ def test_dismiss_dead(engine, sample_weapon):
     # Equipment returned to inventory
     assert len(engine.inventory) == 1
     assert engine.inventory[0]["id"] == sample_weapon["id"]
+
+
+# ---- 21. Enchant weapon success ----
+
+def test_enchant_weapon_success(engine, sample_weapon):
+    engine.gold = 200000
+    engine.shards = {5: 500}
+    weapon = dict(sample_weapon)
+    result = engine.enchant_weapon(weapon, "bleeding")
+    assert result.ok is True
+    assert weapon["enchantment"] == "bleeding"
+
+
+# ---- 22. Enchant weapon not enough gold ----
+
+def test_enchant_weapon_no_gold(engine, sample_weapon):
+    engine.gold = 0
+    engine.shards = {5: 500}
+    weapon = dict(sample_weapon)
+    result = engine.enchant_weapon(weapon, "bleeding")
+    assert result.ok is False
+    assert weapon.get("enchantment") is None
+
+
+# ---- 23. Enchant weapon not enough shards ----
+
+def test_enchant_weapon_no_shards(engine, sample_weapon):
+    engine.gold = 200000
+    engine.shards = {5: 0}
+    weapon = dict(sample_weapon)
+    result = engine.enchant_weapon(weapon, "bleeding")
+    assert result.ok is False
+    assert weapon.get("enchantment") is None
+
+
+# ---- 24. Enchant non-weapon fails ----
+
+def test_enchant_non_weapon_fails(engine, sample_armor):
+    engine.gold = 200000
+    engine.shards = {5: 500}
+    armor = dict(sample_armor)
+    result = engine.enchant_weapon(armor, "bleeding")
+    assert result.ok is False
+    assert armor.get("enchantment") is None
+
+
+# ---- 25. Unlock perk success ----
+
+def test_unlock_perk_success(engine):
+    engine.gold = 500
+    engine.hire_gladiator("mercenary")
+    f = engine.fighters[0]
+    f.perk_points = 5
+    result = engine.unlock_perk(0, "merc_iron_will")
+    assert result.ok is True
+    assert "merc_iron_will" in f.unlocked_perks
+    assert f.perk_points == 4  # cost 1
+
+
+# ---- 26. Unlock perk not enough points ----
+
+def test_unlock_perk_no_points(engine):
+    engine.gold = 500
+    engine.hire_gladiator("mercenary")
+    f = engine.fighters[0]
+    f.perk_points = 0
+    result = engine.unlock_perk(0, "merc_iron_will")
+    assert result.ok is False
+    assert "merc_iron_will" not in f.unlocked_perks
+
+
+# ---- 27. Unlock cross-class perk costs more ----
+
+def test_unlock_cross_class_perk(engine):
+    engine.gold = 500
+    engine.hire_gladiator("mercenary")
+    f = engine.fighters[0]
+    f.perk_points = 10
+    # Unlock assassin perk (cross-class cost = 1 * 2.0 = 2)
+    result = engine.unlock_perk(0, "assa_keen_edge")
+    assert result.ok is True
+    assert "assa_keen_edge" in f.unlocked_perks
+    assert f.perk_points == 8  # cost 2 (cross-class)

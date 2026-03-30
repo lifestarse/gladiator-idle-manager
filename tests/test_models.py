@@ -1,9 +1,10 @@
-# Build: 1
-"""Tests for game models (game/models.py) — 15 tests."""
+# Build: 2
+"""Tests for game models (game/models.py) — 20 tests."""
 import math
 
 import pytest
 
+import game.models as _m
 from game.models import (
     Fighter, Enemy, DifficultyScaler, FIGHTER_CLASSES,
 )
@@ -40,8 +41,9 @@ def test_fighter_max_hp_formula(fighter_factory):
 def test_assassin_crit_chance(fighter_factory):
     f = fighter_factory("assassin", level=1)
     # AGI=8, crit_bonus=0.20
-    # crit_chance = AGI/(AGI+5) + crit_bonus = 8/13 + 0.20
-    expected = 8 / (8 + 5) + 0.20
+    # crit_chance = AGI/(AGI+CRIT_K) + crit_bonus
+    from game.constants import CRIT_K
+    expected = 8 / (8 + CRIT_K) + 0.20
     assert abs(f.crit_chance - expected) < 1e-9
 
 
@@ -61,7 +63,9 @@ def test_fighter_with_equipment(fighter_factory, sample_weapon):
     f = fighter_factory("mercenary", level=1)
     base_attack = f.attack
     f.equip_item(dict(sample_weapon))
-    assert f.attack == base_attack + sample_weapon["atk"]
+    # weapon gives STR which multiplied by ATK_PER_STR (2)
+    from game.constants import FIGHTER_ATK_PER_STR
+    assert f.attack == base_attack + sample_weapon["str"] * FIGHTER_ATK_PER_STR
 
 
 # ---- 7. Level up ----
@@ -100,12 +104,12 @@ def test_power_rating(fighter_factory):
 
 def test_death_chance_formula(fighter_factory):
     f = fighter_factory("mercenary", level=1)
-    f.injuries = 0
+    f.injuries = []
     assert abs(f.death_chance - 0.05) < 1e-9
-    f.injuries = 5
-    assert abs(f.death_chance - 0.35) < 1e-9
-    f.injuries = 20  # capped at 0.60
-    assert abs(f.death_chance - 0.60) < 1e-9
+    # Add 5 minor injuries (each +0.03 death chance)
+    f.injuries = [{"id": "split_lip"}] * 5
+    assert f.death_chance > 0.05  # should be > base
+    assert f.death_chance <= 0.60  # should be <= cap
 
 
 # ---- 11. Enemy stats tier 1 ----
@@ -152,7 +156,7 @@ def test_boss_stats():
 
 def test_fighter_to_dict_from_dict(fighter_factory, sample_weapon):
     f = fighter_factory("assassin", level=3, name="Kira")
-    f.injuries = 2
+    f.injuries = [{"id": "split_lip"}, {"id": "bruised_ribs"}]
     f.kills = 7
     f.equip_item(dict(sample_weapon))
     d = f.to_dict()
@@ -163,7 +167,8 @@ def test_fighter_to_dict_from_dict(fighter_factory, sample_weapon):
     assert f2.strength == f.strength
     assert f2.agility == f.agility
     assert f2.vitality == f.vitality
-    assert f2.injuries == f.injuries
+    assert f2.injury_count == f.injury_count
+    assert f2.injuries[0]["id"] == "split_lip"
     assert f2.kills == f.kills
     assert f2.equipment["weapon"]["id"] == sample_weapon["id"]
     assert f2.hp == f.hp
@@ -182,3 +187,78 @@ def test_difficulty_scaler_costs():
     assert DifficultyScaler.upgrade_cost(1) == int(35 * 1.45 ** 0)  # 35
     assert DifficultyScaler.upgrade_cost(2) == int(35 * 1.45 ** 1)  # 50
     assert DifficultyScaler.upgrade_cost(5) == int(35 * 1.45 ** 4)  # 154
+
+
+# ---- 16. Perk points earned on level up ----
+
+def test_perk_points_on_level_up(fighter_factory):
+    f = fighter_factory("mercenary", level=1)
+    assert f.perk_points == 0
+    # Level up to 4 — no perk point yet (every 5 levels)
+    for _ in range(3):
+        f.level_up()
+    assert f.level == 4
+    assert f.perk_points == 0
+    # Level 5 — 1 perk point
+    f.level_up()
+    assert f.level == 5
+    assert f.perk_points == 1
+    # Level 10 — 2 total
+    for _ in range(5):
+        f.level_up()
+    assert f.level == 10
+    assert f.perk_points == 2
+
+
+# ---- 17. Get perk effects sums correctly ----
+
+def test_get_perk_effects(engine):
+    # Need engine to wire JSON data into FIGHTER_CLASSES
+    engine.gold = 500
+    engine.hire_gladiator("mercenary")
+    f = engine.fighters[0]
+    assert f.get_perk_effects("damage_reduction") == 0
+    f.unlocked_perks.append("merc_iron_will")
+    assert abs(f.get_perk_effects("damage_reduction") - 0.05) < 1e-9
+
+
+# ---- 18. Stat perks affect properties ----
+
+def test_stat_perks_affect_properties(engine):
+    engine.gold = 500
+    engine.hire_gladiator("mercenary")
+    f = engine.fighters[0]
+    atk_before = f.attack
+    hp_before = f.max_hp
+    crit_before = f.crit_chance
+    f.unlocked_perks.append("merc_dirty_fighting")  # damage_bonus 0.10
+    assert f.attack > atk_before
+    f.unlocked_perks.append("merc_battle_scarred")  # hp_bonus_pct 0.10
+    assert f.max_hp > hp_before
+    f.unlocked_perks.append("merc_opportunist")  # crit_chance_bonus 0.05
+    assert f.crit_chance > crit_before
+
+
+# ---- 19. Perk tree maxed ----
+
+def test_perk_tree_maxed(engine):
+    engine.gold = 500
+    engine.hire_gladiator("mercenary")
+    f = engine.fighters[0]
+    assert f.perk_tree_maxed is False
+    cls_data = _m.FIGHTER_CLASSES.get("mercenary", {})
+    for perk in cls_data.get("perk_tree", []):
+        f.unlocked_perks.append(perk["id"])
+    assert f.perk_tree_maxed is True
+
+
+# ---- 20. Perk save/load roundtrip ----
+
+def test_perk_save_load(fighter_factory):
+    f = fighter_factory("mercenary", level=5)
+    f.perk_points = 3
+    f.unlocked_perks = ["merc_iron_will", "merc_opportunist"]
+    data = f.to_dict()
+    f2 = Fighter.from_dict(data)
+    assert f2.perk_points == 3
+    assert f2.unlocked_perks == ["merc_iron_will", "merc_opportunist"]

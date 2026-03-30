@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 10
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -19,9 +19,7 @@ from kivy.animation import Animation
 from game.battle import BattlePhase
 from game.localization import t
 from game.ads import ad_manager
-from game.leaderboard import leaderboard_manager
 from game.ui_helpers import (
-    refresh_battle_log,
     build_fighter_pit_card, build_enemy_hp_row,
     update_fighter_pit_card, update_enemy_hp_row,
     flash_hp_bar,
@@ -179,15 +177,18 @@ class ArenaScreen(BaseScreen):
         if cached_f != current_f or cached_e != current_e:
             return False
 
-        # Update heal button
+        # Update heal button — hide when all full HP
         heal_btn = getattr(self, "_cached_heal_btn", None)
         if heal_btn:
             any_damaged = any(f.hp < f.max_hp for f in fighters_list)
             total_heal_cost = engine.get_hp_heal_cost(fighters_list)
             can_heal = total_heal_cost > 0 and engine.gold > 0 and any_damaged
-            heal_btn.text = t("heal_all_cost", cost=f"{fmt_num(total_heal_cost)}") if any_damaged else t("heal_all")
+            heal_btn.text = t("heal_all_cost", cost=f"{fmt_num(total_heal_cost)}") if any_damaged else ""
             heal_btn.btn_color = ACCENT_GREEN if can_heal else BTN_DISABLED
             heal_btn.text_color = BG_DARK if can_heal else TEXT_MUTED
+            heal_btn.height = dp(40) if any_damaged else 0
+            heal_btn.opacity = 1 if any_damaged else 0
+            heal_btn.icon_source = "icons/ic_gold.png" if any_damaged else ""
 
         # Update fighter cards
         for f in fighters_list:
@@ -268,18 +269,21 @@ class ArenaScreen(BaseScreen):
         self._heal_all(in_battle=False)
 
     def _build_heal_btn(self, fighters_list, callback):
-        """Build the Heal All button with correct cost/state for given fighters."""
+        """Build the Heal All button. Hidden when all fighters are full HP."""
         engine = App.get_running_app().engine
         any_damaged = any(f.hp < f.max_hp for f in fighters_list)
         total_heal_cost = engine.get_hp_heal_cost(fighters_list)
         can_heal = total_heal_cost > 0 and engine.gold > 0 and any_damaged
+        visible = any_damaged
         btn = MinimalButton(
-            text=t("heal_all_cost", cost=fmt_num(total_heal_cost)) if any_damaged else t("heal_all"),
+            text=t("heal_all_cost", cost=fmt_num(total_heal_cost)) if any_damaged else "",
             btn_color=ACCENT_GREEN if can_heal else BTN_DISABLED,
             text_color=BG_DARK if can_heal else TEXT_MUTED,
-            font_size=16, size_hint_y=None, height=dp(40),
-            icon_source="icons/ic_gold.png",
+            font_size=16, size_hint_y=None,
+            height=dp(40) if visible else 0,
+            icon_source="icons/ic_gold.png" if visible else "",
         )
+        btn.opacity = 1 if visible else 0
         btn.bind(on_press=lambda inst: callback())
         return btn
 
@@ -317,13 +321,6 @@ class ArenaScreen(BaseScreen):
         grid.add_widget(_lbl(
             f"REWARD  {fmt_num(enemy.gold_reward)} G", sp(15), color=ACCENT_GREEN))
 
-        # Back button at bottom
-        back_btn = MinimalButton(
-            text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=16,
-            size_hint_y=None, height=dp(38),
-        )
-        back_btn.bind(on_press=lambda inst: self._close_enemy_detail())
-        grid.add_widget(back_btn)
 
     def _close_enemy_detail(self):
         self.arena_view = "battle"
@@ -506,26 +503,23 @@ class ArenaScreen(BaseScreen):
         state = engine.battle_mgr.state
         if state.phase == BattlePhase.VICTORY:
             Clock.unschedule(self._auto_turn)
-            self.arena_mode = "common"
             self.is_fighting = False
             self.battle_log_text = ""
             self.battle_status = f"{t('victory')} +{fmt_num(state.gold_earned)}"
             self._spawn_float(f"+{fmt_num(state.gold_earned)}", ACCENT_GOLD)
             self._schedule_status_fade()
+            # Re-spawn enemy matching current mode
+            if self.arena_mode == "boss":
+                engine.spawn_boss_enemy()
+            else:
+                engine._spawn_enemy()
+            self._cached_enemy_names = []
             if engine.should_show_interstitial():
                 ad_manager.show_interstitial()
-            # Submit to leaderboard every 10 wins
             if engine.wins % 10 == 0:
-                leaderboard_manager.submit_all(
-                    best_tier=engine.best_record_tier,
-                    total_kills=engine.wins,
-                    strongest_gladiator_kills=engine.best_record_kills,
-                    prestige_level=engine.prestige_level,
-                    fastest_t15=engine.fastest_t15_time,
-                )
+                engine.submit_scores()
         elif state.phase == BattlePhase.DEFEAT:
             Clock.unschedule(self._auto_turn)
-            self.arena_mode = "common"
             self.is_fighting = False
             self.battle_log_text = ""
             self.battle_status = t("defeat")
@@ -569,7 +563,6 @@ class ArenaScreen(BaseScreen):
             log_lbl.opacity = 1
             Clock.unschedule(self._start_log_fade)
             Clock.schedule_once(self._start_log_fade, 3.0)
-        refresh_battle_log(self)
 
     def _spawn_float(self, text, color):
         arena = self.ids.get("arena_zone")

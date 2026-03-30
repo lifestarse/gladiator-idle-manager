@@ -1,766 +1,463 @@
-# Build: 1
-"""Localization system — supports EN, RU, ES, DE, FR, PT, JA, KO, ZH."""
+# Build: 28
+"""Локализация — русский + английский (фоллбэк)."""
 
-import locale
-import os
-
-_current_lang = "en"
+_current_lang = "ru"
 
 STRINGS = {
-    # ---- Navigation ----
-    "nav_pit": {
-        "en": "PIT", "ru": "АРЕНА", "es": "FOSO", "de": "GRUBE",
-        "fr": "FOSSE", "pt": "ARENA", "ja": "闘技場", "ko": "투기장", "zh": "竞技场",
-    },
-    "nav_squad": {
-        "en": "SQUAD", "ru": "ОТРЯД", "es": "EQUIPO", "de": "TRUPP",
-        "fr": "ÉQUIPE", "pt": "EQUIPE", "ja": "部隊", "ko": "부대", "zh": "小队",
-    },
-    "nav_anvil": {
-        "en": "ANVIL", "ru": "КУЗНЯ", "es": "YUNQUE", "de": "AMBOSS",
-        "fr": "ENCLUME", "pt": "BIGORNA", "ja": "鍛冶", "ko": "대장간", "zh": "铁砧",
-    },
-    "nav_hunts": {
-        "en": "HUNTS", "ru": "ОХОТА", "es": "CAZAR", "de": "JAGD",
-        "fr": "CHASSES", "pt": "CAÇADAS", "ja": "狩猟", "ko": "사냥", "zh": "狩猎",
-    },
-    "nav_lore": {
-        "en": "LORE", "ru": "ЗНАНИЯ", "es": "SABER", "de": "KUNDE",
-        "fr": "SAVOIR", "pt": "SABER", "ja": "伝承", "ko": "전승", "zh": "传说",
-    },
-    "nav_more": {
-        "en": "MORE", "ru": "ЕЩЁ", "es": "M\u00c1S", "de": "MEHR",
-        "fr": "PLUS", "pt": "MAIS", "ja": "その他", "ko": "더보기", "zh": "更多",
-    },
+    # ---- Навигация ----
+    "nav_pit": {"ru": "АРЕНА", "en": "PIT"},
+    "nav_squad": {"ru": "ОТРЯД", "en": "SQUAD"},
+    "nav_anvil": {"ru": "КУЗНЯ", "en": "ANVIL"},
+    "nav_hunts": {"ru": "ОХОТА", "en": "HUNTS"},
+    "tab_missions": {"ru": "ЗАДАНИЯ", "en": "MISSIONS"},
+    "tab_hunts": {"ru": "ОХОТА", "en": "HUNTS"},
+    "nav_lore": {"ru": "ЗНАНИЯ", "en": "LORE"},
+    "nav_more": {"ru": "ЕЩЁ", "en": "MORE"},
 
-    # ---- Screen titles ----
-    "title_pit": {
-        "en": "T H E   P I T", "ru": "А Р Е Н А", "es": "E L   F O S O",
-        "de": "D I E   G R U B E", "fr": "L A   F O S S E", "pt": "A   A R E N A",
-        "ja": "闘 技 場", "ko": "투 기 장", "zh": "竞 技 场",
-    },
-    "title_squad": {
-        "en": "S Q U A D", "ru": "О Т Р Я Д", "es": "E Q U I P O",
-        "de": "T R U P P", "fr": "É Q U I P E", "pt": "E Q U I P E",
-        "ja": "部 隊", "ko": "부 대", "zh": "小 队",
-    },
-    "title_anvil": {
-        "en": "T H E   A N V I L", "ru": "К У З Н Я", "es": "E L   Y U N Q U E",
-        "de": "D E R   A M B O S S", "fr": "L ' E N C L U M E", "pt": "A   B I G O R N A",
-        "ja": "鍛 冶 場", "ko": "대 장 간", "zh": "铁 砧",
-    },
-    "title_hunts": {
-        "en": "H U N T S", "ru": "О Х О Т А", "es": "C A Z A R",
-        "de": "J A G D", "fr": "C H A S S E S", "pt": "C A Ç A D A S",
-        "ja": "狩 猟", "ko": "사 냥", "zh": "狩 猎",
-    },
-    "title_lore": {
-        "en": "L O R E", "ru": "З Н А Н И Я", "es": "S A B E R",
-        "de": "K U N D E", "fr": "S A V O I R", "pt": "S A B E R",
-        "ja": "伝 承", "ko": "전 승", "zh": "传 说",
-    },
-    "title_more": {
-        "en": "M A R K E T  &  S E T T I N G S", "ru": "М А Г А З И Н  &  Н А С Т Р О Й К И",
-        "es": "T I E N D A  &  A J U S T E S", "de": "M A R K T  &  E I N S T E L L U N G E N",
-        "fr": "M A R C H É  &  P A R A M È T R E S", "pt": "L O J A  &  C O N F I G U R A Ç Õ E S",
-        "ja": "マーケット & 設定", "ko": "상점 & 설정", "zh": "市场 & 设置",
-    },
+    # ---- Заголовки экранов ----
+    "title_pit": {"ru": "А Р Е Н А", "en": "T H E   P I T"},
+    "title_squad": {"ru": "О Т Р Я Д", "en": "S Q U A D"},
+    "title_anvil": {"ru": "К У З Н Я", "en": "T H E   A N V I L"},
+    "title_hunts": {"ru": "О Х О Т А", "en": "H U N T S"},
+    "title_lore": {"ru": "З Н А Н И Я", "en": "L O R E"},
+    "title_more": {"ru": "Н А С Т Р О Й К И", "en": "S E T T I N G S"},
 
-    # ---- Arena / Battle ----
-    "ready_to_fight": {
-        "en": "Ready to fight", "ru": "Готов к бою", "es": "Listo para luchar",
-        "de": "Kampfbereit", "fr": "Prêt au combat", "pt": "Pronto para lutar",
-        "ja": "戦闘準備完了", "ko": "전투 준비 완료", "zh": "准备战斗",
-    },
-    "auto_battle": {
-        "en": "AUTO BATTLE!", "ru": "АВТО-БОЙ!", "es": "¡BATALLA AUTO!",
-        "de": "AUTO-KAMPF!", "fr": "COMBAT AUTO!", "pt": "BATALHA AUTO!",
-        "ja": "オートバトル！", "ko": "자동 전투!", "zh": "自动战斗！",
-    },
-    "boss_challenge": {
-        "en": "BOSS CHALLENGE!", "ru": "БОЙ С БОССОМ!", "es": "¡DESAFÍO JEFE!",
-        "de": "BOSS-HERAUSFORDERUNG!", "fr": "DÉFI DU BOSS!", "pt": "DESAFIO DO CHEFE!",
-        "ja": "ボスチャレンジ！", "ko": "보스 도전!", "zh": "BOSS挑战！",
-    },
-    "victory": {
-        "en": "VICTORY!", "ru": "ПОБЕДА!", "es": "¡VICTORIA!",
-        "de": "SIEG!", "fr": "VICTOIRE!", "pt": "VITÓRIA!",
-        "ja": "勝利！", "ko": "승리!", "zh": "胜利！",
-    },
-    "defeat": {
-        "en": "DEFEAT!", "ru": "ПОРАЖЕНИЕ!", "es": "¡DERROTA!",
-        "de": "NIEDERLAGE!", "fr": "DÉFAITE!", "pt": "DERROTA!",
-        "ja": "敗北！", "ko": "패배!", "zh": "战败！",
-    },
-    "vs": {
-        "en": "VS", "ru": "ПРОТИВ", "es": "VS", "de": "VS",
-        "fr": "VS", "pt": "VS", "ja": "VS", "ko": "VS", "zh": "VS",
-    },
-    "fighters_ready": {
-        "en": "{n} fighters ready", "ru": "{n} бойцов готово", "es": "{n} luchadores listos",
-        "de": "{n} Kämpfer bereit", "fr": "{n} combattants prêts", "pt": "{n} lutadores prontos",
-        "ja": "{n}人の戦士準備完了", "ko": "{n}명의 전사 준비됨", "zh": "{n}名战士就绪",
-    },
-    "btn_auto": {
-        "en": "FIGHT", "ru": "БОЙ", "es": "PELEA", "de": "KAMPF",
-        "fr": "COMBAT", "pt": "LUTA", "ja": "戦闘", "ko": "전투", "zh": "战斗",
-    },
-    "btn_boss": {
-        "en": "BOSS", "ru": "БОСС", "es": "JEFE", "de": "BOSS",
-        "fr": "BOSS", "pt": "CHEFE", "ja": "ボス", "ko": "보스", "zh": "首领",
-    },
-    "btn_next": {
-        "en": "NEXT", "ru": "ДАЛЕЕ", "es": "SIG.", "de": "WEITER",
-        "fr": "SUIV.", "pt": "PRÓX.", "ja": "次へ", "ko": "다음", "zh": "下一个",
-    },
-    "btn_skip": {
-        "en": "SKIP", "ru": "ПРОПУСК", "es": "SALTAR", "de": "\u00dcBER.",
-        "fr": "PASSER", "pt": "PULAR", "ja": "スキップ", "ko": "건너뛰기", "zh": "跳过",
-    },
-    "ad_2x": {
-        "en": "2x AD", "ru": "2x РЕКЛАМА", "es": "2x ANUNCIO", "de": "2x WERBUNG",
-        "fr": "2x PUB", "pt": "2x ANÚNCIO", "ja": "2x 広告", "ko": "2x 광고", "zh": "2x 广告",
-    },
-    "daily_ad_limit": {
-        "en": "Daily ad limit reached (10/day)", "ru": "Лимит рекламы (10/день)",
-        "es": "Límite diario de anuncios (10/día)", "de": "Tägliches Werbelimit (10/Tag)",
-        "fr": "Limite pub atteinte (10/jour)", "pt": "Limite diário de anúncios (10/dia)",
-        "ja": "広告の日次制限に達しました(10/日)", "ko": "일일 광고 한도 (10/일)", "zh": "每日广告上限(10/天)",
-    },
+    # ---- Арена / Бой ----
+    "ready_to_fight": {"ru": "Готов к бою", "en": "Ready to fight"},
+    "auto_battle": {"ru": "АВТО-БОЙ!", "en": "AUTO BATTLE!"},
+    "boss_challenge": {"ru": "БОЙ С БОССОМ!", "en": "BOSS CHALLENGE!"},
+    "boss_revenge": {"ru": "Босс выследил вашу группу и жаждет мести!", "en": "The boss tracked down your group and wants revenge!"},
+    "boss_revenge_sub": {"ru": "Победите его или умрите с честью!", "en": "Defeat him or die with honor!"},
+    "victory": {"ru": "ПОБЕДА!", "en": "VICTORY!"},
+    "defeat": {"ru": "ПОРАЖЕНИЕ!", "en": "DEFEAT!"},
+    "vs": {"ru": "ПРОТИВ", "en": "VS"},
+    "fighters_ready": {"ru": "{n} бойцов готово", "en": "{n} fighters ready"},
+    "fighters_alive": {"ru": "{n} бойцов в бою", "en": "{n} fighters alive"},
+    "enemies_left": {"ru": "{n} врагов осталось", "en": "{n} enemies left"},
+    "btn_auto": {"ru": "БОЙ", "en": "FIGHT"},
+    "btn_boss": {"ru": "ОБЫЧН", "en": "COMMON"},
+    "btn_next": {"ru": "ДАЛЕЕ", "en": "NEXT"},
+    "btn_skip": {"ru": "ПРОПУСК", "en": "SKIP"},
+    "btn_close": {"ru": "ЗАКРЫТЬ", "en": "CLOSE"},
+    "ad_2x": {"ru": "2x РЕКЛАМА", "en": "2x AD"},
+    "daily_ad_limit": {"ru": "Лимит рекламы (10/день)", "en": "Daily ad limit reached (10/day)"},
 
-    # ---- Permadeath popup ----
-    "permadeath": {
-        "en": "PERMADEATH", "ru": "ГИБЕЛЬ", "es": "MUERTE PERMANENTE",
-        "de": "PERMANENTER TOD", "fr": "MORT DÉFINITIVE", "pt": "MORTE PERMANENTE",
-        "ja": "永久死亡", "ko": "영구 사망", "zh": "永久死亡",
-    },
-    "all_fighters_dead": {
-        "en": "ALL FIGHTERS DEAD!", "ru": "ВСЕ БОЙЦЫ ПОГИБЛИ!",
-        "es": "¡TODOS LOS LUCHADORES MUERTOS!", "de": "ALLE KÄMPFER TOT!",
-        "fr": "TOUS LES COMBATTANTS MORTS!", "pt": "TODOS OS LUTADORES MORTOS!",
-        "ja": "全戦士死亡！", "ko": "모든 전사 사망!", "zh": "全部战士阵亡！",
-    },
-    "run_ended": {
-        "en": "Run #{n} ended.", "ru": "Забег #{n} окончен.", "es": "Ronda #{n} terminada.",
-        "de": "Lauf #{n} beendet.", "fr": "Série #{n} terminée.", "pt": "Rodada #{n} encerrada.",
-        "ja": "ラン #{n} 終了。", "ko": "런 #{n} 종료.", "zh": "第{n}轮结束。",
-    },
-    "reached_tier_kills": {
-        "en": "Reached Tier {tier}  |  {kills} kills",
-        "ru": "Достигнут Тир {tier}  |  {kills} убийств",
-        "es": "Nivel {tier} alcanzado  |  {kills} muertes",
-        "de": "Stufe {tier} erreicht  |  {kills} Siege",
-        "fr": "Rang {tier} atteint  |  {kills} victimes",
-        "pt": "Nível {tier} alcançado  |  {kills} mortes",
-        "ja": "ティア{tier}到達  |  {kills}キル",
-        "ko": "티어 {tier} 도달  |  {kills} 처치",
-        "zh": "达到阶级{tier}  |  {kills}次击杀",
-    },
-    "gold_equip_lost": {
-        "en": "Gold and equipment are lost.\nDiamonds and achievements persist.",
-        "ru": "Золото и снаряжение потеряны.\nАлмазы и достижения сохранены.",
-        "es": "Oro y equipo perdidos.\nDiamantes y logros se conservan.",
-        "de": "Gold und Ausrüstung verloren.\nDiamanten und Erfolge bleiben.",
-        "fr": "Or et équipement perdus.\nDiamants et succès conservés.",
-        "pt": "Ouro e equipamento perdidos.\nDiamantes e conquistas permanecem.",
-        "ja": "ゴールドと装備は失われます。\nダイヤと実績は保持されます。",
-        "ko": "골드와 장비를 잃습니다.\n다이아몬드와 업적은 유지됩니다.",
-        "zh": "金币和装备将丢失。\n钻石和成就将保留。",
-    },
-    "new_run": {
-        "en": "NEW RUN", "ru": "НОВЫЙ ЗАБЕГ", "es": "NUEVA RONDA",
-        "de": "NEUER LAUF", "fr": "NOUVELLE SÉRIE", "pt": "NOVA RODADA",
-        "ja": "ニューラン", "ko": "새 런", "zh": "新一轮",
-    },
+    # ---- Пермадес ----
+    "permadeath": {"ru": "ГИБЕЛЬ", "en": "PERMADEATH"},
+    "all_fighters_dead": {"ru": "ВСЕ БОЙЦЫ ПОГИБЛИ!", "en": "ALL FIGHTERS DEAD!"},
+    "run_ended": {"ru": "Забег #{n} окончен.", "en": "Run #{n} ended."},
+    "reached_tier_kills": {"ru": "Достигнут Тир {tier}  |  {kills} убийств", "en": "Reached Tier {tier}  |  {kills} kills"},
+    "gold_equip_lost": {"ru": "Золото и снаряжение потеряны.\nАлмазы и достижения сохранены.", "en": "Gold and equipment are lost.\nDiamonds and achievements persist."},
+    "new_run": {"ru": "НОВЫЙ ЗАБЕГ", "en": "NEW RUN"},
 
-    # ---- Squad / Roster ----
-    "recruit_btn": {
-        "en": "+ RECRUIT ({cost})", "ru": "+ НАНЯТЬ ({cost})",
-        "es": "+ RECLUTAR ({cost})", "de": "+ REKRUT ({cost})",
-        "fr": "+ RECRUTER ({cost})", "pt": "+ RECRUTAR ({cost})",
-        "ja": "+ 雇用 ({cost})", "ko": "+ 고용 ({cost})", "zh": "+ 招募 ({cost})",
-    },
-    "choose_class": {
-        "en": "Choose a starter class:", "ru": "Выберите класс:",
-        "es": "Elige una clase inicial:", "de": "Wähle eine Starterklasse:",
-        "fr": "Choisissez une classe:", "pt": "Escolha uma classe inicial:",
-        "ja": "初期クラスを選択:", "ko": "시작 클래스 선택:", "zh": "选择初始职业:",
-    },
-    "recruit_fighter": {
-        "en": "Recruit Fighter", "ru": "Наём бойца", "es": "Reclutar Luchador",
-        "de": "Kämpfer rekrutieren", "fr": "Recruter Combattant", "pt": "Recrutar Lutador",
-        "ja": "戦士を雇用", "ko": "전사 고용", "zh": "招募战士",
-    },
-    "btn_select": {
-        "en": "SELECT", "ru": "ВЫБРАТЬ", "es": "ELEGIR", "de": "WÄHLEN",
-        "fr": "CHOISIR", "pt": "ESCOLHER", "ja": "選択", "ko": "선택", "zh": "选择",
-    },
-    "dead_tag": {
-        "en": "DEAD", "ru": "МЁРТВ", "es": "MUERTO", "de": "TOT",
-        "fr": "MORT", "pt": "MORTO", "ja": "死亡", "ko": "사망", "zh": "死亡",
-    },
-    "away_tag": {
-        "en": "AWAY", "ru": "В ПОХОДЕ", "es": "AUSENTE", "de": "UNTERWEGS",
-        "fr": "ABSENT", "pt": "AUSENTE", "ja": "遠征中", "ko": "원정 중", "zh": "远征中",
-    },
-    "active_tag": {
-        "en": "ACTIVE", "ru": "АКТИВЕН", "es": "ACTIVO", "de": "AKTIV",
-        "fr": "ACTIF", "pt": "ATIVO", "ja": "出撃中", "ko": "활성", "zh": "出战中",
-    },
-    "fallen": {
-        "en": "Fallen: {n}", "ru": "Павших: {n}", "es": "Caídos: {n}",
-        "de": "Gefallen: {n}", "fr": "Tombés: {n}", "pt": "Caídos: {n}",
-        "ja": "戦死: {n}", "ko": "전사: {n}", "zh": "阵亡: {n}",
-    },
+    # ---- Отряд / Набор ----
+    "recruit_btn": {"ru": "+ НАНЯТЬ {cost}", "en": "+ RECRUIT {cost}"},
+    "recruit_fighter_btn": {"ru": "+ НАНЯТЬ БОЙЦА", "en": "+ RECRUIT FIGHTER"},
+    "choose_class": {"ru": "Выберите класс:", "en": "Choose a starter class:"},
+    "recruit_fighter": {"ru": "Наём бойца", "en": "Recruit Fighter"},
+    "btn_select": {"ru": "ВЫБРАТЬ", "en": "SELECT"},
+    "dead_tag": {"ru": "МЁРТВ", "en": "DEAD"},
+    "away_tag": {"ru": "В ПОХОДЕ", "en": "AWAY"},
+    "active_tag": {"ru": "АКТИВЕН", "en": "ACTIVE"},
+    "fallen": {"ru": "Павших: {n}", "en": "Fallen: {n}"},
 
-    # ---- Forge / Anvil ----
+    # ---- Кузня / Инвентарь ----
+    "equip_btn": {"ru": "ЭКИПИРОВАТЬ", "en": "EQUIP"},
+    "unequip_btn": {"ru": "СНЯТЬ", "en": "UNEQUIP"},
+    "equipped_on": {"ru": "Надето на {name}", "en": "Equipped on {name}"},
+    "improve_btn": {"ru": "УЛУЧШИТЬ", "en": "IMPROVE"},
+    "upgrade_btn": {"ru": "УСИЛИТЬ", "en": "UPGRADE"},
+    "level_label": {"ru": "Уровень", "en": "Level"},
+    "bonus_label": {"ru": "Бонус", "en": "Bonus"},
+    "total_atk": {"ru": "Итого ATK", "en": "Total ATK"},
+    "cost_label": {"ru": "Цена", "en": "Cost"},
+    "have_label": {"ru": "есть", "en": "have"},
+    "weapon_base_atk": {"ru": "База оружия", "en": "Weapon base"},
+    "armor_base_def": {"ru": "База брони", "en": "Armor base"},
+    "accessory_base_hp": {"ru": "База аксессуара", "en": "Accessory base"},
+    "total_label": {"ru": "Итого", "en": "Total"},
+    "relic_base": {"ru": "База реликвии", "en": "Relic base"},
+    "tab_shard": {"ru": "ОСКОЛКИ", "en": "SHARDS"},
+    "enchant_label": {"ru": "ЗАЧАРОВАНИЕ", "en": "ENCHANTMENT"},
+    "sell_btn": {"ru": "ПРОДАТЬ {price}", "en": "SELL {price}"},
+    "buy_btn_price": {"ru": "КУПИТЬ {price}", "en": "BUY {price}"},
+    "inventory_label": {"ru": "ИНВЕНТАРЬ", "en": "INVENTORY"},
+    "inventory_count": {"ru": "ИНВЕНТАРЬ ({n})", "en": "INVENTORY ({n})"},
+    "inventory_empty": {"ru": "Инвентарь пуст", "en": "Inventory is empty"},
+    "empty_slot": {"ru": "--- пусто ---", "en": "--- empty ---"},
+    "equipped_label": {"ru": "Надето: {name}", "en": "Equipped: {name}"},
 
-    # ---- Expeditions / Hunts ----
-    "danger_label": {
-        "en": "Danger: {v}", "ru": "Опасность: {v}", "es": "Peligro: {v}",
-        "de": "Gefahr: {v}", "fr": "Danger: {v}", "pt": "Perigo: {v}",
-        "ja": "危険度: {v}", "ko": "위험도: {v}", "zh": "危险: {v}",
-    },
-    "relic_chance": {
-        "en": "Relic: {v}", "ru": "Реликвия: {v}", "es": "Reliquia: {v}",
-        "de": "Relikt: {v}", "fr": "Relique: {v}", "pt": "Relíquia: {v}",
-        "ja": "遺物: {v}", "ko": "유물: {v}", "zh": "遗物: {v}",
-    },
-    "send_name": {
-        "en": "Send {name}", "ru": "Отправить {name}", "es": "Enviar {name}",
-        "de": "Senden {name}", "fr": "Envoyer {name}", "pt": "Enviar {name}",
-        "ja": "{name}を派遣", "ko": "{name} 파견", "zh": "派遣{name}",
-    },
-    "no_eligible": {
-        "en": "No eligible fighters", "ru": "Нет подходящих бойцов",
-        "es": "Sin luchadores aptos", "de": "Keine geeigneten Kämpfer",
-        "fr": "Aucun combattant éligible", "pt": "Sem lutadores aptos",
-        "ja": "対象の戦士なし", "ko": "적격 전사 없음", "zh": "无合适战士",
-    },
+    # ---- Экспедиции ----
+    "danger_label": {"ru": "Опасность: {v}", "en": "Danger: {v}"},
+    "relic_chance": {"ru": "Реликвия: {v}", "en": "Relic: {v}"},
+    "send_name": {"ru": "Отправить {name}", "en": "Send {name}"},
+    "send_btn": {"ru": "ОТПРАВИТЬ", "en": "SEND"},
+    "no_eligible": {"ru": "Нет подходящих бойцов", "en": "No eligible fighters"},
+    "no_expeditions_log": {"ru": "Пока нет экспедиций", "en": "No expeditions yet"},
 
-    # ---- Lore screen sections ----
-    "achievements_label": {
-        "en": "ACHIEVEMENTS", "ru": "ДОСТИЖЕНИЯ", "es": "LOGROS",
-        "de": "ERFOLGE", "fr": "SUCC\u00c8S", "pt": "CONQUISTAS",
-        "ja": "実績", "ko": "업적", "zh": "成就",
-    },
-    "diamond_shop_label": {
-        "en": "DIAMOND SHOP", "ru": "МАГАЗИН АЛМАЗОВ", "es": "TIENDA DE DIAMANTES",
-        "de": "DIAMANTENSHOP", "fr": "BOUTIQUE DIAMANTS", "pt": "LOJA DE DIAMANTES",
-        "ja": "ダイヤショップ", "ko": "다이아 상점", "zh": "钻石商店",
-    },
-    "done_label": {
-        "en": "DONE", "ru": "ГОТОВО", "es": "HECHO", "de": "FERTIG",
-        "fr": "FAIT", "pt": "FEITO", "ja": "完了", "ko": "완료", "zh": "完成",
-    },
+    # ---- Лор ----
+    "achievements_label": {"ru": "ДОСТИЖЕНИЯ", "en": "ACHIEVEMENTS"},
+    "diamond_shop_label": {"ru": "МАГАЗИН АЛМАЗОВ", "en": "DIAMOND SHOP"},
+    "stats_label": {"ru": "СТАТИСТИКА", "en": "STATISTICS"},
+    "quests_label": {"ru": "КВЕСТЫ", "en": "QUESTS"},
+    "done_label": {"ru": "ГОТОВО", "en": "DONE"},
 
-    # ---- More / Market screen ----
-    "restore_purchases": {
-        "en": "RESTORE PURCHASES", "ru": "ВОССТАНОВИТЬ ПОКУПКИ",
-        "es": "RESTAURAR COMPRAS", "de": "KÄUFE WIEDERHERSTELLEN",
-        "fr": "RESTAURER LES ACHATS", "pt": "RESTAURAR COMPRAS",
-        "ja": "購入を復元", "ko": "구매 복원", "zh": "恢复购买",
-    },
-    "cloud_save": {
-        "en": "CLOUD SAVE", "ru": "ОБЛАЧНОЕ СОХРАНЕНИЕ",
-        "es": "GUARDADO EN NUBE", "de": "CLOUD-SPEICHER",
-        "fr": "SAUVEGARDE CLOUD", "pt": "SALVAR NA NUVEM",
-        "ja": "クラウドセーブ", "ko": "클라우드 저장", "zh": "云存档",
-    },
-    "sign_in_google": {
-        "en": "SIGN IN WITH GOOGLE", "ru": "ВОЙТИ ЧЕРЕЗ GOOGLE",
-        "es": "INICIAR SESIÓN CON GOOGLE", "de": "MIT GOOGLE ANMELDEN",
-        "fr": "SE CONNECTER AVEC GOOGLE", "pt": "ENTRAR COM GOOGLE",
-        "ja": "Googleでサインイン", "ko": "Google 로그인", "zh": "Google登录",
-    },
-    "signed_in_as": {
-        "en": "SIGNED IN: {email}", "ru": "ВХОД: {email}",
-        "es": "CONECTADO: {email}", "de": "ANGEMELDET: {email}",
-        "fr": "CONNECTÉ: {email}", "pt": "CONECTADO: {email}",
-        "ja": "ログイン中: {email}", "ko": "로그인: {email}", "zh": "已登录: {email}",
-    },
-    "sign_out_google": {
-        "en": "SIGN OUT", "ru": "ВЫЙТИ",
-        "es": "CERRAR SESIÓN", "de": "ABMELDEN",
-        "fr": "SE DÉCONNECTER", "pt": "SAIR",
-        "ja": "サインアウト", "ko": "로그아웃", "zh": "退出登录",
-    },
-    "language": {
-        "en": "LANGUAGE", "ru": "ЯЗЫК",
-        "es": "IDIOMA", "de": "SPRACHE",
-        "fr": "LANGUE", "pt": "IDIOMA",
-        "ja": "言語", "ko": "언어", "zh": "语言",
-    },
-    "change_language": {
-        "en": "CHANGE LANGUAGE", "ru": "СМЕНИТЬ ЯЗЫК",
-        "es": "CAMBIAR IDIOMA", "de": "SPRACHE ÄNDERN",
-        "fr": "CHANGER LA LANGUE", "pt": "MUDAR IDIOMA",
-        "ja": "言語を変更", "ko": "언어 변경", "zh": "更改语言",
-    },
-    "upload": {
-        "en": "UPLOAD", "ru": "ЗАГРУЗИТЬ", "es": "SUBIR", "de": "HOCHLADEN",
-        "fr": "ENVOYER", "pt": "ENVIAR", "ja": "アップロード", "ko": "업로드", "zh": "上传",
-    },
-    "download": {
-        "en": "DOWNLOAD", "ru": "СКАЧАТЬ", "es": "DESCARGAR", "de": "HERUNTERLADEN",
-        "fr": "TÉLÉCHARGER", "pt": "BAIXAR", "ja": "ダウンロード", "ko": "다운로드", "zh": "下载",
-    },
-    "sync": {
-        "en": "SYNC", "ru": "СИНХР.", "es": "SINCR.", "de": "SYNC",
-        "fr": "SYNC", "pt": "SINCR.", "ja": "同期", "ko": "동기化", "zh": "同步",
-    },
-    "save_to_cloud": {
-        "en": "SAVE TO CLOUD", "ru": "СОХРАНИТЬ В ОБЛАКО",
-        "es": "GUARDAR EN LA NUBE", "de": "IN CLOUD SPEICHERN",
-        "fr": "SAUVEGARDER DANS LE CLOUD", "pt": "SALVAR NA NUVEM",
-        "ja": "クラウドに保存", "ko": "클라우드에 저장", "zh": "保存到云端",
-    },
-    "load_from_cloud": {
-        "en": "LOAD FROM CLOUD", "ru": "ЗАГРУЗИТЬ ИЗ ОБЛАКА",
-        "es": "CARGAR DESDE LA NUBE", "de": "AUS CLOUD LADEN",
-        "fr": "CHARGER DEPUIS LE CLOUD", "pt": "CARREGAR DA NUVEM",
-        "ja": "クラウドから読込", "ko": "클라우드에서 불러오기", "zh": "从云端加载",
-    },
-    "confirm_save_to_cloud": {
-        "en": "This will overwrite your cloud save with local progress. Continue?",
-        "ru": "Облачное сохранение будет перезаписано локальным прогрессом. Продолжить?",
-        "es": "Esto sobrescribirá tu guardado en la nube. ¿Continuar?",
-        "de": "Der Cloud-Speicherstand wird überschrieben. Fortfahren?",
-        "fr": "La sauvegarde cloud sera écrasée. Continuer ?",
-        "pt": "O salvamento na nuvem será substituído. Continuar?",
-        "ja": "クラウドのセーブデータが上書きされます。続行しますか？",
-        "ko": "클라우드 저장 데이터가 덮어씌워집니다. 계속하시겠습니까?",
-        "zh": "这将覆盖您的云端存档。是否继续？",
-    },
-    "confirm_load_from_cloud": {
-        "en": "This will overwrite your local progress with cloud save. Continue?",
-        "ru": "Локальный прогресс будет перезаписан облачным сохранением. Продолжить?",
-        "es": "Esto sobrescribirá tu progreso local. ¿Continuar?",
-        "de": "Der lokale Fortschritt wird überschrieben. Fortfahren?",
-        "fr": "La progression locale sera écrasée. Continuer ?",
-        "pt": "O progresso local será substituído. Continuar?",
-        "ja": "ローカルの進行状況が上書きされます。続行しますか？",
-        "ko": "로컬 진행 상황이 덮어씌워집니다. 계속하시겠습니까?",
-        "zh": "这将覆盖您的本地进度。是否继续？",
-    },
-    "confirm": {
-        "en": "CONFIRM", "ru": "ПОДТВЕРДИТЬ",
-        "es": "CONFIRMAR", "de": "BESTÄTIGEN",
-        "fr": "CONFIRMER", "pt": "CONFIRMAR",
-        "ja": "確認", "ko": "확인", "zh": "确认",
-    },
-    "cancel": {
-        "en": "CANCEL", "ru": "ОТМЕНА",
-        "es": "CANCELAR", "de": "ABBRECHEN",
-        "fr": "ANNULER", "pt": "CANCELAR",
-        "ja": "キャンセル", "ko": "취소", "zh": "取消",
-    },
+    # ---- Настройки ----
+    "restore_purchases": {"ru": "ВОССТАНОВИТЬ ПОКУПКИ", "en": "RESTORE PURCHASES"},
+    "cloud_save": {"ru": "ОБЛАЧНОЕ СОХРАНЕНИЕ", "en": "CLOUD SAVE"},
+    "sign_in_google": {"ru": "ВОЙТИ ЧЕРЕЗ GOOGLE", "en": "SIGN IN WITH GOOGLE"},
+    "signed_in_as": {"ru": "ВХОД: {email}", "en": "SIGNED IN: {email}"},
+    "sign_out_google": {"ru": "ВЫЙТИ", "en": "SIGN OUT"},
+    "upload": {"ru": "ЗАГРУЗИТЬ", "en": "UPLOAD"},
+    "download": {"ru": "СКАЧАТЬ", "en": "DOWNLOAD"},
+    "sync": {"ru": "СИНХР.", "en": "SYNC"},
+    "save_to_cloud": {"ru": "СОХРАНИТЬ В ОБЛАКО", "en": "SAVE TO CLOUD"},
+    "load_from_cloud": {"ru": "ЗАГРУЗИТЬ ИЗ ОБЛАКА", "en": "LOAD FROM CLOUD"},
+    "confirm_save_to_cloud": {"ru": "Облачное сохранение будет перезаписано локальным прогрессом. Продолжить?", "en": "This will overwrite your cloud save with local progress. Continue?"},
+    "confirm_load_from_cloud": {"ru": "Локальный прогресс будет перезаписан облачным сохранением. Продолжить?", "en": "This will overwrite your local progress with cloud save. Continue?"},
+    "confirm": {"ru": "ПОДТВЕРДИТЬ", "en": "CONFIRM"},
+    "cancel": {"ru": "ОТМЕНА", "en": "CANCEL"},
+    "remove_ads_label": {"ru": "Убрать рекламу", "en": "Remove Ads"},
+    "remove_ads_buy": {"ru": "УБРАТЬ РЕКЛАМУ — $2", "en": "REMOVE ADS — $2"},
+    "leaderboard_title": {"ru": "РЕЙТИНГ", "en": "LEADERBOARD"},
+    "view_leaderboard": {"ru": "ПОКАЗАТЬ РЕЙТИНГ", "en": "VIEW LEADERBOARD"},
+    "cloud_connected": {"ru": "Подключено!", "en": "Connected!"},
+    "cloud_failed": {"ru": "Ошибка: {reason}", "en": "Failed: {reason}"},
+    "cloud_uploaded": {"ru": "Сохранено в облако!", "en": "Saved to cloud!"},
+    "cloud_loaded": {"ru": "Загружено из облака!", "en": "Loaded from cloud!"},
 
-    # ---- Tutorial / popups ----
-    "got_it": {
-        "en": "GOT IT", "ru": "ПОНЯТНО", "es": "ENTENDIDO", "de": "VERSTANDEN",
-        "fr": "COMPRIS", "pt": "ENTENDI", "ja": "了解", "ko": "확인", "zh": "明白了",
-    },
+    # ---- Язык ----
+    "language": {"ru": "ЯЗЫК", "en": "LANGUAGE"},
+    "change_language": {"ru": "СМЕНИТЬ ЯЗЫК", "en": "CHANGE LANGUAGE"},
 
-    # ---- Engine messages ----
-    "recruited_msg": {
-        "en": "Recruited {name} [{cls}]!", "ru": "Нанят {name} [{cls}]!",
-        "es": "¡Reclutado {name} [{cls}]!", "de": "{name} [{cls}] rekrutiert!",
-        "fr": "{name} [{cls}] recruté!", "pt": "{name} [{cls}] recrutado!",
-        "ja": "{name}【{cls}】を雇用！", "ko": "{name} [{cls}] 고용!", "zh": "招募了{name}【{cls}】！",
-    },
-    "need_gold": {
-        "en": "Need {cost}!", "ru": "Нужно {cost}!", "es": "¡Necesitas {cost}!",
-        "de": "{cost} benötigt!", "fr": "Il faut {cost}!", "pt": "Precisa de {cost}!",
-        "ja": "{cost}必要！", "ko": "{cost} 필요!", "zh": "需要{cost}！",
-    },
-    "not_enough_gold": {
-        "en": "Not enough gold!", "ru": "Недостаточно золота!", "es": "¡Oro insuficiente!",
-        "de": "Nicht genug Gold!", "fr": "Pas assez d'or!", "pt": "Ouro insuficiente!",
-        "ja": "ゴールドが足りません！", "ko": "골드가 부족합니다!", "zh": "金币不足！",
-    },
-    "not_enough_diamonds": {
-        "en": "Not enough diamonds", "ru": "Недостаточно алмазов",
-        "es": "Diamantes insuficientes", "de": "Nicht genug Diamanten",
-        "fr": "Pas assez de diamants", "pt": "Diamantes insuficientes",
-        "ja": "ダイヤ不足", "ko": "다이아 부족", "zh": "钻石不足",
-    },
-    "2x_gold_active": {
-        "en": "2x GOLD: {t}s", "ru": "2x ЗОЛОТО: {t}с", "es": "2x ORO: {t}s",
-        "de": "2x GOLD: {t}s", "fr": "2x OR: {t}s", "pt": "2x OURO: {t}s",
-        "ja": "2xゴールド: {t}秒", "ko": "2x 골드: {t}초", "zh": "2倍金币: {t}秒",
-    },
+    # ---- Статусы ----
+    "status_removed": {"ru": "Убрана", "en": "Removed"},
+    "status_active": {"ru": "Активно", "en": "Active"},
 
-    # ---- Status strings ----
-    "status_removed": {
-        "en": "Removed", "ru": "Убрана", "es": "Eliminado", "de": "Entfernt",
-        "fr": "Supprimé", "pt": "Removido", "ja": "削除済み", "ko": "제거됨", "zh": "已移除",
-    },
-    "status_active": {
-        "en": "Active", "ru": "Активно", "es": "Activo", "de": "Aktiv",
-        "fr": "Actif", "pt": "Ativo", "ja": "有効", "ko": "활성", "zh": "活跃",
-    },
+    # ---- Туториал ----
+    "got_it": {"ru": "ПОНЯТНО", "en": "GOT IT"},
 
-    # ---- Forge / Anvil detail ----
-    "equipped_msg": {
-        "en": "Equipped {item} on {name}!", "ru": "{item} экипирован на {name}!",
-        "es": "¡{item} equipado en {name}!", "de": "{item} auf {name} ausgerüstet!",
-        "fr": "{item} équipé sur {name}!", "pt": "{item} equipado em {name}!",
-        "ja": "{name}に{item}を装備！", "ko": "{name}에 {item} 장착!", "zh": "{name}装备了{item}！",
-    },
-    "no_active_fighter": {
-        "en": "No active fighter", "ru": "Нет активного бойца",
-        "es": "Sin luchador activo", "de": "Kein aktiver Kämpfer",
-        "fr": "Aucun combattant actif", "pt": "Sem lutador ativo",
-        "ja": "アクティブ戦士なし", "ko": "활성 전사 없음", "zh": "无出战战士",
-    },
-    "item_not_found": {
-        "en": "Item not found", "ru": "Предмет не найден", "es": "Objeto no encontrado",
-        "de": "Gegenstand nicht gefunden", "fr": "Objet non trouvé", "pt": "Item não encontrado",
-        "ja": "アイテムなし", "ko": "아이템 없음", "zh": "物品未找到",
-    },
+    # ---- Сообщения движка ----
+    "recruited_msg": {"ru": "Нанят {name} [{cls}]!", "en": "Recruited {name} [{cls}]!"},
+    "need_gold": {"ru": "Нужно {cost}!", "en": "Need {cost}!"},
+    "not_enough_gold": {"ru": "Не хватает {need} золота!", "en": "Need {need} more gold!"},
+    "not_in_battle": {"ru": "Нельзя менять снаряжение в бою!", "en": "Cannot change equipment during battle!"},
+    "not_enough_diamonds": {"ru": "Недостаточно алмазов", "en": "Not enough diamonds"},
+    "fighter_dead": {"ru": "{name} мёртв", "en": "{name} is dead"},
+    "dismiss_btn": {"ru": "Выгнать", "en": "Dismiss"},
+    "dismiss_confirm_title": {"ru": "Выгнать бойца?", "en": "Dismiss fighter?"},
+    "dismiss_confirm_msg": {"ru": "Выгнать {name} навсегда?\nСнаряжение вернётся в инвентарь.", "en": "Dismiss {name} permanently?\nEquipment will be returned to inventory."},
+    "dismiss_confirm_btn": {"ru": "Да, выгнать", "en": "Yes, dismiss"},
+    "fighter_dismissed": {"ru": "{name} выгнан", "en": "{name} dismissed"},
+    "no_fighters": {"ru": "Нет бойцов!", "en": "No fighters!"},
+    "reached_level": {"ru": "{name} достиг Ур.{lv} (+{pts} очк.)", "en": "{name} reached Lv.{lv} (+{pts} pts)"},
+    "no_unused_points": {"ru": "Нет свободных очков", "en": "No unused points"},
+    "stat_distributed": {"ru": "{name}: {stat} +1 (осталось {pts})", "en": "{name}: {stat} +1 ({pts} left)"},
+    "item_not_found": {"ru": "Предмет не найден", "en": "Item not found"},
+    "bought_msg": {"ru": "Куплено: {name}", "en": "Bought {name}"},
+    "equipped_msg": {"ru": "{item} экипирован на {name}", "en": "{item} equipped on {name}"},
+    "already_on_expedition": {"ru": "{name} уже в походе", "en": "{name} is already on expedition"},
+    "max_expeditions": {"ru": "Макс. походов: {n}", "en": "Max expeditions: {n}"},
+    "need_level": {"ru": "Нужен Ур.{lv}", "en": "Need Lv.{lv}"},
+    "departed_msg": {"ru": "{name} ушёл: {exp}", "en": "{name} departed: {exp}"},
+    "healed_all": {"ru": "Все исцелены!", "en": "All healed!"},
+    "no_active_fighter": {"ru": "Нет активного бойца", "en": "No active fighter"},
+    "revived_msg": {"ru": "{name} воскрешён!", "en": "Revived {name}!"},
+    "no_dead_fighters": {"ru": "Нет погибших бойцов для воскрешения", "en": "No dead fighters to revive"},
+    "war_drums": {"ru": "Барабаны войны на 1 час!", "en": "War Drums active for 1 hour!"},
+    "expedition_slots": {"ru": "Слоты походов: {n}!", "en": "Expedition slots: {n}!"},
+    "golden_set_equipped": {"ru": "Золотой боевой набор на {name}!", "en": "Golden War Set equipped on {name}!"},
+    "golden_set_bought": {"ru": "Золотой набор добавлен в инвентарь!", "en": "Golden War Set added to inventory!"},
+    "all_injuries_healed": {"ru": "Вылечено {n} травм!", "en": "{n} injuries healed!"},
+    "no_injuries": {"ru": "Нет травм для лечения", "en": "No injuries to heal"},
+    "no_healable_injuries": {"ru": "Нет излечимых травм", "en": "No healable injuries"},
+    "permanent_injury_tag": {"ru": "(НАВСЕГДА)", "en": "(PERMANENT)"},
+    "fallen_forever": {"ru": "{name} ПОГИБ НАВСЕГДА!", "en": "{name} has FALLEN FOREVER!"},
+    "knocked_out_injury": {"ru": "{name} нокаут! {injury}", "en": "{name} knocked out! {injury}"},
+    "suffered_injury": {"ru": "Получена травма: {injury}", "en": "Suffered: {injury}"},
+    "injured_expedition": {"ru": "Травма: {injury}", "en": "Injured: {injury}"},
+    "healed_injury_msg": {"ru": "Вылечен {name}: {injury} ({cost}з)", "en": "Healed {name}: {injury} ({cost}g)"},
+    "healed_all_injuries_msg": {"ru": "Вылечено {n} травм за {cost}з", "en": "Healed {n} injuries for {cost}g"},
+    "heal_cost_mult": {"ru": "Стоимость лечения: x{mult}", "en": "Heal cost: x{mult}"},
+    "battle_log_btn": {"ru": "ЖУРНАЛ БОЁВ", "en": "BATTLE LOG"},
+    "event_log_btn": {"ru": "ЖУРНАЛ СОБЫТИЙ", "en": "EVENT LOG"},
+    "event_log_title": {"ru": "Журнал событий", "en": "Event Log"},
+    "event_log_empty": {"ru": "Нет событий", "en": "No events"},
+    "evt_battle": {"ru": "Бой", "en": "Battle"},
+    "evt_hire": {"ru": "Найм", "en": "Hire"},
+    "evt_dismiss": {"ru": "Увольнение", "en": "Dismiss"},
+    "evt_level_up": {"ru": "Уровень", "en": "Level Up"},
+    "evt_perk": {"ru": "Перк", "en": "Perk"},
+    "evt_buy": {"ru": "Покупка", "en": "Buy"},
+    "evt_sell": {"ru": "Продажа", "en": "Sell"},
+    "evt_equip": {"ru": "Экипировка", "en": "Equip"},
+    "evt_upgrade": {"ru": "Улучшение", "en": "Upgrade"},
+    "evt_enchant": {"ru": "Зачарование", "en": "Enchant"},
+    "evt_heal": {"ru": "Лечение", "en": "Heal"},
+    "evt_expedition_send": {"ru": "Экспедиция", "en": "Expedition"},
+    "battle_log_title": {"ru": "Журнал боёв", "en": "Battle Log"},
+    "battle_log_empty": {"ru": "Нет записей", "en": "No battles yet"},
+    "battle_log_victory": {"ru": "ПОБЕДА", "en": "VICTORY"},
+    "battle_log_defeat": {"ru": "ПОРАЖЕНИЕ", "en": "DEFEAT"},
+    "battle_log_boss": {"ru": "БОСС", "en": "BOSS"},
+    "battle_log_knocked": {"ru": "Нокаут: {names}", "en": "Knocked out: {names}"},
+    "battle_log_injuries": {"ru": "Травмы: {names}", "en": "Injuries: {names}"},
+    "revived_all_msg": {"ru": "Воскрешено {n} бойцов!", "en": "{n} fighters revived!"},
+    "renamed_msg": {"ru": "{old} теперь {new}!", "en": "{old} is now {new}!"},
+    "rename_title": {"ru": "Переименовать бойца", "en": "Rename Fighter"},
+    "confirm_btn": {"ru": "ПОДТВЕРДИТЬ", "en": "CONFIRM"},
+    "level_n": {"ru": "Ур.{n}", "en": "Lv.{n}"},
+    "btn_common": {"ru": "БОСС", "en": "BOSS"},
+    "back_btn": {"ru": "НАЗАД", "en": "BACK"},
+    "tab_weapon": {"ru": "ОРУЖИЕ", "en": "WEAPONS"},
+    "tab_armor": {"ru": "БРОНЯ", "en": "ARMOR"},
+    "tab_accessory": {"ru": "АКСЕССУАРЫ", "en": "ACCESSORIES"},
+    "tier_advanced": {"ru": "Продвижение до уровня {tier}!", "en": "Advanced to tier {tier}!"},
+    "2x_gold_reward": {"ru": "2x золото на 60 секунд!", "en": "2x gold for 60 seconds!"},
+    "2x_gold_active": {"ru": "2x ЗОЛОТО: {t}с", "en": "2x GOLD: {t}s"},
+    "diamonds_earned": {"ru": "+{n} алмазов!", "en": "+{n} diamonds!"},
 
-    # ---- Expeditions ----
-    "departed_msg": {
-        "en": "{name} departed for {exp}!", "ru": "{name} отправился в {exp}!",
-        "es": "¡{name} partió a {exp}!", "de": "{name} ging auf {exp}!",
-        "fr": "{name} parti pour {exp}!", "pt": "{name} partiu para {exp}!",
-        "ja": "{name}は{exp}に出発！", "ko": "{name}이(가) {exp}로 출발!", "zh": "{name}出发前往{exp}！",
-    },
-    "already_on_expedition": {
-        "en": "{name} already on expedition", "ru": "{name} уже в походе",
-        "es": "{name} ya en expedición", "de": "{name} bereits auf Expedition",
-        "fr": "{name} déjà en expédition", "pt": "{name} já em expedição",
-        "ja": "{name}は遠征中", "ko": "{name} 원정 중", "zh": "{name}已在远征中",
-    },
-    "max_expeditions": {
-        "en": "Max {n} expedition(s) at once!", "ru": "Макс. {n} походов одновременно!",
-        "es": "¡Máx. {n} expedición(es) a la vez!", "de": "Max. {n} Expedition(en) gleichzeitig!",
-        "fr": "Max {n} expédition(s) à la fois!", "pt": "Máx. {n} expedição(ões) ao mesmo tempo!",
-        "ja": "最大{n}件の遠征！", "ko": "최대 {n}개 원정!", "zh": "最多{n}次远征！",
-    },
-    "need_level": {
-        "en": "Need Lv.{lv}+", "ru": "Нужен Ур.{lv}+", "es": "Necesita Nv.{lv}+",
-        "de": "Lv.{lv}+ benötigt", "fr": "Nv.{lv}+ requis", "pt": "Precisa Nv.{lv}+",
-        "ja": "Lv.{lv}以上必要", "ko": "Lv.{lv}+ 필요", "zh": "需要Lv.{lv}+",
-    },
+    # ---- Магазин ----
+    "blood_salve": {"ru": "Кровяная мазь", "en": "Blood Salve"},
+    "blood_salve_desc": {"ru": "Полностью исцелить активного бойца", "en": "Fully heal active fighter"},
+    "fury_tonic": {"ru": "Тоник ярости", "en": "Fury Tonic"},
+    "fury_tonic_desc": {"ru": "+2 СИЛ активному бойцу", "en": "+2 base STR to active fighter"},
+    "stone_brew": {"ru": "Каменное зелье", "en": "Stone Brew"},
+    "stone_brew_desc": {"ru": "+2 ЖИВ активному бойцу", "en": "+2 base VIT to active fighter"},
+    "surgeon_kit": {"ru": "Набор хирурга", "en": "Surgeon's Kit"},
+    "surgeon_kit_desc": {"ru": "Вылечить 1 ранение (исп. {n}x)", "en": "Remove 1 injury (used {n}x)"},
 
-    # ---- Fighter messages ----
-    "fighter_dead": {
-        "en": "{name} is dead", "ru": "{name} мёртв", "es": "{name} está muerto",
-        "de": "{name} ist tot", "fr": "{name} est mort", "pt": "{name} está morto",
-        "ja": "{name}は死亡", "ko": "{name} 사망", "zh": "{name}已死亡",
+    # ---- UI кнопки ----
+    "heal_all_injuries": {"ru": "ВЫЛЕЧИТЬ ВСЕ ТРАВМЫ", "en": "HEAL ALL INJURIES"},
+    "heal_all_injuries_cost": {"ru": "ВЫЛЕЧИТЬ ВСЕ ТРАВМЫ {cost}", "en": "HEAL ALL INJURIES {cost}"},
+    "heal_all": {"ru": "ВЫЛЕЧИТЬ ВСЕХ", "en": "HEAL ALL"},
+    "heal_all_cost": {"ru": "ВЫЛЕЧИТЬ ВСЕХ {cost}", "en": "HEAL ALL {cost}"},
+    "heal_btn": {"ru": "ЛЕЧИТЬ", "en": "HEAL"},
+    "train_btn": {"ru": "ТРЕН. {cost}", "en": "TRAIN {cost}"},
+    "injuries_label": {"ru": "Травмы: {n}   Риск смерти: {risk}", "en": "Injuries: {n}   Death Risk: {risk}"},
+    "injuries_tab": {"ru": "Травмы", "en": "Injuries"},
+    "death_risk": {"ru": "Риск смерти", "en": "Death risk"},
+    "heal_all_injuries_btn": {"ru": "ВЫЛЕЧИТЬ ВСЕ", "en": "HEAL ALL"},
+    "kills_label": {"ru": "Убийств: {n}", "en": "Kills: {n}"},
+    # ---- Perks ----
+    "perks_btn": {"ru": "ПЕРКИ", "en": "PERKS"},
+    "perk_points_label": {"ru": "Очки перков: {n}", "en": "Perk Points: {n}"},
+    "perk_tier_label": {"ru": "Уровень {n}", "en": "Tier {n}"},
+    "perk_unlocked": {"ru": "Открыт", "en": "Unlocked"},
+    "perk_unlock_btn": {"ru": "Открыть ({cost})", "en": "Unlock ({cost})"},
+    "perk_passive_label": {"ru": "ПАССИВНАЯ", "en": "PASSIVE"},
+    "class_modifiers_label": {"ru": "МОДИФИКАТОРЫ", "en": "MODIFIERS"},
+    "class_perks_label": {"ru": "ДРЕВО ПЕРКОВ", "en": "PERK TREE"},
+    "class_points_per_level": {"ru": "+{n} очков за уровень", "en": "+{n} points per level"},
+    "perk_cross_class": {"ru": "Кросс-класс: x{mult}", "en": "Cross-class: x{mult}"},
+    "perk_already_unlocked": {"ru": "Перк уже открыт", "en": "Perk already unlocked"},
+    "invalid_perk": {"ru": "Неверный перк", "en": "Invalid perk"},
+    "not_enough_perk_points": {"ru": "Недостаточно очков перков", "en": "Not enough perk points"},
+    "perk_unlocked_msg": {"ru": "{name}: перк {perk} открыт!", "en": "{name}: {perk} unlocked!"},
+    "relics_label": {"ru": "Реликвий: {n}", "en": "Relics: {n}"},
+    "pts_label": {"ru": "{n} очк.", "en": "{n} pts"},
+    "total_wins": {"ru": "Всего побед", "en": "Total Wins"},
+    "current_tier": {"ru": "Текущий уровень", "en": "Current Tier"},
+    "best_tier": {"ru": "Лучший уровень", "en": "Best Tier Reached"},
+    # ---- Shards & Upgrades ----
+    "tab_enchant": {"ru": "ЗАЧАРОВАНИЕ", "en": "ENCHANT"},
+    "shard_name_1": {"ru": "Осколок (I)", "en": "Shard (I)"},
+    "shard_name_2": {"ru": "Осколок (II)", "en": "Shard (II)"},
+    "shard_name_3": {"ru": "Осколок (III)", "en": "Shard (III)"},
+    "shard_name_4": {"ru": "Осколок (IV)", "en": "Shard (IV)"},
+    "shard_name_5": {"ru": "Осколок (V)", "en": "Shard (V)"},
+    "max_upgrade_reached": {"ru": "Максимальный уровень!", "en": "Max upgrade!"},
+    "not_enough_shards": {"ru": "Нужно {need}x Осколок({tier}), есть {have}", "en": "Need {need}x Shard({tier}), have {have}"},
+    "weapon_upgraded": {"ru": "{name} улучшен до +{level}!", "en": "{name} upgraded to +{level}!"},
+    "weapon_enchanted": {"ru": "{name}: {ench}!", "en": "{name}: {ench}!"},
+    "invalid_enchantment": {"ru": "Неверное зачарование", "en": "Invalid enchantment"},
+    "only_weapons": {"ru": "Только оружие", "en": "Weapons only"},
+    "enchant_bleeding": {"ru": "Кровотечение", "en": "Bleeding"},
+    "enchant_frostbite": {"ru": "Обморожение", "en": "Frostbite"},
+    "enchant_poison": {"ru": "Отравление", "en": "Poison"},
+    "enchant_burn": {"ru": "Ожог", "en": "Burn"},
+    "enchant_paralyze": {"ru": "Паралич", "en": "Paralyze"},
+    "enchant_corruption": {"ru": "Порча", "en": "Corruption"},
+    "enchant_lightning": {"ru": "Молния", "en": "Lightning"},
+    "enchant_weaken": {"ru": "Ослабление", "en": "Weaken"},
+    "enchant_drain": {"ru": "Вытягивание", "en": "Drain"},
+    "enchant_holy_fire": {"ru": "Священный огонь", "en": "Holy Fire"},
+    "shard_label": {"ru": "ОСКОЛКИ", "en": "SHARDS"},
+    "enchant_cost_label": {"ru": "{gold}g + {count}x Оск.({tier})", "en": "{gold}g + {count}x Shard({tier})"},
+    "upgrade_cost_label": {"ru": "{count}x Оск.({tier})", "en": "{count}x Shard({tier})"},
+    "current_enchant": {"ru": "Зачар: {name}", "en": "Ench: {name}"},
+    "no_enchant": {"ru": "Без зачарования", "en": "No enchantment"},
+    "enchant_names": {"ru": {"bleeding": "Кровотечение", "frostbite": "Обморожение", "poison": "Отравление", "burn": "Ожог", "paralyze": "Паралич", "corruption": "Порча", "lightning": "Молния", "weaken": "Ослабление", "drain": "Вытягивание", "holy_fire": "Священный огонь"}, "en": {"bleeding": "Bleeding", "frostbite": "Frostbite", "poison": "Poison", "burn": "Burn", "paralyze": "Paralyze", "corruption": "Corruption", "lightning": "Lightning", "weaken": "Weaken", "drain": "Drain", "holy_fire": "Holy Fire"}},
+    # ---- Inventory tabs ----
+    "tab_weapon": {"ru": "ОРУЖИЕ", "en": "WEAPON"},
+    "tab_armor": {"ru": "БРОНЯ", "en": "ARMOR"},
+    "tab_accessory": {"ru": "АКСЕССУАР", "en": "ACCESSORY"},
+    "tab_relic": {"ru": "РЕЛИКВИЯ", "en": "RELIC"},
+    "sort_best": {"ru": "Лучшее", "en": "Best"},
+    "sort_worst": {"ru": "Худшее", "en": "Worst"},
+    "filter_all": {"ru": "Все", "en": "All"},
+    "filter_common": {"ru": "Обычн.", "en": "Common"},
+    "filter_uncommon": {"ru": "Необ.", "en": "Uncommon"},
+    "filter_rare": {"ru": "Редк.", "en": "Rare"},
+    "filter_epic": {"ru": "Эпич.", "en": "Epic"},
+    "filter_legendary": {"ru": "Легенд.", "en": "Legend."},
+    "filter_free": {"ru": "Свободн.", "en": "Free"},
+    "filter_equipped": {"ru": "Надето", "en": "Equipped"},
+    "relic_slot": {"ru": "Реликвия", "en": "Relic"},
+    "exp_shard_reward": {"ru": "Награда: {name}", "en": "Reward: {name}"},
+    # ---- Help ----
+    "buy_diamonds_label": {"ru": "КУПИТЬ АЛМАЗЫ", "en": "BUY DIAMONDS"},
+    "help_title": {"ru": "ПОМОЩЬ", "en": "HELP"},
+    "help_sections": {
+        "ru": [
+            ("АРЕНА (ПИТ)", "Бойцы сражаются с волнами врагов.\n"
+             "- Авто-бой: все бойцы vs все враги\n"
+             "- Босс: усиленный враг (x10 HP), победа повышает тир арены\n"
+             "- Золото получаете только за победы на арене\n"
+             "- Лечение: 1 золото = 10 HP (округление вверх)"),
+            ("БОЙЦЫ (ОТРЯД)", "Каждый боец имеет 3 стата:\n"
+             "- STR (Сила): базовый урон = STR x 2\n"
+             "- AGI (Ловкость): шанс крита и уклонения\n"
+             "- VIT (Живучесть): макс. HP = VIT x 10\n\n"
+             "Тренировка повышает уровень и даёт очки статов.\n"
+             "Экипировка: оружие, броня, аксессуар, реликвия."),
+            ("ТРАВМЫ И СМЕРТЬ", "Когда боец падает в бою:\n"
+             "- Проверка permadeath (шанс зависит от травм)\n"
+             "- Если выжил — получает травму (+1)\n"
+             "- Каждая травма увеличивает шанс гибели\n"
+             "- Лечение травм за золото в деталях бойца\n"
+             "- Гибель навсегда — экипировка возвращается в инвентарь"),
+            ("КУЗНЯ И ИНВЕНТАРЬ", "Кузня: покупка оружия, брони, аксессуаров за золото.\n"
+             "Инвентарь: 5 вкладок (оружие/броня/аксессуар/реликвия/осколки).\n"
+             "- Тап на предмет: детали + продать/надеть/улучшить\n"
+             "- Продажа: 50% от стоимости\n"
+             "- Показывает и надетые предметы (можно снять)\n"
+             "- Вкладка Осколки: количество осколков по тирам"),
+            ("ПРОКАЧКА ЭКИПИРОВКИ", "Любую экипировку (кроме реликвий) можно улучшить за осколки.\n\n"
+             "Макс. уровень зависит от редкости:\n"
+             "- Common: +5, Uncommon: +10, Rare: +15\n"
+             "- Epic: +20, Legendary: +25\n\n"
+             "Стоимость осколков:\n"
+             "- +1..+5: Осколок (I), от 1 до 5 штук\n"
+             "- +6..+10: Осколок (II), от 1 до 5 штук\n"
+             "- +11..+15: Осколок (III)\n"
+             "- +16..+20: Осколок (IV)\n"
+             "- +21..+25: Осколок (V)\n\n"
+             "Бонусы от прокачки:\n"
+             "- Оружие ATK: (STR + AGI) x (уровень x 20%)\n"
+             "- Броня DEF: (STR + VIT) x (уровень x 20%)\n"
+             "- Аксессуар HP: (AGI + VIT) x (уровень x 20%) x 10\n\n"
+             "Реликвии: бонус делится на ATK/DEF/HP поровну.\n"
+             "Формула: (STR+AGI+VIT) x (уровень x 20%) / 3\n"
+             "HP бонус реликвии x10. Стоимость осколков x10."),
+            ("ЗАЧАРОВАНИЕ", "Оружие можно зачаровать.\n"
+             "Каждый удар копит buildup на враге:\n\n"
+             "- Кровотечение: 20/удар, порог 100\n"
+             "  Срабатывание: -15% макс. HP врага\n"
+             "  Цена: 50K золота + 100x Осколок (V)\n\n"
+             "- Обморожение: 15/удар, порог 100\n"
+             "  Срабатывание: -10% HP + ATK -20% на 3 хода\n"
+             "  Цена: 80K золота + 100x Осколок (V)\n\n"
+             "- Отравление: 25/удар, порог 80\n"
+             "  Срабатывание: -5% HP/ход на 4 хода\n"
+             "  Цена: 60K золота + 100x Осколок (V)"),
+            ("ОХОТА (ЭКСПЕДИЦИИ)", "Отправляйте бойцов на экспедиции.\n"
+             "- Награда: 1-10 осколков металла (тир зависит от экспедиции)\n"
+             "- Шанс найти реликвию (15%-55%)\n"
+             "- Опасность: шанс проверки permadeath\n"
+             "- Опасность x 0.5: шанс травмы\n"
+             "- Чем выше уровень экспедиции — больше опасность"),
+            ("МАГАЗИН АЛМАЗОВ", "Алмазы — премиум валюта.\n"
+             "- Получаете за достижения\n"
+             "- Можно купить за реальные деньги\n"
+             "- Тратятся в магазине алмазов (вкладка Знания)\n"
+             "- Сохраняются после roguelike сброса"),
+            ("ROGUELIKE СБРОС", "Когда все бойцы погибли — забег заканчивается.\n"
+             "- Сбрасывается: золото, бойцы, тир арены, осколки, инвентарь\n"
+             "- Сохраняется: алмазы, достижения, рекорды, покупки"),
+        ],
+        "en": [
+            ("ARENA (THE PIT)", "Fighters battle waves of enemies.\n"
+             "- Auto-battle: all fighters vs all enemies\n"
+             "- Boss: enhanced enemy (x10 HP), winning increases arena tier\n"
+             "- Gold is earned only from arena victories\n"
+             "- Healing: 1 gold = 10 HP (rounded up)"),
+            ("FIGHTERS (SQUAD)", "Each fighter has 3 stats:\n"
+             "- STR (Strength): base damage = STR x 2\n"
+             "- AGI (Agility): crit chance and dodge chance\n"
+             "- VIT (Vitality): max HP = VIT x 10\n\n"
+             "Training levels up and gives stat points.\n"
+             "Equipment: weapon, armor, accessory, relic."),
+            ("INJURIES & DEATH", "When a fighter falls in battle:\n"
+             "- Permadeath check (chance depends on injuries)\n"
+             "- If survived — gains an injury (+1)\n"
+             "- Each injury increases death chance\n"
+             "- Heal injuries with gold in fighter details\n"
+             "- Permadeath — equipment returns to inventory"),
+            ("FORGE & INVENTORY", "Forge: buy weapons, armor, accessories for gold.\n"
+             "Inventory: 5 tabs (weapon/armor/accessory/relic/shards).\n"
+             "- Tap item: details + sell/equip/upgrade\n"
+             "- Sell price: 50% of cost\n"
+             "- Shows equipped items too (can unequip)\n"
+             "- Shards tab: shard counts by tier"),
+            ("EQUIPMENT UPGRADE", "Any equipment can be upgraded with metal shards.\n\n"
+             "Max level depends on rarity:\n"
+             "- Common: +5, Uncommon: +10, Rare: +15\n"
+             "- Epic: +20, Legendary: +25\n\n"
+             "Shard cost:\n"
+             "- +1..+5: Shard (I), 1 to 5 pieces\n"
+             "- +6..+10: Shard (II), 1 to 5 pieces\n"
+             "- +11..+15: Shard (III)\n"
+             "- +16..+20: Shard (IV)\n"
+             "- +21..+25: Shard (V)\n\n"
+             "Upgrade bonuses:\n"
+             "- Weapon ATK: (STR + AGI) x (level x 20%)\n"
+             "- Armor DEF: (STR + VIT) x (level x 20%)\n"
+             "- Accessory HP: (AGI + VIT) x (level x 20%) x 10\n\n"
+             "Relics: bonus split equally to ATK/DEF/HP.\n"
+             "Formula: (STR+AGI+VIT) x (level x 20%) / 3\n"
+             "Relic HP bonus x10. Shard cost x10."),
+            ("ENCHANTMENT", "Weapons can be enchanted.\n"
+             "Each hit builds up status on enemy:\n\n"
+             "- Bleeding: 20/hit, threshold 100\n"
+             "  Trigger: -15% enemy max HP\n"
+             "  Cost: 50K gold + 100x Shard (V)\n\n"
+             "- Frostbite: 15/hit, threshold 100\n"
+             "  Trigger: -10% HP + ATK -20% for 3 turns\n"
+             "  Cost: 80K gold + 100x Shard (V)\n\n"
+             "- Poison: 25/hit, threshold 80\n"
+             "  Trigger: -5% HP/turn for 4 turns\n"
+             "  Cost: 60K gold + 100x Shard (V)"),
+            ("EXPEDITIONS (HUNTS)", "Send fighters on expeditions.\n"
+             "- Reward: 1-10 metal shards (tier depends on expedition)\n"
+             "- Chance to find a relic (15%-55%)\n"
+             "- Danger: chance of permadeath check\n"
+             "- Danger x 0.5: chance of injury\n"
+             "- Higher expedition level = more danger"),
+            ("DIAMOND SHOP", "Diamonds are premium currency.\n"
+             "- Earned from achievements\n"
+             "- Can be purchased with real money\n"
+             "- Spent in diamond shop (Lore tab)\n"
+             "- Kept after roguelike reset"),
+            ("ROGUELIKE RESET", "When all fighters die — the run ends.\n"
+             "- Reset: gold, fighters, arena tier, shards, inventory\n"
+             "- Kept: diamonds, achievements, records, purchases"),
+        ],
     },
-    "reached_level": {
-        "en": "{name} reached Lv.{lv}! +{pts} stat points",
-        "ru": "{name} достиг Ур.{lv}! +{pts} очков характеристик",
-        "es": "¡{name} alcanzó Nv.{lv}! +{pts} puntos de atributo",
-        "de": "{name} erreichte Lv.{lv}! +{pts} Statuspunkte",
-        "fr": "{name} a atteint Nv.{lv}! +{pts} pts de stats",
-        "pt": "{name} alcançou Nv.{lv}! +{pts} pontos de atributo",
-        "ja": "{name}がLv.{lv}到達！+{pts}ステータスポイント",
-        "ko": "{name} Lv.{lv} 달성! +{pts} 스탯 포인트",
-        "zh": "{name}达到Lv.{lv}！+{pts}属性点",
+    # ---- Notifications ----
+    "achievement_unlocked": {
+        "ru": "{name}! +{diamonds} alm.",
+        "en": "{name}! +{diamonds} dia.",
     },
-    "no_unused_points": {
-        "en": "No unused points!", "ru": "Нет свободных очков!",
-        "es": "¡Sin puntos disponibles!", "de": "Keine freien Punkte!",
-        "fr": "Aucun point disponible!", "pt": "Sem pontos disponíveis!",
-        "ja": "未使用ポイントなし！", "ko": "미사용 포인트 없음!", "zh": "没有未分配的点数！",
-    },
-    "stat_distributed": {
-        "en": "{name}: {stat} +1 ({pts} pts left)",
-        "ru": "{name}: {stat} +1 ({pts} очк. осталось)",
-        "es": "{name}: {stat} +1 ({pts} pts rest.)",
-        "de": "{name}: {stat} +1 ({pts} Pkt. übrig)",
-        "fr": "{name}: {stat} +1 ({pts} pts rest.)",
-        "pt": "{name}: {stat} +1 ({pts} pts rest.)",
-        "ja": "{name}: {stat} +1 (残り{pts}ポイント)",
-        "ko": "{name}: {stat} +1 ({pts}포인트 남음)",
-        "zh": "{name}: {stat} +1 (剩余{pts}点)",
-    },
-    "no_fighters": {
-        "en": "No fighters available!", "ru": "Нет доступных бойцов!",
-        "es": "¡Sin luchadores disponibles!", "de": "Keine Kämpfer verfügbar!",
-        "fr": "Aucun combattant disponible!", "pt": "Sem lutadores disponíveis!",
-        "ja": "戦士がいません！", "ko": "전사가 없습니다!", "zh": "没有可用战士！",
-    },
-
-    # ---- Shop / consumable messages ----
-    "bought_msg": {
-        "en": "Bought {name}!", "ru": "Куплено: {name}!", "es": "¡{name} comprado!",
-        "de": "{name} gekauft!", "fr": "{name} acheté!", "pt": "{name} comprado!",
-        "ja": "{name}を購入！", "ko": "{name} 구매!", "zh": "购买了{name}！",
-    },
-    "healed_all": {
-        "en": "All fighters healed!", "ru": "Все бойцы исцелены!",
-        "es": "¡Todos los luchadores curados!", "de": "Alle Kämpfer geheilt!",
-        "fr": "Tous les combattants soignés!", "pt": "Todos os lutadores curados!",
-        "ja": "全戦士回復！", "ko": "모든 전사 회복!", "zh": "全部战士已治疗！",
-    },
-    "revived_msg": {
-        "en": "Revived {name}!", "ru": "{name} воскрешён!", "es": "¡{name} resucitado!",
-        "de": "{name} wiederbelebt!", "fr": "{name} ressuscité!", "pt": "{name} revivido!",
-        "ja": "{name}を復活！", "ko": "{name} 부활!", "zh": "{name}已复活！",
-    },
-    "no_dead_fighters": {
-        "en": "No dead fighters to revive", "ru": "Нет погибших бойцов для воскрешения",
-        "es": "Sin luchadores muertos para resucitar", "de": "Keine toten Kämpfer zum Wiederbeleben",
-        "fr": "Aucun combattant mort à ressusciter", "pt": "Sem lutadores mortos para reviver",
-        "ja": "復活対象の戦士なし", "ko": "부활할 전사 없음", "zh": "没有死亡战士可复活",
-    },
-    "war_drums": {
-        "en": "War Drums active for 1 hour!", "ru": "Барабаны войны на 1 час!",
-        "es": "¡Tambores de guerra activos 1 hora!", "de": "Kriegstrommeln aktiv für 1 Stunde!",
-        "fr": "Tambours de guerre actifs 1 heure!", "pt": "Tambores de guerra ativos por 1 hora!",
-        "ja": "ウォードラム1時間有効！", "ko": "전쟁 북 1시간 활성!", "zh": "战鼓激活1小时！",
-    },
-    "expedition_slots": {
-        "en": "Expedition slots: {n}!", "ru": "Слоты походов: {n}!",
-        "es": "¡Espacios de expedición: {n}!", "de": "Expedition-Slots: {n}!",
-        "fr": "Places d'expédition: {n}!", "pt": "Vagas de expedição: {n}!",
-        "ja": "遠征スロット: {n}！", "ko": "원정 슬롯: {n}!", "zh": "远征位: {n}！",
-    },
-    "golden_set_equipped": {
-        "en": "Golden War Set equipped on {name}!", "ru": "Золотой боевой набор на {name}!",
-        "es": "¡Set de Guerra Dorado equipado en {name}!", "de": "Goldenes Kriegsset auf {name} ausgerüstet!",
-        "fr": "Set de Guerre Doré équipé sur {name}!", "pt": "Set de Guerra Dourado equipado em {name}!",
-        "ja": "{name}に黄金戦セット装備！", "ko": "{name}에 황금 전쟁 세트 장착!", "zh": "{name}装备了黄金战争套装！",
-    },
-    "tier_advanced": {
-        "en": "Advanced to tier {tier}!", "ru": "Продвижение до уровня {tier}!",
-        "es": "¡Avanzado al nivel {tier}!", "de": "Zu Stufe {tier} aufgestiegen!",
-        "fr": "Avancé au rang {tier}!", "pt": "Avançou para o nível {tier}!",
-        "ja": "ティア{tier}に到達！", "ko": "티어 {tier}로 진급!", "zh": "升至阶级{tier}！",
-    },
-    "2x_gold_reward": {
-        "en": "2x gold for 60 seconds!", "ru": "2x золото на 60 секунд!",
-        "es": "¡2x oro por 60 segundos!", "de": "2x Gold für 60 Sekunden!",
-        "fr": "2x or pendant 60 secondes!", "pt": "2x ouro por 60 segundos!",
-        "ja": "60秒間ゴールド2倍！", "ko": "60초간 골드 2배!", "zh": "60秒双倍金币！",
-    },
-    "diamonds_earned": {
-        "en": "+{n} diamonds!", "ru": "+{n} алмазов!", "es": "+{n} diamantes!",
-        "de": "+{n} Diamanten!", "fr": "+{n} diamants!", "pt": "+{n} diamantes!",
-        "ja": "+{n}ダイヤ！", "ko": "+{n} 다이아!", "zh": "+{n}钻石！",
-    },
-
-    # ---- Anvil / Forge active fighter info ----
-
-    # ---- Shop consumable names/descriptions ----
-    "blood_salve": {
-        "en": "Blood Salve", "ru": "Кровяная мазь", "es": "Bálsamo de Sangre",
-        "de": "Blutsalbe", "fr": "Baume de Sang", "pt": "Bálsamo de Sangue",
-        "ja": "血の軟膏", "ko": "피의 연고", "zh": "血膏",
-    },
-    "blood_salve_desc": {
-        "en": "Fully heal active fighter", "ru": "Полностью исцелить активного бойца",
-        "es": "Cura completa del luchador activo", "de": "Aktiven Kämpfer voll heilen",
-        "fr": "Soigne complètement le combattant actif", "pt": "Cura total do lutador ativo",
-        "ja": "出撃中の戦士を全回復", "ko": "활성 전사 완전 회복", "zh": "完全治疗出战战士",
-    },
-    "fury_tonic": {
-        "en": "Fury Tonic", "ru": "Тоник ярости", "es": "Tónico de Furia",
-        "de": "Wuttrank", "fr": "Tonique de Fureur", "pt": "Tônico de Fúria",
-        "ja": "憤怒の薬", "ko": "분노의 물약", "zh": "狂怒药剂",
-    },
-    "fury_tonic_desc": {
-        "en": "+2 base STR to active fighter", "ru": "+2 СИЛ активному бойцу",
-        "es": "+2 FUE base al luchador activo", "de": "+2 Basis-STR für aktiven Kämpfer",
-        "fr": "+2 FOR de base au combattant actif", "pt": "+2 FOR base ao lutador ativo",
-        "ja": "出撃中の戦士にSTR+2", "ko": "활성 전사 기본 STR +2", "zh": "出战战士基础力量+2",
-    },
-    "stone_brew": {
-        "en": "Stone Brew", "ru": "Каменное зелье", "es": "Brebaje de Piedra",
-        "de": "Steingebräu", "fr": "Breuvage de Pierre", "pt": "Poção de Pedra",
-        "ja": "石の薬", "ko": "바위의 물약", "zh": "石酿药剂",
-    },
-    "stone_brew_desc": {
-        "en": "+2 base VIT to active fighter", "ru": "+2 ЖИВ активному бойцу",
-        "es": "+2 VIT base al luchador activo", "de": "+2 Basis-VIT für aktiven Kämpfer",
-        "fr": "+2 VIT de base au combattant actif", "pt": "+2 VIT base ao lutador ativo",
-        "ja": "出撃中の戦士にVIT+2", "ko": "활성 전사 기본 VIT +2", "zh": "出战战士基础体力+2",
-    },
-    "surgeon_kit": {
-        "en": "Surgeon's Kit", "ru": "Набор хирурга", "es": "Kit de Cirujano",
-        "de": "Chirurgenset", "fr": "Kit Chirurgical", "pt": "Kit Cirúrgico",
-        "ja": "外科キット", "ko": "외과 도구", "zh": "外科工具包",
-    },
-    "surgeon_kit_desc": {
-        "en": "Remove 1 injury (used {n}x)", "ru": "Вылечить 1 ранение (исп. {n}x)",
-        "es": "Eliminar 1 herida (usado {n}x)", "de": "1 Verletzung heilen (benutzt {n}x)",
-        "fr": "Soigner 1 blessure (utilisé {n}x)", "pt": "Curar 1 ferimento (usado {n}x)",
-        "ja": "負傷1回復(使用{n}回)", "ko": "부상 1 치료 (사용 {n}회)", "zh": "治疗1次伤痕(已用{n}次)",
-    },
-
-    # ---- Misc ----
-    "fighters_alive": {
-        "en": "{n} fighters alive", "ru": "{n} бойцов в бою",
-        "es": "{n} luchadores vivos", "de": "{n} Kämpfer leben",
-        "fr": "{n} combattants en vie", "pt": "{n} lutadores vivos",
-        "ja": "{n}人の戦士生存", "ko": "{n}명 전사 생존", "zh": "{n}名战士存活",
-    },
-    "enemies_left": {
-        "en": "{n} enemies left", "ru": "{n} врагов осталось",
-        "es": "{n} enemigos restantes", "de": "{n} Feinde übrig",
-        "fr": "{n} ennemis restants", "pt": "{n} inimigos restantes",
-        "ja": "残り{n}体の敵", "ko": "적 {n}명 남음", "zh": "剩余{n}个敌人",
-    },
-
-    # ---- UI buttons & labels (was hardcoded) ----
-    "heal_all_injuries": {
-        "en": "HEAL ALL INJURIES", "ru": "ВЫЛЕЧИТЬ ВСЕ ТРАВМЫ",
-        "es": "CURAR TODAS LAS HERIDAS", "de": "ALLE VERLETZUNGEN HEILEN",
-        "fr": "SOIGNER TOUTES LES BLESSURES", "pt": "CURAR TODOS OS FERIMENTOS",
-        "ja": "全負傷を回復", "ko": "모든 부상 치료", "zh": "治疗所有伤痕",
-    },
-    "heal_all_injuries_cost": {
-        "en": "HEAL ALL INJURIES ({cost})", "ru": "ВЫЛЕЧИТЬ ВСЕ ТРАВМЫ ({cost})",
-        "es": "CURAR HERIDAS ({cost})", "de": "VERLETZUNGEN HEILEN ({cost})",
-        "fr": "SOIGNER BLESSURES ({cost})", "pt": "CURAR FERIMENTOS ({cost})",
-        "ja": "全負傷を回復 ({cost})", "ko": "모든 부상 치료 ({cost})", "zh": "治疗所有伤痕 ({cost})",
-    },
-    "heal_all": {
-        "en": "HEAL ALL", "ru": "ВЫЛЕЧИТЬ ВСЕХ",
-        "es": "CURAR TODOS", "de": "ALLE HEILEN",
-        "fr": "TOUT SOIGNER", "pt": "CURAR TODOS",
-        "ja": "全員回復", "ko": "모두 치료", "zh": "全部治疗",
-    },
-    "heal_all_cost": {
-        "en": "HEAL ALL ({cost})", "ru": "ВЫЛЕЧИТЬ ВСЕХ ({cost})",
-        "es": "CURAR TODOS ({cost})", "de": "ALLE HEILEN ({cost})",
-        "fr": "TOUT SOIGNER ({cost})", "pt": "CURAR TODOS ({cost})",
-        "ja": "全員回復 ({cost})", "ko": "모두 치료 ({cost})", "zh": "全部治疗 ({cost})",
-    },
-    "heal_btn": {
-        "en": "HEAL", "ru": "ЛЕЧИТЬ",
-        "es": "CURAR", "de": "HEILEN",
-        "fr": "SOIGNER", "pt": "CURAR",
-        "ja": "回復", "ko": "치료", "zh": "治疗",
-    },
-    "equip_btn": {
-        "en": "EQUIP", "ru": "ЭКИПИРОВАТЬ",
-        "es": "EQUIPAR", "de": "AUSRÜSTEN",
-        "fr": "ÉQUIPER", "pt": "EQUIPAR",
-        "ja": "装備", "ko": "장착", "zh": "装备",
-    },
-    "sell_btn": {
-        "en": "SELL", "ru": "ПРОДАТЬ",
-        "es": "VENDER", "de": "VERKAUFEN",
-        "fr": "VENDRE", "pt": "VENDER",
-        "ja": "売却", "ko": "판매", "zh": "出售",
-    },
-    "inventory_label": {
-        "en": "INVENTORY", "ru": "ИНВЕНТАРЬ",
-        "es": "INVENTARIO", "de": "INVENTAR",
-        "fr": "INVENTAIRE", "pt": "INVENTÁRIO",
-        "ja": "インベントリ", "ko": "인벤토리", "zh": "背包",
-    },
-    "inventory_count": {
-        "en": "INVENTORY ({n})", "ru": "ИНВЕНТАРЬ ({n})",
-        "es": "INVENTARIO ({n})", "de": "INVENTAR ({n})",
-        "fr": "INVENTAIRE ({n})", "pt": "INVENTÁRIO ({n})",
-        "ja": "インベントリ ({n})", "ko": "인벤토리 ({n})", "zh": "背包 ({n})",
-    },
-    "leaderboard_title": {
-        "en": "LEADERBOARD", "ru": "РЕЙТИНГ",
-        "es": "CLASIFICACIÓN", "de": "BESTENLISTE",
-        "fr": "CLASSEMENT", "pt": "CLASSIFICAÇÃO",
-        "ja": "リーダーボード", "ko": "리더보드", "zh": "排行榜",
-    },
-    "view_leaderboard": {
-        "en": "VIEW LEADERBOARD", "ru": "ПОКАЗАТЬ РЕЙТИНГ",
-        "es": "VER CLASIFICACIÓN", "de": "BESTENLISTE ANZEIGEN",
-        "fr": "VOIR CLASSEMENT", "pt": "VER CLASSIFICAÇÃO",
-        "ja": "リーダーボード表示", "ko": "리더보드 보기", "zh": "查看排行榜",
-    },
-    "total_wins": {
-        "en": "Total Wins", "ru": "Всего побед",
-        "es": "Victorias Totales", "de": "Siege Gesamt",
-        "fr": "Victoires Totales", "pt": "Vitórias Totais",
-        "ja": "総勝利数", "ko": "총 승리", "zh": "总胜利",
-    },
-    "current_tier": {
-        "en": "Current Tier", "ru": "Текущий уровень",
-        "es": "Nivel Actual", "de": "Aktuelle Stufe",
-        "fr": "Niveau Actuel", "pt": "Nível Atual",
-        "ja": "現在のティア", "ko": "현재 티어", "zh": "当前层级",
-    },
-    "best_tier": {
-        "en": "Best Tier Reached", "ru": "Лучший уровень",
-        "es": "Mejor Nivel", "de": "Beste Stufe",
-        "fr": "Meilleur Niveau", "pt": "Melhor Nível",
-        "ja": "最高ティア", "ko": "최고 티어", "zh": "最高层级",
-    },
-    "remove_ads_label": {
-        "en": "Remove Ads", "ru": "Убрать рекламу",
-        "es": "Quitar Anuncios", "de": "Werbung Entfernen",
-        "fr": "Supprimer les Pubs", "pt": "Remover Anúncios",
-        "ja": "広告を削除", "ko": "광고 제거", "zh": "移除广告",
-    },
-    "remove_ads_buy": {
-        "en": "REMOVE ADS — $2", "ru": "УБРАТЬ РЕКЛАМУ — $2",
-        "es": "QUITAR ANUNCIOS — $2", "de": "WERBUNG WEG — $2",
-        "fr": "SUPPRIMER PUBS — $2", "pt": "REMOVER ANÚNCIOS — $2",
-        "ja": "広告削除 — $2", "ko": "광고 제거 — $2", "zh": "移除广告 — $2",
-    },
-    "cloud_connected": {
-        "en": "Connected!", "ru": "Подключено!",
-        "es": "¡Conectado!", "de": "Verbunden!",
-        "fr": "Connecté!", "pt": "Conectado!",
-        "ja": "接続済み！", "ko": "연결됨!", "zh": "已连接！",
-    },
-    "cloud_failed": {
-        "en": "Failed: {reason}", "ru": "Ошибка: {reason}",
-        "es": "Error: {reason}", "de": "Fehler: {reason}",
-        "fr": "Échec: {reason}", "pt": "Falha: {reason}",
-        "ja": "失敗: {reason}", "ko": "실패: {reason}", "zh": "失败: {reason}",
-    },
-    "cloud_uploaded": {
-        "en": "Saved to cloud!", "ru": "Сохранено в облако!",
-        "es": "¡Guardado en la nube!", "de": "In Cloud gespeichert!",
-        "fr": "Sauvegardé dans le cloud!", "pt": "Salvo na nuvem!",
-        "ja": "クラウドに保存！", "ko": "클라우드에 저장!", "zh": "已保存到云端！",
-    },
-    "cloud_loaded": {
-        "en": "Loaded from cloud!", "ru": "Загружено из облака!",
-        "es": "¡Cargado desde la nube!", "de": "Aus Cloud geladen!",
-        "fr": "Chargé depuis le cloud!", "pt": "Carregado da nuvem!",
-        "ja": "クラウドから読込！", "ko": "클라우드에서 불러옴!", "zh": "已从云端加载！",
-    },
-    "no_expeditions_log": {
-        "en": "No expeditions yet", "ru": "Пока нет экспедиций",
-        "es": "Aún no hay expediciones", "de": "Noch keine Expeditionen",
-        "fr": "Pas encore d'expéditions", "pt": "Sem expedições ainda",
-        "ja": "遠征なし", "ko": "원정 없음", "zh": "暂无远征",
-    },
-    "recruit_fighter_btn": {
-        "en": "+ RECRUIT FIGHTER", "ru": "+ НАНЯТЬ БОЙЦА",
-        "es": "+ RECLUTAR LUCHADOR", "de": "+ KÄMPFER REKRUTIEREN",
-        "fr": "+ RECRUTER COMBATTANT", "pt": "+ RECRUTAR LUTADOR",
-        "ja": "+ 戦士を雇用", "ko": "+ 전사 고용", "zh": "+ 招募战士",
-    },
-    "train_btn": {
-        "en": "TRAIN Lv.{lv} ({cost})", "ru": "ТРЕН. Ур.{lv} ({cost})",
-        "es": "ENTRENAR Nv.{lv} ({cost})", "de": "TRAINING Lv.{lv} ({cost})",
-        "fr": "ENTRAÎNER Nv.{lv} ({cost})", "pt": "TREINAR Nv.{lv} ({cost})",
-        "ja": "訓練 Lv.{lv} ({cost})", "ko": "훈련 Lv.{lv} ({cost})", "zh": "训练 Lv.{lv} ({cost})",
+    "quest_completed": {
+        "ru": "{name} +{diamonds} alm.",
+        "en": "{name} +{diamonds} dia.",
     },
 }
 
 
-def set_language(lang_code):
-    """Set current language. Falls back to 'en' if not supported."""
-    global _current_lang
-    _current_lang = lang_code if lang_code in ("en", "ru", "es", "de", "fr", "pt", "ja", "ko", "zh") else "en"
-
-
-def get_language():
-    return _current_lang
-
-
 def t(key, **kwargs):
-    """Get translated string by key, with optional format args."""
+    """Получить строку по ключу с подстановкой аргументов."""
     entry = STRINGS.get(key)
     if not entry:
         return key
@@ -773,46 +470,19 @@ def t(key, **kwargs):
     return text
 
 
-def detect_system_language():
-    """Detect language from system locale."""
-    # Android: try jnius first
-    try:
-        from kivy.utils import platform
-        if platform == "android":
-            try:
-                from jnius import autoclass
-                Locale = autoclass("java.util.Locale")
-                lang = Locale.getDefault().getLanguage()
-                if lang:
-                    return lang
-            except Exception:
-                pass
-            # Fallback: read system property
-            try:
-                import subprocess
-                result = subprocess.check_output(
-                    ["getprop", "persist.sys.locale"], timeout=2
-                ).decode().strip()
-                if result:
-                    return result[:2]
-            except Exception:
-                pass
-    except Exception:
-        pass
-    # Desktop
-    try:
-        lang = locale.getdefaultlocale()[0]
-        if lang:
-            return lang[:2]
-    except Exception:
-        pass
-    return "en"
+def set_language(lang_code):
+    """Установить язык (ru или en)."""
+    global _current_lang
+    _current_lang = lang_code if lang_code in ("ru", "en") else "ru"
+
+
+def get_language():
+    return _current_lang
 
 
 def init_language():
-    """Auto-detect and set language."""
-    lang = detect_system_language()
-    print(f"[LOCALE] Detected language: {lang}")
-    set_language(lang)
-    return lang
-    return lang
+    """Set default language to English. User choice is restored from save."""
+    global _current_lang
+    lang = "en"
+    _current_lang = lang if lang in ("ru", "en") else "ru"
+    return _current_lang

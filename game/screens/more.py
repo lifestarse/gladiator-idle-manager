@@ -245,15 +245,8 @@ class MoreScreen(BaseScreen):
         """Open Play Games fullscreen leaderboard. Sign in first if needed."""
         engine = App.get_running_app().engine
 
-        # Submit scores before showing
         try:
-            leaderboard_manager.submit_all(
-                best_tier=engine.best_record_tier,
-                total_kills=engine.wins,
-                strongest_gladiator_kills=engine.best_record_kills,
-                prestige_level=engine.prestige_level,
-                fastest_t15=engine.fastest_t15_time,
-            )
+            engine.submit_scores()
         except Exception:
             pass
 
@@ -289,14 +282,7 @@ class MoreScreen(BaseScreen):
         popup.open()
 
     def submit_scores(self):
-        engine = App.get_running_app().engine
-        leaderboard_manager.submit_all(
-            best_tier=engine.best_record_tier,
-            total_kills=engine.wins,
-            strongest_gladiator_kills=engine.best_record_kills,
-            prestige_level=engine.prestige_level,
-            fastest_t15=engine.fastest_t15_time,
-        )
+        App.get_running_app().engine.submit_scores()
 
     def show_help(self):
         """Show help popup with all game mechanics explained."""

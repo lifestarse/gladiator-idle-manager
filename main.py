@@ -1,4 +1,4 @@
-# Build: 53
+# Build: 56
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -92,6 +92,7 @@ class GladiatorIdleApp(App):
     title_more = StringProperty("")
     lbl_vs = StringProperty("")
     lbl_auto = StringProperty("")
+    lbl_back_btn = StringProperty("")
     lbl_boss = StringProperty("")
     lbl_next = StringProperty("")
     lbl_skip = StringProperty("")
@@ -131,7 +132,8 @@ class GladiatorIdleApp(App):
         def _open(dt):
             fs = self.sm.get_screen("forge")
             fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else None
+            fs._nav_from = prev if prev != "forge" else ""
+            fs._nav_back_fighter_idx = fighter_idx
             fs.show_inventory = True
             fs.eq_detail_fighter = fighter_idx
             fs.eq_detail_slot = slot
@@ -145,9 +147,37 @@ class GladiatorIdleApp(App):
         def _open(dt):
             fs = self.sm.get_screen("forge")
             fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else None
+            fs._nav_from = prev if prev != "forge" else ""
             fs.show_inventory = True
             fs.inv_detail_idx = inv_idx
+            fs.refresh_forge()
+        Clock.schedule_once(_open, 0)
+
+    def open_forge_tab(self, slot, fighter_idx=-1):
+        """Navigate to ForgeScreen shop with the given tab selected."""
+        prev = self.sm.current
+        self.sm.current = "forge"
+        def _open(dt):
+            fs = self.sm.get_screen("forge")
+            fs._reset_forge_state()
+            fs._nav_from = prev if prev != "forge" else ""
+            fs._nav_back_fighter_idx = fighter_idx
+            fs.forge_tab = slot
+            fs.refresh_forge()
+        Clock.schedule_once(_open, 0)
+
+    def open_inventory_tab(self, tab, fighter_idx=-1, equip_filter="all"):
+        """Navigate to ForgeScreen inventory with the given tab filter."""
+        prev = self.sm.current
+        self.sm.current = "forge"
+        def _open(dt):
+            fs = self.sm.get_screen("forge")
+            fs._reset_forge_state()
+            fs._nav_from = prev if prev != "forge" else ""
+            fs._nav_back_fighter_idx = fighter_idx
+            fs.show_inventory = True
+            fs.inventory_tab = tab
+            fs.inventory_equip_filter = equip_filter
             fs.refresh_forge()
         Clock.schedule_once(_open, 0)
 
@@ -158,7 +188,7 @@ class GladiatorIdleApp(App):
         def _open(dt):
             fs = self.sm.get_screen("forge")
             fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else None
+            fs._nav_from = prev if prev != "forge" else ""
             fs._preview_item = item
             fs.refresh_forge()
         Clock.schedule_once(_open, 0)
@@ -223,6 +253,7 @@ class GladiatorIdleApp(App):
         self.title_more = t("title_more")
         self.lbl_vs = t("vs")
         self.lbl_auto = t("btn_auto")
+        self.lbl_back_btn = t("back_btn")
         self.lbl_boss = t("btn_boss")
         self.lbl_next = t("btn_next")
         self.lbl_skip = t("btn_skip")
@@ -273,14 +304,7 @@ class GladiatorIdleApp(App):
             try:
                 leaderboard_manager.init()
                 if leaderboard_manager.is_ready:
-                    e = self.engine
-                    leaderboard_manager.submit_all(
-                        best_tier=e.best_record_tier,
-                        total_kills=e.wins,
-                        strongest_gladiator_kills=e.best_record_kills,
-                        prestige_level=e.prestige_level,
-                        fastest_t15=e.fastest_t15_time,
-                    )
+                    self.engine.submit_scores()
             except Exception as exc:
                 print(f"[Leaderboard] Startup init suppressed: {exc}")
         Clock.schedule_once(_safe_leaderboard_init, 5.0)
@@ -335,11 +359,6 @@ class GladiatorIdleApp(App):
         self._setup_toast()
         Clock.schedule_interval(self._idle_tick, 1.0)
         Clock.schedule_interval(self._auto_save, 30.0)
-
-        # DEBUG: FPS counter overlay (prints to logcat)
-        def _log_fps(dt):
-            print(f"[FPS] {Clock.get_fps():.1f}")
-        Clock.schedule_interval(_log_fps, 2.0)
 
         return root
 
@@ -454,7 +473,7 @@ class GladiatorIdleApp(App):
             bind_text_wrap(stat_lbl)
             info.add_widget(stat_lbl)
             desc_lbl = AutoShrinkLabel(
-                text=cls_data["desc"], font_size="15sp", color=TEXT_MUTED,
+                text=cls_data.get("desc", cls_data.get("description", "")), font_size="15sp", color=TEXT_MUTED,
                 halign="left",
                 size_hint_y=None, height=dp(40),
             )

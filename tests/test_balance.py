@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Balance and data integrity tests for game JSON data files."""
 import json
 import os
@@ -77,14 +77,14 @@ def test_equipment_cost_increases_with_rarity(data_dir):
 
 
 # ──────────────────────────────────────────────────────────────────
-# 5. Weapon base_atk increases with rarity
+# 5. Weapon base_str increases with rarity
 # ──────────────────────────────────────────────────────────────────
 def test_equipment_stats_increase_with_rarity(data_dir):
     weapons = load_json(os.path.join(data_dir, "weapons.json"))["items"]
 
     avg_atk_by_rarity = {}
     for rarity in RARITY_ORDER:
-        atks = [w["base_atk"] for w in weapons if w["rarity"] == rarity]
+        atks = [w["base_str"] for w in weapons if w["rarity"] == rarity]
         if atks:
             avg_atk_by_rarity[rarity] = sum(atks) / len(atks)
 
@@ -94,7 +94,7 @@ def test_equipment_stats_increase_with_rarity(data_dir):
             continue
         if prev_rarity is not None:
             assert avg_atk_by_rarity[rarity] > avg_atk_by_rarity[prev_rarity], (
-                f"Average base_atk of {rarity} ({avg_atk_by_rarity[rarity]:.1f}) "
+                f"Average base_str of {rarity} ({avg_atk_by_rarity[rarity]:.1f}) "
                 f"should exceed {prev_rarity} ({avg_atk_by_rarity[prev_rarity]:.1f})"
             )
         prev_rarity = rarity
@@ -189,26 +189,35 @@ def test_existing_items_preserved(data_dir):
     all_equipment = weapons + armor + accessories + relics
     items_by_id = {it["id"]: it for it in all_equipment}
 
-    # rusty_blade: base_atk=3, cost=400
+    # rusty_blade: common weapon
     assert "rusty_blade" in items_by_id, "rusty_blade not found"
-    assert items_by_id["rusty_blade"]["base_atk"] == 3
-    assert items_by_id["rusty_blade"]["cost"] == 400
+    rb = items_by_id["rusty_blade"]
+    assert rb["base_str"] > 0
+    total_rb = rb.get("base_str", 0) + rb.get("base_agi", 0) + rb.get("base_vit", 0)
+    assert rb["cost"] == total_rb * 100
 
-    # dragonscale: base_def=25, cost=35000
+    # dragonscale: legendary armor, rebalanced
     assert "dragonscale" in items_by_id, "dragonscale not found"
-    assert items_by_id["dragonscale"]["base_def"] == 25
-    assert items_by_id["dragonscale"]["cost"] == 35000
+    ds = items_by_id["dragonscale"]
+    ds_total = ds.get("base_str", 0) + ds.get("base_agi", 0) + ds.get("base_vit", 0)
+    assert ds_total > 0
+    assert ds["cost"] == ds_total * 1600
 
-    # bone_charm: base_atk=2, base_def=2, cost=450
+    # bone_charm: common accessory, rebalanced
     assert "bone_charm" in items_by_id, "bone_charm not found"
-    assert items_by_id["bone_charm"]["base_atk"] == 2
-    assert items_by_id["bone_charm"]["base_def"] == 2
-    assert items_by_id["bone_charm"]["cost"] == 450
+    bc = items_by_id["bone_charm"]
+    bc_total = bc.get("base_str", 0) + bc.get("base_agi", 0) + bc.get("base_vit", 0)
+    assert bc_total > 0
+    assert bc["cost"] == bc_total * 100
 
-    # cracked_idol: base_atk=2, cost=30
-    assert "cracked_idol" in items_by_id, "cracked_idol not found"
-    assert items_by_id["cracked_idol"]["base_atk"] == 2
-    assert items_by_id["cracked_idol"]["cost"] == 30
+    # Verify pricing formula for all equipment: cost = total_stats * rarity_price
+    rarity_price = {"common": 100, "uncommon": 200, "rare": 400, "epic": 800, "legendary": 1600}
+    for item in all_equipment:
+        total = item.get("base_str", 0) + item.get("base_agi", 0) + item.get("base_vit", 0)
+        rarity = item.get("rarity", "common")
+        if rarity in rarity_price and total > 0:
+            expected = total * rarity_price[rarity]
+            assert item["cost"] == expected, f"{item['id']}: cost {item['cost']} != {expected}"
 
     # bleeding enchantment: buildup_per_hit=20, threshold=100
     assert "bleeding" in enchantments, "bleeding enchantment not found"

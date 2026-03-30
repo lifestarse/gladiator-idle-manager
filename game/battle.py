@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 12
 """
 Turn-based battle system with luck-based combat.
 
@@ -12,7 +12,7 @@ A weak but agile assassin can outperform a strong brute through fortunate rolls.
 
 import random
 from enum import Enum, auto
-from game.models import ENCHANTMENT_TYPES, EQUIPMENT_SLOTS, fmt_num
+from game.models import ENCHANTMENT_TYPES, fmt_num
 from game.localization import t
 
 
@@ -45,10 +45,12 @@ class BattleEvent:
 
 class EnemyStatusTracker:
     """Tracks status effect state for a single enemy during battle."""
-    def __init__(self, original_attack):
-        self.status_buildup = {"bleeding": 0, "frostbite": 0, "poison": 0}
+    def __init__(self, original_attack, original_defense=0):
+        self.status_buildup = {}  # dynamic: populated on first hit per enchantment
         self.active_effects = []  # list of active status effect dicts
-        self.original_attack = original_attack  # for frostbite ATK reduction restore
+        self.original_attack = original_attack
+        self.original_defense = original_defense
+        self.skip_next_turn = False  # paralyze flag
 
 
 class BattleState:
@@ -111,29 +113,38 @@ class BattleState:
 
 def _init_enemy_status(state, enemy):
     """Initialize status effect tracking for an enemy in BattleState."""
-    state.enemy_status[id(enemy)] = EnemyStatusTracker(enemy.attack)
+    state.enemy_status[id(enemy)] = EnemyStatusTracker(enemy.attack, getattr(enemy, 'defense', 0))
 
 
 def _trigger_enchantment(state, target, ench_id, ench):
     """Trigger an enchantment effect on a target. Returns list of BattleEvents."""
     events = []
     tracker = state.enemy_status[id(target)]
-    if ench["effect"] == "burst":
+    effect = ench["effect"]
+
+    if effect == "burst":
+        # bleeding, burn
         dmg = max(1, int(target.max_hp * ench["burst_pct"]))
         target.hp = max(0, target.hp - dmg)
+        name = ench.get("name", ench_id).upper()
         events.append(BattleEvent("status", defender=target.name, damage=dmg,
-            message=f"BLEED! {target.name} -{fmt_num(dmg)}HP!"))
-    elif ench["effect"] == "burst_debuff":
+            message=f"{name}! {target.name} -{fmt_num(dmg)}HP!"))
+
+    elif effect == "burst_debuff":
+        # frostbite
         dmg = max(1, int(target.max_hp * ench["burst_pct"]))
         target.hp = max(0, target.hp - dmg)
-        target.attack = int(tracker.original_attack * (1 - ench["atk_reduction_pct"]))
+        reduction = ench.get("atk_reduction_pct", ench.get("reduction_pct", 0.2))
+        target.attack = int(tracker.original_attack * (1 - reduction))
         tracker.active_effects.append({
-            "type": "frostbite_debuff",
+            "type": "atk_debuff",
             "turns_left": ench["debuff_turns"],
         })
         events.append(BattleEvent("status", defender=target.name, damage=dmg,
             message=f"FROSTBITE! {target.name} -{fmt_num(dmg)}HP, ATK down!"))
-    elif ench["effect"] == "dot":
+
+    elif effect == "dot":
+        # poison
         tracker.active_effects.append({
             "type": "poison_dot",
             "turns_left": ench["dot_turns"],
@@ -141,6 +152,72 @@ def _trigger_enchantment(state, target, ench_id, ench):
         })
         events.append(BattleEvent("status", defender=target.name,
             message=f"POISON! {target.name} poisoned {ench['dot_turns']}t!"))
+
+    elif effect == "skip_turn":
+        # paralyze
+        tracker.skip_next_turn = True
+        events.append(BattleEvent("status", defender=target.name,
+            message=f"PARALYZE! {target.name} stunned!"))
+
+    elif effect == "def_reduction":
+        # corruption
+        reduction = ench.get("reduction_pct", 0.3)
+        target.defense = int(tracker.original_defense * (1 - reduction))
+        tracker.active_effects.append({
+            "type": "def_debuff",
+            "turns_left": ench.get("debuff_turns", 3),
+        })
+        events.append(BattleEvent("status", defender=target.name,
+            message=f"CORRUPTION! {target.name} DEF down!"))
+
+    elif effect == "chain_burst":
+        # lightning — hit target + all other alive enemies
+        dmg = max(1, int(target.max_hp * ench["burst_pct"]))
+        target.hp = max(0, target.hp - dmg)
+        events.append(BattleEvent("status", defender=target.name, damage=dmg,
+            message=f"LIGHTNING! {target.name} -{fmt_num(dmg)}HP!"))
+        for other in state.enemies:
+            if other is not target and other.hp > 0:
+                chain_dmg = max(1, int(other.max_hp * ench["burst_pct"]))
+                other.hp = max(0, other.hp - chain_dmg)
+                events.append(BattleEvent("status", defender=other.name, damage=chain_dmg,
+                    message=f"CHAIN! {other.name} -{fmt_num(chain_dmg)}HP!"))
+
+    elif effect == "atk_reduction":
+        # weaken
+        reduction = ench.get("reduction_pct", 0.25)
+        target.attack = int(tracker.original_attack * (1 - reduction))
+        tracker.active_effects.append({
+            "type": "atk_debuff",
+            "turns_left": ench.get("debuff_turns", 4),
+        })
+        events.append(BattleEvent("status", defender=target.name,
+            message=f"WEAKEN! {target.name} ATK down!"))
+
+    elif effect == "lifesteal":
+        # drain — heal the attacker
+        heal_pct = ench.get("heal_pct", 0.1)
+        for fighter in state.player_fighters:
+            if fighter.alive and fighter.hp > 0:
+                weapon = fighter.equipment.get("weapon")
+                if weapon and weapon.get("enchantment") == ench_id:
+                    heal = max(1, int(fighter.max_hp * heal_pct))
+                    fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+                    events.append(BattleEvent("status", defender=target.name,
+                        message=f"DRAIN! {fighter.name} +{fmt_num(heal)}HP!"))
+                    break
+
+    elif effect == "burst_conditional":
+        # holy_fire — more damage vs bosses
+        if getattr(target, 'is_boss', False):
+            pct = ench.get("burst_pct_boss", 0.25)
+        else:
+            pct = ench.get("burst_pct_normal", 0.10)
+        dmg = max(1, int(target.max_hp * pct))
+        target.hp = max(0, target.hp - dmg)
+        events.append(BattleEvent("status", defender=target.name, damage=dmg,
+            message=f"HOLY FIRE! {target.name} -{fmt_num(dmg)}HP!"))
+
     return events
 
 
@@ -165,10 +242,15 @@ def _process_status_ticks(state):
             if eff["turns_left"] > 0:
                 remaining.append(eff)
             else:
-                if eff["type"] == "frostbite_debuff":
+                # Restore stats when debuffs expire
+                if eff["type"] == "atk_debuff":
                     enemy.attack = tracker.original_attack
                     events.append(BattleEvent("status", defender=enemy.name,
                         message=f"{enemy.name} ATK restored!"))
+                elif eff["type"] == "def_debuff":
+                    enemy.defense = tracker.original_defense
+                    events.append(BattleEvent("status", defender=enemy.name,
+                        message=f"{enemy.name} DEF restored!"))
         tracker.active_effects = remaining
     return events
 
@@ -210,6 +292,8 @@ class BattleManager:
             return [BattleEvent("message", message="No fighters available!")]
 
         from game.models import Enemy
+        from game.data_loader import data_loader
+        import random as _rand
         num_enemies = max(1, len(fighters))
         # First enemy is the previewed current_enemy, rest are new
         enemies = []
@@ -218,8 +302,14 @@ class BattleManager:
             if getattr(self.engine.current_enemy, 'is_boss', False):
                 boss_revenge = True
             enemies.append(self.engine.current_enemy)
+        tier = self.engine.arena_tier
+        normals = data_loader.normals_by_tier.get(tier)
         while len(enemies) < num_enemies:
-            enemies.append(Enemy(tier=self.engine.arena_tier))
+            if normals:
+                template = _rand.choice(normals)
+                enemies.append(Enemy.from_template(template, tier))
+            else:
+                enemies.append(Enemy(tier=tier))
 
         self.state = BattleState()
         self.state.player_fighters = fighters
@@ -253,6 +343,21 @@ class BattleManager:
         return [BattleEvent("boss_intro", message=f"{boss.name} appears! HP: {fmt_num(boss.hp)}",
                             is_boss=True)]
 
+    def _declare_victory(self, events):
+        """Mark battle as won, heal fighters, emit victory event."""
+        s = self.state
+        s.phase = BattlePhase.VICTORY
+        self.engine.wins += len(s.enemies)
+        if s.is_boss_fight:
+            self.engine.arena_tier += 1
+        for f in s.player_fighters:
+            if f.alive:
+                f.hp = f.max_hp
+        events.append(BattleEvent(
+            "victory", message=f"VICTORY! +{fmt_num(s.gold_earned)}g",
+            damage=s.gold_earned,
+        ))
+
     def _status_tick_phase(self, events):
         """Process status effect ticks (DOT/debuffs) and check for status kills.
 
@@ -260,6 +365,14 @@ class BattleManager:
         s = self.state
         status_events = _process_status_ticks(s)
         events.extend(status_events)
+        # Perk: regen_per_turn for fighters
+        for fighter in s.player_fighters:
+            if not fighter.alive or fighter.hp <= 0 or fighter.hp >= fighter.max_hp:
+                continue
+            regen = getattr(fighter, 'get_perk_effects', lambda x: 0)("regen_per_turn_pct")
+            if regen > 0:
+                heal = max(1, int(fighter.max_hp * regen))
+                fighter.hp = min(fighter.max_hp, fighter.hp + heal)
         # Check if any enemy died from status effects
         for enemy in s.enemies:
             if enemy.hp <= 0 and hasattr(enemy, '_status_killed'):
@@ -275,17 +388,7 @@ class BattleManager:
                 s.gold_earned += reward
                 self.engine.award_gold(reward)
         if not s.any_enemies_alive():
-            s.phase = BattlePhase.VICTORY
-            self.engine.wins += len(s.enemies)
-            if s.is_boss_fight:
-                self.engine.arena_tier += 1
-            for f in s.player_fighters:
-                if f.alive:
-                    f.hp = f.max_hp
-            events.append(BattleEvent(
-                "victory", message=f"VICTORY! +{fmt_num(s.gold_earned)}g",
-                damage=s.gold_earned,
-            ))
+            self._declare_victory(events)
             return True
         return False
 
@@ -310,6 +413,12 @@ class BattleManager:
             events.append(ev)
 
             if actual > 0:
+                # Perk: lifesteal
+                ls_pct = getattr(fighter, 'get_perk_effects', lambda x: 0)("lifesteal_pct")
+                if ls_pct > 0:
+                    heal = max(1, int(actual * ls_pct))
+                    fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+
                 # Enchantment buildup on hit
                 weapon = fighter.equipment.get("weapon")
                 eid = id(target)
@@ -334,23 +443,19 @@ class BattleManager:
                 self.engine.award_gold(reward)
                 fighter.kills += 1
 
+                # Perk: on_kill_heal
+                okh_pct = getattr(fighter, 'get_perk_effects', lambda x: 0)("on_kill_heal_pct")
+                if okh_pct > 0:
+                    heal = max(1, int(fighter.max_hp * okh_pct))
+                    fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+
                 if not s.any_enemies_alive():
                     break
                 s.next_alive_enemy()
 
         # Check victory
         if not s.any_enemies_alive():
-            s.phase = BattlePhase.VICTORY
-            self.engine.wins += len(s.enemies)
-            if s.is_boss_fight:
-                self.engine.arena_tier += 1
-            for f in s.player_fighters:
-                if f.alive:
-                    f.hp = f.max_hp
-            events.append(BattleEvent(
-                "victory", message=f"VICTORY! +{fmt_num(s.gold_earned)}g",
-                damage=s.gold_earned,
-            ))
+            self._declare_victory(events)
             return True
         return False
 
@@ -363,28 +468,53 @@ class BattleManager:
             if enemy.hp <= 0:
                 continue
 
+            # Paralyze: skip this enemy's turn
+            eid = id(enemy)
+            if eid in s.enemy_status:
+                tracker = s.enemy_status[eid]
+                if tracker.skip_next_turn:
+                    tracker.skip_next_turn = False
+                    events.append(BattleEvent("status", defender=enemy.name,
+                        message=f"{enemy.name} is paralyzed!"))
+                    continue
+
             alive_fighters = [f for f in s.player_fighters if f.alive and f.hp > 0]
             if not alive_fighters:
                 break
             target = random.choice(alive_fighters)
 
+            # Perk: damage_reduction — save HP, undo full hit, apply reduced
+            dr = getattr(target, 'damage_reduction', 0)
+            hp_before = target.hp
             ev, actual, is_crit = _resolve_attack(enemy, target, is_boss=s.is_boss_fight)
+            if dr > 0 and actual > 0:
+                reduced = max(1, int(actual * (1 - dr)))
+                # Undo the full hit, apply reduced damage instead
+                target.hp = max(0, hp_before - reduced)
+                actual = reduced
+                ev = BattleEvent(
+                    "attack", attacker=enemy.name, defender=target.name,
+                    damage=actual, is_crit=is_crit,
+                    message=f"{enemy.name} {'CRIT! ' if is_crit else ''}hits {target.name} for {fmt_num(actual)}"
+                )
             events.append(ev)
 
             if actual == 0:
                 continue
 
             if target.hp <= 0:
-                died_forever = self.engine.handle_fighter_death(target)
+                died_forever, injury_id = self.engine.handle_fighter_death(target)
                 if died_forever:
                     events.append(BattleEvent(
                         "death", defender=target.name, is_kill=True,
-                        message=f"{target.name} has FALLEN FOREVER!",
+                        message=t("fallen_forever", name=target.name),
                     ))
                 else:
+                    from game.data_loader import data_loader
+                    inj_name = data_loader.injuries_by_id.get(injury_id, {}).get("name", "?")
                     events.append(BattleEvent(
                         "death", defender=target.name,
-                        message=f"{target.name} knocked out! Injury #{target.injuries}",
+                        message=t("knocked_out_injury", name=target.name, injury=inj_name),
                     ))
 
         # Check defeat

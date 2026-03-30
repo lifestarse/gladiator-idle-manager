@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 18
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -7,8 +7,9 @@ from kivy.properties import NumericProperty, StringProperty, ListProperty, Boole
 from kivy.metrics import dp, sp
 from game.base_screen import BaseScreen
 from game.widgets import AutoShrinkLabel, MinimalButton, BaseCard
+import game.models as _m
 from game.models import (
-    fmt_num, RARITY_COLORS, ENCHANTMENT_TYPES,
+    fmt_num, RARITY_COLORS,
     get_upgrade_tier, item_display_name,
     get_max_upgrade, RARITY_MAX_UPGRADE,
 )
@@ -36,17 +37,26 @@ class ForgeScreen(BaseScreen):
     forge_tab = StringProperty("weapon")
     inventory_tab = StringProperty("weapon")
     inventory_rarity_filter = StringProperty("all")
+    inventory_equip_filter = StringProperty("all")  # "all", "free", "equipped"
     shop_rarity_filter = StringProperty("all")
+    shop_sort = StringProperty("best")       # "best" or "worst"
+    inventory_sort = StringProperty("best")  # "best" or "worst"
     shard_text = StringProperty("")
     inv_detail_idx = NumericProperty(-1)
     eq_detail_fighter = NumericProperty(-1)
     eq_detail_slot = StringProperty("")
     weapon_upgrade_active = BooleanProperty(False)
+    enchant_active = BooleanProperty(False)
     lbl_top_title = StringProperty("")
     _show_inv_tabs = BooleanProperty(False)
 
     _preview_item = None
-    _nav_from = None
+    _nav_from = StringProperty("")
+    _nav_back_fighter_idx = -1
+    _enchant_source = None
+    _enchant_idx = None
+    _enchant_item = None
+    _enchant_fighter = None
     _scroll_positions = {}  # key → scroll_y
 
     def on_enter(self):
@@ -62,8 +72,14 @@ class ForgeScreen(BaseScreen):
         self.eq_detail_fighter = -1
         self.eq_detail_slot = ""
         self.weapon_upgrade_active = False
+        self.enchant_active = False
+        self._enchant_source = None
+        self._enchant_idx = None
+        self._enchant_item = None
+        self._enchant_fighter = None
         self._preview_item = None
-        self._nav_from = None
+        self._nav_from = ""
+        self._nav_back_fighter_idx = -1
         self._inv_tabs_key = None
         self._shop_tabs_key = None
         self._inv_grid_key = None
@@ -94,8 +110,8 @@ class ForgeScreen(BaseScreen):
         s = engine.shards
         self.shard_text = f"I:{s.get(1,0)} II:{s.get(2,0)} III:{s.get(3,0)} IV:{s.get(4,0)} V:{s.get(5,0)}"
         if self.show_inventory:
-            if self.weapon_upgrade_active:
-                return  # don't redraw while upgrade screen is open
+            if self.weapon_upgrade_active or self.enchant_active:
+                return  # don't redraw while upgrade/enchant screen is open
             if self.inv_detail_idx >= 0:
                 self._show_inv_detail(self.inv_detail_idx)
             elif self.eq_detail_fighter >= 0 and self.eq_detail_slot:
@@ -117,9 +133,8 @@ class ForgeScreen(BaseScreen):
         self._show_inv_tabs = True
         self._inv_tabs_key = None  # clear inventory tabs key
         tabs_box = self.ids.get("inv_tabs_box")
-        tabs_key = ("shop", self.forge_tab, self.shop_rarity_filter)
-        if tabs_box and getattr(self, '_shop_tabs_key', None) != tabs_key:
-            self._shop_tabs_key = tabs_key
+        tabs_key = ("shop", self.forge_tab, self.shop_rarity_filter, self.shop_sort)
+        if tabs_box and self._needs_rebuild(self, '_shop_tabs_key', tabs_key):
             tabs_box.clear_widgets()
             rarity_tabs = [(r, t(k)) for r, k in [
                 ("all", "filter_all"), ("common", "filter_common"),
@@ -130,10 +145,22 @@ class ForgeScreen(BaseScreen):
                 rarity_tabs, self.shop_rarity_filter, self.set_shop_rarity_filter,
                 active_color=ACCENT_GOLD, height=dp(30),
             ))
+            sort_icon = "icons/ic_down.png" if self.shop_sort == "best" else "icons/ic_up.png"
+            sort_label = t("sort_best") if self.shop_sort == "best" else t("sort_worst")
+            sort_btn = MinimalButton(
+                text=sort_label, font_size=13,
+                btn_color=ACCENT_CYAN, text_color=BG_DARK,
+                size_hint_y=None, height=dp(30),
+                icon_source=sort_icon,
+            )
+            sort_btn.bind(on_press=self.toggle_shop_sort)
+            tabs_box.add_widget(sort_btn)
         all_items = engine.get_forge_items()
         self.forge_items = [i for i in all_items if i["slot"] == self.forge_tab]
         if self.shop_rarity_filter != "all":
             self.forge_items = [i for i in self.forge_items if i.get("rarity") == self.shop_rarity_filter]
+        reverse = self.shop_sort == "best"
+        self.forge_items.sort(key=self._item_total_stats, reverse=reverse)
         inv_count = len(engine.inventory)
         self.inventory_btn_text = t("inventory_count", n=inv_count) if inv_count > 0 else t("inventory_label")
         refresh_forge_grid(self)
@@ -169,12 +196,31 @@ class ForgeScreen(BaseScreen):
         self.refresh_forge()
         self._restore_scroll()
 
+    def set_equip_filter(self, value):
+        self._save_scroll()
+        self.inventory_equip_filter = value
+        self._inv_grid_key = None
+        self.refresh_forge()
+        self._restore_scroll()
+
     def set_shop_rarity_filter(self, rarity):
         self._save_scroll()
         self.shop_rarity_filter = rarity
-        self._forge_card_cache = {}  # invalidate shop card cache
         self.refresh_forge()
         self._restore_scroll()
+
+    def toggle_shop_sort(self, *a):
+        self.shop_sort = "worst" if self.shop_sort == "best" else "best"
+        self.refresh_forge()
+
+    def toggle_inventory_sort(self, *a):
+        self.inventory_sort = "worst" if self.inventory_sort == "best" else "best"
+        self._inv_grid_key = None
+        self.refresh_forge()
+
+    @staticmethod
+    def _item_total_stats(item):
+        return item.get("str", 0) + item.get("agi", 0) + item.get("vit", 0)
 
     def _refresh_inventory_grid(self):
         grid = self.ids.get("forge_grid")
@@ -185,9 +231,8 @@ class ForgeScreen(BaseScreen):
 
         # Inventory tab buttons — in fixed box above scroll (rebuild only on tab change)
         tabs_box = self.ids.get("inv_tabs_box")
-        tabs_key = (self.inventory_tab, self.inventory_rarity_filter)
-        if tabs_box and getattr(self, '_inv_tabs_key', None) != tabs_key:
-            self._inv_tabs_key = tabs_key
+        tabs_key = (self.inventory_tab, self.inventory_rarity_filter, self.inventory_equip_filter, self.inventory_sort)
+        if tabs_box and self._needs_rebuild(self, '_inv_tabs_key', tabs_key):
             tabs_box.clear_widgets()
             slot_tabs = [(s, t(k)) for s, k in [
                 ("weapon", "tab_weapon"), ("armor", "tab_armor"),
@@ -205,13 +250,31 @@ class ForgeScreen(BaseScreen):
                     rarity_tabs, self.inventory_rarity_filter, self.set_rarity_filter,
                     active_color=ACCENT_GOLD, height=dp(30),
                 ))
+                equip_tabs = [
+                    ("all", t("filter_all")),
+                    ("free", t("filter_free")),
+                    ("equipped", t("filter_equipped")),
+                ]
+                tabs_box.add_widget(build_tab_row(
+                    equip_tabs, self.inventory_equip_filter, self.set_equip_filter,
+                    active_color=ACCENT_CYAN, height=dp(30),
+                ))
+                sort_icon = "icons/ic_down.png" if self.inventory_sort == "best" else "icons/ic_up.png"
+                sort_label = t("sort_best") if self.inventory_sort == "best" else t("sort_worst")
+                sort_btn = MinimalButton(
+                    text=sort_label, font_size=13,
+                    btn_color=ACCENT_CYAN, text_color=BG_DARK,
+                    size_hint_y=None, height=dp(30),
+                    icon_source=sort_icon,
+                )
+                sort_btn.bind(on_press=self.toggle_inventory_sort)
+                tabs_box.add_widget(sort_btn)
 
         # Shard tab — show shard counts
         if self.inventory_tab == "shard":
             shard_key = tuple(engine.shards.get(t_, 0) for t_ in range(1, 6))
-            if shard_key == getattr(self, '_shard_grid_key', None) and grid.children:
+            if not self._needs_rebuild(self, '_shard_grid_key', shard_key, require_children=True):
                 return
-            self._shard_grid_key = shard_key
             _safe_clear(grid)
             for tier in range(1, 6):
                 shard_card = BaseCard(
@@ -227,26 +290,31 @@ class ForgeScreen(BaseScreen):
             return
 
         # Build unified list: ("inv", inv_idx, item, None) or ("equip", fighter_idx, item, fighter_name)
+        eq_filter = self.inventory_equip_filter
         items_list = []
-        for idx, item in enumerate(engine.inventory):
-            if item.get("slot") == self.inventory_tab:
-                if self.inventory_rarity_filter == "all" or item.get("rarity") == self.inventory_rarity_filter:
-                    items_list.append(("inv", idx, item, None))
-        for fi, f in enumerate(engine.fighters):
-            if f.alive:
-                eq = f.equipment.get(self.inventory_tab)
-                if eq:
-                    if self.inventory_rarity_filter == "all" or eq.get("rarity") == self.inventory_rarity_filter:
-                        items_list.append(("equip", fi, eq, f.name))
+        if eq_filter != "equipped":
+            for idx, item in enumerate(engine.inventory):
+                if item.get("slot") == self.inventory_tab:
+                    if self.inventory_rarity_filter == "all" or item.get("rarity") == self.inventory_rarity_filter:
+                        items_list.append(("inv", idx, item, None))
+        if eq_filter != "free":
+            for fi, f in enumerate(engine.fighters):
+                if f.alive:
+                    eq = f.equipment.get(self.inventory_tab)
+                    if eq:
+                        if self.inventory_rarity_filter == "all" or eq.get("rarity") == self.inventory_rarity_filter:
+                            items_list.append(("equip", fi, eq, f.name))
+
+        reverse = self.inventory_sort == "best"
+        items_list.sort(key=lambda x: self._item_total_stats(x[2]), reverse=reverse)
 
         # Fast path: skip rebuild if same items
         inv_key = [(s, i, it.get("id"), it.get("upgrade_level", 0), fn) for s, i, it, fn in items_list]
-        if inv_key == getattr(self, '_inv_grid_key', None) and grid.children:
+        if not self._needs_rebuild(self, '_inv_grid_key', inv_key, require_children=True):
             return
-        self._inv_grid_key = inv_key
 
-        # Medium path: reuse cached cards for this tab+filter
-        cache_key = (self.inventory_tab, self.inventory_rarity_filter)
+        # Medium path: reuse cached cards for this tab+filter+sort
+        cache_key = (self.inventory_tab, self.inventory_rarity_filter, self.inventory_equip_filter, self.inventory_sort)
         inv_cache = getattr(self, '_inv_card_cache', {})
         cached = inv_cache.get(cache_key)
         if cached and cached[0] == inv_key:
@@ -277,6 +345,27 @@ class ForgeScreen(BaseScreen):
 
         _batch_fill_grid(grid, cards)
 
+    @staticmethod
+    def _build_description_card(item):
+        """Return a BaseCard with item description text, or None if no description."""
+        from kivy.uix.label import Label
+        desc = item.get("description", "")
+        if not desc:
+            return None
+        pad = dp(12)
+        card = BC(orientation="vertical", size_hint_y=None, height=dp(50),
+                  padding=[pad, dp(8)])
+        lbl = Label(
+            text=desc, font_size="12sp", color=TEXT_MUTED,
+            halign="left", valign="top",
+            size_hint_y=None,
+        )
+        lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w, None)))
+        lbl.bind(texture_size=lambda inst, ts: setattr(inst, "height", ts[1]))
+        lbl.bind(height=lambda inst, h: setattr(card, "height", h + dp(16)))
+        card.add_widget(lbl)
+        return card
+
     def _show_inv_detail(self, inv_idx):
         """Show detail view for a single inventory item."""
         self._show_inv_tabs = False; self._inv_tabs_key = None
@@ -303,6 +392,9 @@ class ForgeScreen(BaseScreen):
 
         # Info card
         grid.add_widget(build_item_info_card(item, subtitle=sub))
+        desc_card = self._build_description_card(item)
+        if desc_card:
+            grid.add_widget(desc_card)
 
         # Action buttons row: Sell + Equip
         action_row = BoxLayout(size_hint_y=None, height=dp(46), spacing=dp(8),
@@ -338,13 +430,15 @@ class ForgeScreen(BaseScreen):
             improve_btn.bind(on_press=lambda *a: self._show_item_upgrade("inv", inv_idx, item, None))
             grid.add_widget(improve_btn)
 
-        # Back button at bottom
-        back_btn = MinimalButton(
-            text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=15,
-            size_hint_y=None, height=dp(38),
-        )
-        back_btn.bind(on_press=lambda *a: self._close_inv_detail())
-        grid.add_widget(back_btn)
+        # Weapon enchantment button
+        if item.get("slot") == "weapon":
+            enchant_btn = MinimalButton(
+                text=t("tab_enchant"), font_size=16,
+                btn_color=ACCENT_PURPLE, text_color=TEXT_PRIMARY,
+                size_hint_y=None, height=dp(46),
+            )
+            enchant_btn.bind(on_press=lambda *a: self._show_enchant_view("inv", inv_idx, item, None))
+            grid.add_widget(enchant_btn)
 
     def _show_shop_preview(self, item):
         """Show read-only detail view for a shop item (no sell/equip/improve)."""
@@ -362,45 +456,64 @@ class ForgeScreen(BaseScreen):
         sub = f"{slot.upper()} [{rarity.upper()}] max +{max_upg}" if slot in ("weapon", "armor", "accessory", "relic") else None
 
         grid.add_widget(build_item_info_card(item, subtitle=sub))
+        desc_card = self._build_description_card(item)
+        if desc_card:
+            grid.add_widget(desc_card)
 
-        # Back button at bottom
-        back_btn = MinimalButton(
-            text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=15,
-            size_hint_y=None, height=dp(38),
-        )
-        back_btn.bind(on_press=lambda *a: self._close_shop_preview())
-        grid.add_widget(back_btn)
 
     def _close_shop_preview(self):
         nav = getattr(self, '_nav_from', None)
+        fighter_idx = getattr(self, '_nav_back_fighter_idx', -1)
         self._preview_item = None
-        self._nav_from = None
+        self._nav_from = ""
+        self._nav_back_fighter_idx = -1
         if nav:
             app = App.get_running_app()
             app._going_back = True
             app.sm.current = nav
+            if fighter_idx >= 0 and nav == "roster":
+                def _reopen(dt):
+                    rs = app.sm.get_screen("roster")
+                    rs.show_fighter_detail(fighter_idx)
+                Clock.schedule_once(_reopen, 0)
         else:
             self.refresh_forge()
 
     def _close_inv_detail(self):
         nav = getattr(self, '_nav_from', None)
+        fighter_idx = getattr(self, '_nav_back_fighter_idx', -1)
         self.inv_detail_idx = -1
         self.eq_detail_fighter = -1
         self.eq_detail_slot = ""
         self.weapon_upgrade_active = False
+        self.enchant_active = False
+        self._enchant_source = None
+        self._enchant_idx = None
+        self._enchant_item = None
+        self._enchant_fighter = None
         self._inv_grid_key = None
         self._shard_grid_key = None
         self._inv_tabs_key = None
         self._inv_card_cache = {}
-        self._nav_from = None
+        self._nav_from = ""
+        self._nav_back_fighter_idx = -1
         if nav:
             app = App.get_running_app()
             app._going_back = True
             app.sm.current = nav
+            if fighter_idx >= 0 and nav == "roster":
+                def _reopen(dt):
+                    rs = app.sm.get_screen("roster")
+                    rs.show_fighter_detail(fighter_idx)
+                Clock.schedule_once(_reopen, 0)
         else:
             self.refresh_forge()
 
     def on_back_pressed(self):
+        # Level 0: enchant view → back to item detail
+        if self.enchant_active:
+            self._close_enchant_view()
+            return True
         # Level 1: weapon upgrade → back to item detail
         if self.weapon_upgrade_active:
             self.weapon_upgrade_active = False
@@ -418,27 +531,34 @@ class ForgeScreen(BaseScreen):
         if self._preview_item is not None:
             if self._nav_from:
                 self._preview_item = None
-                self._nav_from = None
+                self._nav_from = ""
                 return False
             self._close_shop_preview()
             return True
-        # Level 4: inventory view → back to shop
+        # Level 4: inventory view → back to shop (or previous screen)
         if self.show_inventory:
+            if self._nav_from:
+                self._reset_forge_state()
+                return False  # go_back() pops history → previous screen
             self.toggle_inventory()
             return True
+        # Level 5: shop view — came from another screen
+        if self._nav_from:
+            self._reset_forge_state()
+            return False
         return False
 
     @staticmethod
     def _get_slot_upgrade_config(slot, item):
         """Return (base_val, stat_pair, stat_label, base_label) for a given slot."""
         if slot == "weapon":
-            return item.get("atk", 0), "STR+AGI", "ATK", t("weapon_base_atk")
+            return item.get("str", 0), "STR", "STR", t("weapon_base_atk")
         elif slot == "armor":
-            return item.get("def", 0), "STR+VIT", "DEF", t("armor_base_def")
+            return item.get("agi", 0), "AGI", "AGI", t("armor_base_def")
         elif slot == "relic":
-            return 0, "STR+AGI+VIT", "ATK/DEF/HP", t("relic_base")
+            return 0, "STR+AGI+VIT", "STR/AGI/VIT", t("relic_base")
         else:  # accessory
-            return item.get("hp", 0), "AGI+VIT", "HP", t("accessory_base_hp")
+            return item.get("vit", 0), "VIT", "VIT", t("accessory_base_hp")
 
     def _build_upgrade_comparison_card(self, item, fighter, engine):
         """Build and return the stat comparison BaseCard for an upgrade screen."""
@@ -467,34 +587,49 @@ class ForgeScreen(BaseScreen):
 
         def _breakdown(pct, label_prefix):
             if not fighter:
-                mult_str = "/3 (HP x10)" if is_relic else (" x10" if slot == "accessory" else "")
-                _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% {stat_pair}{mult_str}", ACCENT_GREEN)
+                if slot == "weapon":
+                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% (STR+AGI) → ATK", ACCENT_GREEN)
+                elif slot == "armor":
+                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% (AGI+VIT) → DEF", ACCENT_GREEN)
+                elif slot == "accessory":
+                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% (VIT+STR)x5 → HP", ACCENT_GREEN)
+                elif is_relic:
+                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}%/3 → ATK+DEF+HP", ACCENT_GREEN)
                 return
-            if slot == "weapon":
-                pair_val = fighter.strength + fighter.agility
-            elif slot == "armor":
-                pair_val = fighter.strength + fighter.vitality
-            elif slot == "relic":
-                pair_val = fighter.strength + fighter.agility + fighter.vitality
-            else:
-                pair_val = fighter.agility + fighter.vitality
 
-            if is_relic:
-                b = int(pair_val * pct / 100 / RELIC_STAT_SPLIT)
-                _info_row(f"{label_prefix} ATK ({pct}%/3)", f"+{b}", ACCENT_GREEN)
-                _info_row(f"{label_prefix} DEF ({pct}%/3)", f"+{b}", ACCENT_GREEN)
-                _info_row(f"{label_prefix} HP ({pct}%/3 x10)", f"+{b * ACCESSORY_HP_MULT}", ACCENT_GREEN)
-            else:
+            if slot == "weapon":
+                pair_val = fighter.total_strength + fighter.total_agility
                 bonus = int(pair_val * pct / 100)
-                if slot == "accessory":
-                    bonus *= ACCESSORY_HP_MULT
-                mult_str = " x10" if slot == "accessory" else ""
-                _info_row(f"{label_prefix} ({pct}% {stat_pair}){mult_str}", f"+{bonus}", ACCENT_GREEN)
-                total_v = (fighter.strength * 2 + base_val + bonus) if slot == "weapon" else (base_val + bonus)
-                _info_row(f"{t('total_label')} {stat_label}", total_v, ACCENT_GOLD)
+                _info_row(f"{label_prefix} ({pct}% STR+AGI)", f"+{bonus} ATK", ACCENT_GREEN)
+                _info_row(f"{t('total_label')} ATK", fighter.attack, ACCENT_GOLD)
+            elif slot == "armor":
+                pair_val = fighter.total_agility + fighter.total_vitality
+                bonus = int(pair_val * pct / 100)
+                _info_row(f"{label_prefix} ({pct}% AGI+VIT)", f"+{bonus} DEF", ACCENT_GREEN)
+                _info_row(f"{t('total_label')} DEF", fighter.defense, ACCENT_GOLD)
+            elif slot == "accessory":
+                pair_val = fighter.total_vitality + fighter.total_strength
+                bonus = int(pair_val * pct / 100 * 5)
+                _info_row(f"{label_prefix} ({pct}% VIT+STR x5)", f"+{bonus} HP", ACCENT_GREEN)
+                _info_row(f"{t('total_label')} HP", fighter.max_hp, ACCENT_GOLD)
+            elif is_relic:
+                sa = fighter.total_strength + fighter.total_agility
+                av = fighter.total_agility + fighter.total_vitality
+                vs = fighter.total_vitality + fighter.total_strength
+                atk_b = int(sa * pct / 100) // 3
+                def_b = int(av * pct / 100) // 3
+                hp_b = int(vs * pct / 100 * 5) // 3
+                _info_row(f"{label_prefix} ATK ({pct}%/3)", f"+{atk_b}", ACCENT_GREEN)
+                _info_row(f"{label_prefix} DEF ({pct}%/3)", f"+{def_b}", ACCENT_GREEN)
+                _info_row(f"{label_prefix} HP ({pct}%x5/3)", f"+{hp_b}", ACCENT_GREEN)
 
         if fighter and slot == "weapon":
-            _info_row(f"STR ({fighter.strength}) x2", fighter.strength * 2, ACCENT_RED)
+            _info_row(f"STR ({fighter.total_strength}) x2", fighter.total_strength * 2, ACCENT_RED)
+            _info_row("STR+AGI", f"{fighter.total_strength}+{fighter.total_agility}={fighter.total_strength + fighter.total_agility}", TEXT_SECONDARY)
+        elif fighter and slot == "armor":
+            _info_row("AGI+VIT", f"{fighter.total_agility}+{fighter.total_vitality}={fighter.total_agility + fighter.total_vitality}", TEXT_SECONDARY)
+        elif fighter and slot == "accessory":
+            _info_row("VIT+STR", f"{fighter.total_vitality}+{fighter.total_strength}={fighter.total_vitality + fighter.total_strength}", TEXT_SECONDARY)
         if is_relic:
             _info_row(t("relic_base"), f"ATK+{item.get('atk',0)} DEF+{item.get('def',0)} HP+{item.get('hp',0)}", TEXT_PRIMARY)
         else:
@@ -523,45 +658,142 @@ class ForgeScreen(BaseScreen):
             ))
         return comp_card
 
-    def _build_enchant_section(self, grid, item, source, idx, fighter, engine):
-        """Add weapon enchantment buttons to the upgrade grid."""
+    @staticmethod
+    def _get_enchant_display_name(ench_id):
+        loc_key = f"enchant_{ench_id}"
+        name = t(loc_key)
+        if name == loc_key:
+            ench_data = _m.ENCHANTMENT_TYPES.get(ench_id, {})
+            name = ench_data.get("name", ench_id.replace("_", " ").title())
+        return name
+
+    def _show_enchant_view(self, source, idx, item, fighter=None):
+        """Separate enchantment tab for a weapon item."""
+        from kivy.uix.label import Label
+        self._show_inv_tabs = False; self._inv_tabs_key = None
+        self.enchant_active = True
+        self._enchant_source = source
+        self._enchant_idx = idx
+        self._enchant_item = item
+        self._enchant_fighter = fighter
+        sv = self.ids.get("forge_scroll")
+        if sv:
+            sv.scroll_y = 1
+        grid = self.ids.get("forge_grid")
+        if not grid:
+            return
+        _safe_clear(grid)
+        engine = App.get_running_app().engine
+
+        # Title
         grid.add_widget(AutoShrinkLabel(
-            text=t("enchant_label"), font_size="14sp", bold=True,
-            color=ACCENT_CYAN, halign="center", size_hint_y=None, height=dp(30),
+            text=t("enchant_label"), font_size="16sp", bold=True,
+            color=ACCENT_PURPLE, halign="center",
+            size_hint_y=None, height=dp(34),
         ))
-        ench = item.get("enchantment")
-        ench_names = {"bleeding": t("enchant_bleeding"),
-                      "frostbite": t("enchant_frostbite"),
-                      "poison": t("enchant_poison")}
-        for ench_id, ench_data in ENCHANTMENT_TYPES.items():
-            is_current = (ench == ench_id)
-            gold_cost = ench_data["cost_gold"]
-            sh_tier = ench_data["cost_shard_tier"]
-            sh_count = ench_data["cost_shard_count"]
-            can_ench = engine.gold >= gold_cost and engine.shards.get(sh_tier, 0) >= sh_count
-            label = ench_names.get(ench_id, ench_id) + ("  [OK]" if is_current else "")
-            cost_str = f"{fmt_num(gold_cost)}g + {sh_count}x {t('shard_name_' + str(sh_tier))}"
+
+        # Current enchantment status
+        current_ench = item.get("enchantment")
+        if current_ench:
+            status_text = t("current_enchant", name=self._get_enchant_display_name(current_ench))
+        else:
+            status_text = t("no_enchant")
+        grid.add_widget(AutoShrinkLabel(
+            text=status_text, font_size="13sp",
+            color=ACCENT_GOLD if current_ench else TEXT_MUTED,
+            halign="center", size_hint_y=None, height=dp(26),
+        ))
+
+        # Enchantment cards
+        pad = dp(12)
+        for ench_id, ench_data in _m.ENCHANTMENT_TYPES.items():
+            is_current = (current_ench == ench_id)
+            gold_cost = ench_data.get("cost_gold", 0)
+            sh_tier = ench_data.get("cost_shard_tier", 5)
+            sh_count = ench_data.get("cost_shard_count", 100)
+            can_afford = engine.gold >= gold_cost and engine.shards.get(sh_tier, 0) >= sh_count
+            ench_name = self._get_enchant_display_name(ench_id)
+
+            card = BC(orientation="vertical", size_hint_y=None, height=dp(130),
+                      padding=[pad, dp(8)], spacing=dp(4))
             if is_current:
-                color = ACCENT_GOLD
-            elif can_ench:
-                color = ACCENT_BLUE
+                card.border_color = ACCENT_GOLD
             else:
-                color = BTN_DISABLED
-            eb = MinimalButton(
-                text=f"{label}\n{cost_str}", font_size=13,
-                btn_color=color,
-                text_color=BG_DARK if (is_current or can_ench) else TEXT_MUTED,
+                card.border_color = ACCENT_PURPLE
+
+            # Name row
+            name_text = f"{ench_name}  [OK]" if is_current else ench_name
+            name_color = ACCENT_GOLD if is_current else ACCENT_PURPLE
+            card.add_widget(AutoShrinkLabel(
+                text=name_text, font_size="14sp", bold=True,
+                color=name_color, halign="left",
+                size_hint_y=None, height=dp(22),
+            ))
+
+            # Description
+            desc = ench_data.get("description", "")
+            if desc:
+                desc_lbl = Label(
+                    text=desc, font_size="11sp", color=TEXT_MUTED,
+                    halign="left", valign="top",
+                    size_hint_y=None,
+                )
+                desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w - pad * 2, None)))
+                desc_lbl.bind(texture_size=lambda inst, ts: setattr(inst, "height", ts[1]))
+                def _update_card_h(inst, h, c=card):
+                    c.height = max(dp(130), h + dp(90))
+                desc_lbl.bind(height=_update_card_h)
+                card.add_widget(desc_lbl)
+
+            # Cost line
+            cost_str = f"{fmt_num(gold_cost)}g + {sh_count}x {t('shard_name_' + str(sh_tier))}"
+            cost_color = ACCENT_GREEN if can_afford else ACCENT_RED
+            card.add_widget(AutoShrinkLabel(
+                text=cost_str, font_size="12sp",
+                color=cost_color, halign="left",
+                size_hint_y=None, height=dp(20),
+            ))
+
+            # Apply button
+            if is_current:
+                btn_color = ACCENT_GOLD
+                btn_text_color = BG_DARK
+                btn_text = f"{ench_name} [OK]"
+            elif can_afford:
+                btn_color = ACCENT_PURPLE
+                btn_text_color = TEXT_PRIMARY
+                btn_text = t("tab_enchant")
+            else:
+                btn_color = BTN_DISABLED
+                btn_text_color = TEXT_MUTED
+                btn_text = t("tab_enchant")
+            apply_btn = MinimalButton(
+                text=btn_text, font_size=13,
+                btn_color=btn_color, text_color=btn_text_color,
+                size_hint_y=None, height=dp(36),
             )
-            def _enchant(inst, w=item, eid=ench_id, s=source, i=idx, f=fighter):
+            def _do_enchant(inst, w=item, eid=ench_id, s=source, i=idx, f=fighter):
                 result = engine.enchant_weapon(w, eid)
                 if result.ok:
-                    self._show_item_upgrade(s, i, w, f)
+                    self._show_enchant_view(s, i, w, f)
                 else:
                     App.get_running_app().show_toast(result.message)
-            eb.bind(on_press=_enchant)
-            ench_card = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
-            ench_card.add_widget(eb)
-            grid.add_widget(ench_card)
+            apply_btn.bind(on_press=_do_enchant)
+            card.add_widget(apply_btn)
+
+            grid.add_widget(card)
+
+
+    def _close_enchant_view(self):
+        """Close enchantment view and return to item detail."""
+        self.enchant_active = False
+        source = self._enchant_source or "inv"
+        idx = self._enchant_idx if self._enchant_idx is not None else -1
+        item = self._enchant_item
+        if source == "inv":
+            self._show_inv_detail(idx)
+        else:
+            self._show_equipped_detail(idx, item)
 
     def _show_item_upgrade(self, source, idx, item, fighter=None):
         """Universal upgrade/enchant comparison screen for weapon/armor/accessory."""
@@ -576,18 +808,12 @@ class ForgeScreen(BaseScreen):
         current_lvl = item.get("upgrade_level", 0)
         max_lvl = get_max_upgrade(item)
 
-        back_btn = MinimalButton(
-            text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=15,
-            size_hint_y=None, height=dp(38),
-        )
         def _back(*a):
             self.weapon_upgrade_active = False
             if source == "inv":
                 self._show_inv_detail(idx)
             else:
                 self._show_equipped_detail(idx, item)
-        back_btn.bind(on_press=_back)
-        grid.add_widget(back_btn)
 
         grid.add_widget(self._build_upgrade_comparison_card(item, fighter, engine))
 
@@ -612,9 +838,6 @@ class ForgeScreen(BaseScreen):
             upg_btn.bind(on_press=_do_upgrade)
             grid.add_widget(upg_btn)
 
-        if slot == "weapon":
-            self._build_enchant_section(grid, item, source, idx, fighter, engine)
-
     def _show_equipped_detail(self, fighter_idx, item):
         """Detail view for an item currently equipped on a fighter."""
         self._show_inv_tabs = False; self._inv_tabs_key = None
@@ -633,6 +856,9 @@ class ForgeScreen(BaseScreen):
         max_upg = get_max_upgrade(item)
         # Info card
         grid.add_widget(build_item_info_card(item, fighter=f, equipped_on=f.name))
+        desc_card = self._build_description_card(item)
+        if desc_card:
+            grid.add_widget(desc_card)
 
         # Unequip button
         slot = item.get("slot", "weapon")
@@ -660,13 +886,15 @@ class ForgeScreen(BaseScreen):
             improve_btn.bind(on_press=lambda *a: self._show_item_upgrade("equip", fighter_idx, item, f))
             grid.add_widget(improve_btn)
 
-        # Back button at bottom
-        back_btn = MinimalButton(
-            text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=15,
-            size_hint_y=None, height=dp(38),
-        )
-        back_btn.bind(on_press=lambda *a: self._close_inv_detail())
-        grid.add_widget(back_btn)
+        # Weapon enchantment button
+        if item.get("slot") == "weapon":
+            enchant_btn = MinimalButton(
+                text=t("tab_enchant"), font_size=16,
+                btn_color=ACCENT_PURPLE, text_color=TEXT_PRIMARY,
+                size_hint_y=None, height=dp(46),
+            )
+            enchant_btn.bind(on_press=lambda *a: self._show_enchant_view("equip", fighter_idx, item, f))
+            grid.add_widget(enchant_btn)
 
     def _show_equip_fighter_popup(self, inv_idx, item):
         engine = App.get_running_app().engine

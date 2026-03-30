@@ -1,4 +1,4 @@
-# Build: 15
+# Build: 22
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
@@ -15,7 +15,7 @@ from game.constants import (
     FIGHTER_ATK_PER_STR, FIGHTER_ATK_PER_LEVEL, FIGHTER_STARTING_POINTS,
     CRIT_K, CRIT_MULT_BASE, CRIT_MULT_PER_AGI,
     DODGE_AGI_FACTOR, DODGE_DIMINISH_FACTOR,
-    DEATH_CHANCE_BASE, DEATH_CHANCE_PER_INJURY, DEATH_CHANCE_CAP,
+    DEATH_CHANCE_BASE, DEATH_CHANCE_CAP,
     DAMAGE_VARIANCE_LOW, DAMAGE_VARIANCE_HIGH, DEFENSE_DIVISOR,
     UPGRADE_BONUS_PER_LEVEL, RELIC_STAT_SPLIT, ACCESSORY_HP_MULT,
     ENEMY_ATK_BASE, ENEMY_ATK_PER_TIER, ENEMY_ATK_EXPO,
@@ -31,6 +31,9 @@ from game.constants import (
     INJURY_HEAL_BASE_COST, TONIC_BASE_COST, TONIC_TIER_EXPO, TIER_BAND_MULT,
     MAX_UPGRADE_COMMON, MAX_UPGRADE_UNCOMMON, MAX_UPGRADE_RARE,
     MAX_UPGRADE_EPIC, MAX_UPGRADE_LEGENDARY,
+    ROLE_MULT, ROLE_STAT_MULT, STAT_BIAS_MULT,
+    PERK_POINT_EVERY_N_LEVELS,
+    FIGHTER_CRIT_CAP, FIGHTER_DODGE_CAP,
 )
 
 # --- Result type for engine operations ---
@@ -67,83 +70,6 @@ def fmt_num(n):
             return f"{val:.1f}{suffix}" if val != int(val) else f"{int(val)}{suffix}"
     return f"{n:.0f}"
 
-# --- Name pools ---
-
-FIGHTER_NAMES = [
-    "Vorn", "Kaelith", "Dragan", "Fenrik", "Theron",
-    "Ashara", "Brokk", "Sylas", "Morrigan", "Zephyr",
-    "Ragnor", "Lyra", "Torvald", "Selene", "Grimjaw",
-    "Kira", "Uldric", "Nyx", "Balor", "Ember",
-]
-
-ENEMY_TITLES = [
-    "Pit Rat", "Chained Brute", "Sand Crawler", "Iron Fang",
-    "Bone Breaker", "Blood Warden", "Doom Herald", "Warlord",
-    "Shadow Titan", "The Undying",
-]
-
-BOSS_NAMES = [
-    # Tier 1-50
-    "Groth the Mangler", "Varka Ironjaw", "Skarn Bloodfist", "Molgur the Rotten",
-    "Draven Ashclaw", "Toruk Bonecrusher", "Haldor the Grim", "Razek Deathbringer",
-    "Ulgor Flamemaw", "Krovak the Impaler",
-    "Sethara Venomtongue", "Brakka Stonehorn", "Nythgor Soulreaper", "Durn the Faceless",
-    "Grimjaw the Butcher", "Vorath Skullsplitter", "Morgath Chainfury", "Ixen Darktalon",
-    "Zephrak Doomhowl", "Kalgor the Merciless",
-    "Thessa Bloodthorn", "Rukvak Ironfang", "Olgrim Wartusk", "Pyrak the Scorched",
-    "Nethara Dreadwhisper", "Skarog Hellhammer", "Dravok the Cursed", "Ulmira Frostbane",
-    "Gharak Spinerender", "Bolverk the Unyielding",
-    "Xathros Shadowflame", "Jorvak Thundermaw", "Azura the Flayed", "Krommak Doomfang",
-    "Selvira Nightthorn", "Urgoth the Ravager", "Thalgor Ashbringer", "Moriven Soulchain",
-    "Drekthar Warborn", "Vulkara the Savage",
-    "Grimnak Hellborn", "Seraphyx the Undying", "Korrath Worldbreaker", "Zarvok Blightclaw",
-    "Iselda Doomweaver", "Thorgak the Eternal", "Malachar Bloodrite", "Skelvion Dreadmaw",
-    "Ragnok Cinderfist", "Obraxis the Abyssal",
-    # Tier 51-100
-    "Vordak the Relentless", "Zharina Ghostflame", "Bulgrim Siegebreaker", "Talvok Rotfang",
-    "Myrkana Shadowpiercer", "Hakkon Steelwrath", "Grenthak Plaguebringer", "Ulvira Frostvein",
-    "Domrak Hellreaver", "Kassara the Unbroken",
-    "Thorvex Stormjaw", "Nulgath Bonelord", "Elyxia Venomblade", "Rokvar the Desecrator",
-    "Balmira Chainwraith", "Gorthan Doomwall", "Szarvok Nightripper", "Valdris the Hollow",
-    "Kragmor Emberfist", "Zylithra Soulflayer",
-    "Urthane the Colossus", "Draven Warshriek", "Morwenna Dreadbloom", "Skragak Thunderhorn",
-    "Vexara Ashwhisper", "Tolvak the Sundered", "Grimhild Ironmaw", "Nethrak Darkforge",
-    "Pyrelith the Scorching", "Bolvak Worldrender",
-    "Gharvok Blighthorn", "Selthara Moonbane", "Kragnus the Devastator", "Ulvok Dreadforge",
-    "Myrthen Soulbinder", "Zarkoth the Insatiable", "Dorvina Nightsteel", "Halkrath Warmonger",
-    "Thervok Cindermaw", "Ragnara the Deathless",
-    "Volgrim Stormbreaker", "Xervok the Unseen", "Bulgara Chainheart", "Drelmak Rotbringer",
-    "Iskara Flamevein", "Tormund the Accursed", "Grolvak Hellspine", "Nythara Doomgaze",
-    "Skalvok the Remorseless", "Azrathor Worldbane",
-]
-
-BOSS_PREFIXES = [
-    "Infernal", "Abyssal", "Dread", "Void", "Doom", "Shadow", "Blood",
-    "Iron", "Storm", "Flame", "Frost", "Death", "Dark", "Grim", "War",
-    "Soul", "Bone", "Night", "Chaos", "Wrath", "Blight", "Hell", "Thunder",
-]
-
-BOSS_SUFFIXES = [
-    "Destroyer", "Annihilator", "Overlord", "Tyrant", "Conqueror",
-    "Decimator", "Executioner", "Warlord", "Champion", "Colossus",
-    "Devourer", "Slayer", "Ravager", "Dominator", "Eradicator",
-    "Vanquisher", "Titan", "Sovereign", "Emperor", "Nemesis",
-]
-
-
-def get_boss_name(tier):
-    """Return a unique boss name for the given arena tier."""
-    if tier <= len(BOSS_NAMES):
-        return BOSS_NAMES[tier - 1]
-    # For tiers beyond the list, generate deterministic names
-    idx = (tier - 1) % (len(BOSS_PREFIXES) * len(BOSS_SUFFIXES))
-    prefix = BOSS_PREFIXES[idx % len(BOSS_PREFIXES)]
-    suffix = BOSS_SUFFIXES[idx // len(BOSS_PREFIXES) % len(BOSS_SUFFIXES)]
-    rank = (tier - 1) // (len(BOSS_PREFIXES) * len(BOSS_SUFFIXES)) + 1
-    if rank > 1:
-        return f"{prefix} {suffix} Mk.{rank}"
-    return f"{prefix} {suffix}"
-
 # --- Rarity system ---
 
 RARITY_COMMON = "common"
@@ -168,97 +94,6 @@ RARITY_MULTIPLIER = {
     RARITY_LEGENDARY: 3.0,
 }
 
-# --- Fighter classes ---
-
-FIGHTER_CLASSES = {
-    "mercenary": {
-        "name": "Mercenary",
-        "desc": "Balanced fighter. +1 stat point per level.",
-        "base_str": 5, "base_agi": 5, "base_vit": 5,
-        "crit_bonus": 0.0,
-        "dodge_bonus": 0.0,
-        "hp_mult": 1.0,
-        "points_per_level": 4,
-    },
-    "assassin": {
-        "name": "Assassin",
-        "desc": "High crit, low HP. +20% crit chance.",
-        "base_str": 4, "base_agi": 8, "base_vit": 3,
-        "crit_bonus": 0.20,
-        "dodge_bonus": 0.05,
-        "hp_mult": 0.85,
-        "points_per_level": 3,
-    },
-    "tank": {
-        "name": "Tank",
-        "desc": "High HP & defense. Slow but durable.",
-        "base_str": 3, "base_agi": 2, "base_vit": 10,
-        "crit_bonus": -0.05,
-        "dodge_bonus": 0.0,
-        "hp_mult": 1.3,
-        "points_per_level": 3,
-    },
-}
-
-# --- Equipment (lost on permadeath reset) ---
-
-EQUIPMENT_SLOTS = ["weapon", "armor", "accessory", "relic"]
-
-FORGE_WEAPONS = [
-    {"id": "rusty_blade", "name": "Rusty Blade", "slot": "weapon", "rarity": RARITY_COMMON,
-     "atk": 3, "def": 0, "hp": 0, "cost": 400},
-    {"id": "iron_sword", "name": "Iron Sword", "slot": "weapon", "rarity": RARITY_COMMON,
-     "atk": 5, "def": 0, "hp": 0, "cost": 900},
-    {"id": "steel_falcata", "name": "Steel Falcata", "slot": "weapon", "rarity": RARITY_UNCOMMON,
-     "atk": 8, "def": 0, "hp": 5, "cost": 2000},
-    {"id": "obsidian_edge", "name": "Obsidian Edge", "slot": "weapon", "rarity": RARITY_RARE,
-     "atk": 12, "def": 2, "hp": 0, "cost": 5000},
-    {"id": "inferno_cleaver", "name": "Inferno Cleaver", "slot": "weapon", "rarity": RARITY_EPIC,
-     "atk": 18, "def": 0, "hp": 10, "cost": 12000},
-    {"id": "blade_of_ruin", "name": "Blade of Ruin", "slot": "weapon", "rarity": RARITY_LEGENDARY,
-     "atk": 28, "def": 5, "hp": 20, "cost": 30000},
-]
-
-FORGE_ARMOR = [
-    {"id": "leather_vest", "name": "Leather Vest", "slot": "armor", "rarity": RARITY_COMMON,
-     "atk": 0, "def": 3, "hp": 10, "cost": 500},
-    {"id": "chain_mail", "name": "Chain Mail", "slot": "armor", "rarity": RARITY_COMMON,
-     "atk": 0, "def": 5, "hp": 15, "cost": 1200},
-    {"id": "bronze_plate", "name": "Bronze Plate", "slot": "armor", "rarity": RARITY_UNCOMMON,
-     "atk": 0, "def": 8, "hp": 25, "cost": 2800},
-    {"id": "shadow_guard", "name": "Shadow Guard", "slot": "armor", "rarity": RARITY_RARE,
-     "atk": 3, "def": 12, "hp": 30, "cost": 6500},
-    {"id": "titan_shell", "name": "Titan Shell", "slot": "armor", "rarity": RARITY_EPIC,
-     "atk": 0, "def": 18, "hp": 50, "cost": 15000},
-    {"id": "dragonscale", "name": "Dragonscale Aegis", "slot": "armor", "rarity": RARITY_LEGENDARY,
-     "atk": 5, "def": 25, "hp": 70, "cost": 35000},
-]
-
-FORGE_ACCESSORIES = [
-    {"id": "bone_charm", "name": "Bone Charm", "slot": "accessory", "rarity": RARITY_COMMON,
-     "atk": 2, "def": 2, "hp": 5, "cost": 450},
-    {"id": "iron_ring", "name": "Iron Ring", "slot": "accessory", "rarity": RARITY_UNCOMMON,
-     "atk": 4, "def": 4, "hp": 10, "cost": 1600},
-    {"id": "blood_pendant", "name": "Blood Pendant", "slot": "accessory", "rarity": RARITY_RARE,
-     "atk": 7, "def": 3, "hp": 20, "cost": 4000},
-    {"id": "void_amulet", "name": "Void Amulet", "slot": "accessory", "rarity": RARITY_EPIC,
-     "atk": 10, "def": 7, "hp": 30, "cost": 10000},
-    {"id": "crown_of_ash", "name": "Crown of Ash", "slot": "accessory", "rarity": RARITY_LEGENDARY,
-     "atk": 15, "def": 10, "hp": 50, "cost": 25000},
-]
-
-ALL_FORGE_ITEMS = FORGE_WEAPONS + FORGE_ARMOR + FORGE_ACCESSORIES
-
-# --- Metal Shards (expedition currency for weapon upgrades) ---
-
-SHARD_TIERS = {
-    "dark_tunnels":   {"tier": 1, "name": "Metal Shard (I)"},
-    "bandit_outpost": {"tier": 2, "name": "Metal Shard (II)"},
-    "cursed_ruins":   {"tier": 3, "name": "Metal Shard (III)"},
-    "dragon_wastes":  {"tier": 4, "name": "Metal Shard (IV)"},
-    "void_rift":      {"tier": 5, "name": "Metal Shard (V)"},
-}
-
 RARITY_MAX_UPGRADE = {
     RARITY_COMMON: MAX_UPGRADE_COMMON,
     RARITY_UNCOMMON: MAX_UPGRADE_UNCOMMON,
@@ -266,6 +101,63 @@ RARITY_MAX_UPGRADE = {
     RARITY_EPIC: MAX_UPGRADE_EPIC,
     RARITY_LEGENDARY: MAX_UPGRADE_LEGENDARY,
 }
+
+EQUIPMENT_SLOTS = ["weapon", "armor", "accessory", "relic"]
+
+# ============================================================
+#  ALL GAME DATA — loaded from data/*.json at import time.
+#  No hardcoded items, classes, enemies, or expeditions.
+#  engine._wire_data() may re-assign these after full init.
+# ============================================================
+
+FIGHTER_NAMES = []
+FIGHTER_CLASSES = {}
+FORGE_WEAPONS = []
+FORGE_ARMOR = []
+FORGE_ACCESSORIES = []
+ALL_FORGE_ITEMS = []
+ENCHANTMENT_TYPES = {}
+EXPEDITIONS = []
+RELICS = {}
+SHARD_TIERS = {}
+
+BOSS_PREFIXES = [
+    "Infernal", "Abyssal", "Dread", "Void", "Doom", "Shadow", "Blood",
+    "Iron", "Storm", "Flame", "Frost", "Death", "Dark", "Grim", "War",
+    "Soul", "Bone", "Night", "Chaos", "Wrath", "Blight", "Hell", "Thunder",
+]
+BOSS_SUFFIXES = [
+    "Destroyer", "Annihilator", "Overlord", "Tyrant", "Conqueror",
+    "Decimator", "Executioner", "Warlord", "Champion", "Colossus",
+    "Devourer", "Slayer", "Ravager", "Dominator", "Eradicator",
+    "Vanquisher", "Titan", "Sovereign", "Emperor", "Nemesis",
+]
+ENEMY_TITLES = [
+    "Pit Rat", "Chained Brute", "Sand Crawler", "Iron Fang",
+    "Bone Breaker", "Blood Warden", "Doom Herald", "Warlord",
+    "Shadow Titan", "The Undying",
+]
+
+
+# Data is loaded via GameEngine._wire_data() at startup — no import-time init.
+
+
+def get_boss_name(tier):
+    """Return a unique boss name for the given arena tier.
+
+    Priority: JSON bosses_by_tier → procedural prefix+suffix.
+    """
+    from game.data_loader import data_loader
+    bosses = data_loader.bosses_by_tier.get(tier)
+    if bosses:
+        return bosses[0].get("name", f"Boss Tier {tier}")
+    idx = (tier - 1) % (len(BOSS_PREFIXES) * len(BOSS_SUFFIXES))
+    prefix = BOSS_PREFIXES[idx % len(BOSS_PREFIXES)]
+    suffix = BOSS_SUFFIXES[idx // len(BOSS_PREFIXES) % len(BOSS_SUFFIXES)]
+    rank = (tier - 1) // (len(BOSS_PREFIXES) * len(BOSS_SUFFIXES)) + 1
+    if rank > 1:
+        return f"{prefix} {suffix} Mk.{rank}"
+    return f"{prefix} {suffix}"
 
 
 def get_max_upgrade(item):
@@ -285,178 +177,12 @@ def item_display_name(item_dict):
     return item_dict.get("name", "?")
 
 
-
 def calc_item_stats(item, fighter=None):
-    """Calculate total (atk, def, hp) for any item, optionally with fighter scaling.
-
-    Works for inventory items, shop items, and equipped items alike.
-    If fighter is provided, upgrade bonuses scale with fighter stats.
-    If not, only base + flat upgrade bonuses are shown.
-    """
-    atk = item.get("atk", 0)
-    dfn = item.get("def", 0)
-    hp = item.get("hp", 0)
-    slot = item.get("slot", "")
-    lvl = item.get("upgrade_level", 0)
-    if lvl > 0 and fighter:
-        pct = lvl * UPGRADE_BONUS_PER_LEVEL / 100
-        if slot == "weapon":
-            atk += int((fighter.strength + fighter.agility) * pct)
-        elif slot == "armor":
-            dfn += int((fighter.strength + fighter.vitality) * pct)
-        elif slot == "accessory":
-            hp += int((fighter.agility + fighter.vitality) * pct) * ACCESSORY_HP_MULT
-        elif slot == "relic":
-            all_s = fighter.strength + fighter.agility + fighter.vitality
-            b = int(all_s * pct / RELIC_STAT_SPLIT)
-            atk += b
-            dfn += b
-            hp += b * ACCESSORY_HP_MULT
-    return atk, dfn, hp
-
-
-# --- Enchantments (Elden Ring-style buildup) ---
-
-ENCHANTMENT_TYPES = {
-    "bleeding": {
-        "name": "Bleeding",
-        "buildup_per_hit": 20,
-        "threshold": 100,
-        "effect": "burst",
-        "burst_pct": 0.15,
-        "cost_gold": 50000,
-        "cost_shard_tier": 5,
-        "cost_shard_count": 100,
-    },
-    "frostbite": {
-        "name": "Frostbite",
-        "buildup_per_hit": 15,
-        "threshold": 100,
-        "effect": "burst_debuff",
-        "burst_pct": 0.10,
-        "atk_reduction_pct": 0.20,
-        "debuff_turns": 3,
-        "cost_gold": 80000,
-        "cost_shard_tier": 5,
-        "cost_shard_count": 100,
-    },
-    "poison": {
-        "name": "Poison",
-        "buildup_per_hit": 25,
-        "threshold": 80,
-        "effect": "dot",
-        "dot_pct": 0.05,
-        "dot_turns": 4,
-        "cost_gold": 60000,
-        "cost_shard_tier": 5,
-        "cost_shard_count": 100,
-    },
-}
-
-# --- Expeditions ---
-
-EXPEDITIONS = [
-    {
-        "id": "dark_tunnels",
-        "name": "Dark Tunnels",
-        "desc": "Scout the tunnels beneath the arena",
-        "duration": 60,
-        "min_level": 11,
-        "danger": 0.43,
-        "gold_range": (20, 60),
-        "relic_chance": 0.15,
-        "relic_pool": [RARITY_COMMON, RARITY_UNCOMMON],
-    },
-    {
-        "id": "bandit_outpost",
-        "name": "Bandit Outpost",
-        "desc": "Raid a bandit camp in the hills",
-        "duration": 180,
-        "min_level": 13,
-        "danger": 0.50,
-        "gold_range": (50, 150),
-        "relic_chance": 0.25,
-        "relic_pool": [RARITY_UNCOMMON, RARITY_RARE],
-    },
-    {
-        "id": "cursed_ruins",
-        "name": "Cursed Ruins",
-        "desc": "Ancient temple with deadly traps",
-        "duration": 300,
-        "min_level": 15,
-        "danger": 0.57,
-        "gold_range": (100, 300),
-        "relic_chance": 0.35,
-        "relic_pool": [RARITY_RARE, RARITY_EPIC],
-    },
-    {
-        "id": "dragon_wastes",
-        "name": "Dragon Wastes",
-        "desc": "Scorched lands where few return",
-        "duration": 600,
-        "min_level": 18,
-        "danger": 0.65,
-        "gold_range": (200, 600),
-        "relic_chance": 0.45,
-        "relic_pool": [RARITY_EPIC, RARITY_LEGENDARY],
-    },
-    {
-        "id": "void_rift",
-        "name": "Void Rift",
-        "desc": "A tear in reality. Maximum risk.",
-        "duration": 900,
-        "min_level": 22,
-        "danger": 0.75,
-        "gold_range": (400, 1000),
-        "relic_chance": 0.55,
-        "relic_pool": [RARITY_LEGENDARY],
-    },
-]
-
-# --- Relics ---
-
-RELICS = {
-    RARITY_COMMON: [
-        {"id": "cracked_idol", "name": "Cracked Idol", "slot": "relic",
-         "rarity": RARITY_COMMON, "atk": 2, "def": 1, "hp": 5, "cost": 30},
-        {"id": "dusty_talisman", "name": "Dusty Talisman", "slot": "relic",
-         "rarity": RARITY_COMMON, "atk": 1, "def": 2, "hp": 8, "cost": 35},
-        {"id": "worn_signet", "name": "Worn Signet", "slot": "relic",
-         "rarity": RARITY_COMMON, "atk": 3, "def": 0, "hp": 3, "cost": 25},
-    ],
-    RARITY_UNCOMMON: [
-        {"id": "serpent_fang", "name": "Serpent Fang", "slot": "relic",
-         "rarity": RARITY_UNCOMMON, "atk": 5, "def": 2, "hp": 10, "cost": 80},
-        {"id": "stone_of_vigor", "name": "Stone of Vigor", "slot": "relic",
-         "rarity": RARITY_UNCOMMON, "atk": 2, "def": 5, "hp": 15, "cost": 90},
-        {"id": "wolf_pelt_cloak", "name": "Wolf Pelt Cloak", "slot": "relic",
-         "rarity": RARITY_UNCOMMON, "atk": 3, "def": 4, "hp": 12, "cost": 85},
-    ],
-    RARITY_RARE: [
-        {"id": "eye_of_the_storm", "name": "Eye of the Storm", "slot": "relic",
-         "rarity": RARITY_RARE, "atk": 10, "def": 5, "hp": 20, "cost": 250},
-        {"id": "frozen_heart", "name": "Frozen Heart", "slot": "relic",
-         "rarity": RARITY_RARE, "atk": 5, "def": 10, "hp": 25, "cost": 300},
-        {"id": "war_banner", "name": "War Banner", "slot": "relic",
-         "rarity": RARITY_RARE, "atk": 8, "def": 8, "hp": 15, "cost": 270},
-    ],
-    RARITY_EPIC: [
-        {"id": "soul_lantern", "name": "Soul Lantern", "slot": "relic",
-         "rarity": RARITY_EPIC, "atk": 15, "def": 10, "hp": 35, "cost": 700},
-        {"id": "titans_finger", "name": "Titan's Finger", "slot": "relic",
-         "rarity": RARITY_EPIC, "atk": 10, "def": 15, "hp": 40, "cost": 750},
-        {"id": "eclipse_shard", "name": "Eclipse Shard", "slot": "relic",
-         "rarity": RARITY_EPIC, "atk": 18, "def": 8, "hp": 30, "cost": 680},
-    ],
-    RARITY_LEGENDARY: [
-        {"id": "heart_of_colossus", "name": "Heart of the Colossus", "slot": "relic",
-         "rarity": RARITY_LEGENDARY, "atk": 25, "def": 20, "hp": 60, "cost": 2000},
-        {"id": "abyssal_crown", "name": "Abyssal Crown", "slot": "relic",
-         "rarity": RARITY_LEGENDARY, "atk": 30, "def": 15, "hp": 50, "cost": 1800},
-        {"id": "ember_of_creation", "name": "Ember of Creation", "slot": "relic",
-         "rarity": RARITY_LEGENDARY, "atk": 20, "def": 25, "hp": 70, "cost": 2200},
-    ],
-}
+    """Calculate total (str, agi, vit) for any item."""
+    s = item.get("str", 0)
+    a = item.get("agi", 0)
+    v = item.get("vit", 0)
+    return s, a, v
 
 
 # ============================================================
@@ -584,7 +310,7 @@ class Fighter(CombatUnit):
     damage, making agility builds viable even against stronger enemies.
     """
 
-    def __init__(self, name=None, level=1, fighter_class="mercenary", prestige_bonus=1.0):
+    def __init__(self, name=None, level=1, fighter_class="mercenary"):
         cls_data = FIGHTER_CLASSES.get(fighter_class, FIGHTER_CLASSES["mercenary"])
         self.name = name or random.choice(FIGHTER_NAMES)
         self.fighter_class = fighter_class
@@ -602,18 +328,16 @@ class Fighter(CombatUnit):
         self.hp_mult = cls_data["hp_mult"]
         self.points_per_level = cls_data["points_per_level"]
 
-        # Prestige bonus multiplier (set by engine from PrestigeManager)
-        self.prestige_bonus = prestige_bonus
-
         # Legacy compat
         self.base_attack = 0
         self.base_defense = 0
         self.base_hp = 0
 
         self.alive = True
-        self.injuries = 0
-        self.injuries_healed = 0
+        self.injuries = []  # list of {"id": "split_lip"} dicts
         self.kills = 0
+        self.perk_points = 0
+        self.unlocked_perks = []  # list of perk IDs
         self.equipment = {"weapon": None, "armor": None, "accessory": None, "relic": None}
         self.on_expedition = False
         self.expedition_id = None
@@ -628,116 +352,150 @@ class Fighter(CombatUnit):
     # --- Stat-derived properties ---
 
     def _relic_bonus(self, stat):
-        """Relic upgrade bonus: (STR+AGI+VIT) * (lvl*UPGRADE%) / SPLIT for atk/def, xHP_MULT for hp."""
+        """Relic upgrade bonus for str/agi/vit: equal split."""
         item = self.equipment.get("relic")
+        if not item:
+            return 0
+        return item.get(stat, 0)
+
+    def item_total_stats(self, slot):
+        """Return total (str, agi, vit) an equipped item gives."""
+        item = self.equipment.get(slot)
+        if not item:
+            return 0, 0, 0
+        return item.get("str", 0), item.get("agi", 0), item.get("vit", 0)
+
+    def _equip_stat(self, stat, fighter_base):
+        """Sum base equipment stats only (no upgrade bonuses).
+
+        All upgrade bonuses are now applied directly to final stats:
+        weapon → ATK, armor → DEF, accessory → HP, relic → all three.
+        See weapon_upgrade_atk, armor_upgrade_def, accessory_upgrade_hp, relic_upgrade_*.
+        """
+        total = 0
+        for slot in EQUIPMENT_SLOTS:
+            item = self.equipment.get(slot)
+            if item:
+                total += item.get(stat, 0)
+        return total
+
+    @property
+    def equip_str(self):
+        return self._equip_stat("str", self.strength)
+
+    @property
+    def equip_agi(self):
+        return self._equip_stat("agi", self.agility)
+
+    @property
+    def equip_vit(self):
+        return self._equip_stat("vit", self.vitality)
+
+    @property
+    def total_strength(self):
+        return self.strength + self.equip_str
+
+    @property
+    def total_agility(self):
+        return self.agility + self.equip_agi
+
+    @property
+    def total_vitality(self):
+        return self.vitality + self.equip_vit
+
+    def _upgrade_bonus(self, slot_name, pool, mult=1):
+        """Generic upgrade bonus: level * 20% * pool * mult."""
+        item = self.equipment.get(slot_name)
         if not item:
             return 0
         lvl = item.get("upgrade_level", 0)
         if lvl <= 0:
             return 0
-        all_stats = self.strength + self.agility + self.vitality
-        pct = lvl * UPGRADE_BONUS_PER_LEVEL / 100
-        base = int(all_stats * pct / RELIC_STAT_SPLIT)
-        if stat == "hp":
-            return base * ACCESSORY_HP_MULT
-        return base
-
-    def item_total_stats(self, slot):
-        """Return total (atk, def, hp) an equipped item gives including upgrades."""
-        item = self.equipment.get(slot)
-        if not item:
-            return 0, 0, 0
-        atk = item.get("atk", 0)
-        dfn = item.get("def", 0)
-        hp = item.get("hp", 0)
-        lvl = item.get("upgrade_level", 0)
-        if lvl > 0:
-            pct = lvl * UPGRADE_BONUS_PER_LEVEL / 100
-            if slot == "weapon":
-                atk += int((self.strength + self.agility) * pct)
-            elif slot == "armor":
-                dfn += int((self.strength + self.vitality) * pct)
-            elif slot == "accessory":
-                hp += int((self.agility + self.vitality) * pct) * ACCESSORY_HP_MULT
-            elif slot == "relic":
-                all_stats = self.strength + self.agility + self.vitality
-                bonus = int(all_stats * pct / RELIC_STAT_SPLIT)
-                atk += bonus
-                dfn += bonus
-                hp += bonus * ACCESSORY_HP_MULT
-        return atk, dfn, hp
+        return int(pool * lvl * UPGRADE_BONUS_PER_LEVEL / 100 * mult)
 
     @property
-    def equip_atk(self):
-        total = 0
-        for slot in EQUIPMENT_SLOTS:
-            item = self.equipment.get(slot)
-            if item:
-                total += item.get("atk", 0)
-                if slot == "weapon":
-                    lvl = item.get("upgrade_level", 0)
-                    if lvl > 0:
-                        total += int((self.strength + self.agility) * (lvl * UPGRADE_BONUS_PER_LEVEL) / 100)
-        total += self._relic_bonus("atk")
-        return total
+    def weapon_upgrade_atk(self):
+        """Weapon upgrade: +N*20% of (STR+AGI) → ATK."""
+        return self._upgrade_bonus("weapon", self.total_strength + self.total_agility)
 
     @property
-    def equip_def(self):
-        total = 0
-        for slot in EQUIPMENT_SLOTS:
-            item = self.equipment.get(slot)
-            if item:
-                total += item.get("def", 0)
-                if slot == "armor":
-                    lvl = item.get("upgrade_level", 0)
-                    if lvl > 0:
-                        total += int((self.strength + self.vitality) * (lvl * UPGRADE_BONUS_PER_LEVEL) / 100)
-        total += self._relic_bonus("def")
-        return total
+    def armor_upgrade_def(self):
+        """Armor upgrade: +N*20% of (AGI+VIT) → DEF."""
+        return self._upgrade_bonus("armor", self.total_agility + self.total_vitality)
 
     @property
-    def equip_hp(self):
-        total = 0
-        for slot in EQUIPMENT_SLOTS:
-            item = self.equipment.get(slot)
-            if item:
-                total += item.get("hp", 0)
-                if slot == "accessory":
-                    lvl = item.get("upgrade_level", 0)
-                    if lvl > 0:
-                        total += int((self.agility + self.vitality) * (lvl * UPGRADE_BONUS_PER_LEVEL) / 100) * ACCESSORY_HP_MULT
-        total += self._relic_bonus("hp")
-        return total
+    def accessory_upgrade_hp(self):
+        """Accessory upgrade: +N*20% of (VIT+STR)*5 → HP."""
+        return self._upgrade_bonus("accessory", self.total_vitality + self.total_strength, mult=5)
+
+    @property
+    def relic_upgrade_atk(self):
+        """Relic upgrade ATK: +N*20% of (STR+AGI) / 3."""
+        return self._upgrade_bonus("relic", self.total_strength + self.total_agility) // 3
+
+    @property
+    def relic_upgrade_def(self):
+        """Relic upgrade DEF: +N*20% of (AGI+VIT) / 3."""
+        return self._upgrade_bonus("relic", self.total_agility + self.total_vitality) // 3
+
+    @property
+    def relic_upgrade_hp(self):
+        """Relic upgrade HP: +N*20% of (VIT+STR)*5 / 3."""
+        return self._upgrade_bonus("relic", self.total_vitality + self.total_strength, mult=5) // 3
 
     @property
     def attack(self):
-        raw = (self.strength * FIGHTER_ATK_PER_STR + self.base_attack
-               + (self.level - 1) * FIGHTER_ATK_PER_LEVEL + self.equip_atk)
-        return int(raw * self.prestige_bonus)
+        base = (self.total_strength * FIGHTER_ATK_PER_STR + self.base_attack
+                + (self.level - 1) * FIGHTER_ATK_PER_LEVEL
+                + self.weapon_upgrade_atk + self.relic_upgrade_atk)
+        result = int(base * (1 + self.get_perk_effects("damage_bonus")))
+        penalty = self._injury_stat_penalty("attack", "strength")
+        return max(1, int(result * (1 - penalty)))
 
     @property
     def defense(self):
-        raw = self.vitality + self.base_defense + self.equip_def
-        return int(raw * self.prestige_bonus)
+        base = self.total_vitality + self.base_defense + self.armor_upgrade_def + self.relic_upgrade_def
+        penalty = self._injury_stat_penalty("defense")
+        return max(0, int(base * (1 - penalty)))
 
     @property
     def max_hp(self):
-        base = (FIGHTER_BASE_HP + self.vitality * FIGHTER_HP_PER_VIT
-                + self.base_hp + (self.level - 1) * FIGHTER_HP_PER_LEVEL)
-        return int(int(base * self.hp_mult) * self.prestige_bonus) + self.equip_hp
+        base = (FIGHTER_BASE_HP + self.total_vitality * FIGHTER_HP_PER_VIT
+                + self.base_hp + (self.level - 1) * FIGHTER_HP_PER_LEVEL
+                + self.accessory_upgrade_hp + self.relic_upgrade_hp)
+        result = int(base * self.hp_mult * (1 + self.get_perk_effects("hp_bonus_pct")))
+        penalty = self._injury_stat_penalty("max_hp", "vitality")
+        return max(1, int(result * (1 - penalty)))
+
+    @property
+    def effective_agility(self):
+        """Total AGI including perk bonuses (crit/dodge perks add AGI)."""
+        perk_bonus = (self.get_perk_effects("crit_chance_bonus")
+                      + self.get_perk_effects("dodge_chance_bonus"))
+        # Convert % bonuses to AGI points (e.g. 0.05 = +5 AGI)
+        return self.total_agility + int(perk_bonus * 100)
 
     @property
     def crit_chance(self):
-        return self.agility / (self.agility + CRIT_K) + self.crit_bonus
+        agi = self.effective_agility
+        raw = agi / (agi + CRIT_K) + self.crit_bonus
+        penalty = self._injury_stat_penalty("crit_chance")
+        return max(0.0, raw * (1 - penalty))
 
     @property
     def crit_mult(self):
-        return CRIT_MULT_BASE + self.agility * CRIT_MULT_PER_AGI
+        return CRIT_MULT_BASE + self.effective_agility * CRIT_MULT_PER_AGI + self.get_perk_effects("crit_damage_bonus")
 
     @property
     def dodge_chance(self):
-        raw = self.agility * DODGE_AGI_FACTOR + self.dodge_bonus
-        return 1.0 - 1.0 / (1.0 + raw * DODGE_DIMINISH_FACTOR)
+        raw = self.effective_agility * DODGE_AGI_FACTOR + self.dodge_bonus
+        base = 1.0 - 1.0 / (1.0 + raw * DODGE_DIMINISH_FACTOR)
+        penalty = self._injury_stat_penalty("dodge_chance", "agility")
+        return max(0.0, base * (1 - penalty))
+
+    @property
+    def damage_reduction(self):
+        return self.get_perk_effects("damage_reduction")
 
     @property
     def upgrade_cost(self):
@@ -749,12 +507,89 @@ class Fighter(CombatUnit):
 
     @property
     def death_chance(self):
-        return min(DEATH_CHANCE_CAP,
-                   DEATH_CHANCE_BASE + self.injuries * DEATH_CHANCE_PER_INJURY)
+        from game.constants import SEVERITY_DEATH_CHANCE
+        total = DEATH_CHANCE_BASE
+        for inj in self.injuries:
+            data = self._get_injury_data(inj["id"])
+            severity = data.get("severity", "minor")
+            total += SEVERITY_DEATH_CHANCE.get(severity, 0.06)
+        return min(DEATH_CHANCE_CAP, total)
 
     @property
     def class_name(self):
         return FIGHTER_CLASSES.get(self.fighter_class, {}).get("name", "Unknown")
+
+    # --- Injuries ---
+
+    @property
+    def injury_count(self):
+        return len(self.injuries)
+
+    def _get_injury_data(self, injury_id):
+        from game.data_loader import data_loader
+        return data_loader.injuries_by_id.get(injury_id, {})
+
+    def _injury_stat_penalty(self, *stat_names):
+        """Return total percent penalty (0.0–0.95) from all injuries for given stat(s)."""
+        total = 0.0
+        for inj in self.injuries:
+            data = self._get_injury_data(inj["id"])
+            for pen in data.get("stat_penalties", []):
+                if pen["stat"] in stat_names:
+                    total += pen["value"]
+        return min(total, 0.95)
+
+    # --- Perks ---
+
+    def get_perk_effects(self, effect_type):
+        """Sum all unlocked perk effect values of given type, including passive."""
+        total = 0.0
+        cls_data = FIGHTER_CLASSES.get(self.fighter_class, {})
+        # Passive ability (always active)
+        passive = cls_data.get("passive_ability")
+        if passive:
+            eff = passive.get("effect", {})
+            if eff.get("type") == effect_type:
+                total += eff.get("value", 0)
+        # Unlocked perks
+        all_perks = self._get_all_perks_map()
+        for pid in self.unlocked_perks:
+            perk = all_perks.get(pid)
+            if perk:
+                eff = perk.get("effect", {})
+                if eff.get("type") == effect_type:
+                    total += eff.get("value", 0)
+        return total
+
+    def get_perk_effect_data(self, effect_type):
+        """Get full effect dict for a perk effect type (for max_stacks etc)."""
+        all_perks = self._get_all_perks_map()
+        for pid in self.unlocked_perks:
+            perk = all_perks.get(pid)
+            if perk:
+                eff = perk.get("effect", {})
+                if eff.get("type") == effect_type:
+                    return eff
+        return None
+
+    @staticmethod
+    def _get_all_perks_map():
+        """Build {perk_id: perk_dict} from all classes."""
+        result = {}
+        for cls_data in FIGHTER_CLASSES.values():
+            for perk in cls_data.get("perk_tree", []):
+                result[perk["id"]] = perk
+        return result
+
+    @property
+    def perk_tree_maxed(self):
+        """True if all perks of own class are unlocked."""
+        cls_data = FIGHTER_CLASSES.get(self.fighter_class, {})
+        tree = cls_data.get("perk_tree", [])
+        if not tree:
+            return False
+        own_ids = {p["id"] for p in tree}
+        return own_ids.issubset(set(self.unlocked_perks))
 
     # --- Actions ---
 
@@ -776,23 +611,50 @@ class Fighter(CombatUnit):
         return True
 
     def level_up(self):
-        """Level up: gain stat points based on class."""
+        """Level up: gain stat points based on class, perk point every 5 levels."""
         self.level += 1
         self.unused_points += self.points_per_level
+        if self.level % PERK_POINT_EVERY_N_LEVELS == 0:
+            self.perk_points += 1
         self.hp = self.max_hp
 
     def heal(self):
         self.hp = self.max_hp
 
     def check_permadeath(self):
+        """Check permadeath. Returns (died: bool, injury_id: str|None)."""
         if random.random() < self.death_chance:
             self.alive = False
-            return True
-        self.injuries += 1
-        return False
+            return True, None
+        from game.data_loader import data_loader
+        existing_ids = {inj["id"] for inj in self.injuries}
+        injury_id = data_loader.pick_random_injury(existing_ids)
+        self.injuries.append({"id": injury_id})
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+        return False, injury_id
 
-    def get_injury_heal_cost(self):
-        return INJURY_HEAL_BASE_COST * (1 + self.injuries_healed) * max(1, self.level)
+    def get_injury_heal_cost(self, injury_idx=0):
+        """Cost to heal a specific injury. Returns -1 for permanent (unhealable)."""
+        if not self.injuries:
+            return 0
+        idx = min(injury_idx, len(self.injuries) - 1)
+        inj = self.injuries[idx]
+        data = self._get_injury_data(inj["id"])
+        mult = data.get("heal_cost_multiplier", 1.0)
+        if mult == 0:
+            return -1
+        base = INJURY_HEAL_BASE_COST * max(1, self.level)
+        return int(base * mult)
+
+    def cheapest_healable_injury_idx(self):
+        """Return index of cheapest non-permanent injury, or -1 if none."""
+        best_idx, best_cost = -1, float('inf')
+        for i in range(len(self.injuries)):
+            cost = self.get_injury_heal_cost(i)
+            if 0 < cost < best_cost:
+                best_idx, best_cost = i, cost
+        return best_idx
 
     def equip_item(self, item):
         """Equip item, returns the old item (or None) for inventory.
@@ -837,9 +699,10 @@ class Fighter(CombatUnit):
             "base_hp": self.base_hp,
             "hp": self.hp,
             "alive": self.alive,
-            "injuries": self.injuries,
-            "injuries_healed": self.injuries_healed,
+            "injuries": [inj.copy() for inj in self.injuries],
             "kills": self.kills,
+            "perk_points": self.perk_points,
+            "unlocked_perks": self.unlocked_perks,
             "equipment": self.equipment,
             "on_expedition": self.on_expedition,
             "expedition_id": self.expedition_id,
@@ -861,15 +724,28 @@ class Fighter(CombatUnit):
         g.dodge_bonus = data.get("dodge_bonus", cls_data["dodge_bonus"])
         g.hp_mult = data.get("hp_mult", cls_data["hp_mult"])
         g.points_per_level = data.get("points_per_level", cls_data["points_per_level"])
-        g.prestige_bonus = 1.0  # Engine sets actual value after load
         g.base_attack = data.get("base_attack", 0)
         g.base_defense = data.get("base_defense", 0)
         g.base_hp = data.get("base_hp", 0)
         g.hp = data.get("hp", 50)
         g.alive = data.get("alive", True)
-        g.injuries = data.get("injuries", 0)
-        g.injuries_healed = data.get("injuries_healed", 0)
+        raw_injuries = data.get("injuries", [])
+        if isinstance(raw_injuries, int):
+            # Migrate old save: convert int count to list of random injuries
+            from game.data_loader import data_loader
+            g.injuries = []
+            used_ids = set()
+            for _ in range(raw_injuries):
+                injury_id = data_loader.pick_random_injury(used_ids)
+                g.injuries.append({"id": injury_id})
+                used_ids.add(injury_id)
+        elif isinstance(raw_injuries, list):
+            g.injuries = raw_injuries
+        else:
+            g.injuries = []
         g.kills = data.get("kills", 0)
+        g.perk_points = data.get("perk_points", 0)
+        g.unlocked_perks = data.get("unlocked_perks", [])
         equip = data.get("equipment", {"weapon": None, "armor": None, "accessory": None})
         if "relic" not in equip:
             equip["relic"] = None
@@ -930,10 +806,9 @@ class Enemy(CombatUnit):
     def crit_mult(self):
         return ENEMY_CRIT_MULT
 
-    @classmethod
-    def create_boss(cls, arena_tier):
-        boss_tier = arena_tier + BOSS_TIER_OFFSET
-        boss = cls(tier=boss_tier)
+    @staticmethod
+    def _apply_boss_multipliers(boss):
+        """Apply boss stat multipliers to an enemy instance."""
         boss.max_hp = int(boss.max_hp * BOSS_HP_MULT)
         boss.hp = boss.max_hp
         boss.attack = int(boss.attack * BOSS_ATK_MULT)
@@ -941,10 +816,49 @@ class Enemy(CombatUnit):
         boss.gold_reward = int(boss.gold_reward * BOSS_GOLD_MULT)
         boss.crit_chance = min(BOSS_CRIT_MIN, boss.crit_chance + BOSS_CRIT_BONUS)
         boss.dodge_chance = 0
-        boss.name = f"BOSS: {get_boss_name(arena_tier)}"
         boss.is_boss = True
+
+    @classmethod
+    def create_boss(cls, arena_tier):
+        boss_tier = arena_tier + BOSS_TIER_OFFSET
+        boss = cls(tier=boss_tier)
+        cls._apply_boss_multipliers(boss)
+        boss.name = f"BOSS: {get_boss_name(arena_tier)}"
+        return boss
+
+    @classmethod
+    def from_template(cls, template, tier):
+        """Create enemy from JSON template with role/bias stat modifiers."""
+        enemy = cls.__new__(cls)
+        enemy.tier = tier
+        enemy.name = template.get("name", ENEMY_TITLES[min(tier - 1, len(ENEMY_TITLES) - 1)])
+        enemy.is_boss = False
+
+        base_atk, base_def, base_hp = DifficultyScaler.enemy_stats(tier)
+        role = template.get("role", "soldier")
+        bias = template.get("stat_bias", "balanced")
+        rm = ROLE_MULT.get(role, 1.0)
+        rsm = ROLE_STAT_MULT.get(role, {})
+        bm = STAT_BIAS_MULT.get(bias, {})
+
+        enemy.attack = int(base_atk * rm * rsm.get("str", 1.0) * bm.get("str", 1.0))
+        enemy.defense = int(base_def * rm * rsm.get("agi", 1.0) * bm.get("agi", 1.0))
+        enemy.max_hp = int(base_hp * rm * rsm.get("vit", 1.0) * bm.get("vit", 1.0))
+        enemy.hp = enemy.max_hp
+        enemy.gold_reward = DifficultyScaler.enemy_reward(tier)
+
+        enemy.crit_chance = min(ENEMY_CRIT_CAP, ENEMY_CRIT_BASE + tier * ENEMY_CRIT_PER_TIER)
+        enemy.dodge_chance = min(ENEMY_DODGE_CAP, tier * ENEMY_DODGE_PER_TIER)
+        return enemy
+
+    @classmethod
+    def create_boss_from_template(cls, template, arena_tier):
+        """Create boss from JSON template with boss multipliers."""
+        boss_tier = arena_tier + BOSS_TIER_OFFSET
+        boss = cls.from_template(template, boss_tier)
+        cls._apply_boss_multipliers(boss)
+        boss.name = f"BOSS: {template.get('name', get_boss_name(arena_tier))}"
         return boss
 
 
 
-SHOP_ITEMS = []

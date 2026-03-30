@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """
 Google Drive cloud save — works on Android via Google Sign-In + REST API.
 
@@ -6,6 +6,9 @@ All Java (pyjnius) calls happen on the main thread.
 Only HTTP requests (Drive API) run in background threads.
 """
 
+import logging
+
+_log = logging.getLogger(__name__)
 import json
 import time
 import ssl
@@ -83,7 +86,7 @@ class CloudSaveManager:
             # Check last signed-in account (main thread)
             self._check_existing_account()
         except Exception as exc:
-            print(f"[CloudSave] Google Play Services not available: {exc}")
+            _log.info("[CloudSave] Google Play Services not available: %s", exc)
             self.last_sync_status = "Not available"
 
     def _build_gso(self):
@@ -115,7 +118,7 @@ class CloudSaveManager:
             else:
                 self.last_sync_status = "Sign-in required"
         except Exception as exc:
-            print(f"[CloudSave] Account check failed: {exc}")
+            _log.info("[CloudSave] Account check failed: %s", exc)
             self.last_sync_status = "Sign-in required"
 
     def _fetch_token(self, account):
@@ -128,12 +131,12 @@ class CloudSaveManager:
             self._token = token
             self._initialized = True
             email = account.getEmail() or ""
-            print(f"[CloudSave] Got auth token for {email}")
+            _log.info("[CloudSave] Got auth token for %s", email)
             Clock.schedule_once(lambda dt: self._set_status("Connected"), 0)
             if self.on_auto_connected:
                 Clock.schedule_once(lambda dt: self.on_auto_connected(), 0.5)
         except Exception as exc:
-            print(f"[CloudSave] Token error: {exc}")
+            _log.info("[CloudSave] Token error: %s", exc)
             Clock.schedule_once(
                 lambda dt: self._set_status("Token error"), 0
             )
@@ -158,34 +161,38 @@ class CloudSaveManager:
             sign_in_intent = client.getSignInIntent()
             activity.startActivityForResult(sign_in_intent, 9001)
 
-            # Poll for result in background
-            def _poll_result():
-                import time as _time
-                for _ in range(30):
-                    _time.sleep(1)
-                    try:
-                        acc = GoogleSignIn.getLastSignedInAccount(activity)
-                        if acc is not None:
-                            self.user_email = acc.getEmail() or ""
-                            self._fetch_token(acc)
-                            self._signing_in = False
-                            if on_success:
-                                Clock.schedule_once(lambda dt: on_success(), 0)
-                            return
-                    except Exception:
-                        pass
+            # Poll on main thread via Clock — avoids background thread + sleep
+            _attempts = [0]
 
-                self._signing_in = False
-                Clock.schedule_once(lambda dt: self._set_status("Sign-in timeout"), 0)
-                if on_failure:
-                    Clock.schedule_once(lambda dt: on_failure("Timeout"), 0)
+            def _check_sign_in(dt):
+                _attempts[0] += 1
+                if _attempts[0] > 30:
+                    Clock.unschedule(_check_sign_in)
+                    self._signing_in = False
+                    self._set_status("Sign-in timeout")
+                    if on_failure:
+                        on_failure("Timeout")
+                    return
+                try:
+                    acc = GoogleSignIn.getLastSignedInAccount(activity)
+                    if acc is not None:
+                        Clock.unschedule(_check_sign_in)
+                        self.user_email = acc.getEmail() or ""
+                        self._signing_in = False
+                        threading.Thread(
+                            target=self._fetch_token, args=(acc,), daemon=True
+                        ).start()
+                        if on_success:
+                            on_success()
+                except Exception as _e:
+                    _log.warning("Sign-in poll error: %s", _e)
 
-            threading.Thread(target=_poll_result, daemon=True).start()
+            Clock.schedule_interval(_check_sign_in, 1.0)
 
         except Exception as exc:
             self._signing_in = False
             err_msg = str(exc)
-            print(f"[CloudSave] Sign-in error: {err_msg}")
+            _log.info("[CloudSave] Sign-in error: %s", err_msg)
             self.last_sync_status = f"Failed: {err_msg}"
             if on_failure:
                 on_failure(err_msg)
@@ -218,7 +225,7 @@ class CloudSaveManager:
                 self._file_id = files[0]["id"]
                 return self._file_id
         except Exception as exc:
-            print(f"[CloudSave] Find file error: {exc}")
+            _log.info("[CloudSave] Find file error: %s", exc)
         return None
 
     def upload_save(self, save_data, on_done=None):
@@ -281,7 +288,7 @@ class CloudSaveManager:
 
             except Exception as exc:
                 err = str(exc)
-                print(f"[CloudSave] Upload error: {exc}")
+                _log.info("[CloudSave] Upload error: %s", exc)
                 Clock.schedule_once(
                     lambda dt: self._set_status("Upload failed"), 0
                 )
@@ -323,7 +330,7 @@ class CloudSaveManager:
 
             except Exception as exc:
                 err = str(exc)
-                print(f"[CloudSave] Download error: {exc}")
+                _log.info("[CloudSave] Download error: %s", exc)
                 Clock.schedule_once(
                     lambda dt: self._set_status("Download failed"), 0
                 )
@@ -348,7 +355,7 @@ class CloudSaveManager:
             client = GoogleSignIn.getClient(activity, self._gso)
             client.signOut()
         except Exception as exc:
-            print(f"[CloudSave] Sign-out error: {exc}")
+            _log.info("[CloudSave] Sign-out error: %s", exc)
         self._token = None
         self._initialized = False
         self._file_id = None

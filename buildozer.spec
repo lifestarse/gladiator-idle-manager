@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,wav
 source.exclude_dirs = fonts,bin,.buildozer,.git
 source.exclude_patterns = generate_icons.py
-version = 1.2.0
+version = 1.8.0
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype
 orientation = portrait
 fullscreen = 1
@@ -17,7 +17,7 @@ presplash.filename = %(source.dir)s/presplash.png
 android.presplash_color = #0D0D12
 
 # Android
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,com.android.vending.BILLING
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,com.android.vending.BILLING,com.google.android.gms.permission.AD_ID
 android.api = 35
 android.minapi = 21
 android.archs = arm64-v8a
@@ -45,8 +45,8 @@ android.release_artifact = aab
 # keytool -genkey -v -keystore gladiator-release.keystore -alias gladiator -keyalg RSA -keysize 2048 -validity 10000
 android.keystore = gladiator-release.keystore
 android.keyalias = gladiator
-android.keystore_password = gladiator123
-android.keyalias_password = gladiator123
+android.keystore_password = ;lfgajlk;g;jlkgajl;[iweweijrt283r234-0517045980
+android.keyalias_password = ;lfgajlk;g;jlkgajl;[iweweijrt283r234-0517045980
 
 [buildozer]
 log_level = 2

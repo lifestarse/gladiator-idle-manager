@@ -1,0 +1,404 @@
+{
+  "achievements": [
+    {
+      "id": "first_blood",
+      "name": "First Blood",
+      "desc": "Win your first battle",
+      "category": "combat",
+      "diamonds": 50,
+      "condition": {"type": "wins_gte", "value": 1}
+    },
+    {
+      "id": "warrior_10",
+      "name": "Seasoned Warrior",
+      "desc": "Win 10 battles",
+      "category": "combat",
+      "diamonds": 75,
+      "condition": {"type": "wins_gte", "value": 10}
+    },
+    {
+      "id": "warrior_50",
+      "name": "Arena Veteran",
+      "desc": "Win 50 battles",
+      "category": "combat",
+      "diamonds": 100,
+      "condition": {"type": "wins_gte", "value": 50}
+    },
+    {
+      "id": "warrior_200",
+      "name": "Living Legend",
+      "desc": "Win 200 battles",
+      "category": "combat",
+      "diamonds": 150,
+      "condition": {"type": "wins_gte", "value": 200}
+    },
+    {
+      "id": "warrior_500",
+      "name": "Bloodborn",
+      "desc": "Win 500 battles",
+      "category": "combat",
+      "diamonds": 175,
+      "condition": {"type": "wins_gte", "value": 500}
+    },
+    {
+      "id": "warrior_1000",
+      "name": "Eternal Champion",
+      "desc": "Win 1,000 battles",
+      "category": "combat",
+      "diamonds": 200,
+      "condition": {"type": "wins_gte", "value": 1000}
+    },
+    {
+      "id": "boss_slayer",
+      "name": "Boss Slayer",
+      "desc": "Defeat your first boss",
+      "category": "combat",
+      "diamonds": 100,
+      "condition": {"type": "bosses_killed_gte", "value": 1}
+    },
+    {
+      "id": "boss_10",
+      "name": "Titan Breaker",
+      "desc": "Defeat 10 bosses",
+      "category": "combat",
+      "diamonds": 150,
+      "condition": {"type": "bosses_killed_gte", "value": 10}
+    },
+    {
+      "id": "boss_25",
+      "name": "Colossus Feller",
+      "desc": "Defeat 25 bosses",
+      "category": "combat",
+      "diamonds": 175,
+      "condition": {"type": "bosses_killed_gte", "value": 25}
+    },
+    {
+      "id": "boss_50",
+      "name": "God Butcher",
+      "desc": "Defeat 50 bosses",
+      "category": "combat",
+      "diamonds": 200,
+      "condition": {"type": "bosses_killed_gte", "value": 50}
+    },
+    {
+      "id": "tier_5",
+      "name": "Rising Star",
+      "desc": "Reach arena tier 5",
+      "category": "progression",
+      "diamonds": 75,
+      "condition": {"type": "tier_gte", "value": 5}
+    },
+    {
+      "id": "tier_10",
+      "name": "Pit Champion",
+      "desc": "Reach arena tier 10",
+      "category": "progression",
+      "diamonds": 100,
+      "condition": {"type": "tier_gte", "value": 10}
+    },
+    {
+      "id": "tier_15",
+      "name": "Iron Gate",
+      "desc": "Reach arena tier 15",
+      "category": "progression",
+      "diamonds": 125,
+      "condition": {"type": "tier_gte", "value": 15}
+    },
+    {
+      "id": "tier_20",
+      "name": "Warlord",
+      "desc": "Reach arena tier 20",
+      "category": "progression",
+      "diamonds": 150,
+      "condition": {"type": "tier_gte", "value": 20}
+    },
+    {
+      "id": "runs_5",
+      "name": "Cycle of Blood",
+      "desc": "Complete 5 runs",
+      "category": "progression",
+      "diamonds": 100,
+      "condition": {"type": "runs_completed_gte", "value": 5}
+    },
+    {
+      "id": "runs_20",
+      "name": "Endless Slaughter",
+      "desc": "Complete 20 runs",
+      "category": "progression",
+      "diamonds": 175,
+      "condition": {"type": "runs_completed_gte", "value": 20}
+    },
+    {
+      "id": "recruit_3",
+      "name": "Squad Leader",
+      "desc": "Have 3 fighters alive",
+      "category": "roster",
+      "diamonds": 50,
+      "condition": {"type": "fighters_alive_gte", "value": 3}
+    },
+    {
+      "id": "recruit_6",
+      "name": "War Band",
+      "desc": "Have 6 fighters alive",
+      "category": "roster",
+      "diamonds": 75,
+      "condition": {"type": "fighters_alive_gte", "value": 6}
+    },
+    {
+      "id": "recruit_10",
+      "name": "Legion Commander",
+      "desc": "Have 10 fighters alive",
+      "category": "roster",
+      "diamonds": 100,
+      "condition": {"type": "fighters_alive_gte", "value": 10}
+    },
+    {
+      "id": "level_10",
+      "name": "Master Trainer",
+      "desc": "Train a fighter to Lv.10",
+      "category": "roster",
+      "diamonds": 100,
+      "condition": {"type": "fighter_level_gte", "value": 10}
+    },
+    {
+      "id": "level_20",
+      "name": "Grand Master",
+      "desc": "Train a fighter to Lv.20",
+      "category": "roster",
+      "diamonds": 150,
+      "condition": {"type": "fighter_level_gte", "value": 20}
+    },
+    {
+      "id": "all_classes",
+      "name": "Complete Ludus",
+      "desc": "Have all 6 classes in your roster",
+      "category": "roster",
+      "diamonds": 150,
+      "condition": {"type": "unique_classes_gte", "value": 6}
+    },
+    {
+      "id": "class_berserker",
+      "name": "Unleash the Beast",
+      "desc": "Recruit a Berserker",
+      "category": "class",
+      "diamonds": 50,
+      "condition": {"type": "has_class", "value": "berserker"}
+    },
+    {
+      "id": "class_retiarius",
+      "name": "Net and Trident",
+      "desc": "Recruit a Retiarius",
+      "category": "class",
+      "diamonds": 50,
+      "condition": {"type": "has_class", "value": "retiarius"}
+    },
+    {
+      "id": "class_medicus",
+      "name": "Field Surgeon",
+      "desc": "Recruit a Medicus",
+      "category": "class",
+      "diamonds": 50,
+      "condition": {"type": "has_class", "value": "medicus"}
+    },
+    {
+      "id": "perks_5",
+      "name": "Battle-Hardened",
+      "desc": "Unlock 5 perks on a single fighter",
+      "category": "roster",
+      "diamonds": 100,
+      "condition": {"type": "fighter_perks_gte", "value": 5}
+    },
+    {
+      "id": "perk_tree_max",
+      "name": "Apex Predator",
+      "desc": "Max out a fighter's perk tree",
+      "category": "roster",
+      "diamonds": 175,
+      "condition": {"type": "fighter_perk_tree_maxed", "value": true}
+    },
+    {
+      "id": "gold_1k",
+      "name": "Coin Collector",
+      "desc": "Earn 1,000 total gold",
+      "category": "economy",
+      "diamonds": 50,
+      "condition": {"type": "total_gold_gte", "value": 1000}
+    },
+    {
+      "id": "gold_10k",
+      "name": "Wealthy",
+      "desc": "Earn 10,000 total gold",
+      "category": "economy",
+      "diamonds": 75,
+      "condition": {"type": "total_gold_gte", "value": 10000}
+    },
+    {
+      "id": "gold_100k",
+      "name": "Tycoon",
+      "desc": "Earn 100,000 total gold",
+      "category": "economy",
+      "diamonds": 100,
+      "condition": {"type": "total_gold_gte", "value": 100000}
+    },
+    {
+      "id": "gold_1m",
+      "name": "Blood Fortune",
+      "desc": "Earn 1,000,000 total gold",
+      "category": "economy",
+      "diamonds": 175,
+      "condition": {"type": "total_gold_gte", "value": 1000000}
+    },
+    {
+      "id": "spend_500k_equip",
+      "name": "Patron of the Forge",
+      "desc": "Spend 500,000 gold on equipment",
+      "category": "economy",
+      "diamonds": 150,
+      "condition": {"type": "gold_spent_equipment_gte", "value": 500000}
+    },
+    {
+      "id": "first_death",
+      "name": "Blood Price",
+      "desc": "Lose a fighter to permadeath",
+      "category": "death",
+      "diamonds": 50,
+      "condition": {"type": "total_deaths_gte", "value": 1}
+    },
+    {
+      "id": "graveyard_5",
+      "name": "Grave Digger",
+      "desc": "Lose 5 fighters to permadeath",
+      "category": "death",
+      "diamonds": 75,
+      "condition": {"type": "total_deaths_gte", "value": 5}
+    },
+    {
+      "id": "survivor",
+      "name": "Scarred Survivor",
+      "desc": "Have a fighter survive with 5+ injuries",
+      "category": "death",
+      "diamonds": 100,
+      "condition": {"type": "fighter_injuries_gte", "value": 5}
+    },
+    {
+      "id": "permanent_injury",
+      "name": "Broken but Breathing",
+      "desc": "Survive a battle with a permanent injury",
+      "category": "death",
+      "diamonds": 75,
+      "condition": {"type": "has_permanent_injury", "value": true}
+    },
+    {
+      "id": "heal_20",
+      "name": "Flesh Mender",
+      "desc": "Heal 20 injuries total",
+      "category": "death",
+      "diamonds": 100,
+      "condition": {"type": "injuries_healed_gte", "value": 20}
+    },
+    {
+      "id": "first_equip",
+      "name": "Armed & Ready",
+      "desc": "Equip any item from the Anvil",
+      "category": "equipment",
+      "diamonds": 50,
+      "condition": {"type": "has_equipped_item", "value": true}
+    },
+    {
+      "id": "legendary_equip",
+      "name": "Legendary Wielder",
+      "desc": "Equip a legendary item",
+      "category": "equipment",
+      "diamonds": 100,
+      "condition": {"type": "has_equipped_rarity", "value": "legendary"}
+    },
+    {
+      "id": "relic_hunter",
+      "name": "Relic Hunter",
+      "desc": "Collect 5 relics",
+      "category": "equipment",
+      "diamonds": 75,
+      "condition": {"type": "relics_collected_gte", "value": 5}
+    },
+    {
+      "id": "relic_hoarder",
+      "name": "Relic Hoarder",
+      "desc": "Collect 20 relics",
+      "category": "equipment",
+      "diamonds": 100,
+      "condition": {"type": "relics_collected_gte", "value": 20}
+    },
+    {
+      "id": "first_enchant",
+      "name": "Runebound",
+      "desc": "Apply your first enchantment",
+      "category": "enchantment",
+      "diamonds": 75,
+      "condition": {"type": "enchantments_applied_gte", "value": 1}
+    },
+    {
+      "id": "enchant_proc_50",
+      "name": "Arcane Fury",
+      "desc": "Trigger 50 enchantment effects in combat",
+      "category": "enchantment",
+      "diamonds": 150,
+      "condition": {"type": "enchantment_procs_gte", "value": 50}
+    },
+    {
+      "id": "explorer",
+      "name": "Explorer",
+      "desc": "Complete 10 expeditions",
+      "category": "expedition",
+      "diamonds": 75,
+      "condition": {"type": "expeditions_completed_gte", "value": 10}
+    },
+    {
+      "id": "void_walker",
+      "name": "Void Walker",
+      "desc": "Return alive from the Void Rift",
+      "category": "expedition",
+      "diamonds": 150,
+      "condition": {"type": "expedition_completed_specific", "value": "void_rift"}
+    },
+    {
+      "id": "lore_10",
+      "name": "Keeper of Whispers",
+      "desc": "Discover 10 lore entries",
+      "category": "lore",
+      "diamonds": 75,
+      "condition": {"type": "lore_entries_gte", "value": 10}
+    },
+    {
+      "id": "lore_all",
+      "name": "Chronicle of Shadows",
+      "desc": "Discover all 30 lore entries",
+      "category": "lore",
+      "diamonds": 200,
+      "condition": {"type": "lore_entries_gte", "value": 30}
+    },
+    {
+      "id": "ch1_complete",
+      "name": "Chapter I",
+      "desc": "Complete the first story chapter",
+      "category": "story",
+      "diamonds": 100,
+      "condition": {"type": "story_chapter_gte", "value": 2}
+    },
+    {
+      "id": "ch3_complete",
+      "name": "Chapter III",
+      "desc": "Complete story chapter 3",
+      "category": "story",
+      "diamonds": 100,
+      "condition": {"type": "story_chapter_gte", "value": 4}
+    },
+    {
+      "id": "story_complete",
+      "name": "The End...?",
+      "desc": "Complete the main story",
+      "category": "story",
+      "diamonds": 150,
+      "condition": {"type": "story_chapter_gte", "value": 6}
+    }
+  ]
+}

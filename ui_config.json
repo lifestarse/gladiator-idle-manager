@@ -1,0 +1,22 @@
+{
+  "sizes": {
+    "nav_height": 80,
+    "topbar_height": 50,
+    "btn_action_height": 72,
+    "btn_default_height": 48,
+    "card_roster_height": 90,
+    "card_forge_height": 100,
+    "card_expedition_height": 160,
+    "icon_nav": 24,
+    "icon_topbar": 24,
+    "font_title": 22,
+    "font_body": 18,
+    "font_small": 15,
+    "font_btn": 16,
+    "font_stat": 20,
+    "spacing": 6,
+    "padding": 10,
+    "hp_bar_height": 60,
+    "hp_bar_enemy": 56
+  }
+}

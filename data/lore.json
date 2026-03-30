@@ -1,0 +1,214 @@
+{
+  "entries": [
+    {
+      "id": "founding_of_the_pit",
+      "title": "The Founding of the Pit",
+      "category": "arena_history",
+      "text": "In the year of the Black Sun, Emperor Varro Decimus drove his legions into the volcanic basin known as the Maw and declared it holy ground -- holy not to any god, but to death itself. Slaves carved the first arena walls from obsidian rock still warm with the earth's fury. The blood of three thousand prisoners consecrated the sand on opening day. Varro watched from a throne of fused iron and bone, and proclaimed that the Pit would stand until the last empire crumbled to dust.",
+      "unlock_condition": {"type": "tier_gte", "value": 1}
+    },
+    {
+      "id": "the_blood_economy",
+      "title": "The Blood Economy",
+      "category": "arena_history",
+      "text": "Gold is minted in banks, but power is minted in the arena. Every death upon the sand generates a tithe -- a portion of the fallen's life-force siphoned into the Sanguine Vaults beneath the colosseum floor. The Senate discovered long ago that blood spilled in spectacle carries a different weight than blood spilled in war. It feeds the city, fuels its furnaces, and keeps the ancient wards from failing. Without the arena, the empire would starve in ways no granary could prevent.",
+      "unlock_condition": {"type": "tier_gte", "value": 1}
+    },
+    {
+      "id": "the_emperors_decree",
+      "title": "The Emperor's Eternal Decree",
+      "category": "arena_history",
+      "text": "Carved into the Gatestone in letters filled with molten silver, the Decree of Perpetual Contest forbids the arena from ever closing its gates. No war, no plague, no act of gods may halt the games. Three emperors have tried to defy the Decree. The first was found flayed in his bedchamber. The second vanished between heartbeats during a feast. The third still sits upon the Ashen Throne, alive but hollow-eyed, his mouth sewn shut with iron thread. The games continue.",
+      "unlock_condition": {"type": "tier_gte", "value": 2}
+    },
+    {
+      "id": "the_sand_remembers",
+      "title": "The Sand Remembers",
+      "category": "arena_history",
+      "text": "The sand of the arena floor is never replaced. It has absorbed centuries of blood, sweat, and dying breath until it has become something other than sand. On moonless nights, the grains shift on their own, forming patterns that the pit-keepers dare not read. Gladiators who press their ears to the ground before a match claim they can hear the whispered advice of every fighter who died before them. Whether this is madness or truth, those who listen tend to survive longer.",
+      "unlock_condition": {"type": "wins_gte", "value": 10}
+    },
+    {
+      "id": "the_night_of_unchaining",
+      "title": "The Night of Unchaining",
+      "category": "arena_history",
+      "text": "Once every decade, the iron gates beneath the arena are thrown open and every creature held in the undercrofts is released simultaneously onto the sand. Beasts, condemned men, war-constructs, and things pulled from the deep earth all tear into one another while the city watches from behind warded walls. The carnage lasts until dawn. Whatever survives is granted a name, a brand, and a place in the regular games. The Night of Unchaining has produced some of the arena's most terrifying champions.",
+      "unlock_condition": {"type": "wins_gte", "value": 50}
+    },
+    {
+      "id": "the_first_lanista",
+      "title": "The First Lanista",
+      "category": "arena_history",
+      "text": "Before there were managers, there was Korrath the Blind -- a former gladiator who lost his eyes to a spiked flail but gained something far more valuable. He could smell fear, taste the iron edge of a fighter's will, and hear the exact moment a man's courage broke. Korrath built the first ludus outside the arena walls and trained fighters not just in combat but in the theater of death. Every lanista since walks in his shadow, and his skull still hangs above the gate of the Grand Ludus.",
+      "unlock_condition": {"type": "tier_gte", "value": 3}
+    },
+    {
+      "id": "the_pact_of_red_iron",
+      "title": "The Pact of Red Iron",
+      "category": "arena_history",
+      "text": "When the arena nearly fell to ruin during the Famine of Crows, the five ruling factions forged the Pact of Red Iron -- a blood-sealed contract ensuring that no single faction could monopolize the games. Each faction must contribute fighters, fund maintenance of the Pit, and accept the ruling of the Arena Council. Breaking the Pact carries a penalty worse than death: the offending faction's members are fed to the sand itself, absorbed into the whispering grains forever.",
+      "unlock_condition": {"type": "tier_gte", "value": 5}
+    },
+    {
+      "id": "the_sanguine_vaults",
+      "title": "The Sanguine Vaults",
+      "category": "arena_history",
+      "text": "Beneath the arena floor lies a labyrinth older than the empire itself. The Sanguine Vaults were not built -- they were discovered, already carved into the bedrock, their walls lined with channels that hunger for blood. The Senate sealed the deepest levels after an expedition of forty soldiers descended and only their screams returned. Whatever sleeps in the lowest vault drinks deeply every time the crowd roars above. Some say the arena was not built atop the Vaults by chance.",
+      "unlock_condition": {"type": "bosses_killed_gte", "value": 5}
+    },
+    {
+      "id": "the_ash_gate",
+      "title": "The Ash Gate",
+      "category": "arena_history",
+      "text": "Every arena has two gates: the Gate of Life, through which victors walk, and the Gate of Death, through which the slain are dragged. But this arena has a third -- the Ash Gate, sealed with chains of blackened steel and opened only when the sand demands a sacrifice of unusual magnitude. No gladiator who has entered the Ash Gate has ever been seen again, yet the crowd speaks their names with a reverence reserved for saints. What waits beyond the Ash Gate is the arena's oldest secret.",
+      "unlock_condition": {"type": "bosses_killed_gte", "value": 15}
+    },
+    {
+      "id": "the_final_ovation",
+      "title": "The Final Ovation",
+      "category": "arena_history",
+      "text": "Legend holds that when a gladiator achieves one thousand victories, the arena itself bows. The sand stills, the torches gutter, and from the Sanguine Vaults below rises a sound like ten thousand voices chanting the victor's name. This is the Final Ovation -- a recognition not from the crowd, but from every soul the arena has consumed. Only two fighters in all of history have heard it. Both walked through the Ash Gate willingly the next day, smiling as the chains closed behind them.",
+      "unlock_condition": {"type": "wins_gte", "value": 200}
+    },
+    {
+      "id": "the_iron_senate",
+      "title": "The Iron Senate",
+      "category": "faction",
+      "text": "The Iron Senate rules from a chamber whose walls are forged from the melted weapons of defeated champions. They are politicians, merchants, and war profiteers who treat gladiators as investments and deaths as market fluctuations. Their fighters are well-equipped but expendable -- mass-produced soldiers given enough training to die entertainingly. The Senate's true power lies not in the arena but in the ledgers, where they track every drop of blood and its corresponding coin.",
+      "unlock_condition": {"type": "tier_gte", "value": 1}
+    },
+    {
+      "id": "the_cult_of_ash",
+      "title": "The Cult of Ash",
+      "category": "faction",
+      "text": "The Cult of Ash worships the arena itself as a living god -- a deity of violence that must be fed or it will feed on the world. Their gladiators fight with religious fervor, painting their bodies in the grey ash scraped from funeral pyres. They do not fear death; they court it as a sacrament. Cult fighters are unpredictable and savage, often turning what should be a clean kill into a prolonged ritual of suffering. The crowd loves them. The other factions keep their distance.",
+      "unlock_condition": {"type": "tier_gte", "value": 2}
+    },
+    {
+      "id": "the_northern_tribes",
+      "title": "The Northern Tribes",
+      "category": "faction",
+      "text": "From beyond the Shattered Peaks come the warriors of the Northern Tribes -- enormous, frost-scarred fighters who view the arena as a pale imitation of the real wars they wage against the ice-drakes and bone-giants of their homeland. They fight for ransom, sending their winnings back to clans that would otherwise starve. Their style is brutal and direct, favoring heavy axes and iron shields. They despise the spectacle but respect the sand, for blood is blood regardless of why it is spilled.",
+      "unlock_condition": {"type": "tier_gte", "value": 3}
+    },
+    {
+      "id": "the_veiled_court",
+      "title": "The Veiled Court",
+      "category": "faction",
+      "text": "No one has ever seen a member of the Veiled Court unmasked. They operate from silk-draped palanquins and speak through intermediaries whose tongues have been split to mark their servitude. The Court's gladiators are assassins repurposed for public combat -- fluid, silent, and lethal. They specialize in poison-coated blades and misdirection, turning the arena into a stage for elegant murder. Rumor holds that the Court answers to no emperor, only to something that dwells in the spaces between shadows.",
+      "unlock_condition": {"type": "tier_gte", "value": 4}
+    },
+    {
+      "id": "the_chain_lords",
+      "title": "The Chain Lords",
+      "category": "faction",
+      "text": "The Chain Lords are slavers who rose to power by cornering the market on condemned prisoners and debt-bound laborers. Their ludus is less a training ground and more a breaking yard where human beings are stripped of identity and rebuilt as killing instruments. Chain Lord fighters wear iron collars even in the arena -- a reminder that victory earns survival, not freedom. Despite their cruelty, the Chain Lords produce some of the most desperate and therefore dangerous fighters in the games.",
+      "unlock_condition": {"type": "wins_gte", "value": 25}
+    },
+    {
+      "id": "the_ember_wardens",
+      "title": "The Ember Wardens",
+      "category": "faction",
+      "text": "The Ember Wardens are the remnants of an ancient order of fire-priests who once guarded the volcanic vents beneath the arena. When their temple was destroyed, they turned to the games to survive, channeling their knowledge of flame and forge into crafting weapons of terrifying ingenuity. Their gladiators wield blades that glow with residual heat and armor treated in magma-forges. The Wardens believe the volcano beneath the Pit is merely sleeping, and that one day it will wake hungry.",
+      "unlock_condition": {"type": "tier_gte", "value": 6}
+    },
+    {
+      "id": "the_hollow_legion",
+      "title": "The Hollow Legion",
+      "category": "faction",
+      "text": "The Hollow Legion recruits exclusively from soldiers who survived battles they should not have. Men pulled from mass graves still breathing, warriors found wandering burned fields with no memory of how they lived. Something in them is already dead -- the part that flinches, the part that hesitates. They fight with mechanical precision and feel no pain, though they bleed as freely as anyone. The Legion's barracks are silent at all hours. No one has ever heard a Hollow legionnaire laugh.",
+      "unlock_condition": {"type": "bosses_killed_gte", "value": 3}
+    },
+    {
+      "id": "the_scarlet_merchants",
+      "title": "The Scarlet Merchants",
+      "category": "faction",
+      "text": "Where the Iron Senate deals in gold, the Scarlet Merchants deal in flesh and favor. They are the brokers of the arena's underworld, arranging fixed matches, smuggling contraband potions to fighters, and selling the organs of the fallen to alchemists. Their gladiators are often drugged into berserker states, fighting with a chemically-induced fury that burns out their bodies within a few seasons. The Merchants consider this acceptable. There are always more desperate souls willing to sign the red contract.",
+      "unlock_condition": {"type": "wins_gte", "value": 100}
+    },
+    {
+      "id": "vorrax_the_undying",
+      "title": "Vorrax the Undying",
+      "category": "champion_legend",
+      "text": "Vorrax earned his name not through immortality but through sheer refusal to die. Gutted by a war-boar in his ninth match, he held his entrails in with one hand and fought for twenty more minutes until the beast collapsed from blood loss. He survived forty-seven mortal wounds across his career, each one stitched shut with iron wire that he never removed. By his final years, more of him was scar tissue and metal than flesh. He vanished one night from his cell, leaving only a bloodstain in the shape of a door.",
+      "unlock_condition": {"type": "tier_gte", "value": 2}
+    },
+    {
+      "id": "silara_of_the_twin_blades",
+      "title": "Silara of the Twin Blades",
+      "category": "champion_legend",
+      "text": "Silara was sold to the arena at age twelve and made her first kill at thirteen. By twenty, she had amassed over two hundred victories wielding matched short swords she called Whisper and Scream. She moved like smoke through a burning building -- fluid, inevitable, and inescapable. The Senate offered her freedom three times. She refused, claiming the arena was the only honest place in the empire. She died at thirty-one, not in combat but by her own hand, on the anniversary of her first kill.",
+      "unlock_condition": {"type": "wins_gte", "value": 25}
+    },
+    {
+      "id": "gorath_the_mountain",
+      "title": "Gorath the Mountain",
+      "category": "champion_legend",
+      "text": "Standing nearly eight feet tall and wide as a grain cart, Gorath was a Northern Tribes champion who fought with a stone pillar torn from a ruined temple. He never wore armor, claiming his skin was thick enough, and the scars that covered him suggested he was not entirely wrong. Gorath once killed a war-elephant in single combat by driving his pillar through its skull. The crowd fell so silent that witnesses said you could hear the blood dripping from his weapon onto the sand.",
+      "unlock_condition": {"type": "tier_gte", "value": 4}
+    },
+    {
+      "id": "the_nameless_king",
+      "title": "The Nameless King",
+      "category": "champion_legend",
+      "text": "No record exists of his real name, his origin, or how he came to the arena. The Nameless King appeared one day in the lowest tier of the games and fought his way to the championship in a single season, killing thirty-eight opponents without taking a wound. He wore a crown of black thorns and fought with a rusted blade that should have shattered on first contact but never did. After claiming the champion's laurel, he walked into the Ash Gate without a word. The thorned crown was found on the sand the next morning, still warm.",
+      "unlock_condition": {"type": "bosses_killed_gte", "value": 10}
+    },
+    {
+      "id": "maevis_the_red_surgeon",
+      "title": "Maevis the Red Surgeon",
+      "category": "champion_legend",
+      "text": "Maevis was a battlefield physician before debt dragged her into the arena. She brought her anatomical knowledge to combat, striking with surgical precision at joints, arteries, and nerve clusters. Her opponents often did not realize they were dying until they tried to lift their weapons and found their arms no longer obeyed. She killed cleanly and without malice, which somehow made the spectacle more disturbing. The Cult of Ash declared her a heretic for denying the arena its suffering.",
+      "unlock_condition": {"type": "tier_gte", "value": 7}
+    },
+    {
+      "id": "draven_ashborn",
+      "title": "Draven Ashborn",
+      "category": "champion_legend",
+      "text": "Draven was the only gladiator to survive the Night of Unchaining three times. Each time he emerged more scarred and less human, his eyes taking on the dull glow of the volcanic vents beneath the arena. After his third Unchaining, he could no longer speak but communicated through violence with a eloquence that needed no words. The Ember Wardens claimed him as a chosen vessel of the sleeping volcano. He killed one hundred and twelve opponents in his final season before walking calmly into a lava vent and never resurfacing.",
+      "unlock_condition": {"type": "wins_gte", "value": 100}
+    },
+    {
+      "id": "the_twins_of_ruin",
+      "title": "The Twins of Ruin",
+      "category": "champion_legend",
+      "text": "Kael and Mordis were brothers sold separately to rival factions who did not discover their bond until the two were matched against each other. Rather than fight, they turned on the arena guards, slaughtering fourteen before being subdued. The Senate, recognizing the spectacle potential, allowed them to fight as a pair. For six years, the Twins of Ruin were undefeated, moving in perfect synchrony as if sharing one mind. They died together in the same instant, each taking a spear meant for the other.",
+      "unlock_condition": {"type": "bosses_killed_gte", "value": 8}
+    },
+    {
+      "id": "the_shattered_continent",
+      "title": "The Shattered Continent",
+      "category": "world",
+      "text": "The known world is a broken thing. The Sundering -- an ancient cataclysm whose cause is debated by scholars and feared by priests -- split the great continent into jagged fragments separated by boiling seas and ash-choked straits. The arena sits at the heart of the largest fragment, a land called the Crucible, where volcanic soil makes the earth fertile but treacherous. Earthquakes are common. New fissures open without warning, swallowing villages and occasionally belching forth things that should have remained buried.",
+      "unlock_condition": {"type": "tier_gte", "value": 1}
+    },
+    {
+      "id": "the_old_magic",
+      "title": "The Old Magic",
+      "category": "world",
+      "text": "Magic in this world is not a gift -- it is a wound. The Sundering tore holes in the fabric of reality, and through those holes seeps a force the scholars call the Bleed. It warps flesh, corrodes metal, and drives men mad if they channel too much. Hedge-witches and war-shamans use it sparingly, paying for every spell with years of their life or pieces of their sanity. The arena's wards are maintained by a cadre of mute sorcerers who are replaced every three years, when their minds finally collapse.",
+      "unlock_condition": {"type": "tier_gte", "value": 5}
+    },
+    {
+      "id": "the_dead_gods",
+      "title": "The Dead Gods",
+      "category": "world",
+      "text": "The people of the Crucible do not worship living gods because there are none left. The Sundering killed them -- or so the priests claim. Their corpses litter the deep places of the world: a petrified hand the size of a mountain in the northern wastes, a skull buried beneath the capital whose eye sockets serve as cisterns. The arena was built near one such relic -- a divine heart, still faintly beating, buried deep beneath the Sanguine Vaults. Some believe the games are not entertainment but a feeding ritual for something that refuses to stay dead.",
+      "unlock_condition": {"type": "tier_gte", "value": 8}
+    },
+    {
+      "id": "the_ashen_faith",
+      "title": "The Ashen Faith",
+      "category": "world",
+      "text": "In the absence of living gods, the common folk turned to the worship of endings. The Ashen Faith teaches that all things move toward destruction, and that destruction itself is sacred. Its priests wear robes dyed in soot and perform rites over the bodies of fallen gladiators, whispering the names of every person the dead fighter ever loved so that those bonds may be severed cleanly. The faith is not comforting. It offers no afterlife, no redemption -- only the promise that suffering, like all things, eventually ends.",
+      "unlock_condition": {"type": "wins_gte", "value": 50}
+    },
+    {
+      "id": "the_iron_frontier",
+      "title": "The Iron Frontier",
+      "category": "world",
+      "text": "Beyond the Crucible's borders lies the Iron Frontier -- a vast expanse of scorched earth and twisted metal where the Sundering's devastation was most severe. The land itself is hostile, producing iron-rich soil that grows black vegetation and breeds creatures armored in natural metallic plating. Expeditions into the Frontier rarely return, but those that do bring back materials of extraordinary value: living steel, blood-iron ore, and occasionally captives -- feral humans who have adapted to the wasteland in disturbing ways and make fearsome arena combatants.",
+      "unlock_condition": {"type": "tier_gte", "value": 10}
+    }
+  ]
+}
