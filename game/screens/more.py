@@ -1,6 +1,7 @@
-# Build: 3
+# Build: 7
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.properties import StringProperty, BooleanProperty
@@ -76,11 +77,17 @@ class MoreScreen(BaseScreen):
             row.border_color = ACCENT_CYAN
             bonus = bundle.get("bonus", "")
             label_text = f"{bundle['diamonds']} {bonus}" if bonus else f"{bundle['diamonds']}"
-            row.add_widget(row._make_label(label_text, sp(16), True, ACCENT_CYAN, "left", 0.5))
+            # Left side: quantity + gem icon (number-then-icon, matching top-bar pattern)
+            left_box = BoxLayout(orientation="horizontal", size_hint_x=0.5, spacing=dp(4))
+            left_box.add_widget(row._make_label(label_text, sp(11), True, ACCENT_CYAN, "left", 1))
+            left_box.add_widget(Image(
+                source="sprites/icons/ic_gem.png", fit_mode="contain",
+                size_hint=(None, 1), width=dp(18),
+            ))
+            row.add_widget(left_box)
             buy_btn = MinimalButton(
-                text=bundle["price_usd"], font_size=15, size_hint_x=0.5,
+                text=t("buy_btn"), font_size=11, size_hint_x=0.5,
                 btn_color=ACCENT_CYAN, text_color=BG_DARK,
-                icon_source="icons/ic_gem.png",
             )
             def _buy(inst, bid=bundle["id"]):
                 self.buy_diamonds(bid)
@@ -201,6 +208,7 @@ class MoreScreen(BaseScreen):
                 engine.load(data=result)
                 engine.save()
                 self.cloud_status = t("cloud_loaded")
+                self._restart_app()
             else:
                 self.cloud_status = t("cloud_failed", reason=result)
         cloud_save_manager.download_save(on_done)
@@ -208,7 +216,7 @@ class MoreScreen(BaseScreen):
     def _confirm_action(self, message, on_confirm):
         content = BoxLayout(orientation="vertical", spacing=dp(12), padding=dp(16))
         msg_lbl = AutoShrinkLabel(
-            text=message, font_size="16sp", color=TEXT_SECONDARY,
+            text=message, font_size="11sp", color=TEXT_SECONDARY,
             halign="center", valign="middle",
             size_hint_y=1,
         )
@@ -225,12 +233,12 @@ class MoreScreen(BaseScreen):
             auto_dismiss=True,
         )
         cancel_btn = MinimalButton(
-            text=t("cancel"), btn_color=TEXT_SECONDARY, font_size=sp(15),
+            text=t("cancel"), btn_color=TEXT_SECONDARY, font_size=sp(11),
         )
         cancel_btn.bind(on_press=lambda *a: popup.dismiss())
         confirm_btn = MinimalButton(
             text=t("confirm"), btn_color=ACCENT_GREEN, text_color=BG_DARK,
-            font_size=sp(15),
+            font_size=sp(11),
         )
         def _on_confirm(*a):
             popup.dismiss()
@@ -268,7 +276,7 @@ class MoreScreen(BaseScreen):
 
     def _leaderboard_error(self, err):
         """Show a brief error toast when Play Games leaderboard fails."""
-        content = AutoShrinkLabel(text=f"Play Games: {err}", font_size="18sp",
+        content = AutoShrinkLabel(text=f"Play Games: {err}", font_size="11sp",
                        color=TEXT_SECONDARY)
         bind_text_wrap(content)
         popup = Popup(
@@ -294,12 +302,12 @@ class MoreScreen(BaseScreen):
         sections = t("help_sections")
         for title, body in sections:
             content.add_widget(AutoShrinkLabel(
-                text=title, font_size="16sp", bold=True,
+                text=title, font_size="11sp", bold=True,
                 color=ACCENT_GOLD, halign="left",
                 size_hint_y=None, height=dp(28),
             ))
             lbl = AutoShrinkLabel(
-                text=body, font_size="15sp",
+                text=body, font_size="11sp",
                 color=TEXT_SECONDARY, halign="left", valign="top",
                 markup=True, size_hint_y=None,
             )
@@ -311,7 +319,7 @@ class MoreScreen(BaseScreen):
         popup = Popup(
             title=t("help_title"),
             title_color=popup_color(ACCENT_GOLD),
-            title_size=sp(17),
+            title_size=sp(12),
             content=scroll,
             size_hint=(0.95, 0.85),
             background_color=popup_color(BG_CARD),
@@ -338,7 +346,7 @@ class MoreScreen(BaseScreen):
                 text=f"{'> ' if is_current else ''}{name}",
                 size_hint_y=None, height=dp(44),
                 btn_color=ACCENT_GOLD if is_current else ACCENT_BLUE,
-                font_size=sp(17),
+                font_size=sp(9),
             )
             btn.bind(on_press=lambda inst, c=code, p=popup: self._set_language(c, p))
             content.add_widget(btn)
@@ -347,6 +355,12 @@ class MoreScreen(BaseScreen):
     def _set_language(self, lang_code, popup):
         popup.dismiss()
         set_language(lang_code)
+        from game.data_loader import data_loader
+        from game.engine import GameEngine
+        data_loader._loaded = False
+        data_loader.load_all()
+        data_loader.apply_translations(lang_code)
+        GameEngine._wire_data()
         App.get_running_app().engine.save()
         App.get_running_app()._init_locale_strings()
         self.refresh_more()

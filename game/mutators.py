@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Mutator registry — loads mutator definitions and computes reward multipliers."""
 
 import logging
@@ -50,11 +50,18 @@ class MutatorRegistry:
         For multiplicative effects, returns the product of all matching values.
         For boolean effects, returns True if any mutator has it.
         """
+        result = default
         for mid in active_ids:
             m = self.get(mid)
             if m and effect_key in m.get("effect", {}):
-                return m["effect"][effect_key]
-        return default
+                val = m["effect"][effect_key]
+                if isinstance(val, bool):
+                    return True
+                if result is default:
+                    result = val
+                else:
+                    result *= val
+        return result
 
 
 mutator_registry = MutatorRegistry()

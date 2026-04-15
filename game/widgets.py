@@ -1,5 +1,7 @@
-# Build: 18
-"""Custom minimalist widgets — geometric, clean, The Tower inspired."""
+# Build: 26
+"""Custom pixel-art RPG widgets — crisp rectangles, PixelFont, sprite avatars."""
+
+import os
 
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
@@ -74,16 +76,22 @@ class MinimalBar(Widget):
         super().__init__(**kwargs)
         with self.canvas:
             self._bg_color = Color(*self.bg_color)
-            self._bg_rect = RoundedRectangle(
-                pos=self.pos, size=self.size, radius=[4]
-            )
+            self._bg_rect = Rectangle(pos=self.pos, size=self.size)
             self._fill_color = Color(*self.bar_color)
             w = max(0, self.width * max(0, min(1, self._display_value)))
-            self._fill_rect = RoundedRectangle(
-                pos=self.pos, size=(w, self.height), radius=[4]
+            self._fill_rect = Rectangle(
+                pos=self.pos, size=(w, self.height)
+            )
+            # 1px dark border
+            Color(0.1, 0.1, 0.1, 0.9)
+            self._border_line = Line(
+                rectangle=(self.x, self.y, self.width, self.height),
+                width=1.0,
             )
         self.bind(pos=self._update_geom, size=self._update_geom,
-                  _display_value=self._update_fill)
+                  _display_value=self._update_fill,
+                  bar_color=self._update_colors,
+                  bg_color=self._update_colors)
         self.bind(value=self._animate)
 
     def _animate(self, *args):
@@ -97,96 +105,90 @@ class MinimalBar(Widget):
         self._fill_rect.pos = self.pos
         w = max(0, self.width * max(0, min(1, self._display_value)))
         self._fill_rect.size = (w, self.height)
+        self._border_line.rectangle = (self.x, self.y, self.width, self.height)
 
     def _update_fill(self, *args):
         w = max(0, self.width * max(0, min(1, self._display_value)))
         self._fill_rect.size = (w, self.height)
 
+    def _update_colors(self, *args):
+        self._fill_color.rgba = self.bar_color
+        self._bg_color.rgba = self.bg_color
+
 
 class GladiatorAvatar(Widget):
-    """Geometric gladiator figure — minimalist silhouette."""
+    """Sprite-based gladiator avatar — displays a PNG from sprites/fighters/."""
 
+    fighter_class = StringProperty("mercenary")
+    # Keep accent_color for backward compat (ignored when sprite exists)
     accent_color = ListProperty(ACCENT_GREEN)
     tier = NumericProperty(1)
     is_wounded = BooleanProperty(False)
+    frame = StringProperty("idle")
+
+    _last_path = ""
+    _last_wounded = None
+    _has_fallback = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bind(pos=self._draw, size=self._draw, is_wounded=self._draw)
-        Clock.schedule_once(self._draw, 0)
+        self._sprite = Image(fit_mode="contain", opacity=0)
+        self.add_widget(self._sprite)
+        self.bind(
+            pos=self._layout, size=self._layout,
+            fighter_class=self._update_sprite,
+            frame=self._update_sprite,
+            is_wounded=self._update_sprite,
+        )
+        # Load sprite immediately — no schedule_once delay
+        self._update_sprite()
 
-    def _draw(self, *args):
-        self.canvas.clear()
-        cx = self.center_x
-        cy = self.center_y
+    def _sprite_path(self):
+        return f"sprites/fighters/{self.fighter_class}_{self.frame}.png"
+
+    def _update_sprite(self, *args):
+        path = self._sprite_path()
+        wounded = self.is_wounded
+        # Skip if nothing changed
+        if path == self._last_path and wounded == self._last_wounded:
+            return
+        self._last_path = path
+        self._last_wounded = wounded
+        if os.path.exists(path):
+            self._sprite.source = path
+            self._sprite.opacity = 1
+            self._sprite.color = [1, 0.5, 0.5, 0.8] if wounded else [1, 1, 1, 1]
+            # Clear fallback only once when switching from fallback to sprite
+            if self._has_fallback:
+                self.canvas.before.clear()
+                self._has_fallback = False
+        else:
+            self._sprite.source = ""
+            self._sprite.opacity = 0
+            self._draw_fallback()
+        self._layout()
+
+    def _layout(self, *args):
+        self._sprite.pos = self.pos
+        self._sprite.size = self.size
+
+    def _draw_fallback(self):
+        self.canvas.before.clear()
+        self._has_fallback = True
+        cx, cy = self.center_x, self.center_y
         s = min(self.width, self.height)
-
-        with self.canvas:
-            # Glow circle behind
-            Color(self.accent_color[0], self.accent_color[1],
-                  self.accent_color[2], 0.12)
-            Ellipse(pos=(cx - s * 0.45, cy - s * 0.45), size=(s * 0.9, s * 0.9))
-
-            # Body — rounded rect
+        with self.canvas.before:
             Color(*self.accent_color)
-            body_w = s * 0.3
-            body_h = s * 0.4
-            RoundedRectangle(
-                pos=(cx - body_w / 2, cy - s * 0.15),
-                size=(body_w, body_h),
-                radius=[6],
-            )
-
-            # Head — circle
-            head_r = s * 0.12
-            Ellipse(
-                pos=(cx - head_r, cy + s * 0.28),
-                size=(head_r * 2, head_r * 2),
-            )
-
-            # Shield — small square (left)
-            shield_s = s * 0.14
-            Color(self.accent_color[0] * 0.7, self.accent_color[1] * 0.7,
-                  self.accent_color[2] * 0.7, 1)
-            RoundedRectangle(
-                pos=(cx - body_w / 2 - shield_s * 0.8, cy),
-                size=(shield_s, shield_s * 1.2),
-                radius=[3],
-            )
-
-            # Sword — thin rect (right)
-            Color(0.75, 0.75, 0.8, 1)
-            sword_w = s * 0.04
-            sword_h = s * 0.35
             Rectangle(
-                pos=(cx + body_w / 2 + sword_w, cy + s * 0.05),
-                size=(sword_w, sword_h),
+                pos=(cx - s * 0.35, cy - s * 0.35),
+                size=(s * 0.7, s * 0.7),
             )
-
-            # Level indicator dots
-            Color(*ACCENT_GOLD)
-            dots = min(self.tier, 5)
-            dot_r = s * 0.03
-            start_x = cx - (dots - 1) * dot_r * 1.5
-            for i in range(dots):
-                Ellipse(
-                    pos=(start_x + i * dot_r * 3 - dot_r,
-                         cy - s * 0.25),
-                    size=(dot_r * 2, dot_r * 2),
-                )
-
-            # Wound indicator — red X centered on avatar
             if self.is_wounded:
-                wr = s * 0.35
-                t_thick = wr * 0.22
-                PushMatrix()
-                Rotate(angle=45, origin=(cx, cy))
-                Color(0.85, 0.1, 0.1, 0.9)
-                Rectangle(pos=(cx - t_thick / 2, cy - wr / 2),
-                          size=(t_thick, wr))
-                Rectangle(pos=(cx - wr / 2, cy - t_thick / 2),
-                          size=(wr, t_thick))
-                PopMatrix()
+                Color(0.85, 0.1, 0.1, 0.7)
+                Rectangle(
+                    pos=(cx - s * 0.35, cy - s * 0.35),
+                    size=(s * 0.7, s * 0.7),
+                )
 
 
 class AutoShrinkLabel(Label):
@@ -196,6 +198,7 @@ class AutoShrinkLabel(Label):
     _shrinking = False
 
     def __init__(self, **kwargs):
+        kwargs.setdefault('font_name', 'PixelFont')
         super().__init__(**kwargs)
         self._base_font_size = self.font_size
         self.bind(texture_size=self._check_fit)
@@ -215,7 +218,7 @@ class AutoShrinkLabel(Label):
         tw = self.texture_size[0]
         th = self.texture_size[1]
         max_h = self.height
-        min_fs = sp(10)
+        min_fs = sp(9)
         ratio = 1.0
         if tw > max_w + 2:
             ratio = min(ratio, max_w / tw)
@@ -237,7 +240,7 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
     text = StringProperty("")
     btn_color = ListProperty(BTN_PRIMARY)
     text_color = ListProperty(TEXT_PRIMARY)
-    font_size = NumericProperty(16)
+    font_size = NumericProperty(11)
     icon_source = StringProperty("")
     _press_alpha = NumericProperty(0)
 
@@ -256,6 +259,7 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self._label = Label(
             text=self.text, color=self.text_color,
             font_size=sp(self.font_size), bold=True,
+            font_name='PixelFont',
             size_hint=(None, None),
             pos_hint={'center_y': 0.5},
         )
@@ -267,9 +271,13 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         with self.canvas.before:
             r, g, b, a = self.btn_color
             self._bg_color = Color(r, g, b, a)
-            self._bg_rect = RoundedRectangle(
-                pos=self.pos, size=self.size, radius=[8]
-            )
+            self._bg_rect = Rectangle(pos=self.pos, size=self.size)
+            # Pixel 3D highlight (top + left, white)
+            Color(1, 1, 1, 0.12)
+            self._hi_line = Line(points=[], width=1.0)
+            # Pixel 3D shadow (bottom + right, black)
+            Color(0, 0, 0, 0.2)
+            self._sh_line = Line(points=[], width=1.0)
         self.bind(pos=self._sync, size=self._on_resize,
                   text=self._update_text, font_size=self._update_font_size,
                   btn_color=self._update_bg, _press_alpha=self._update_bg,
@@ -287,9 +295,9 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self._box.size = (tw + icon_w, max(th, icon_h))
         # Shrink if overflows
         if self.width > 0 and (tw + icon_w) > self.width - dp(4):
-            if self._label.font_size > sp(10):
+            if self._label.font_size > sp(9):
                 ratio = (self.width - dp(4) - icon_w) / max(1, tw)
-                new_fs = max(sp(10), self._label.font_size * ratio * 0.95)
+                new_fs = max(sp(9), self._label.font_size * ratio * 0.95)
                 if abs(new_fs - self._label.font_size) > sp(0.5):
                     self._label.font_size = new_fs
 
@@ -304,6 +312,11 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self._anchor.size = self.size
         self._bg_rect.pos = self.pos
         self._bg_rect.size = self.size
+        x, y, w, h = self.x, self.y, self.width, self.height
+        # Highlight: left edge bottom-to-top, then top edge left-to-right
+        self._hi_line.points = [x, y, x, y + h, x + w, y + h]
+        # Shadow: right edge top-to-bottom, then bottom edge right-to-left
+        self._sh_line.points = [x + w, y + h, x + w, y, x, y]
 
     def _update_bg(self, *args):
         r, g, b, a = self.btn_color
@@ -322,7 +335,7 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
 
     def _update_icon(self, *args):
         if self.icon_source:
-            icon_w = dp(19)
+            icon_w = dp(24)
             if not self._icon:
                 self._icon = Image(
                     source=self.icon_source, fit_mode="contain",
@@ -343,7 +356,7 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
 
 
 class CardWidget(ScrollSafeButtonMixin, ButtonBehavior, BoxLayout):
-    """Rounded card container with subtle border. Supports on_press."""
+    """Pixel-art card container with 1px border and 3D bevel. Supports on_press."""
 
     card_color = ListProperty(BG_CARD)
     border_color = ListProperty(DIVIDER)
@@ -353,16 +366,18 @@ class CardWidget(ScrollSafeButtonMixin, ButtonBehavior, BoxLayout):
         super().__init__(**kwargs)
         with self.canvas.before:
             self._bg_color = Color(*self.card_color)
-            self._bg_rect = RoundedRectangle(
-                pos=self.pos, size=self.size, radius=[10]
-            )
+            self._bg_rect = Rectangle(pos=self.pos, size=self.size)
             self._br_color = Color(*self.border_color)
             self._br_line = Line(
-                rounded_rectangle=(
-                    self.x, self.y, self.width, self.height, 10
-                ),
-                width=0.7,
+                rectangle=(self.x, self.y, self.width, self.height),
+                width=1.0,
             )
+            # Pixel highlight (top + left, brighter)
+            Color(1, 1, 1, 0.08)
+            self._hi_line = Line(points=[], width=1.0)
+            # Pixel shadow (bottom + right, darker)
+            Color(0, 0, 0, 0.15)
+            self._sh_line = Line(points=[], width=1.0)
         self.bind(pos=self._update_geom, size=self._update_geom,
                   active=self._update_colors,
                   card_color=self._update_colors,
@@ -371,16 +386,17 @@ class CardWidget(ScrollSafeButtonMixin, ButtonBehavior, BoxLayout):
     def _update_geom(self, *args):
         self._bg_rect.pos = self.pos
         self._bg_rect.size = self.size
-        self._br_line.rounded_rectangle = (
-            self.x, self.y, self.width, self.height, 10
-        )
+        self._br_line.rectangle = (self.x, self.y, self.width, self.height)
+        x, y, w, h = self.x, self.y, self.width, self.height
+        self._hi_line.points = [x, y, x, y + h, x + w, y + h]
+        self._sh_line.points = [x + w, y + h, x + w, y, x, y]
 
     def _update_colors(self, *args):
         bg = BG_CARD_ACTIVE if self.active else self.card_color
         self._bg_color.rgba = bg
         bc = ACCENT_GOLD if self.active else self.border_color
         self._br_color.rgba = bc
-        self._br_line.width = 1.2 if self.active else 0.7
+        self._br_line.width = 1.2 if self.active else 1.0
 
 
 class BaseCard(CardWidget):
@@ -397,11 +413,11 @@ class BaseCard(CardWidget):
         card.add_stat_row([("icons/ic_str.png", "150")], size_hint_y=0.40)
     """
 
-    def _make_label(self, text, font_size=sp(14), bold=False, color=TEXT_PRIMARY,
+    def _make_label(self, text, font_size=sp(10), bold=False, color=TEXT_PRIMARY,
                     halign="left", size_hint_x=None):
         lbl = AutoShrinkLabel(
             text=str(text), font_size=font_size, bold=bold, color=list(color),
-            halign=halign, valign="middle",
+            halign=halign, valign="middle", font_name='PixelFont',
         )
         if size_hint_x is None:
             lbl.size_hint_x = None
@@ -432,7 +448,7 @@ class BaseCard(CardWidget):
         self.add_widget(row)
         return row
 
-    def add_label(self, text, font_size=sp(16), bold=False, color=TEXT_PRIMARY,
+    def add_label(self, text, font_size=sp(11), bold=False, color=TEXT_PRIMARY,
                   halign="left", size_hint_y=None, height=None):
         """Add a single full-width label row."""
         lbl = self._make_label(text, font_size, bold, color, halign, size_hint_x=1)
@@ -444,8 +460,8 @@ class BaseCard(CardWidget):
         self.add_widget(lbl)
         return lbl
 
-    def add_stat_row(self, stats, color=ACCENT_GREEN, font_size=sp(14),
-                     icon_height=dp(14), size_hint_y=None, height=None,
+    def add_stat_row(self, stats, color=ACCENT_GREEN, font_size=sp(10),
+                     icon_height=dp(18), size_hint_y=None, height=None,
                      spacing=dp(8), empty_text="—"):
         """Add row of icon+value pairs.
         stats: [(icon_src, value_text), ...].
@@ -484,7 +500,7 @@ class BaseCard(CardWidget):
         self.add_widget(row)
         return row
 
-    def add_button_row(self, buttons, height=dp(32), spacing=dp(5)):
+    def add_button_row(self, buttons, height=dp(38), spacing=dp(5)):
         """Add row of MinimalButton widgets."""
         row = BoxLayout(size_hint_y=None, height=height, spacing=spacing)
         for btn in buttons:
@@ -522,7 +538,8 @@ class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         )
         self._text_label = Label(
             text=self.text,
-            font_size=sp(13),
+            font_size=sp(9),
+            font_name='PixelFont',
             halign="center",
             valign="top",
             bold=True,
@@ -555,9 +572,9 @@ class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         # Auto-shrink nav text to fit width
         if self.width > 0 and self._text_label.texture_size[0] > self.width:
             ratio = self.width / max(1, self._text_label.texture_size[0])
-            self._text_label.font_size = max(sp(7), sp(13) * ratio * 0.95)
-        elif self.width > 0 and self._text_label.font_size < sp(13):
-            self._text_label.font_size = sp(13)
+            self._text_label.font_size = max(sp(5), sp(9) * ratio * 0.95)
+        elif self.width > 0 and self._text_label.font_size < sp(9):
+            self._text_label.font_size = sp(9)
         # Sync all NavButton font sizes to smallest in parent NavBar
         if isinstance(self.parent, NavBar):
             Clock.unschedule(self.parent._sync_font_sizes)
@@ -607,6 +624,7 @@ class FloatingText(Label):
     """Animated floating damage/gold text."""
 
     def __init__(self, **kwargs):
+        kwargs.setdefault('font_name', 'PixelFont')
         super().__init__(**kwargs)
         self.opacity = 1
         Clock.schedule_once(self._animate, 0)

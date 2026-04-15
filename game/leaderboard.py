@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """
 Google Play Games Services leaderboard integration.
 
@@ -209,7 +209,7 @@ class LeaderboardManager:
             return None
 
     def submit_score(self, leaderboard_id, score):
-        if not self._initialized or not leaderboard_id:
+        if not self._initialized or not leaderboard_id or leaderboard_id.startswith("TBD"):
             _log.info("[Leaderboard] Submit skipped: initialized=%s", self._initialized)
             return
 

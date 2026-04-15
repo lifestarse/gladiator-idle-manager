@@ -1,6 +1,7 @@
-# Build: 21
+# Build: 27
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
 from kivy.properties import NumericProperty, StringProperty, ListProperty, BooleanProperty
@@ -41,9 +42,45 @@ class RosterScreen(BaseScreen):
     roster_view = StringProperty("list")  # "list", "detail", "hire", "class_detail"
     perk_view = BooleanProperty(False)
 
+    _pending_state = None
+
+    def get_nav_state(self):
+        """Snapshot current view for navigation stack."""
+        return {
+            'roster_view': self.roster_view,
+            'detail_index': self.detail_index,
+            'perk_view': self.perk_view,
+        }
+
+    def restore_nav_state(self, state):
+        """Restore view from navigation stack — on_enter will use this."""
+        self._pending_state = state
+
     def on_enter(self):
         _roster_callbacks['show_detail'] = self.show_fighter_detail
         _roster_callbacks['dismiss'] = self.dismiss
+        state = self._pending_state
+        self._pending_state = None
+        self._entered_with_detail = False
+        if state:
+            idx = state.get('detail_index', -1)
+            view = state.get('roster_view', 'list')
+            if view == "skills" and idx >= 0:
+                self._entered_with_detail = True
+                self._show_skills_view(idx)
+                return
+            if idx >= 0:
+                self._entered_with_detail = True
+                self.show_fighter_detail(idx)
+                if state.get('perk_view'):
+                    self._show_perk_tree(idx)
+                return
+            if view == "hire":
+                self._entered_with_detail = True
+                self.roster_view = "hire"
+                self.detail_index = -1
+                self._show_hire_view()
+                return
         self.detail_index = -1
         self.roster_view = "list"
         self.refresh_roster()
@@ -138,7 +175,7 @@ class RosterScreen(BaseScreen):
         self._class_detail_id = None
 
         grid.add_widget(AutoShrinkLabel(
-            text=t("choose_class"), font_size="19sp",
+            text=t("choose_class"), font_size="10sp",
             color=ACCENT_GOLD, size_hint_y=None, height=dp(30),
         ))
 
@@ -147,10 +184,10 @@ class RosterScreen(BaseScreen):
             card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(60),
                             padding=[dp(12), dp(6)], spacing=dp(2))
             card.border_color = cls_color
-            card.add_widget(card._make_label(cls_data["name"], sp(19), True, cls_color, "left", 1))
+            card.add_widget(card._make_label(cls_data["name"], sp(10), True, cls_color, "left", 1))
             card.add_widget(card._make_label(
                 f"STR {cls_data['base_str']}  AGI {cls_data['base_agi']}  VIT {cls_data['base_vit']}",
-                sp(14), False, TEXT_SECONDARY, "left", 1))
+                sp(7), False, TEXT_SECONDARY, "left", 1))
             card.bind(on_press=lambda inst, cid=cls_id: self._show_class_detail(cid))
             grid.add_widget(card)
 
@@ -174,7 +211,7 @@ class RosterScreen(BaseScreen):
 
         # Class name
         grid.add_widget(AutoShrinkLabel(
-            text=cls_data["name"], font_size="24sp", bold=True,
+            text=cls_data["name"], font_size="12sp", bold=True,
             color=cls_color, halign="center",
             size_hint_y=None, height=dp(36),
         ))
@@ -182,7 +219,7 @@ class RosterScreen(BaseScreen):
         # Base stats
         grid.add_widget(AutoShrinkLabel(
             text=f"STR {cls_data['base_str']}   AGI {cls_data['base_agi']}   VIT {cls_data['base_vit']}",
-            font_size="16sp", bold=True, color=TEXT_SECONDARY, halign="center",
+            font_size="11sp", bold=True, color=TEXT_SECONDARY, halign="center",
             size_hint_y=None, height=dp(26),
         ))
 
@@ -190,7 +227,7 @@ class RosterScreen(BaseScreen):
         desc_text = cls_data.get("desc", cls_data.get("description", ""))
         if desc_text:
             desc_lbl = Label(
-                text=desc_text, font_size="14sp",
+                text=desc_text, font_size="10sp", font_name='PixelFont',
                 color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
             )
             desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(16), None)))
@@ -210,35 +247,41 @@ class RosterScreen(BaseScreen):
         pts = cls_data.get("points_per_level", 3)
         mods.append(t("class_points_per_level", n=pts))
         if mods:
-            grid.add_widget(AutoShrinkLabel(
-                text=t("class_modifiers_label"), font_size="14sp", bold=True,
+            mod_hdr = AutoShrinkLabel(
+                text=t("class_modifiers_label"), font_size="10sp", bold=True,
                 color=cls_color, halign="left",
-                size_hint_y=None, height=dp(24),
-            ))
-            grid.add_widget(AutoShrinkLabel(
-                text="   ".join(mods), font_size="13sp",
+                size_hint_y=None, height=dp(30),
+            )
+            bind_text_wrap(mod_hdr)
+            grid.add_widget(mod_hdr)
+            mod_lbl = AutoShrinkLabel(
+                text="   ".join(mods), font_size="10sp",
                 color=TEXT_SECONDARY, halign="center",
-                size_hint_y=None, height=dp(22),
-            ))
+                size_hint_y=None, height=dp(30),
+            )
+            bind_text_wrap(mod_lbl)
+            grid.add_widget(mod_lbl)
 
         # Passive ability
         passive = cls_data.get("passive_ability")
         if passive:
             grid.add_widget(AutoShrinkLabel(
-                text=t("perk_passive_label"), font_size="14sp", bold=True,
+                text=t("perk_passive_label"), font_size="10sp", bold=True,
                 color=ACCENT_GOLD, halign="left",
-                size_hint_y=None, height=dp(24),
+                size_hint_y=None, height=dp(30),
             ))
             p_card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(70),
                               padding=[dp(10), dp(6)], spacing=dp(2))
             p_card.border_color = ACCENT_GOLD
-            p_card.add_widget(AutoShrinkLabel(
-                text=passive["name"], font_size="14sp", bold=True,
+            passive_name_lbl = AutoShrinkLabel(
+                text=passive["name"], font_size="10sp", bold=True,
                 color=ACCENT_GOLD, halign="left",
-                size_hint_y=None, height=dp(20),
-            ))
+                size_hint_y=None, height=dp(30),
+            )
+            bind_text_wrap(passive_name_lbl)
+            p_card.add_widget(passive_name_lbl)
             p_desc = Label(
-                text=passive.get("description", ""), font_size="12sp",
+                text=passive.get("description", ""), font_size="11sp", font_name='PixelFont',
                 color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
             )
             p_desc.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(20), None)))
@@ -251,30 +294,32 @@ class RosterScreen(BaseScreen):
         tree = cls_data.get("perk_tree", [])
         if tree:
             grid.add_widget(AutoShrinkLabel(
-                text=t("class_perks_label"), font_size="14sp", bold=True,
+                text=t("class_perks_label"), font_size="10sp", bold=True,
                 color=cls_color, halign="left",
-                size_hint_y=None, height=dp(24),
+                size_hint_y=None, height=dp(30),
             ))
             tiers = {}
             for perk in tree:
                 tiers.setdefault(perk.get("tier", 1), []).append(perk)
             for tier_num in sorted(tiers.keys()):
                 grid.add_widget(AutoShrinkLabel(
-                    text=t("perk_tier_label", n=tier_num), font_size="13sp", bold=True,
+                    text=t("perk_tier_label", n=tier_num), font_size="10sp", bold=True,
                     color=ACCENT_CYAN, halign="left",
-                    size_hint_y=None, height=dp(22),
+                    size_hint_y=None, height=dp(30),
                 ))
                 for perk in tiers[tier_num]:
                     card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(70),
                                     padding=[dp(10), dp(6)], spacing=dp(2))
                     card.border_color = BTN_DISABLED
-                    card.add_widget(AutoShrinkLabel(
+                    perk_name_lbl = AutoShrinkLabel(
                         text=f"{perk['name']}  ({perk['cost']} pts)",
-                        font_size="13sp", bold=True, color=TEXT_PRIMARY,
+                        font_size="10sp", bold=True, color=TEXT_PRIMARY,
                         halign="left", size_hint_y=None, height=dp(18),
-                    ))
+                    )
+                    bind_text_wrap(perk_name_lbl)
+                    card.add_widget(perk_name_lbl)
                     pk_desc = Label(
-                        text=perk.get("description", ""), font_size="11sp",
+                        text=perk.get("description", ""), font_size="11sp", font_name='PixelFont',
                         color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
                     )
                     pk_desc.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(20), None)))
@@ -309,13 +354,13 @@ class RosterScreen(BaseScreen):
         # Title
         grid.add_widget(AutoShrinkLabel(
             text=f"{f.name} — {t('injuries_tab')}",
-            font_size="18sp", bold=True, color=ACCENT_RED,
+            font_size="11sp", bold=True, color=ACCENT_RED,
             halign="center", size_hint_y=None, height=dp(30),
         ))
         grid.add_widget(AutoShrinkLabel(
             text=f"{t('death_risk')}: {f.death_chance:.0%}",
-            font_size="14sp", color=ACCENT_RED,
-            halign="center", size_hint_y=None, height=dp(22),
+            font_size="10sp", color=ACCENT_RED,
+            halign="center", size_hint_y=None, height=dp(30),
         ))
 
         # Heal all button
@@ -326,10 +371,10 @@ class RosterScreen(BaseScreen):
             can_heal_all = total_cost > 0 and engine.gold >= total_cost
             heal_all_btn = MinimalButton(
                 text=f"{t('heal_all_injuries_btn')} ({fmt_num(total_cost)})",
-                font_size=16, btn_color=ACCENT_GREEN if can_heal_all else BTN_DISABLED,
+                font_size=11, btn_color=ACCENT_GREEN if can_heal_all else BTN_DISABLED,
                 text_color=BG_DARK if can_heal_all else TEXT_MUTED,
                 size_hint_y=None, height=dp(40),
-                icon_source="icons/ic_gold.png",
+                icon_source="sprites/icons/ic_gold.png",
             )
             def _heal_all(inst, fi=fighter_idx):
                 result = engine.heal_fighter_all_injuries(fi)
@@ -357,11 +402,13 @@ class RosterScreen(BaseScreen):
                             padding=[dp(10), dp(6)], spacing=dp(2))
             card.border_color = sev_color
 
-            card.add_widget(AutoShrinkLabel(
+            inj_name_lbl = AutoShrinkLabel(
                 text=f"[{severity.upper()}] {name}{perm_tag}",
-                font_size="14sp", bold=True, color=sev_color,
-                halign="left", size_hint_y=None, height=dp(20),
-            ))
+                font_size="10sp", bold=True, color=sev_color,
+                halign="left", size_hint_y=None, height=dp(30),
+            )
+            bind_text_wrap(inj_name_lbl)
+            card.add_widget(inj_name_lbl)
 
             # Stat penalties summary
             penalties = inj_data.get("stat_penalties", [])
@@ -371,21 +418,23 @@ class RosterScreen(BaseScreen):
                     stat = pen.get("stat", "?").replace("_", " ").upper()
                     val = pen.get("value", 0)
                     pen_parts.append(f"{stat} -{val:.0%}")
-                card.add_widget(AutoShrinkLabel(
-                    text="  ".join(pen_parts), font_size="12sp",
+                pen_lbl = AutoShrinkLabel(
+                    text="  ".join(pen_parts), font_size="11sp",
                     color=ACCENT_RED, halign="left",
                     size_hint_y=None, height=dp(16),
-                ))
+                )
+                bind_text_wrap(pen_lbl)
+                card.add_widget(pen_lbl)
 
             if not is_perm:
                 heal_cost = f.get_injury_heal_cost(i_idx)
                 can_heal = engine.gold >= heal_cost
                 heal_btn = MinimalButton(
                     text=f"{t('heal_btn')} {fmt_num(heal_cost)}",
-                    font_size=14, btn_color=ACCENT_GREEN if can_heal else BTN_DISABLED,
+                    font_size=11, btn_color=ACCENT_GREEN if can_heal else BTN_DISABLED,
                     text_color=BG_DARK if can_heal else TEXT_MUTED,
                     size_hint_y=None, height=dp(28),
-                    icon_source="icons/ic_gold.png",
+                    icon_source="sprites/icons/ic_gold.png",
                 )
                 def _heal_one(inst, idx=fighter_idx, ii=i_idx):
                     result = engine.heal_fighter_injury(idx, ii)
@@ -429,7 +478,7 @@ class RosterScreen(BaseScreen):
 
         # Name
         grid.add_widget(AutoShrinkLabel(
-            text=inj_data.get("name", injury_id), font_size="22sp", bold=True,
+            text=inj_data.get("name", injury_id), font_size="11sp", bold=True,
             color=sev_color, halign="center",
             size_hint_y=None, height=dp(34),
         ))
@@ -442,15 +491,15 @@ class RosterScreen(BaseScreen):
         if body_part:
             tag_text += f"  —  {body_part}"
         grid.add_widget(AutoShrinkLabel(
-            text=tag_text, font_size="14sp", color=sev_color,
-            halign="center", size_hint_y=None, height=dp(24),
+            text=tag_text, font_size="10sp", color=sev_color,
+            halign="center", size_hint_y=None, height=dp(30),
         ))
 
         # Description
         desc = inj_data.get("description", "")
         if desc:
             desc_lbl = Label(
-                text=desc, font_size="15sp",
+                text=desc, font_size="11sp", font_name='PixelFont',
                 color=TEXT_SECONDARY, halign="left", valign="top", size_hint_y=None,
             )
             desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(16), None)))
@@ -461,7 +510,7 @@ class RosterScreen(BaseScreen):
         penalties = inj_data.get("stat_penalties", [])
         if penalties:
             grid.add_widget(AutoShrinkLabel(
-                text=t("class_modifiers_label"), font_size="14sp", bold=True,
+                text=t("class_modifiers_label"), font_size="10sp", bold=True,
                 color=ACCENT_RED, halign="left",
                 size_hint_y=None, height=dp(26),
             ))
@@ -469,22 +518,22 @@ class RosterScreen(BaseScreen):
                 stat = pen.get("stat", "?").replace("_", " ").upper()
                 val = pen.get("value", 0)
                 grid.add_widget(AutoShrinkLabel(
-                    text=f"  {stat}  -{val:.0%}", font_size="14sp",
+                    text=f"  {stat}  -{val:.0%}", font_size="10sp",
                     color=ACCENT_RED, halign="left",
-                    size_hint_y=None, height=dp(22),
+                    size_hint_y=None, height=dp(30),
                 ))
 
         # Heal info
         if is_perm:
             grid.add_widget(AutoShrinkLabel(
-                text=t("no_healable_injuries"), font_size="14sp",
+                text=t("no_healable_injuries"), font_size="10sp",
                 color=TEXT_MUTED, halign="center",
                 size_hint_y=None, height=dp(26),
             ))
         else:
             mult = inj_data.get("heal_cost_multiplier", 1.0)
             grid.add_widget(AutoShrinkLabel(
-                text=t("heal_cost_mult", mult=f"{mult:.1f}"), font_size="14sp",
+                text=t("heal_cost_mult", mult=f"{mult:.1f}"), font_size="10sp",
                 color=ACCENT_GREEN, halign="center",
                 size_hint_y=None, height=dp(26),
             ))
@@ -523,44 +572,55 @@ class RosterScreen(BaseScreen):
 
     def _build_fighter_header(self, grid, f, index, engine):
         """Add name/stats/attribute rows to detail grid."""
-        grid.add_widget(AutoShrinkLabel(
-            text=f"{f.name}  [{f.class_name}]  Lv.{f.level}", font_size="20sp", bold=True,
-            color=ACCENT_GOLD, size_hint_y=None, height=dp(32), halign="center",
-        ))
+        header_lbl = AutoShrinkLabel(
+            text=f"{f.name}  [{f.class_name}]  Lv.{f.level}", font_size="13sp", bold=True,
+            color=ACCENT_GOLD, size_hint_y=None, height=dp(44), halign="center",
+        )
+        bind_text_wrap(header_lbl)
+        grid.add_widget(header_lbl)
 
         def _c(color):
             return ''.join(f'{int(v*255):02x}' for v in color[:3])
         rc, gc, bc = _c(ACCENT_RED), _c(ACCENT_GREEN), _c(ACCENT_BLUE)
         gc2, cc = _c(ACCENT_GOLD), _c(ACCENT_CYAN)
-        stats_text = (
+        atk_text = (
             f"[color=#{rc}]ATK {fmt_num(f.attack)}[/color]   "
             f"[color=#{bc}]DEF {fmt_num(f.defense)}[/color]   "
-            f"[color=#{gc}]HP {fmt_num(f.hp)}/{fmt_num(f.max_hp)}[/color]\n"
-            f"[color=#{gc2}]Crit {f.crit_chance:.0%}[/color]   "
-            f"[color=#{cc}]Dodge {f.dodge_chance:.0%}[/color]"
+            f"[color=#{gc}]HP {fmt_num(f.hp)}/{fmt_num(f.max_hp)}[/color]"
         )
         stats_lbl = AutoShrinkLabel(
-            text=stats_text, font_size="15sp", markup=True,
-            color=TEXT_SECONDARY, size_hint_y=None, height=dp(40), halign="center",
+            text=atk_text, font_size="11sp", markup=True, color=TEXT_SECONDARY,
+            size_hint_y=None, height=dp(30), halign="center",
         )
         bind_text_wrap(stats_lbl)
         grid.add_widget(stats_lbl)
 
-        stat_row = BoxLayout(size_hint_y=None, height=dp(36), spacing=dp(4))
+        crit_text = (
+            f"[color=#{gc2}]Crit {f.crit_chance:.0%}[/color]   "
+            f"[color=#{cc}]Dodge {f.dodge_chance:.0%}[/color]"
+        )
+        crit_lbl = AutoShrinkLabel(
+            text=crit_text, font_size="11sp", markup=True, color=TEXT_SECONDARY,
+            size_hint_y=None, height=dp(30), halign="center",
+        )
+        bind_text_wrap(crit_lbl)
+        grid.add_widget(crit_lbl)
+
+        stat_row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(4))
         has_pts = f.unused_points > 0 and f.available
         for stat_name, stat_val, color, stat_key in [
-            ("STR", f.strength, ACCENT_RED, "strength"),
-            ("AGI", f.agility, ACCENT_GREEN, "agility"),
-            ("VIT", f.vitality, ACCENT_BLUE, "vitality"),
+            ("STR", f.total_strength, ACCENT_RED, "strength"),
+            ("AGI", f.total_agility, ACCENT_GREEN, "agility"),
+            ("VIT", f.total_vitality, ACCENT_BLUE, "vitality"),
         ]:
             cell = BoxLayout(spacing=dp(2))
-            lbl = AutoShrinkLabel(text=f"{stat_name} {stat_val}", font_size="15sp",
+            lbl = AutoShrinkLabel(text=f"{stat_name} {stat_val}", font_size="11sp",
                         color=color, halign="center", bold=True)
             bind_text_wrap(lbl)
             cell.add_widget(lbl)
             if has_pts:
                 btn = MinimalButton(text="+", btn_color=color, text_color=BG_DARK,
-                                    font_size=16, size_hint_x=0.4)
+                                    font_size=11, size_hint_x=0.4)
                 def _add(inst, sk=stat_key, idx=index):
                     engine.distribute_stat(idx, sk)
                     engine.save()
@@ -573,8 +633,8 @@ class RosterScreen(BaseScreen):
 
         if has_pts:
             grid.add_widget(AutoShrinkLabel(
-                text=t("pts_label", n=f.unused_points), font_size="14sp",
-                color=ACCENT_GOLD, size_hint_y=None, height=dp(20), halign="center",
+                text=t("pts_label", n=f.unused_points), font_size="11sp",
+                color=ACCENT_GOLD, size_hint_y=None, height=dp(30), halign="center",
             ))
 
     def _build_fighter_equipment(self, grid, f, index, engine):
@@ -592,8 +652,8 @@ class RosterScreen(BaseScreen):
             ("relic", "icons/ic_accessory.png", inv_relics),
         ]:
             eq_row = BaseCard(
-                orientation="horizontal", size_hint_y=None, height=dp(36),
-                spacing=dp(6), padding=[dp(4), 0],
+                orientation="horizontal", size_hint_y=None, height=dp(48),
+                spacing=dp(6), padding=[dp(4), dp(2)],
                 card_color=[0, 0, 0, 0], border_color=[0, 0, 0, 0],
             )
             eq_row.add_widget(KvImage(source=icon_src, fit_mode="contain",
@@ -606,58 +666,65 @@ class RosterScreen(BaseScreen):
                 ulvl = item.get("upgrade_level", 0)
                 if ulvl:
                     display += f" +{ulvl}"
-                s_str, s_agi, s_vit = item.get("str", 0), item.get("agi", 0), item.get("vit", 0)
-                stat_parts = []
-                if s_str: stat_parts.append(f"+{s_str} STR")
-                if s_agi: stat_parts.append(f"+{s_agi} AGI")
-                if s_vit: stat_parts.append(f"+{s_vit} VIT")
-                if stat_parts:
-                    display += f"  ({', '.join(stat_parts)})"
-                eq_row.add_widget(eq_row._make_label(display, sp(15), True, rcolor, "left", 1))
+                ench = item.get("enchant_id", "")
+                if ench:
+                    display += f" [{ench}]"
+                eq_row.add_widget(eq_row._make_label(display, sp(11), True, rcolor, "left", 1))
             else:
-                eq_row.add_widget(eq_row._make_label(t("empty_slot"), sp(15), False, TEXT_MUTED, "left", 1))
+                eq_row.add_widget(eq_row._make_label(t("empty_slot"), sp(11), False, TEXT_MUTED, "left", 1))
             if f.available:
                 if item:
                     def _open_eq(inst, fi=index, s=slot):
-                        App.get_running_app().open_equipped_detail(fi, s)
+                        Clock.schedule_once(lambda dt: App.get_running_app().open_equipped_detail(fi, s), 0.05)
                     eq_row.bind(on_press=_open_eq)
                 else:
                     def _open_empty(inst, s=slot, fi=index):
-                        app = App.get_running_app()
-                        has_free = any(
-                            it.get("slot") == s for it in app.engine.inventory
-                        )
-                        if has_free:
-                            app.open_inventory_tab(s, fighter_idx=fi, equip_filter="free")
-                        else:
-                            app.open_forge_tab(s, fighter_idx=fi)
+                        def _nav(dt):
+                            app = App.get_running_app()
+                            has_free = any(
+                                it.get("slot") == s for it in app.engine.inventory
+                            )
+                            if has_free:
+                                app.open_inventory_tab(s, equip_filter="free")
+                            else:
+                                app.open_forge_tab(s)
+                        Clock.schedule_once(_nav, 0.05)
                     eq_row.bind(on_press=_open_empty)
             grid.add_widget(eq_row)
 
     def _build_fighter_actions(self, grid, f, index, engine):
         """Add kills label, injuries button, and action buttons to detail grid."""
         grid.add_widget(AutoShrinkLabel(
-            text=t("kills_label", n=f.kills), font_size="14sp", color=TEXT_MUTED,
-            size_hint_y=None, height=dp(20), halign="center",
+            text=t("kills_label", n=f.kills), font_size="11sp", color=TEXT_MUTED,
+            size_hint_y=None, height=dp(32), halign="center",
         ))
 
         # Injuries button (only if fighter has injuries)
         if f.injury_count > 0:
             inj_btn = MinimalButton(
                 text=f"{t('injuries_tab')} ({f.injury_count})  —  {t('death_risk')}: {f.death_chance:.0%}",
-                font_size=15, btn_color=ACCENT_RED, text_color=TEXT_PRIMARY,
-                size_hint_y=None, height=dp(40),
+                font_size=11, btn_color=ACCENT_RED, text_color=TEXT_PRIMARY,
+                size_hint_y=None, height=dp(48),
             )
             inj_btn.bind(on_press=lambda inst, idx=index: self._show_injuries_view(idx))
             grid.add_widget(inj_btn)
+
+        # Skills button
+        skills_btn = MinimalButton(
+            text=t("skills_btn"), font_size=11,
+            btn_color=ACCENT_PURPLE, text_color=TEXT_PRIMARY,
+            size_hint_y=None, height=dp(48),
+        )
+        skills_btn.bind(on_press=lambda inst, idx=index: self._show_skills_view(idx))
+        grid.add_widget(skills_btn)
 
         # Perk tree button
         if f.available:
             perk_label = f"{t('perks_btn')} ({f.perk_points})" if f.perk_points > 0 else t("perks_btn")
             perk_btn = MinimalButton(
-                text=perk_label, font_size=16,
+                text=perk_label, font_size=11,
                 btn_color=ACCENT_CYAN, text_color=BG_DARK,
-                size_hint_y=None, height=dp(42),
+                size_hint_y=None, height=dp(48),
             )
             perk_btn.bind(on_press=lambda inst, idx=index: self._show_perk_tree(idx))
             grid.add_widget(perk_btn)
@@ -669,8 +736,8 @@ class RosterScreen(BaseScreen):
                 text=t("train_btn", lv=f.level + 1, cost=fmt_num(cost)),
                 btn_color=ACCENT_GOLD if can_train else BTN_DISABLED,
                 text_color=BG_DARK if can_train else TEXT_MUTED,
-                font_size=22, icon_source="icons/ic_gold.png",
-                size_hint_y=None, height=dp(42),
+                font_size=11, icon_source="sprites/icons/ic_gold.png",
+                size_hint_y=None, height=dp(48),
             )
             def _train(inst, idx=index):
                 result = engine.upgrade_gladiator(idx)
@@ -683,9 +750,9 @@ class RosterScreen(BaseScreen):
 
         # Dismiss button
         dismiss_btn = MinimalButton(
-            text=t("dismiss_btn"), font_size=14,
+            text=t("dismiss_btn"), font_size=11,
             btn_color=ACCENT_RED, text_color=TEXT_PRIMARY,
-            size_hint_y=None, height=dp(36),
+            size_hint_y=None, height=dp(48),
         )
         dismiss_btn.bind(on_press=lambda inst, idx=index: self._confirm_dismiss(idx))
         grid.add_widget(dismiss_btn)
@@ -701,18 +768,18 @@ class RosterScreen(BaseScreen):
                             padding=[dp(12), dp(8)])
         content.add_widget(AutoShrinkLabel(
             text=t("dismiss_confirm_msg", name=f.name),
-            font_size="16sp", color=TEXT_SECONDARY,
+            font_size="11sp", color=TEXT_SECONDARY,
             halign="center", valign="middle",
             size_hint_y=0.6,
         ))
         btn_row = BoxLayout(size_hint_y=0.4, spacing=dp(8))
         cancel_btn = MinimalButton(
             text=t("back_btn"), btn_color=BTN_PRIMARY,
-            font_size=16,
+            font_size=11,
         )
         confirm_btn = MinimalButton(
             text=t("dismiss_confirm_btn"), btn_color=ACCENT_RED,
-            text_color=TEXT_PRIMARY, font_size=16,
+            text_color=TEXT_PRIMARY, font_size=11,
         )
         btn_row.add_widget(cancel_btn)
         btn_row.add_widget(confirm_btn)
@@ -767,10 +834,17 @@ class RosterScreen(BaseScreen):
             self.perk_view = False
             self.show_fighter_detail(self.detail_index)
             return True
+        if self.roster_view == "skills":
+            self.show_fighter_detail(self.detail_index)
+            return True
         if getattr(self, '_class_detail_id', None):
             self._back_to_hire()
             return True
         if self.roster_view != "list":
+            if getattr(self, '_entered_with_detail', False):
+                # Entered roster directly into detail from another screen — go back there
+                self.close_detail()
+                return False  # let go_back() pop history → previous screen
             self.close_detail()
             return True
         return False
@@ -781,13 +855,15 @@ class RosterScreen(BaseScreen):
         p_card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(70),
                           padding=[dp(10), dp(6)], spacing=dp(2))
         p_card.border_color = ACCENT_GOLD
-        p_card.add_widget(AutoShrinkLabel(
-            text=f"{t('perk_passive_label')}: {passive['name']}", font_size="14sp",
+        passive_lbl = AutoShrinkLabel(
+            text=f"{t('perk_passive_label')}: {passive['name']}", font_size="10sp",
             bold=True, color=ACCENT_GOLD, halign="left",
-            size_hint_y=None, height=dp(20),
-        ))
+            size_hint_y=None, height=dp(30),
+        )
+        bind_text_wrap(passive_lbl)
+        p_card.add_widget(passive_lbl)
         desc_lbl = Label(
-            text=passive.get("description", ""), font_size="11sp",
+            text=passive.get("description", ""), font_size="11sp", font_name='PixelFont',
             color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
         )
         desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(20), None)))
@@ -795,6 +871,88 @@ class RosterScreen(BaseScreen):
         desc_lbl.bind(height=lambda inst, h, c=p_card: setattr(c, "height", max(dp(70), h + dp(40))))
         p_card.add_widget(desc_lbl)
         return p_card
+
+    def _show_skills_view(self, fighter_idx):
+        """Show passive ability + active skill for a fighter."""
+        from game.models import FIGHTER_CLASSES
+        engine = App.get_running_app().engine
+        if fighter_idx >= len(engine.fighters):
+            return
+        f = engine.fighters[fighter_idx]
+        self.detail_index = fighter_idx
+        self.roster_view = "skills"
+
+        grid = self.ids.get("detail_grid")
+        if not grid:
+            return
+        grid.clear_widgets()
+
+        cls_data = FIGHTER_CLASSES.get(f.fighter_class, {})
+
+        # Header
+        grid.add_widget(AutoShrinkLabel(
+            text=f"{f.name}  [{f.class_name}]", font_size="13sp", bold=True,
+            color=ACCENT_GOLD, halign="center",
+            size_hint_y=None, height=dp(44),
+        ))
+
+        # Passive ability
+        passive = cls_data.get("passive_ability")
+        if passive:
+            grid.add_widget(AutoShrinkLabel(
+                text=t("passive_label"), font_size="11sp", bold=True,
+                color=ACCENT_GOLD, halign="left",
+                size_hint_y=None, height=dp(30),
+            ))
+            grid.add_widget(self._build_passive_card(passive))
+
+        # Active skill
+        skill = cls_data.get("active_skill")
+        if skill:
+            grid.add_widget(AutoShrinkLabel(
+                text=t("active_skill_label"), font_size="11sp", bold=True,
+                color=ACCENT_PURPLE, halign="left",
+                size_hint_y=None, height=dp(30),
+            ))
+            grid.add_widget(self._build_active_skill_card(skill))
+
+    def _build_active_skill_card(self, skill):
+        """Build card for a class's active skill."""
+        from kivy.uix.label import Label
+        card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(90),
+                        padding=[dp(10), dp(6)], spacing=dp(2))
+        card.border_color = ACCENT_PURPLE
+
+        # Skill name
+        name_lbl = AutoShrinkLabel(
+            text=skill["name"], font_size="12sp", bold=True,
+            color=ACCENT_PURPLE, halign="left",
+            size_hint_y=None, height=dp(30),
+        )
+        bind_text_wrap(name_lbl)
+        card.add_widget(name_lbl)
+
+        # Description
+        desc_lbl = Label(
+            text=skill.get("description", ""), font_size="11sp", font_name='PixelFont',
+            color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
+        )
+        desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(20), None)))
+        desc_lbl.bind(texture_size=lambda inst, ts: setattr(inst, "height", ts[1]))
+        desc_lbl.bind(height=lambda inst, h, c=card: setattr(c, "height", max(dp(90), h + dp(70))))
+        card.add_widget(desc_lbl)
+
+        # Cooldown
+        cd = skill.get("cooldown", 0)
+        cd_lbl = AutoShrinkLabel(
+            text=t("cooldown_label", n=cd), font_size="11sp", bold=True,
+            color=ACCENT_CYAN, halign="left",
+            size_hint_y=None, height=dp(26),
+        )
+        bind_text_wrap(cd_lbl)
+        card.add_widget(cd_lbl)
+
+        return card
 
     def _build_perk_card(self, perk, fighter, fighter_idx, is_cross, engine):
         """Build a single perk card with unlock button if applicable."""
@@ -820,14 +978,16 @@ class RosterScreen(BaseScreen):
         name_text = perk["name"]
         if is_unlocked:
             name_text += f"  [{t('perk_unlocked')}]"
-        card.add_widget(AutoShrinkLabel(
-            text=name_text, font_size="13sp", bold=True,
+        perk_nm_lbl = AutoShrinkLabel(
+            text=name_text, font_size="10sp", bold=True,
             color=ACCENT_GOLD if is_unlocked else (TEXT_PRIMARY if can_unlock else TEXT_MUTED),
             halign="left", size_hint_y=None, height=dp(18),
-        ))
+        )
+        bind_text_wrap(perk_nm_lbl)
+        card.add_widget(perk_nm_lbl)
 
         desc_lbl = Label(
-            text=perk.get("description", ""), font_size="11sp",
+            text=perk.get("description", ""), font_size="11sp", font_name='PixelFont',
             color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
         )
         desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(20), None)))
@@ -839,7 +999,7 @@ class RosterScreen(BaseScreen):
 
         if not is_unlocked:
             btn = MinimalButton(
-                text=t("perk_unlock_btn", cost=cost), font_size=13,
+                text=t("perk_unlock_btn", cost=cost), font_size=11,
                 btn_color=ACCENT_CYAN if can_unlock else BTN_DISABLED,
                 text_color=BG_DARK if can_unlock else TEXT_MUTED,
                 size_hint_y=None, height=dp(30),
@@ -874,13 +1034,13 @@ class RosterScreen(BaseScreen):
         expanded = self._perk_expanded.setdefault(f.name, {})
 
         grid.add_widget(AutoShrinkLabel(
-            text=f"{f.class_name} — {t('perks_btn')}", font_size="18sp", bold=True,
+            text=f"{f.class_name} — {t('perks_btn')}", font_size="11sp", bold=True,
             color=ACCENT_CYAN, halign="center", size_hint_y=None, height=dp(30),
         ))
         grid.add_widget(AutoShrinkLabel(
-            text=t("perk_points_label", n=f.perk_points), font_size="14sp",
+            text=t("perk_points_label", n=f.perk_points), font_size="10sp",
             color=ACCENT_GOLD if f.perk_points > 0 else TEXT_MUTED,
-            halign="center", size_hint_y=None, height=dp(24),
+            halign="center", size_hint_y=None, height=dp(30),
         ))
 
         cls_data = _m.FIGHTER_CLASSES.get(f.fighter_class, {})
@@ -904,7 +1064,7 @@ class RosterScreen(BaseScreen):
                 continue
             if section_label:
                 grid.add_widget(AutoShrinkLabel(
-                    text=section_label, font_size="13sp", bold=True,
+                    text=section_label, font_size="10sp", bold=True,
                     color=TEXT_MUTED, halign="center",
                     size_hint_y=None, height=dp(26),
                 ))
@@ -922,7 +1082,7 @@ class RosterScreen(BaseScreen):
 
                 tier_btn = MinimalButton(
                     text=f"{arrow}  {t('perk_tier_label', n=tier_num)}  ({unlocked_count}/{len(tier_perks)})",
-                    font_size=14, btn_color=ACCENT_CYAN, text_color=BG_DARK,
+                    font_size=11, btn_color=ACCENT_CYAN, text_color=BG_DARK,
                     size_hint_y=None, height=dp(30),
                 )
                 def _toggle(inst, tk=tier_key, fi=fighter_idx):
@@ -959,7 +1119,7 @@ class RosterScreen(BaseScreen):
             content.add_widget(build_item_info_card(current, fighter=f, equipped_on=f.name,
                                                     on_tap=_tap_equipped))
             unequip_btn = MinimalButton(
-                text=t("unequip_btn"), font_size=14,
+                text=t("unequip_btn"), font_size=11,
                 btn_color=ACCENT_RED, text_color=TEXT_PRIMARY,
                 size_hint_y=None, height=dp(36),
             )
@@ -996,11 +1156,11 @@ class RosterScreen(BaseScreen):
             btn_row = BoxLayout(size_hint_y=None, height=dp(36), spacing=dp(6))
             if inv_count > 0:
                 btn_row.add_widget(AutoShrinkLabel(
-                    text=f"x{inv_count}", font_size="14sp", color=ACCENT_GOLD,
+                    text=f"x{inv_count}", font_size="10sp", color=ACCENT_GOLD,
                     size_hint_x=0.15, halign="center",
                 ))
                 equip_btn = MinimalButton(
-                    text=t("equip_btn"), font_size=14,
+                    text=t("equip_btn"), font_size=11,
                     btn_color=ACCENT_GREEN, text_color=BG_DARK,
                 )
                 def _equip(inst, iid=item["id"], idx=fighter_idx):
@@ -1020,10 +1180,10 @@ class RosterScreen(BaseScreen):
                 affordable = engine.gold >= shop_cost
                 rcolor = RARITY_COLORS.get(item.get("rarity", "common"), TEXT_PRIMARY)
                 buy_btn = MinimalButton(
-                    text=t("buy_btn_price", price=fmt_num(shop_cost)), font_size=16,
+                    text=t("buy_btn_price", price=fmt_num(shop_cost)), font_size=11,
                     btn_color=rcolor if affordable else BTN_DISABLED,
                     text_color=BG_DARK if affordable else TEXT_MUTED,
-                    icon_source="icons/ic_gold.png",
+                    icon_source="sprites/icons/ic_gold.png",
                 )
                 def _buy(inst, iid=template_item["id"], idx=fighter_idx, s=slot, il=items_list):
                     result = engine.buy_forge_item(iid)
@@ -1041,7 +1201,7 @@ class RosterScreen(BaseScreen):
 
         equip_popup = Popup(
             title=f"{slot.upper()} — {f.name}",
-            title_color=ACCENT_GOLD, title_size="16sp",
+            title_color=ACCENT_GOLD, title_size="11sp",
             content=scroll, size_hint=(0.94, 0.7),
             background_color=(0.08, 0.08, 0.11, 0.97),
             separator_color=ACCENT_GOLD,

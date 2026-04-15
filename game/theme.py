@@ -1,55 +1,55 @@
-# Build: 4
+# Build: 5
 """
-Grimy medieval color theme — Darkest Dungeon / Fear & Hunger inspired.
-Muted, desaturated, oppressive. Iron and dried blood.
+Pixel art RPG color theme — SNES-era inspired.
+Rich saturated accents, warm indigo backgrounds, cream text.
 """
 
-# Background layers — deep, almost black, with brown undertone
-BG_DARK = (0.05, 0.04, 0.04, 1)  # near-black with warmth
-BG_CARD = (0.09, 0.07, 0.06, 1)  # dark leather brown
-BG_CARD_ACTIVE = (0.12, 0.09, 0.06, 1)  # slightly lit card
-BG_ELEVATED = (0.11, 0.09, 0.08, 1)  # raised surface
+# Background layers — deep indigo, not pure black
+BG_DARK = (0.08, 0.05, 0.13, 1)         # deep indigo-black
+BG_CARD = (0.13, 0.09, 0.20, 1)         # dark violet-brown card
+BG_CARD_ACTIVE = (0.18, 0.12, 0.26, 1)  # lit card
+BG_ELEVATED = (0.16, 0.11, 0.23, 1)     # raised surface
 
-# Accent colors — muted, desaturated, like old paint and rust
-ACCENT_GOLD = (0.14, 0.42, 0.16, 1)  # dim tarnished gold
-ACCENT_GREEN = (0.48, 0.38, 0.20, 1)  # murky moss
-ACCENT_RED = (0.48, 0.10, 0.08, 1)  # dark clotted blood
-ACCENT_BLUE = (0.18, 0.26, 0.38, 1)  # blackened steel
-ACCENT_PURPLE = (0.30, 0.14, 0.34, 1)  # deep bruise
-ACCENT_CYAN = (0.22, 0.35, 0.33, 1)  # tarnished copper
+# Accent colors — saturated, SNES-vivid
+ACCENT_GOLD = (0.93, 0.78, 0.18, 1)     # bright gold
+ACCENT_GREEN = (0.20, 0.70, 0.30, 1)    # emerald green
+ACCENT_RED = (0.85, 0.15, 0.15, 1)      # blood crimson
+ACCENT_BLUE = (0.20, 0.45, 0.85, 1)     # royal blue
+ACCENT_PURPLE = (0.60, 0.25, 0.80, 1)   # vivid purple
+ACCENT_CYAN = (0.20, 0.75, 0.80, 1)     # teal/cyan
 
-# Text — parchment tones, not pure white
-TEXT_PRIMARY = (0.72, 0.66, 0.56, 1)  # aged parchment
-TEXT_SECONDARY = (0.42, 0.36, 0.30, 1)  # faded ink
-TEXT_MUTED = (0.26, 0.22, 0.18, 1)  # barely visible
+# Text — warm cream, high contrast
+TEXT_PRIMARY = (0.93, 0.90, 0.82, 1)     # cream white
+TEXT_SECONDARY = (0.62, 0.56, 0.50, 1)   # muted tan
+TEXT_MUTED = (0.35, 0.30, 0.28, 1)       # dim brown
 
-# HP bars — blood and bile
-HP_PLAYER = (0.32, 0.40, 0.18, 1)  # dark bile green
-HP_PLAYER_BG = (0.10, 0.12, 0.06, 1)
-HP_ENEMY = (0.45, 0.08, 0.06, 1)  # blackened blood
-HP_ENEMY_BG = (0.14, 0.04, 0.03, 1)
+# HP bars — vivid
+HP_PLAYER = (0.15, 0.72, 0.25, 1)       # bright green
+HP_PLAYER_BG = (0.06, 0.18, 0.08, 1)    # dark green bg
+HP_ENEMY = (0.82, 0.12, 0.12, 1)        # bright red
+HP_ENEMY_BG = (0.22, 0.05, 0.05, 1)     # dark red bg
 
-# Buttons — grimy, oppressive
-BTN_FIGHT = (0.40, 0.08, 0.06, 1)  # dark blood button
-BTN_FIGHT_GLOW = (0.45, 0.10, 0.08, 0.15)
-BTN_PRIMARY = (0.16, 0.22, 0.32, 1)  # cold dark iron
-BTN_SUCCESS = (0.18, 0.30, 0.14, 1)  # swamp moss
-BTN_DISABLED = (0.10, 0.09, 0.07, 1)  # ash
+# Buttons
+BTN_FIGHT = (0.75, 0.12, 0.12, 1)       # red fight
+BTN_FIGHT_GLOW = (0.85, 0.15, 0.15, 0.20)
+BTN_PRIMARY = (0.18, 0.30, 0.58, 1)     # blue
+BTN_SUCCESS = (0.15, 0.55, 0.20, 1)     # green
+BTN_DISABLED = (0.14, 0.12, 0.18, 1)    # muted indigo
 
-# Nav — almost invisible separation
-NAV_BG = (0.05, 0.04, 0.03, 1)
-NAV_ACTIVE = (0.58, 0.46, 0.16, 1)  # dim gold
-NAV_INACTIVE = (0.24, 0.20, 0.16, 1)
+# Nav
+NAV_BG = (0.06, 0.04, 0.10, 1)
+NAV_ACTIVE = (0.93, 0.78, 0.18, 1)      # gold
+NAV_INACTIVE = (0.40, 0.35, 0.30, 1)
 
 # Separator
-DIVIDER = (0.12, 0.10, 0.08, 1)  # dark rust line
+DIVIDER = (0.22, 0.18, 0.30, 1)         # purple-tinted line
 
-# Rarity colors — also desaturated
-RARITY_COMMON_CLR = (0.38, 0.34, 0.28, 1)
-RARITY_UNCOMMON_CLR = (0.22, 0.38, 0.18, 1)
-RARITY_RARE_CLR = (0.18, 0.30, 0.50, 1)
-RARITY_EPIC_CLR = (0.38, 0.18, 0.42, 1)
-RARITY_LEGENDARY_CLR = (0.58, 0.46, 0.16, 1)
+# Rarity colors — saturated RPG rarity scheme
+RARITY_COMMON_CLR = (0.55, 0.55, 0.50, 1)     # gray
+RARITY_UNCOMMON_CLR = (0.20, 0.72, 0.30, 1)   # green
+RARITY_RARE_CLR = (0.25, 0.50, 0.90, 1)       # blue
+RARITY_EPIC_CLR = (0.65, 0.25, 0.85, 1)       # purple
+RARITY_LEGENDARY_CLR = (0.95, 0.75, 0.15, 1)  # gold
 
 
 def popup_color(rgba_tuple):

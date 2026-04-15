@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -17,7 +17,7 @@ POPUP_DISMISS_DELAY = 3.0      # seconds before auto-dismissing popups
 
 # --- Relic / Accessory multipliers ---
 RELIC_STAT_SPLIT = 3           # relic bonus is split 3 ways (ATK/DEF/HP)
-ACCESSORY_HP_MULT = 10         # accessory HP bonus multiplied by 10
+ACCESSORY_HP_MULT = 5          # accessory HP bonus multiplied by 5
 
 # --- Economy: diamond shop / expedition ---
 RENAME_COST_DIAMONDS = 25

@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 6
 """Centralized data loader — singleton that loads all JSON data at startup."""
 
 import json
@@ -64,6 +64,85 @@ class DataLoader:
         self._loaded = True
         _log.info("[DataLoader] All data loaded successfully")
 
+    def apply_translations(self, lang_code):
+        """Overlay translated name/desc from data/languages/data_{lang}.json.
+
+        Merges translated text into already-loaded data dicts in-place.
+        Falls back to original English if translation file is missing.
+        """
+        if lang_code == "en":
+            return  # English is the base language in data files
+        path = os.path.join(_data_dir(), "languages", f"data_{lang_code}.json")
+        tr = self._read_json(path)
+        if not tr:
+            _log.info("[DataLoader] No translation file for '%s'", lang_code)
+            return
+
+        def _apply_to_list(items, section_tr):
+            """Apply translations to a list of dicts keyed by 'id'."""
+            for item in items:
+                item_tr = section_tr.get(item.get("id", ""))
+                if item_tr:
+                    for field in ("name", "desc", "description", "title", "text"):
+                        if field in item_tr:
+                            item[field] = item_tr[field]
+
+        def _apply_to_dict(data, section_tr):
+            """Apply translations to a dict keyed by id."""
+            for key, item in data.items():
+                item_tr = section_tr.get(key)
+                if item_tr and isinstance(item, dict):
+                    for field in ("name", "desc", "description"):
+                        if field in item_tr:
+                            item[field] = item_tr[field]
+
+        # Equipment
+        _apply_to_list(self._weapons, tr.get("weapons", {}))
+        _apply_to_list(self._armor, tr.get("armor", {}))
+        _apply_to_list(self._accessories, tr.get("accessories", {}))
+        _apply_to_list(self._relics, tr.get("relics", {}))
+        # Game data
+        _apply_to_list(self._achievements, tr.get("achievements", {}))
+        _apply_to_list(self._enemies, tr.get("enemies", {}))
+        _apply_to_list(self._injuries, tr.get("injuries", {}))
+        _apply_to_list(self._expeditions, tr.get("expeditions", {}))
+        _apply_to_list(self._lore, tr.get("lore", {}))
+        # Keyed dicts
+        _apply_to_dict(self._enchantments, tr.get("enchantments", {}))
+        _apply_to_dict(self._boss_modifiers, tr.get("boss_modifiers", {}))
+        _apply_to_dict(self._mutators, tr.get("mutators", {}))
+        # Fighter classes (nested: perks, passive, active_skill)
+        classes_tr = tr.get("classes", {})
+        for cls_id, cls_data in self._fighter_classes.items():
+            cls_tr = classes_tr.get(cls_id)
+            if not cls_tr:
+                continue
+            for field in ("name", "desc", "description"):
+                if field in cls_tr:
+                    cls_data[field] = cls_tr[field]
+            # Passive ability
+            pa_tr = cls_tr.get("passive_ability", {})
+            pa = cls_data.get("passive_ability", {})
+            for field in ("name", "description"):
+                if field in pa_tr:
+                    pa[field] = pa_tr[field]
+            # Active skill
+            as_tr = cls_tr.get("active_skill", {})
+            ask = cls_data.get("active_skill", {})
+            for field in ("name", "description"):
+                if field in as_tr:
+                    ask[field] = as_tr[field]
+            # Perks
+            perks_tr = cls_tr.get("perks", {})
+            for perk in cls_data.get("perk_tree", []):
+                perk_tr = perks_tr.get(perk.get("id", ""))
+                if perk_tr:
+                    for field in ("name", "description"):
+                        if field in perk_tr:
+                            perk[field] = perk_tr[field]
+
+        _log.info("[DataLoader] Translations applied for '%s'", lang_code)
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
@@ -96,18 +175,12 @@ class DataLoader:
         """Normalize JSON item fields to match the engine's expected keys.
 
         JSON uses base_str/base_agi/base_vit; engine expects str/agi/vit.
-        Also supports legacy base_atk/base_def/base_hp format.
         """
         if "base_str" in item and "str" not in item:
             item = dict(item)
             item["str"] = item.pop("base_str")
             item["agi"] = item.pop("base_agi", 0)
             item["vit"] = item.pop("base_vit", 0)
-        elif "base_atk" in item and "atk" not in item:
-            item = dict(item)
-            item["str"] = item.pop("base_atk")
-            item["agi"] = item.pop("base_def", 0)
-            item["vit"] = item.pop("base_hp", 0)
         return item
 
     def _load_items(self, base, filename):

@@ -1,4 +1,4 @@
-# Build: 22
+# Build: 28
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
@@ -79,11 +79,11 @@ RARITY_EPIC = "epic"
 RARITY_LEGENDARY = "legendary"
 
 RARITY_COLORS = {
-    RARITY_COMMON: (0.45, 0.40, 0.35, 1),
-    RARITY_UNCOMMON: (0.30, 0.50, 0.25, 1),
-    RARITY_RARE: (0.25, 0.40, 0.65, 1),
-    RARITY_EPIC: (0.50, 0.25, 0.55, 1),
-    RARITY_LEGENDARY: (0.72, 0.58, 0.22, 1),
+    RARITY_COMMON: (0.55, 0.55, 0.50, 1),
+    RARITY_UNCOMMON: (0.20, 0.72, 0.30, 1),
+    RARITY_RARE: (0.25, 0.50, 0.90, 1),
+    RARITY_EPIC: (0.65, 0.25, 0.85, 1),
+    RARITY_LEGENDARY: (0.95, 0.75, 0.15, 1),
 }
 
 RARITY_MULTIPLIER = {
@@ -328,7 +328,7 @@ class Fighter(CombatUnit):
         self.hp_mult = cls_data["hp_mult"]
         self.points_per_level = cls_data["points_per_level"]
 
-        # Legacy compat
+        # Expedition-granted flat bonuses (used in attack/defense/max_hp formulas)
         self.base_attack = 0
         self.base_defense = 0
         self.base_hp = 0
@@ -365,7 +365,7 @@ class Fighter(CombatUnit):
             return 0, 0, 0
         return item.get("str", 0), item.get("agi", 0), item.get("vit", 0)
 
-    def _equip_stat(self, stat, fighter_base):
+    def _equip_stat(self, stat):
         """Sum base equipment stats only (no upgrade bonuses).
 
         All upgrade bonuses are now applied directly to final stats:
@@ -381,15 +381,15 @@ class Fighter(CombatUnit):
 
     @property
     def equip_str(self):
-        return self._equip_stat("str", self.strength)
+        return self._equip_stat("str")
 
     @property
     def equip_agi(self):
-        return self._equip_stat("agi", self.agility)
+        return self._equip_stat("agi")
 
     @property
     def equip_vit(self):
-        return self._equip_stat("vit", self.vitality)
+        return self._equip_stat("vit")
 
     @property
     def total_strength(self):
@@ -480,7 +480,7 @@ class Fighter(CombatUnit):
         agi = self.effective_agility
         raw = agi / (agi + CRIT_K) + self.crit_bonus
         penalty = self._injury_stat_penalty("crit_chance")
-        return max(0.0, raw * (1 - penalty))
+        return min(FIGHTER_CRIT_CAP, max(0.0, raw * (1 - penalty)))
 
     @property
     def crit_mult(self):
@@ -491,7 +491,7 @@ class Fighter(CombatUnit):
         raw = self.effective_agility * DODGE_AGI_FACTOR + self.dodge_bonus
         base = 1.0 - 1.0 / (1.0 + raw * DODGE_DIMINISH_FACTOR)
         penalty = self._injury_stat_penalty("dodge_chance", "agility")
-        return max(0.0, base * (1 - penalty))
+        return min(FIGHTER_DODGE_CAP, max(0.0, base * (1 - penalty)))
 
     @property
     def damage_reduction(self):
@@ -524,6 +524,15 @@ class Fighter(CombatUnit):
     @property
     def injury_count(self):
         return len(self.injuries)
+
+    @property
+    def has_permanent_injury(self):
+        """True if fighter has at least one permanent (unhealable) injury."""
+        for inj in self.injuries:
+            data = self._get_injury_data(inj["id"])
+            if data.get("heal_cost_multiplier", 1) == 0:
+                return True
+        return False
 
     def _get_injury_data(self, injury_id):
         from game.data_loader import data_loader
@@ -560,6 +569,11 @@ class Fighter(CombatUnit):
                 if eff.get("type") == effect_type:
                     total += eff.get("value", 0)
         return total
+
+    def get_active_skill(self):
+        """Return the active skill definition dict for this fighter's class, or None."""
+        cls_data = FIGHTER_CLASSES.get(self.fighter_class, {})
+        return cls_data.get("active_skill")
 
     def get_perk_effect_data(self, effect_type):
         """Get full effect dict for a perk effect type (for max_stacks etc)."""
@@ -712,9 +726,9 @@ class Fighter(CombatUnit):
     @classmethod
     def from_dict(cls, data):
         g = cls.__new__(cls)
-        g.name = data["name"]
+        g.name = data.get("name", "Unknown")
         g.fighter_class = data.get("fighter_class", "mercenary")
-        g.level = data["level"]
+        g.level = data.get("level", 1)
         g.strength = data.get("strength", 5)
         g.agility = data.get("agility", 5)
         g.vitality = data.get("vitality", 5)
@@ -729,44 +743,15 @@ class Fighter(CombatUnit):
         g.base_hp = data.get("base_hp", 0)
         g.hp = data.get("hp", 50)
         g.alive = data.get("alive", True)
-        raw_injuries = data.get("injuries", [])
-        if isinstance(raw_injuries, int):
-            # Migrate old save: convert int count to list of random injuries
-            from game.data_loader import data_loader
-            g.injuries = []
-            used_ids = set()
-            for _ in range(raw_injuries):
-                injury_id = data_loader.pick_random_injury(used_ids)
-                g.injuries.append({"id": injury_id})
-                used_ids.add(injury_id)
-        elif isinstance(raw_injuries, list):
-            g.injuries = raw_injuries
-        else:
-            g.injuries = []
+        g.injuries = data.get("injuries", [])
         g.kills = data.get("kills", 0)
         g.perk_points = data.get("perk_points", 0)
         g.unlocked_perks = data.get("unlocked_perks", [])
-        equip = data.get("equipment", {"weapon": None, "armor": None, "accessory": None})
+        equip = data.get("equipment", {"weapon": None, "armor": None, "accessory": None, "relic": None})
+        # Back-compat: old saves didn't have a 'relic' slot.
         if "relic" not in equip:
             equip["relic"] = None
         g.equipment = equip
-        # Migrate old relics list: first relic → equipment slot, rest → _overflow_relics
-        g._overflow_relics = []
-        old_relics = data.get("relics", [])
-        if old_relics:
-            for i, r in enumerate(old_relics):
-                if "slot" not in r:
-                    r["slot"] = "relic"
-                if "rarity" not in r:
-                    r["rarity"] = RARITY_COMMON
-                if "id" not in r:
-                    r["id"] = r.get("name", "relic").lower().replace(" ", "_")
-                if "cost" not in r:
-                    r["cost"] = 30
-                if i == 0 and g.equipment.get("relic") is None:
-                    g.equipment["relic"] = r
-                else:
-                    g._overflow_relics.append(r)
         g.on_expedition = data.get("on_expedition", False)
         g.expedition_id = data.get("expedition_id")
         g.expedition_end = data.get("expedition_end", 0.0)
@@ -806,26 +791,6 @@ class Enemy(CombatUnit):
     def crit_mult(self):
         return ENEMY_CRIT_MULT
 
-    @staticmethod
-    def _apply_boss_multipliers(boss):
-        """Apply boss stat multipliers to an enemy instance."""
-        boss.max_hp = int(boss.max_hp * BOSS_HP_MULT)
-        boss.hp = boss.max_hp
-        boss.attack = int(boss.attack * BOSS_ATK_MULT)
-        boss.defense = int(boss.defense * BOSS_DEF_MULT)
-        boss.gold_reward = int(boss.gold_reward * BOSS_GOLD_MULT)
-        boss.crit_chance = min(BOSS_CRIT_MIN, boss.crit_chance + BOSS_CRIT_BONUS)
-        boss.dodge_chance = 0
-        boss.is_boss = True
-
-    @classmethod
-    def create_boss(cls, arena_tier):
-        boss_tier = arena_tier + BOSS_TIER_OFFSET
-        boss = cls(tier=boss_tier)
-        cls._apply_boss_multipliers(boss)
-        boss.name = f"BOSS: {get_boss_name(arena_tier)}"
-        return boss
-
     @classmethod
     def from_template(cls, template, tier):
         """Create enemy from JSON template with role/bias stat modifiers."""
@@ -851,13 +816,36 @@ class Enemy(CombatUnit):
         enemy.dodge_chance = min(ENEMY_DODGE_CAP, tier * ENEMY_DODGE_PER_TIER)
         return enemy
 
+
+class Boss(Enemy):
+    """Boss enemy — stronger stats, unique name, no dodge."""
+
+    def __init__(self, arena_tier):
+        boss_tier = arena_tier + BOSS_TIER_OFFSET
+        super().__init__(tier=boss_tier)
+        self._apply_boss_multipliers()
+        self.name = f"BOSS: {get_boss_name(arena_tier)}"
+        self.modifiers = []
+
+    def _apply_boss_multipliers(self):
+        self.max_hp = int(self.max_hp * BOSS_HP_MULT)
+        self.hp = self.max_hp
+        self.attack = int(self.attack * BOSS_ATK_MULT)
+        self.defense = int(self.defense * BOSS_DEF_MULT)
+        self.gold_reward = int(self.gold_reward * BOSS_GOLD_MULT)
+        self.crit_chance = max(BOSS_CRIT_MIN, self.crit_chance + BOSS_CRIT_BONUS)
+        self.dodge_chance = 0
+        self.is_boss = True
+
     @classmethod
-    def create_boss_from_template(cls, template, arena_tier):
+    def from_template(cls, template, arena_tier):
         """Create boss from JSON template with boss multipliers."""
         boss_tier = arena_tier + BOSS_TIER_OFFSET
-        boss = cls.from_template(template, boss_tier)
-        cls._apply_boss_multipliers(boss)
+        boss = Enemy.from_template(template, boss_tier)
+        boss.__class__ = cls
+        boss._apply_boss_multipliers()
         boss.name = f"BOSS: {template.get('name', get_boss_name(arena_tier))}"
+        boss.modifiers = []
         return boss
 
 

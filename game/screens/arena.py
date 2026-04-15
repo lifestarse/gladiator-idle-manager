@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 18
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -14,6 +14,7 @@ from game.theme import *
 from game.theme import popup_color
 from game.constants import (
     HEAL_GOLD_PER_HP, BATTLE_AUTO_INTERVAL, POPUP_DISMISS_DELAY,
+    HP_HEAL_TIER_MULT,
 )
 from kivy.animation import Animation
 from game.battle import BattlePhase
@@ -30,8 +31,6 @@ from game.screens.shared import _safe_clear, _safe_rebind, _play_hit_sound
 
 class ArenaScreen(BaseScreen):
     tier_text = StringProperty("TIER 1")
-    battle_status = StringProperty("")
-    battle_log_text = StringProperty("")
     player_summary = StringProperty("")
     enemy_summary = StringProperty("")
     arena_mode = StringProperty("common")
@@ -54,9 +53,6 @@ class ArenaScreen(BaseScreen):
         engine = App.get_running_app().engine
         self._update_top_bar()
         self.tier_text = f"TIER {engine.arena_tier}"
-        if not self.battle_status:
-            self.battle_status = ""
-
         # Record & run
         if engine.best_record_tier > 0:
             self.best_text = f"Best: T{engine.best_record_tier} \u00b7 {engine.best_record_kills} kills"
@@ -82,10 +78,36 @@ class ArenaScreen(BaseScreen):
         else:
             self.player_hp_pct = 1.0
             self.enemy_hp_pct = 1.0
-            e = engine.current_enemy
-            self.enemy_summary = f"{e.name} T{e.tier}" if e else ""
+            enemies = engine.preview_enemies
+            if enemies:
+                self.enemy_summary = f"{len(enemies)}x T{enemies[0].tier}"
+            else:
+                self.enemy_summary = ""
 
         self._refresh_battle_panels(engine)
+
+    def _get_skill_text(self, fighter):
+        """Return skill badge text: 'RDY', cooldown number, skill name, or None."""
+        engine = App.get_running_app().engine
+        skill = getattr(fighter, 'get_active_skill', lambda: None)()
+        if not skill:
+            return None
+        bm = getattr(engine, 'battle_mgr', None)
+        if not bm or not bm.is_active:
+            return skill["name"][:3].upper()
+        ss = bm.state.skill_states.get(id(fighter))
+        if not ss:
+            return None
+        if ss.cooldown_remaining <= 0:
+            return "RDY"
+        return str(ss.cooldown_remaining)
+
+    def _open_fighter_detail(self, fighter_idx):
+        """Open fighter detail on roster screen — same as tapping in squad."""
+        app = App.get_running_app()
+        roster = app.sm.get_screen("roster")
+        roster._pending_state = {'detail_index': fighter_idx}
+        app.sm.current = "roster"
 
     def _refresh_battle_panels(self, engine):
         fg = self.ids.get("battle_fighters_grid")
@@ -119,8 +141,13 @@ class ArenaScreen(BaseScreen):
             self._cached_heal_btn = heal_btn
 
             for i, f in enumerate(fighters_list):
+                real_battle_idx = i
+                real_roster_idx = next(
+                    (j for j, rf in enumerate(engine.fighters) if rf.name == f.name), -1
+                )
                 card = build_fighter_pit_card(
-                    f, on_tap=lambda w, idx=i: self.heal_fighter(idx),
+                    f, on_tap=lambda w, ri=real_roster_idx: self._open_fighter_detail(ri),
+                    skill_text=self._get_skill_text(f),
                 )
                 self._fighter_bar_map[f.name] = card
                 self._cached_fighter_names.append(f.name)
@@ -135,7 +162,12 @@ class ArenaScreen(BaseScreen):
                 self._cached_enemy_names.append(e.name)
                 eg.add_widget(row)
         else:
-            # Outside battle — always rebuild (runs rarely, ~1/s via idle_tick)
+            # Outside battle — use fast update if possible
+            fighters_list = [f for f in engine.fighters if f.available]
+            alive_enemies = list(engine.preview_enemies)
+            if self._try_fast_update(fighters_list, alive_enemies, engine):
+                return
+
             fg.clear_widgets()
             eg.clear_widgets()
             if hb:
@@ -145,25 +177,27 @@ class ArenaScreen(BaseScreen):
             self._cached_fighter_names = []
             self._cached_enemy_names = []
 
-            fighters_list = [f for f in engine.fighters if f.available]
             heal_btn = self._build_heal_btn(fighters_list, self._heal_all_outside)
             if hb:
                 hb.add_widget(heal_btn)
+            self._cached_heal_btn = heal_btn
 
             for idx_f, f in enumerate(fighters_list):
+                real_idx = engine.fighters.index(f)
                 card = build_fighter_pit_card(
-                    f, on_tap=lambda w, fi=idx_f: self._heal_outside_battle(fi),
+                    f, on_tap=lambda w, fi=real_idx: self._open_fighter_detail(fi),
                 )
                 self._fighter_bar_map[f.name] = card
+                self._cached_fighter_names.append(f.name)
                 fg.add_widget(card)
 
-            e = engine.current_enemy
-            if e:
+            for e in alive_enemies:
                 row = build_enemy_hp_row(
                     e, show_stats=True,
                     on_tap=lambda w, en=e: self._show_enemy_popup(en),
                 )
                 self._enemy_bar_map[e.name] = row
+                self._cached_enemy_names.append(e.name)
                 eg.add_widget(row)
 
     def _try_fast_update(self, fighters_list, alive_enemies, engine):
@@ -188,13 +222,13 @@ class ArenaScreen(BaseScreen):
             heal_btn.text_color = BG_DARK if can_heal else TEXT_MUTED
             heal_btn.height = dp(40) if any_damaged else 0
             heal_btn.opacity = 1 if any_damaged else 0
-            heal_btn.icon_source = "icons/ic_gold.png" if any_damaged else ""
+            heal_btn.icon_source = "sprites/icons/ic_gold.png" if any_damaged else ""
 
         # Update fighter cards
         for f in fighters_list:
             card = self._fighter_bar_map.get(f.name)
             if card:
-                update_fighter_pit_card(card, f)
+                update_fighter_pit_card(card, f, skill_text=self._get_skill_text(f))
 
         # Update enemy HP bars
         for e in alive_enemies:
@@ -221,18 +255,19 @@ class ArenaScreen(BaseScreen):
         if not (f.alive and f.hp > 0 and f.hp < f.max_hp):
             return
         missing = f.max_hp - f.hp
-        cost = math.ceil(missing / HEAL_GOLD_PER_HP)
+        tier_mult = HP_HEAL_TIER_MULT ** (engine.arena_tier - 1)
+        cost = math.ceil(missing / HEAL_GOLD_PER_HP * tier_mult)
         if engine.gold >= cost:
             engine.gold -= cost
             f.hp = f.max_hp
         elif engine.gold > 0:
-            heal_hp = int(engine.gold * HEAL_GOLD_PER_HP)
+            heal_hp = int(engine.gold * HEAL_GOLD_PER_HP / tier_mult)
             engine.gold = 0
             f.hp = min(f.max_hp, f.hp + heal_hp)
         else:
             App.get_running_app().show_toast(t("not_enough_gold", need=fmt_num(cost)))
             return
-        self.battle_status = f"Healed {f.name}"
+        self._spawn_float(f"Healed {f.name}", ACCENT_GREEN)
         if not in_battle:
             engine.save()
         self.refresh_ui()
@@ -257,7 +292,7 @@ class ArenaScreen(BaseScreen):
         total_cost = engine.get_hp_heal_cost(fighters)
         healed, spent = engine.heal_all_hp(fighters)
         if healed > 0:
-            self.battle_status = f"Healed {healed} fighters (-{spent}g)"
+            self._spawn_float(f"Healed {healed} (-{spent}g)", ACCENT_GREEN)
             self.refresh_ui()
         elif total_cost > 0:
             App.get_running_app().show_toast(t("not_enough_gold", need=fmt_num(total_cost)))
@@ -279,9 +314,9 @@ class ArenaScreen(BaseScreen):
             text=t("heal_all_cost", cost=fmt_num(total_heal_cost)) if any_damaged else "",
             btn_color=ACCENT_GREEN if can_heal else BTN_DISABLED,
             text_color=BG_DARK if can_heal else TEXT_MUTED,
-            font_size=16, size_hint_y=None,
+            font_size=11, size_hint_y=None,
             height=dp(40) if visible else 0,
-            icon_source="icons/ic_gold.png" if visible else "",
+            icon_source="sprites/icons/ic_gold.png" if visible else "",
         )
         btn.opacity = 1 if visible else 0
         btn.bind(on_press=lambda inst: callback())
@@ -297,9 +332,9 @@ class ArenaScreen(BaseScreen):
 
         is_boss = getattr(enemy, 'is_boss', False)
         border = ACCENT_PURPLE if is_boss else ACCENT_RED
-        name_prefix = "BOSS: " if is_boss else ""
+        name_prefix = ""  # boss name already includes "BOSS:" from models.py
 
-        def _lbl(text, size=sp(16), bold=False, color=None):
+        def _lbl(text, size=sp(8), bold=False, color=None):
             lbl = AutoShrinkLabel(
                 text=text, font_size=size, bold=bold,
                 color=color or border,
@@ -309,17 +344,28 @@ class ArenaScreen(BaseScreen):
             bind_text_wrap(lbl)
             return lbl
 
-        grid.add_widget(_lbl(f"{name_prefix}{enemy.name}", sp(26), bold=True))
-        grid.add_widget(_lbl(f"Tier {enemy.tier}", sp(14), color=TEXT_MUTED))
+        grid.add_widget(_lbl(f"{name_prefix}{enemy.name}", sp(13), bold=True))
+        grid.add_widget(_lbl(f"Tier {enemy.tier}", sp(7), color=TEXT_MUTED))
         grid.add_widget(_lbl(
-            f"HP  {fmt_num(enemy.max_hp)}", sp(18), bold=True))
+            f"HP  {fmt_num(enemy.max_hp)}", sp(9), bold=True))
         grid.add_widget(_lbl(
-            f"ATK  {fmt_num(enemy.attack)}    DEF  {fmt_num(enemy.defense)}", sp(18), bold=True))
+            f"ATK  {fmt_num(enemy.attack)}    DEF  {fmt_num(enemy.defense)}", sp(9), bold=True))
         grid.add_widget(_lbl(
             f"CRIT  {enemy.crit_chance * 100:.0f}%    DODGE  {enemy.dodge_chance * 100:.0f}%",
-            sp(15), color=TEXT_SECONDARY))
+            sp(8), color=TEXT_SECONDARY))
         grid.add_widget(_lbl(
-            f"REWARD  {fmt_num(enemy.gold_reward)} G", sp(15), color=ACCENT_GREEN))
+            f"REWARD  {fmt_num(enemy.gold_reward)} G", sp(8), color=ACCENT_GREEN))
+
+        # Boss modifiers
+        mods = getattr(enemy, 'modifiers', [])
+        if mods and is_boss:
+            from game.data_loader import data_loader
+            for mid in mods:
+                mod_def = data_loader.boss_modifiers.get(mid, {})
+                mod_name = mod_def.get("name", mid)
+                mod_desc = mod_def.get("description", "")
+                grid.add_widget(_lbl(
+                    f"[{mod_name}] {mod_desc}", sp(7), color=ACCENT_PURPLE))
 
 
     def _close_enemy_detail(self):
@@ -332,33 +378,35 @@ class ArenaScreen(BaseScreen):
         return False
 
     def _flash_damage(self, defender_name, is_player):
-        """Flash the HP bar of a damaged unit."""
+        """Flash the HP bar of a damaged unit + shake the card."""
         bar_map = self._fighter_bar_map if is_player else self._enemy_bar_map
         if hasattr(self, '_fighter_bar_map') and defender_name in bar_map:
-            flash_hp_bar(bar_map[defender_name])
+            widget = bar_map[defender_name]
+            flash_hp_bar(widget)
+            self._shake_widget(widget)
+            self._set_sprite_frame(widget, "hurt", revert_delay=0.25)
 
-    def _fade_log(self):
-        """Fade out battle log after a delay."""
-        log_lbl = self.ids.get("battle_log_label")
-        if log_lbl:
-            Animation.cancel_all(log_lbl, "opacity")
-            log_lbl.opacity = 1
-            anim = Animation(opacity=0, duration=1.5, t="in_cubic")
-            Clock.unschedule(self._start_log_fade)
-            Clock.schedule_once(self._start_log_fade, 3.0)
+    def _shake_widget(self, widget, intensity=None, duration=0.15):
+        """Quick horizontal shake for hit reaction."""
+        if intensity is None:
+            intensity = dp(4)
+        orig_x = widget.x
+        anim = (
+            Animation(x=orig_x + intensity, duration=duration / 4, t="out_sine") +
+            Animation(x=orig_x - intensity, duration=duration / 4, t="out_sine") +
+            Animation(x=orig_x + intensity / 2, duration=duration / 4, t="out_sine") +
+            Animation(x=orig_x, duration=duration / 4, t="out_sine")
+        )
+        anim.start(widget)
 
-    def _start_log_fade(self, dt=0):
-        log_lbl = self.ids.get("battle_log_label")
-        if log_lbl:
-            Animation(opacity=0, duration=1.5, t="in_cubic").start(log_lbl)
-
-    def _schedule_status_fade(self):
-        """Fade out the battle_status label after 3 seconds."""
-        Clock.unschedule(self._do_status_fade)
-        Clock.schedule_once(self._do_status_fade, 3.0)
-
-    def _do_status_fade(self, dt=0):
-        self.battle_status = ""
+    def _set_sprite_frame(self, widget, frame, revert_delay=0.3):
+        """Set avatar sprite frame, revert to idle after delay."""
+        for child in widget.walk():
+            if hasattr(child, 'frame'):
+                child.frame = frame
+                Clock.schedule_once(
+                    lambda dt, c=child: setattr(c, 'frame', 'idle'), revert_delay)
+                break
 
     def _check_pending_reset(self):
         engine = App.get_running_app().engine
@@ -369,33 +417,33 @@ class ArenaScreen(BaseScreen):
         self._reset_popup_open = True
         content = BoxLayout(orientation="vertical", spacing=dp(8), padding=[dp(16), dp(12)])
         content.add_widget(AutoShrinkLabel(
-            text=t("all_fighters_dead"), font_size="22sp", bold=True,
+            text=t("all_fighters_dead"), font_size="11sp", bold=True,
             color=ACCENT_RED, size_hint_y=None, height=dp(40),
         ))
         content.add_widget(AutoShrinkLabel(
-            text=t("run_ended", n=engine.run_number), font_size="18sp",
+            text=t("run_ended", n=engine.run_number), font_size="11sp",
             color=TEXT_PRIMARY, size_hint_y=None, height=dp(34),
         ))
         content.add_widget(AutoShrinkLabel(
             text=t("reached_tier_kills", tier=engine.run_max_tier, kills=engine.run_kills),
-            font_size="18sp", color=ACCENT_GOLD, size_hint_y=None, height=dp(34),
+            font_size="11sp", color=ACCENT_GOLD, size_hint_y=None, height=dp(34),
         ))
         lost_lbl = AutoShrinkLabel(
             text=t("gold_equip_lost"),
-            font_size="16sp", color=TEXT_SECONDARY, size_hint_y=None, height=dp(70),
+            font_size="11sp", color=TEXT_SECONDARY, size_hint_y=None, height=dp(70),
             halign="center", valign="middle",
         )
         bind_text_wrap(lost_lbl)
         content.add_widget(lost_lbl)
 
         restart_btn = MinimalButton(
-            text=t("new_run"), btn_color=ACCENT_RED, font_size=20,
+            text=t("new_run"), btn_color=ACCENT_RED, font_size=10,
             size_hint_y=None, height=dp(52),
         )
         content.add_widget(restart_btn)
 
         popup = Popup(
-            title=t("permadeath"), title_color=ACCENT_RED, title_size="16sp",
+            title=t("permadeath"), title_color=ACCENT_RED, title_size="11sp",
             content=content, size_hint=(0.9, None), height=dp(380),
             background_color=(0.08, 0.08, 0.11, 0.97),
             separator_color=ACCENT_RED, auto_dismiss=False,
@@ -405,7 +453,11 @@ class ArenaScreen(BaseScreen):
             popup.dismiss()
             self._reset_popup_open = False
             engine.execute_pending_reset()
-            App.get_running_app().show_class_selection()
+            # Navigate to Roster hire view instead of separate popup
+            app = App.get_running_app()
+            app.sm.current = "roster"
+            roster_scr = app.sm.get_screen("roster")
+            roster_scr.hire()
 
         restart_btn.bind(on_press=on_restart)
         popup.open()
@@ -417,13 +469,13 @@ class ArenaScreen(BaseScreen):
         self.is_fighting = True
         if self.arena_mode == "boss":
             events = engine.start_boss_fight()
-            self.battle_status = t("boss_challenge")
+            self._spawn_float(t("boss_challenge"), ACCENT_RED)
         else:
             # Check if boss is lurking in regular battle
             has_boss = (engine.current_enemy
                         and getattr(engine.current_enemy, 'is_boss', False))
             events = engine.start_auto_battle()
-            self.battle_status = t("auto_battle")
+            self._spawn_float(t("auto_battle"), ACCENT_GOLD)
             if has_boss:
                 self._show_boss_revenge_popup(engine.current_enemy.name)
         self._display_events(events)
@@ -432,14 +484,14 @@ class ArenaScreen(BaseScreen):
     def _show_boss_revenge_popup(self, boss_name):
         content = BoxLayout(orientation="vertical", spacing=dp(16), padding=dp(20))
         revenge_lbl = AutoShrinkLabel(
-            text=t("boss_revenge"), font_size="22sp", bold=True,
+            text=t("boss_revenge"), font_size="11sp", bold=True,
             color=ACCENT_RED, halign="center", valign="middle",
             size_hint_y=0.6,
         )
         bind_text_wrap(revenge_lbl)
         content.add_widget(revenge_lbl)
         sub_lbl = AutoShrinkLabel(
-            text=t("boss_revenge_sub"), font_size="18sp",
+            text=t("boss_revenge_sub"), font_size="11sp",
             color=TEXT_SECONDARY, halign="center", valign="middle",
             size_hint_y=0.4,
         )
@@ -449,7 +501,7 @@ class ArenaScreen(BaseScreen):
             title=boss_name,
             content=content,
             size_hint=(0.95, 0.5),
-            title_size=sp(28),
+            title_size=sp(12),
             background_color=popup_color(BG_CARD),
             title_color=popup_color(ACCENT_RED),
             separator_color=popup_color(ACCENT_RED),
@@ -504,10 +556,8 @@ class ArenaScreen(BaseScreen):
         if state.phase == BattlePhase.VICTORY:
             Clock.unschedule(self._auto_turn)
             self.is_fighting = False
-            self.battle_log_text = ""
-            self.battle_status = f"{t('victory')} +{fmt_num(state.gold_earned)}"
-            self._spawn_float(f"+{fmt_num(state.gold_earned)}", ACCENT_GOLD)
-            self._schedule_status_fade()
+            self._spawn_float(f"{t('victory')} +{fmt_num(state.gold_earned)}", ACCENT_GOLD)
+            self._victory_flash()
             # Re-spawn enemy matching current mode
             if self.arena_mode == "boss":
                 engine.spawn_boss_enemy()
@@ -521,23 +571,22 @@ class ArenaScreen(BaseScreen):
         elif state.phase == BattlePhase.DEFEAT:
             Clock.unschedule(self._auto_turn)
             self.is_fighting = False
-            self.battle_log_text = ""
-            self.battle_status = t("defeat")
             self._spawn_float(t("defeat"), ACCENT_RED)
-            self._schedule_status_fade()
             Clock.schedule_once(lambda dt: self._check_pending_reset(), 1.0)
 
     def _display_events(self, events):
-        lines = []
         for ev in events[-6:]:
-            if ev.is_crit:
-                lines.append(f"[CRIT] {ev.message}")
+            # Floating text for key events
+            if ev.event_type == "skill":
+                self._spawn_float(ev.message, ACCENT_CYAN)
             elif ev.is_kill:
-                lines.append(f"[KILL] {ev.message}")
-            elif getattr(ev, "is_dodge", False) or (ev.damage == 0 and "DODGE" in ev.message):
-                lines.append(f"[DODGE] {ev.message}")
-            else:
-                lines.append(ev.message)
+                self._spawn_float(ev.message, ACCENT_RED)
+
+            # Animate attacker sprite on attack
+            if ev.event_type == "attack" and ev.damage > 0 and ev.attacker:
+                atk_map = self._enemy_bar_map if ev.is_boss else self._fighter_bar_map
+                if hasattr(self, '_fighter_bar_map') and ev.attacker in atk_map:
+                    self._set_sprite_frame(atk_map[ev.attacker], "attack", revert_delay=0.3)
 
             # Flash HP bar of defender on hit
             if ev.event_type == "attack" and ev.damage > 0 and ev.defender:
@@ -555,24 +604,43 @@ class ArenaScreen(BaseScreen):
             if ev.event_type == "attack" and ev.damage > 0:
                 _play_hit_sound()
 
-        self.battle_log_text = "\n".join(lines)
-        # Show log then schedule fade
-        log_lbl = self.ids.get("battle_log_label")
-        if log_lbl:
-            Animation.cancel_all(log_lbl, "opacity")
-            log_lbl.opacity = 1
-            Clock.unschedule(self._start_log_fade)
-            Clock.schedule_once(self._start_log_fade, 3.0)
+    _active_floats: list = []
 
     def _spawn_float(self, text, color):
         arena = self.ids.get("arena_zone")
         if arena:
+            # Remove finished floats from tracking
+            self._active_floats = [f for f in self._active_floats
+                                   if f.parent is not None]
+            # Stack downward: each active float shifts new one by 30dp
+            from kivy.metrics import dp
+            offset = len(self._active_floats) * dp(30)
             ft = FloatingText(
-                text=text, font_size="24sp", bold=True, color=color,
-                center_x=arena.center_x, y=arena.center_y,
+                text=text, font_size="12sp", bold=True, color=color,
+                center_x=arena.center_x,
+                y=arena.center_y - offset,
                 size_hint=(None, None),
             )
             arena.add_widget(ft)
+            self._active_floats.append(ft)
+
+    def _victory_flash(self):
+        """Flash screen gold on victory."""
+        arena = self.ids.get("arena_zone")
+        if not arena:
+            return
+        from kivy.graphics import Color as GColor, Rectangle as GRect
+        with arena.canvas.after:
+            flash_c = GColor(0.93, 0.78, 0.18, 0.25)
+            flash_r = GRect(pos=arena.pos, size=arena.size)
+
+        def _fade(dt):
+            flash_c.a -= 0.05
+            if flash_c.a <= 0:
+                Clock.unschedule(_fade)
+                arena.canvas.after.remove(flash_c)
+                arena.canvas.after.remove(flash_r)
+        Clock.schedule_interval(_fade, 0.05)
 
     def _check_tutorial(self):
         engine = App.get_running_app().engine

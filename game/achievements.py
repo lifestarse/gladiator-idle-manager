@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 10
 """
 Achievement system — earn diamonds for milestones.
 Diamonds are premium currency for special features.
@@ -16,14 +16,14 @@ def _build_check(condition):
 
     # Simple engine attribute >= value
     _ATTR_GTE = {
-        "wins_gte": "wins",
+        "wins_gte": "total_wins",
         "bosses_killed_gte": "bosses_killed",
         "tier_gte": "arena_tier",
         "total_gold_gte": "total_gold_earned",
         "total_deaths_gte": "total_deaths",
         "story_chapter_gte": "story_chapter",
-        "runs_completed_gte": "runs_completed",
-        "expeditions_completed_gte": lambda e: len(e.expedition_log),
+        "runs_completed_gte": "total_runs",
+        "expeditions_completed_gte": lambda e: getattr(e, "total_expeditions_completed", 0),
         "lore_entries_gte": lambda e: len(getattr(e, "lore_unlocked", [])),
         "injuries_healed_gte": lambda e: getattr(e, "total_injuries_healed", 0),
         "enchantments_applied_gte": lambda e: getattr(e, "total_enchantments_applied", 0),
@@ -58,7 +58,7 @@ def _build_check(condition):
 
     if ctype == "fighter_perks_gte":
         return lambda e, v=val: any(
-            len(getattr(f, "perks", [])) >= v for f in e.fighters if f.alive
+            len(getattr(f, "unlocked_perks", [])) >= v for f in e.fighters if f.alive
         )
 
     if ctype == "fighter_perk_tree_maxed":
@@ -96,7 +96,8 @@ def _build_check(condition):
 
     if ctype == "expedition_completed_specific":
         return lambda e, v=val: any(
-            v in log and "returned" in log for log in e.expedition_log
+            v.replace("_", " ").lower() in log.lower() and "returned" in log.lower()
+            for log in e.expedition_log
         )
 
     _log.warning("Unknown achievement condition type: %s", ctype)
@@ -256,7 +257,7 @@ DIAMOND_SHOP = [
     {
         "id": "heal_all_injuries_diamond",
         "name": "Divine Surgeon",
-        "desc": "Heal ALL injuries on ALL fighters (1 diamond per injury)",
+        "desc": "Heal ALL injuries on ALL fighters (10 diamonds per injury, min 10)",
         "cost": 0,
         "category": "consumable",
     },

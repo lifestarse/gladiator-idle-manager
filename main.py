@@ -1,4 +1,4 @@
-# Build: 56
+# Build: 59
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -6,7 +6,7 @@ Permadeath resets the run. Stats distributed manually. Fighter classes.
 
 import os
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -18,7 +18,7 @@ from kivy.core.window import Window
 from kivy.graphics import Color, RoundedRectangle
 
 from game.engine import GameEngine
-from game.models import FIGHTER_CLASSES, fmt_num
+from game.models import fmt_num
 from game.theme import *
 from game.theme import popup_color
 from game.localization import t, init_language, set_language, get_language
@@ -41,6 +41,10 @@ from game.screens.more import MoreScreen
 if platform not in ("android", "ios"):
     Window.size = (360, 640)
 Window.clearcolor = BG_DARK
+
+# Register pixel font
+from kivy.core.text import LabelBase
+LabelBase.register(name='PixelFont', fn_regular='fonts/PressStart2P-Regular.ttf')
 
 
 class SwipeScreenManager(ScreenManager):
@@ -125,73 +129,55 @@ class GladiatorIdleApp(App):
     lbl_buy_diamonds = StringProperty("")
     toast_message = StringProperty("")
 
+    def _navigate_to_forge(self, state):
+        """Set ForgeScreen pending state and navigate (or refresh if already there)."""
+        fs = self.sm.get_screen("forge")
+        fs._pending_state = state
+        if self.sm.current == "forge":
+            fs._apply_pending_state()
+        else:
+            # Mark cross-screen entry depth so back unwinds correctly
+            fs._cross_screen_pending = True
+            if state.get('eq_detail_fighter', -1) >= 0 or state.get('inv_detail_idx', -1) >= 0:
+                fs._entry_depth = 2   # item detail
+            elif '_preview_item' in state:
+                fs._entry_depth = 3   # shop preview
+            elif state.get('show_inventory'):
+                fs._entry_depth = 4   # inventory
+            else:
+                fs._entry_depth = 5   # shop tab
+            self.sm.current = "forge"
+
     def open_equipped_detail(self, fighter_idx, slot):
         """Navigate to ForgeScreen and open equipped item detail — works from any screen."""
-        prev = self.sm.current
-        self.sm.current = "forge"
-        def _open(dt):
-            fs = self.sm.get_screen("forge")
-            fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else ""
-            fs._nav_back_fighter_idx = fighter_idx
-            fs.show_inventory = True
-            fs.eq_detail_fighter = fighter_idx
-            fs.eq_detail_slot = slot
-            fs.refresh_forge()
-        Clock.schedule_once(_open, 0)
+        self._navigate_to_forge({
+            'show_inventory': True,
+            'eq_detail_fighter': fighter_idx,
+            'eq_detail_slot': slot,
+        })
 
     def open_item_detail(self, inv_idx):
         """Navigate to ForgeScreen and open item detail — works from any screen."""
-        prev = self.sm.current
-        self.sm.current = "forge"
-        def _open(dt):
-            fs = self.sm.get_screen("forge")
-            fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else ""
-            fs.show_inventory = True
-            fs.inv_detail_idx = inv_idx
-            fs.refresh_forge()
-        Clock.schedule_once(_open, 0)
+        self._navigate_to_forge({
+            'show_inventory': True,
+            'inv_detail_idx': inv_idx,
+        })
 
-    def open_forge_tab(self, slot, fighter_idx=-1):
+    def open_forge_tab(self, slot):
         """Navigate to ForgeScreen shop with the given tab selected."""
-        prev = self.sm.current
-        self.sm.current = "forge"
-        def _open(dt):
-            fs = self.sm.get_screen("forge")
-            fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else ""
-            fs._nav_back_fighter_idx = fighter_idx
-            fs.forge_tab = slot
-            fs.refresh_forge()
-        Clock.schedule_once(_open, 0)
+        self._navigate_to_forge({'forge_tab': slot})
 
-    def open_inventory_tab(self, tab, fighter_idx=-1, equip_filter="all"):
+    def open_inventory_tab(self, tab, equip_filter="all"):
         """Navigate to ForgeScreen inventory with the given tab filter."""
-        prev = self.sm.current
-        self.sm.current = "forge"
-        def _open(dt):
-            fs = self.sm.get_screen("forge")
-            fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else ""
-            fs._nav_back_fighter_idx = fighter_idx
-            fs.show_inventory = True
-            fs.inventory_tab = tab
-            fs.inventory_equip_filter = equip_filter
-            fs.refresh_forge()
-        Clock.schedule_once(_open, 0)
+        self._navigate_to_forge({
+            'show_inventory': True,
+            'inventory_tab': tab,
+            'inventory_equip_filter': equip_filter,
+        })
 
     def open_shop_preview(self, item):
         """Navigate to ForgeScreen and show read-only item preview."""
-        prev = self.sm.current
-        self.sm.current = "forge"
-        def _open(dt):
-            fs = self.sm.get_screen("forge")
-            fs._reset_forge_state()
-            fs._nav_from = prev if prev != "forge" else ""
-            fs._preview_item = item
-            fs.refresh_forge()
-        Clock.schedule_once(_open, 0)
+        self._navigate_to_forge({'_preview_item': item})
 
     def show_toast(self, msg, duration=2.5):
         """Show a brief error/info notification at the bottom of the screen."""
@@ -337,7 +323,7 @@ class GladiatorIdleApp(App):
             except Exception as e:
                 print(f"[UI] Edge-to-edge fix error: {e}")
 
-        sm = SwipeScreenManager(transition=NoTransition())
+        sm = SwipeScreenManager(transition=FadeTransition(duration=0.2))
         sm.add_widget(ArenaScreen(name="arena"))
         sm.add_widget(RosterScreen(name="roster"))
         sm.add_widget(ForgeScreen(name="forge"))
@@ -408,22 +394,44 @@ class GladiatorIdleApp(App):
                 break
 
     def _auto_save(self, dt):
-        self.engine.save()
+        save_data = self.engine.save()
         if cloud_save_manager.is_connected:
-            cloud_save_manager.upload_save(self.engine.save())
+            cloud_save_manager.upload_save(save_data)
+
+    def on_pause(self):
+        self.engine.save()
+        return True
+
+    def on_resume(self):
+        pass
 
     def on_stop(self):
-        self.engine.save()
+        save_data = self.engine.save()
         if cloud_save_manager.is_connected:
-            cloud_save_manager.upload_save(self.engine.save())
+            cloud_save_manager.upload_save(save_data)
 
     def _on_screen_change(self, sm, new_screen):
         """Track navigation history whenever the active screen changes."""
         if self._going_back:
             self._going_back = False
         elif new_screen != self._current_screen:
-            self._nav_history.append(self._current_screen)
+            # Save current screen + its view state
+            state = self._get_screen_state(self._current_screen)
+            self._nav_history.append((self._current_screen, state))
         self._current_screen = new_screen
+
+    def _get_screen_state(self, screen_name):
+        """Snapshot the current view state of a screen."""
+        scr = self.sm.get_screen(screen_name)
+        if hasattr(scr, 'get_nav_state'):
+            return scr.get_nav_state()
+        return {}
+
+    def _restore_screen_state(self, screen_name, state):
+        """Restore a screen's view state from snapshot."""
+        scr = self.sm.get_screen(screen_name)
+        if hasattr(scr, 'restore_nav_state') and state:
+            scr.restore_nav_state(state)
 
     def _on_keyboard(self, window, key, scancode, codepoint, modifier):
         """Handle Android back button (key 27) and desktop Escape."""
@@ -438,80 +446,10 @@ class GladiatorIdleApp(App):
         if hasattr(scr, "on_back_pressed") and scr.on_back_pressed():
             return  # screen handled it internally
         if self._nav_history:
-            prev = self._nav_history.pop()
+            prev_name, prev_state = self._nav_history.pop()
             self._going_back = True
-            self.sm.current = prev
-
-    def show_class_selection(self):
-        """Show popup to choose fighter class before hiring."""
-        content = BoxLayout(orientation="vertical", spacing=8, padding=[12, 10])
-
-        content.add_widget(AutoShrinkLabel(
-            text=t("choose_class"), font_size="19sp",
-            color=ACCENT_GOLD, size_hint_y=None, height=dp(30),
-        ))
-
-        for cls_id, cls_data in FIGHTER_CLASSES.items():
-            row = BoxLayout(size_hint_y=None, height=dp(110), spacing=dp(6))
-
-            info = BoxLayout(orientation="vertical", size_hint_x=0.65, spacing=dp(2))
-            name_lbl = AutoShrinkLabel(
-                text=cls_data["name"], font_size="19sp", bold=True,
-                color=ACCENT_GREEN if cls_id == "mercenary" else
-                      ACCENT_RED if cls_id == "assassin" else ACCENT_BLUE,
-                halign="left",
-                size_hint_y=None, height=dp(30),
-            )
-            bind_text_wrap(name_lbl)
-            info.add_widget(name_lbl)
-            stat_line = f"STR {cls_data['base_str']}  AGI {cls_data['base_agi']}  VIT {cls_data['base_vit']}"
-            stat_lbl = AutoShrinkLabel(
-                text=stat_line, font_size="15sp", color=TEXT_SECONDARY,
-                halign="left",
-                size_hint_y=None, height=dp(24),
-            )
-            bind_text_wrap(stat_lbl)
-            info.add_widget(stat_lbl)
-            desc_lbl = AutoShrinkLabel(
-                text=cls_data.get("desc", cls_data.get("description", "")), font_size="15sp", color=TEXT_MUTED,
-                halign="left",
-                size_hint_y=None, height=dp(40),
-            )
-            bind_text_wrap(desc_lbl)
-            info.add_widget(desc_lbl)
-
-            btn = MinimalButton(
-                text=t("btn_select"), font_size=17, size_hint_x=0.35,
-                btn_color=ACCENT_GOLD, text_color=BG_DARK,
-            )
-
-            row.add_widget(info)
-            row.add_widget(btn)
-            content.add_widget(row)
-
-            # Bind must capture cls_id
-            btn.bind(on_press=lambda inst, cid=cls_id: self._hire_with_class(cid))
-
-        popup = Popup(
-            title=t("recruit_fighter"),
-            title_color=ACCENT_GOLD, title_size="16sp",
-            content=content,
-            size_hint=(0.9, None), height=dp(500),
-            background_color=(0.08, 0.08, 0.11, 0.97),
-            separator_color=ACCENT_GOLD,
-        )
-        self._class_popup = popup
-        popup.open()
-
-    def _hire_with_class(self, class_id):
-        if hasattr(self, '_class_popup'):
-            self._class_popup.dismiss()
-        self.engine.hire_gladiator(class_id)
-        scr = self.sm.current_screen
-        if hasattr(scr, "refresh_roster"):
-            scr.refresh_roster()
-        elif hasattr(scr, "refresh_ui"):
-            scr.refresh_ui()
+            self._restore_screen_state(prev_name, prev_state)
+            self.sm.current = prev_name
 
     def show_tutorial(self, step):
         self.engine.mark_tutorial_shown(step["id"])

@@ -3,11 +3,11 @@ title = Gladiator Idle
 package.name = gladiatoridle
 package.domain = com.gladiator
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json,wav
-source.exclude_dirs = fonts,bin,.buildozer,.git
+source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf
+source.exclude_dirs = bin,.buildozer,.git
 source.exclude_patterns = generate_icons.py
-version = 1.8.0
-requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype
+version = 1.9.3
+requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
 orientation = portrait
 fullscreen = 1
 

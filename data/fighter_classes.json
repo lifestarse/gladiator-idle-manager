@@ -16,6 +16,14 @@
         "description": "Gains +1 bonus stat point per level.",
         "effect": {"type": "bonus_points", "value": 1}
       },
+      "active_skill": {
+        "id": "rally",
+        "name": "Rally",
+        "description": "Inspires all allies, boosting ATK by 15% for 2 turns.",
+        "cooldown": 6,
+        "skill_type": "buff_team_atk",
+        "params": {"atk_bonus_pct": 0.15, "duration": 2}
+      },
       "perk_tree": [
         {
           "id": "merc_iron_will",
@@ -107,6 +115,14 @@
         "name": "Shadow Strike",
         "description": "Critical hits deal 25% bonus damage beyond the normal critical multiplier.",
         "effect": {"type": "crit_damage_bonus", "value": 0.25}
+      },
+      "active_skill": {
+        "id": "shadowstep",
+        "name": "Shadowstep",
+        "description": "Vanishes into shadow — next attack is a guaranteed crit and dodges the next enemy strike.",
+        "cooldown": 5,
+        "skill_type": "guaranteed_crit_dodge",
+        "params": {}
       },
       "perk_tree": [
         {
@@ -200,6 +216,14 @@
         "description": "Takes 10% less damage from all sources.",
         "effect": {"type": "damage_reduction", "value": 0.10}
       },
+      "active_skill": {
+        "id": "shield_wall",
+        "name": "Shield Wall",
+        "description": "Raises an impenetrable guard, reducing all incoming damage to the team by 50% for 2 turns.",
+        "cooldown": 6,
+        "skill_type": "team_damage_reduction",
+        "params": {"reduction_pct": 0.50, "duration": 2}
+      },
       "perk_tree": [
         {
           "id": "tank_thick_skin",
@@ -291,6 +315,14 @@
         "name": "Blood Fury",
         "description": "Damage increases as HP drops, up to +50% at 10% HP.",
         "effect": {"type": "damage_bonus_on_low_hp", "max_value": 0.50, "hp_threshold": 0.10}
+      },
+      "active_skill": {
+        "id": "frenzy",
+        "name": "Frenzy",
+        "description": "Enters a blood rage, attacking 3 times this turn at 80% damage each.",
+        "cooldown": 7,
+        "skill_type": "multi_attack",
+        "params": {"extra_attacks": 2, "damage_mult": 0.8}
       },
       "perk_tree": [
         {
@@ -384,6 +416,14 @@
         "description": "Counter-attacks on successful dodge, dealing 50% of normal damage.",
         "effect": {"type": "on_dodge_counter", "damage_pct": 0.50}
       },
+      "active_skill": {
+        "id": "net_throw",
+        "name": "Net Throw",
+        "description": "Hurls a weighted net, stunning the current target for 2 turns.",
+        "cooldown": 5,
+        "skill_type": "stun_enemy",
+        "params": {"stun_turns": 2}
+      },
       "perk_tree": [
         {
           "id": "ret_nimble",
@@ -475,6 +515,14 @@
         "name": "Field Surgery",
         "description": "Heals 3% of max HP per turn in battle.",
         "effect": {"type": "regen_per_turn_pct", "value": 0.03}
+      },
+      "active_skill": {
+        "id": "mass_heal",
+        "name": "Mass Heal",
+        "description": "Channels healing energy, restoring 20% max HP to all allies.",
+        "cooldown": 6,
+        "skill_type": "heal_team",
+        "params": {"heal_pct": 0.20}
       },
       "perk_tree": [
         {

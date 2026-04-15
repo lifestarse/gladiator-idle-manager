@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 4
 """
 Google Drive cloud save — works on Android via Google Sign-In + REST API.
 
@@ -18,16 +18,15 @@ from urllib.parse import urlencode
 from kivy.utils import platform
 from kivy.clock import Clock
 
-# Build SSL context for Android (system certs may not be accessible)
+# Build SSL context. certifi is a required dependency (see buildozer.spec) — it
+# provides a CA bundle for Android, where Python can't reliably find system certs.
+# If certifi is missing, fall back to system certs; do NOT disable verification,
+# since this path transmits the Google OAuth token and cloud save data.
 try:
     import certifi
     _ssl_ctx = ssl.create_default_context(cafile=certifi.where())
 except ImportError:
     _ssl_ctx = ssl.create_default_context()
-    # On Android, Python may not find system CA certs — allow unverified as fallback
-    if platform == "android":
-        _ssl_ctx.check_hostname = False
-        _ssl_ctx.verify_mode = ssl.CERT_NONE
 
 CLOUD_SAVE_FILENAME = "gladiator_idle_save.json"
 DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files"
@@ -121,7 +120,7 @@ class CloudSaveManager:
             _log.info("[CloudSave] Account check failed: %s", exc)
             self.last_sync_status = "Sign-in required"
 
-    def _fetch_token(self, account):
+    def _fetch_token(self, account, on_success=None):
         """Get OAuth2 token (background thread — only uses pre-loaded classes)."""
         try:
             GoogleAuthUtil = self._java["GoogleAuthUtil"]
@@ -132,6 +131,9 @@ class CloudSaveManager:
             self._initialized = True
             email = account.getEmail() or ""
             _log.info("[CloudSave] Got auth token for %s", email)
+            if on_success:
+                from kivy.clock import Clock
+                Clock.schedule_once(lambda dt: on_success(), 0)
             Clock.schedule_once(lambda dt: self._set_status("Connected"), 0)
             if self.on_auto_connected:
                 Clock.schedule_once(lambda dt: self.on_auto_connected(), 0.5)
@@ -180,10 +182,9 @@ class CloudSaveManager:
                         self.user_email = acc.getEmail() or ""
                         self._signing_in = False
                         threading.Thread(
-                            target=self._fetch_token, args=(acc,), daemon=True
+                            target=self._fetch_token, args=(acc, on_success),
+                            daemon=True
                         ).start()
-                        if on_success:
-                            on_success()
                 except Exception as _e:
                     _log.warning("Sign-in poll error: %s", _e)
 

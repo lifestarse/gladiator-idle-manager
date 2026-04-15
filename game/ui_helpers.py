@@ -1,4 +1,4 @@
-# Build: 33
+# Build: 42
 """Dynamic UI builders for all screens — minimalist CardWidget style."""
 
 import time
@@ -65,8 +65,8 @@ def grid_batch(grid):
 def build_back_btn(callback):
     """Standard back button used across all detail views."""
     btn = MinimalButton(
-        text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=16,
-        size_hint_y=None, height=dp(38),
+        text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=sp(11),
+        size_hint_y=None, height=dp(48),
     )
     btn.bind(on_press=lambda *a: callback())
     return btn
@@ -77,13 +77,14 @@ def make_styled_popup(title, content, size_hint=(0.92, 0.75)):
     return Popup(
         title=title, content=content,
         size_hint=size_hint,
+        title_size=sp(12),
         background_color=popup_color(BG_CARD),
         title_color=popup_color(ACCENT_GOLD),
         separator_color=popup_color(ACCENT_GOLD),
     )
 
 
-def make_dynamic_label(text, font_size="14sp", color=TEXT_SECONDARY,
+def make_dynamic_label(text, font_size="11sp", color=TEXT_SECONDARY,
                        padding=dp(16), halign="left"):
     """Label that auto-wraps and auto-sizes height to content."""
     lbl = AutoShrinkLabel(
@@ -146,7 +147,7 @@ def _bind_long_tap(widget, callback):
 
 
 def build_tab_row(tabs, current, on_select, active_color=None, inactive_color=None,
-                  height=None, font_size=13):
+                  height=None, font_size=sp(10)):
     """Build a horizontal row of tab buttons.
 
     Args:
@@ -196,7 +197,7 @@ def _auto_text_size(label):
     return label
 
 
-def _diamond_label(amount, font_size="24sp", color=ACCENT_CYAN):
+def _diamond_label(amount, font_size="12sp", color=ACCENT_CYAN):
     """BoxLayout with number + diamond icon (icon to the right), vertically centered."""
     from kivy.uix.anchorlayout import AnchorLayout
     anchor = AnchorLayout(size_hint=(1, 1), anchor_x="center", anchor_y="center")
@@ -213,8 +214,8 @@ def _diamond_label(amount, font_size="24sp", color=ACCENT_CYAN):
     lbl.bind(texture_size=lbl.setter("size"))
     box.add_widget(lbl)
     box.add_widget(Image(
-        source="icons/ic_gem.png", fit_mode="contain",
-        size_hint=(None, None), width=dp(24), height=dp(24),
+        source="sprites/icons/ic_gem.png", fit_mode="contain",
+        size_hint=(None, None), width=dp(18), height=dp(18),
     ))
     anchor.add_widget(box)
     return anchor
@@ -241,47 +242,48 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
     def __init__(self, **kwargs):
         kwargs.setdefault('orientation', 'horizontal')
         kwargs.setdefault('size_hint_y', None)
-        kwargs.setdefault('height', dp(45))
-        kwargs.setdefault('padding', [dp(6), dp(3)])
-        kwargs.setdefault('spacing', dp(4))
+        kwargs.setdefault('height', dp(84))
+        kwargs.setdefault('padding', [dp(8), dp(10)])
+        kwargs.setdefault('spacing', dp(6))
         super().__init__(**kwargs)
         self._fighter_index = 0
         self._dismiss_cb = None
 
-        ROW_H = dp(32)
+        ROW_H = dp(56)
 
         # Avatar
         self._avatar = GladiatorAvatar(
+            fighter_class="mercenary",
             accent_color=list(ACCENT_GREEN),
             tier=1,
             size_hint=(None, None),
-            width=dp(36), height=dp(40),
+            width=dp(48), height=dp(52),
         )
 
         # Name
         self._name_lbl = AutoShrinkLabel(
-            font_size="16sp", bold=True, color=list(TEXT_PRIMARY),
-            halign="left", size_hint_x=None, width=dp(80),
+            font_size="12sp", bold=True, color=list(TEXT_PRIMARY),
+            halign="left", size_hint_x=None, width=dp(130),
             size_hint_y=None, height=ROW_H,
         )
         self._name_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
 
         # Level
         self._level_lbl = AutoShrinkLabel(
-            font_size="15sp", bold=True, color=list(ACCENT_GOLD),
-            halign="left", size_hint_x=None, width=dp(36),
+            font_size="11sp", bold=True, color=list(ACCENT_GOLD),
+            halign="left", size_hint_x=None, width=dp(56),
             size_hint_y=None, height=ROW_H,
         )
         self._level_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
 
         # Third slot (dismiss btn / away label / empty)
         self._dismiss_btn = MinimalButton(
-            text="X", btn_color=list(ACCENT_RED), font_size=14,
-            size_hint_x=None, width=dp(32),
+            text="X", btn_color=list(ACCENT_RED), font_size=sp(11),
+            size_hint_x=None, width=dp(36),
         )
         self._away_lbl = AutoShrinkLabel(
-            font_size="12sp", color=list(ACCENT_CYAN), halign="center",
-            size_hint_x=None, width=dp(40), size_hint_y=None, height=ROW_H,
+            font_size="11sp", color=list(ACCENT_CYAN), halign="center",
+            size_hint_x=None, width=dp(44), size_hint_y=None, height=ROW_H,
         )
         self._away_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
         self._empty_lbl = Label(size_hint_x=None, width=0)
@@ -291,13 +293,13 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
         self._spacer = Label(size_hint_x=1)
 
         # Stats: HP only — compact, fixed width
-        ICON_W = dp(62)
+        ICON_W = dp(90)
         self._stat_box = BoxLayout(
             orientation="horizontal", spacing=dp(2),
             size_hint_x=None, width=ICON_W + dp(4),
             size_hint_y=None, height=ROW_H,
         )
-        self._hp_row = _icon_label("icons/ic_hp.png", 0, (1, 0.3, 0.3, 1), font_size="14sp", height=ROW_H)
+        self._hp_row = _icon_label("sprites/icons/ic_hp.png", 0, (1, 0.3, 0.3, 1), font_size="11sp", height=ROW_H)
         self._stat_box.add_widget(self._hp_row)
 
         # Plus indicator — available stat/perk points
@@ -345,8 +347,9 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
         """Called by RecycleView when this instance is (re)assigned to a row."""
         self._fighter_index = data['index']
 
-        # Avatar color by class
+        # Avatar sprite by class
         fc = data.get('fighter_class', 'mercenary')
+        self._avatar.fighter_class = fc
         self._avatar.accent_color = list(_CLASS_COLORS.get(fc, ACCENT_GREEN))
         self._avatar.tier = data.get('level', 1)
         self._avatar.is_wounded = bool(data.get('injuries', 0))
@@ -406,7 +409,7 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
 #  ROSTER
 # ============================================================
 
-def _icon_label(icon_src, text, color, font_size="16sp", height=dp(28)):
+def _icon_label(icon_src, text, color, font_size="11sp", height=dp(28)):
     """Helper: icon image + label in a horizontal box."""
     row = BoxLayout(size_hint_y=None, height=height, spacing=0)
     ico = Image(source=icon_src, fit_mode="contain",
@@ -424,7 +427,7 @@ def build_roster_card(data, roster_screen):
     """Minimal card: name, level, STR/AGI/HP icons. Tap to open detail popup."""
     from game.widgets import BaseCard
 
-    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(90),
+    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(72),
                     padding=[dp(10), dp(6)], spacing=dp(4))
 
     if not data["alive"]:
@@ -447,24 +450,24 @@ def build_roster_card(data, roster_screen):
     status_widget = Label(size_hint_x=0.25)
     if not data["alive"]:
         status_widget = MinimalButton(
-            text="X", btn_color=ACCENT_RED, font_size=15, size_hint_x=0.25,
+            text="X", btn_color=ACCENT_RED, font_size=sp(11), size_hint_x=0.25,
         )
         status_widget.bind(on_press=lambda inst, i=idx: roster_screen.dismiss(i))
     elif data["on_expedition"]:
         status_widget = _auto_text_size(AutoShrinkLabel(
-            text=t("away_tag"), font_size="14sp", color=ACCENT_CYAN,
+            text=t("away_tag"), font_size="10sp", color=ACCENT_CYAN,
             halign="right", size_hint_x=0.25,
         ))
     card.add_text_row(
-        (name_text, sp(18), True, name_color, 0.55),
-        (f"LV {data['level']}", sp(17), True, ACCENT_GOLD, 0.2),
+        (name_text, sp(11), True, name_color, 0.55),
+        (f"LV {data['level']}", sp(11), True, ACCENT_GOLD, 0.2),
         status_widget,
         height=dp(34),
     )
 
     # Row 2: HP
     card.add_icon_labels([
-        ("icons/ic_hp.png", fmt_num(data['hp']), (1, 0.3, 0.3, 1), sp(16)),
+        ("sprites/icons/ic_hp.png", fmt_num(data['hp']), (1, 0.3, 0.3, 1), sp(8)),
     ], height=dp(28), spacing=dp(8))
 
     _bind_long_tap(card, lambda w, i=idx: roster_screen.show_fighter_detail(i))
@@ -501,29 +504,32 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
     if ench:
         ench_data = _m.ENCHANTMENT_TYPES.get(ench)
         ench_display = f"[{ench_data['name']}]" if ench_data else f"[{ench}]"
-    slot_rarity = subtitle if subtitle else f"{slot.upper()} [{rarity.upper()}]"
+    if subtitle:
+        slot_rarity = subtitle
+    else:
+        slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
     s, a, v = calc_item_stats(item, fighter)
 
-    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(97),
-                    padding=[dp(12), dp(8)], spacing=dp(2))
+    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(75),
+                    padding=[dp(12), dp(8)], spacing=dp(4))
     card.border_color = rcolor
 
     # Row 1: name | +level | [enchantment]
     row1 = BoxLayout(size_hint_y=0.35, spacing=dp(4))
     name_lbl = AutoShrinkLabel(
-        text=display_name, font_size=sp(25), bold=True, color=rcolor,
+        text=display_name, font_size=sp(12), bold=True, color=rcolor,
         halign="left", size_hint_x=None, width=1,
     )
     name_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
     row1.add_widget(name_lbl)
     level_lbl = AutoShrinkLabel(
-        text=level_display, font_size=sp(14), bold=True, color=ACCENT_GOLD,
+        text=level_display, font_size=sp(10), bold=True, color=ACCENT_GOLD,
         halign="left", size_hint_x=None, width=dp(28),
     )
     level_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
     row1.add_widget(level_lbl)
     ench_lbl = AutoShrinkLabel(
-        text=ench_display, font_size=sp(12), bold=True, color=ACCENT_PURPLE,
+        text=ench_display, font_size=sp(11), bold=True, color=ACCENT_PURPLE,
         halign="left", size_hint_x=None, width=1,
     )
     ench_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
@@ -533,14 +539,14 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
     # Row 2: slot/rarity | equipped fighter
     row2 = BoxLayout(size_hint_y=0.25, spacing=dp(4))
     sr_lbl = AutoShrinkLabel(
-        text=slot_rarity, font_size=sp(12), color=subtitle_color or TEXT_MUTED,
+        text=slot_rarity, font_size=sp(11), color=subtitle_color or TEXT_MUTED,
         halign="left", size_hint_x=None, width=1,
     )
     sr_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
     row2.add_widget(sr_lbl)
     if equipped_on:
         eq_lbl = AutoShrinkLabel(
-            text=equipped_on, font_size=sp(12), bold=True, color=ACCENT_CYAN,
+            text=equipped_on, font_size=sp(11), bold=True, color=ACCENT_CYAN,
             halign="left", size_hint_x=None, width=1,
         )
         eq_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
@@ -549,17 +555,17 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
 
     # Row 3: stat icons
     row3 = BoxLayout(size_hint_y=0.40, spacing=dp(8))
-    ico_h = dp(14)
+    ico_h = dp(16)
     stat_items = []
     if s > 0:
-        stat_items.append(("icons/ic_str.png", fmt_num(s)))
+        stat_items.append(("sprites/icons/ic_str.png", fmt_num(s)))
     if a > 0:
-        stat_items.append(("icons/ic_agi.png", fmt_num(a)))
+        stat_items.append(("sprites/icons/ic_agi.png", fmt_num(a)))
     if v > 0:
-        stat_items.append(("icons/ic_vit.png", fmt_num(v)))
+        stat_items.append(("sprites/icons/ic_vit.png", fmt_num(v)))
     for icon_src, val_text in stat_items:
-        lbl = Label(
-            text=val_text, font_size=sp(14), bold=True, color=ACCENT_GREEN,
+        lbl = AutoShrinkLabel(
+            text=val_text, font_size=sp(10), bold=True, color=ACCENT_GREEN,
             halign="left", valign="middle",
             size_hint_x=None, width=1,
         )
@@ -569,7 +575,7 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
                               size_hint=(None, 1), width=ico_h))
     if not (s or a or v):
         row3.add_widget(_auto_text_size(AutoShrinkLabel(
-            text="—", font_size=sp(14), color=TEXT_MUTED, halign="left",
+            text="—", font_size=sp(10), color=TEXT_MUTED, halign="left",
         )))
     card.add_widget(row3)
 
@@ -588,7 +594,7 @@ def build_forge_card(item, forge_screen):
 
     wrapper = BoxLayout(
         orientation="vertical",
-        size_hint_y=None, height=dp(136),
+        size_hint_y=None, height=dp(114),
         spacing=dp(4),
     )
 
@@ -604,11 +610,11 @@ def build_forge_card(item, forge_screen):
 
     affordable = item["affordable"]
     buy_btn = MinimalButton(
-        text=t("buy_btn_price", price=fmt_num(item['cost'])), font_size=16,
+        text=t("buy_btn_price", price=fmt_num(item['cost'])), font_size=sp(11),
         size_hint_y=None, height=dp(32),
         btn_color=rcolor if affordable else BTN_DISABLED,
         text_color=BG_DARK if affordable else TEXT_MUTED,
-        icon_source="icons/ic_gold.png",
+        icon_source="sprites/icons/ic_gold.png",
     )
     buy_btn.bind(on_press=lambda inst, iid=item["id"]: forge_screen.buy(iid))
     wrapper.add_widget(buy_btn)
@@ -670,15 +676,15 @@ def build_expedition_card(exp, fighters, expedition_screen):
                     padding=[dp(12), dp(8)], spacing=dp(6))
 
     card.add_text_row(
-        (exp["name"], sp(22), True, ACCENT_PURPLE, 0.7),
-        (exp["duration_text"], sp(19), False, TEXT_SECONDARY, 0.3),
+        (exp["name"], sp(11), True, ACCENT_PURPLE, 0.7),
+        (exp["duration_text"], sp(10), False, TEXT_SECONDARY, 0.3),
         size_hint_y=0.3,
     )
-    card.add_label(exp["desc"], font_size=sp(17), color=TEXT_MUTED, halign="left", size_hint_y=0.2)
+    card.add_label(exp["desc"], font_size=sp(11), color=TEXT_MUTED, halign="left", size_hint_y=0.2)
     card.add_text_row(
-        (f"Lv.{exp['min_level']}+", sp(18), False, ACCENT_CYAN, 0.33),
-        (t("danger_label", v=f"{exp['danger']:.0%}"), sp(18), False, ACCENT_RED, 0.34),
-        (t("relic_chance", v=f"{exp['relic_chance']:.0%}"), sp(18), False, ACCENT_GOLD, 0.33),
+        (f"Lv.{exp['min_level']}+", sp(11), False, ACCENT_CYAN, 0.33),
+        (t("danger_label", v=f"{exp['danger']:.0%}"), sp(11), False, ACCENT_RED, 0.34),
+        (t("relic_chance", v=f"{exp['relic_chance']:.0%}"), sp(11), False, ACCENT_GOLD, 0.33),
         size_hint_y=0.2,
     )
 
@@ -686,19 +692,22 @@ def build_expedition_card(exp, fighters, expedition_screen):
     relic_pct = int(exp.get("relic_chance", 0) * 100)
     reward_parts = []
     if shard_info:
-        reward_parts.append(shard_info["name"])
+        tier = shard_info["tier"]
+        _key = f"shard_tier_{tier}_name"
+        _translated = t(_key)
+        reward_parts.append(_translated if _translated != _key else shard_info["name"])
     reward_parts.append(f"{t('relic_slot')} ({relic_pct}%)")
-    card.add_label(" + ".join(reward_parts), font_size=sp(14), color=ACCENT_GOLD, size_hint_y=0.12)
+    card.add_label(" + ".join(reward_parts), font_size=sp(10), color=ACCENT_GOLD, size_hint_y=0.12)
 
     eligible = [f for f in fighters if f["level"] >= exp["min_level"]]
     if eligible:
-        send_btn = MinimalButton(text=t("send_btn"), font_size=18, btn_color=ACCENT_PURPLE)
+        send_btn = MinimalButton(text=t("send_btn"), font_size=sp(11), btn_color=ACCENT_PURPLE)
         def _open_send_popup(inst, elig=eligible, eid=exp["id"], scr=expedition_screen):
             _show_send_fighter_popup(elig, eid, scr)
         send_btn.bind(on_press=_open_send_popup)
         card.add_button_row([send_btn], height=dp(190 * 0.25))
     else:
-        card.add_label(t("no_eligible"), font_size=sp(18), color=TEXT_MUTED, size_hint_y=0.25)
+        card.add_label(t("no_eligible"), font_size=sp(11), color=TEXT_MUTED, size_hint_y=0.25)
     return card
 
 
@@ -709,9 +718,9 @@ def build_expedition_status_card(status):
                     padding=[dp(10), dp(4)], spacing=dp(6))
     card.border_color = ACCENT_CYAN
     card.add_text_row(
-        (status["fighter_name"], sp(15), True, ACCENT_CYAN, 0.30),
-        (status["expedition_name"], sp(14), False, TEXT_SECONDARY, 0.45),
-        (status["remaining_text"], sp(16), True, ACCENT_GOLD, 0.25),
+        (status["fighter_name"], sp(8), True, ACCENT_CYAN, 0.30),
+        (status["expedition_name"], sp(7), False, TEXT_SECONDARY, 0.45),
+        (status["remaining_text"], sp(8), True, ACCENT_GOLD, 0.25),
     )
     return card
 
@@ -728,7 +737,7 @@ def _show_send_fighter_popup(eligible, expedition_id, expedition_screen):
     popup = Popup(
         title=t("send_btn"),
         title_color=list(ACCENT_PURPLE)[:3] + [1],
-        title_size=sp(16),
+        title_size=sp(11),
         content=scroll,
         size_hint=(0.85, None),
         height=dp(80 + len(eligible) * 54),
@@ -740,7 +749,7 @@ def _show_send_fighter_popup(eligible, expedition_id, expedition_screen):
     for f_data in eligible:
         btn = MinimalButton(
             text=f"{f_data['name']}  LV{f_data['level']}",
-            font_size=15,
+            font_size=sp(11),
             btn_color=ACCENT_PURPLE,
             size_hint_y=None, height=dp(44),
         )
@@ -790,25 +799,25 @@ def refresh_expedition_grid(expedition_screen):
 def build_shop_card(item, shop_screen):
     from game.widgets import BaseCard
 
-    card = BaseCard(orientation="horizontal", size_hint_y=None, height=dp(95),
+    card = BaseCard(orientation="horizontal", size_hint_y=None, height=dp(70),
                     padding=[dp(12), dp(8)], spacing=dp(10))
 
-    info = BoxLayout(orientation="vertical", size_hint_x=0.65, spacing=2)
+    info = BoxLayout(orientation="vertical", size_hint_x=0.65, spacing=dp(4))
     info.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=item["name"], font_size="19sp", bold=True,
+        text=item["name"], font_size="10sp", bold=True,
         color=TEXT_PRIMARY, halign="left", size_hint_y=0.5,
     )))
     info.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=item["desc"], font_size="18sp",
+        text=item["desc"], font_size="11sp",
         color=TEXT_MUTED, halign="left", size_hint_y=0.5,
     )))
 
     affordable = item["affordable"]
     buy_btn = MinimalButton(
-        text=f"{fmt_num(item['cost'])}", font_size=22, size_hint_x=0.35,
+        text=f"{fmt_num(item['cost'])}", font_size=sp(11), size_hint_x=0.35,
         btn_color=ACCENT_BLUE if affordable else BTN_DISABLED,
         text_color=BG_DARK if affordable else TEXT_MUTED,
-        icon_source="icons/ic_gold.png",
+        icon_source="sprites/icons/ic_gold.png",
     )
     buy_btn.bind(on_press=lambda inst, iid=item["id"]: shop_screen.buy(iid))
 
@@ -833,7 +842,7 @@ def build_total_hp_row(summary_text, total_hp, total_max, is_expanded, toggle_ca
     """Total HP summary bar — tap the bar itself to expand/collapse."""
     from kivy.uix.behaviors import ButtonBehavior
 
-    BAR_H = dp(72)
+    BAR_H = dp(52)
     centered = f"{summary_text}({max(0, total_hp)}/{total_max})"
 
     container = RelativeLayout(size_hint_y=None, height=BAR_H)
@@ -849,7 +858,7 @@ def build_total_hp_row(summary_text, total_hp, total_max, is_expanded, toggle_ca
     container.add_widget(bar)
 
     lbl = AutoShrinkLabel(
-        text=centered, font_size="22sp", bold=True,
+        text=centered, font_size="11sp", bold=True,
         color=TEXT_PRIMARY, halign="center", valign="middle",
         pos_hint={"center_x": 0.5, "center_y": 0.5}, size_hint=(1, 1),
     )
@@ -862,7 +871,7 @@ def build_total_hp_row(summary_text, total_hp, total_max, is_expanded, toggle_ca
     return container
 
 
-def _build_hp_bar_widget(name, hp, max_hp, bar_color, bg_color, height=dp(60),
+def _build_hp_bar_widget(name, hp, max_hp, bar_color, bg_color, height=dp(40),
                          on_tap=None):
     """HP bar with name and HP centered inside. Optionally tappable."""
     hp_pct = max(0, hp) / max(1, max_hp)
@@ -881,7 +890,7 @@ def _build_hp_bar_widget(name, hp, max_hp, bar_color, bg_color, height=dp(60),
 
     centered = f"{name}  ({max(0, hp)}/{max_hp})"
     lbl = AutoShrinkLabel(
-        text=centered, font_size="18sp", bold=True,
+        text=centered, font_size="11sp", bold=True,
         color=TEXT_PRIMARY, halign="center", valign="middle",
         pos_hint={"center_x": 0.5, "center_y": 0.5}, size_hint=(1, 1),
     )
@@ -910,7 +919,7 @@ def flash_hp_bar(bar_widget, flash_color=ACCENT_RED):
 def build_fighter_hp_row(fighter, index, heal_cost, can_afford, heal_callback,
                          on_tap=None):
     """Individual fighter HP bar — tappable for heal."""
-    BAR_H = dp(60)
+    BAR_H = dp(48)
 
     bar_widget = _build_hp_bar_widget(
         fighter.name, fighter.hp, fighter.max_hp,
@@ -920,131 +929,150 @@ def build_fighter_hp_row(fighter, index, heal_cost, can_afford, heal_callback,
     return bar_widget
 
 
-def _build_unit_card(name, hp, max_hp, bar_color, bg_color, border_color,
-                     name_color, hp_color, on_tap=None, avatar_color=None, tier=1):
-    """Card with HP bar background + name and HP text on top."""
-    ROW_H = dp(34)
-    ICO_S = dp(22)
+def build_unit_card(name, hp, max_hp, border_color=DIVIDER,
+                    name_color=TEXT_PRIMARY, hp_color=(1, 0.3, 0.3, 1),
+                    avatar_color=None, tier=1, level=None,
+                    skill_text=None, fighter_class="mercenary",
+                    on_tap=None):
+    """Single universal unit card — identical to RosterCardView layout.
+    Used on arena, roster detail, and anywhere a unit card is needed.
+    Layout: [Avatar | Name | LV X | Skill | spacer | HP icon+number]
+    """
+    ROW_H = dp(56)
+
+    card = CardWidget(
+        orientation="horizontal", size_hint_y=None, height=dp(84),
+        padding=[dp(8), dp(10)], spacing=dp(6),
+    )
+    card.border_color = border_color
+
     hp_pct = max(0, hp) / max(1, max_hp)
+    is_low = hp_pct < LOW_HP_THRESHOLD
 
-    container = RelativeLayout(size_hint_y=None, height=dp(44))
+    # --- Identical to RosterCardView.__init__ ---
 
-    # HP bar as background — bar color matches card, bg is transparent
-    bar = MinimalBar(
-        pos_hint={"x": 0, "y": 0}, size_hint=(1, 1),
-        value=hp_pct,
-        bar_color=ACCENT_RED if hp_pct < LOW_HP_THRESHOLD else BG_CARD,
-        bg_color=(0, 0, 0, 0),
-    )
-    container.add_widget(bar)
-    container._bar = bar
-
-    # Text overlay: Name (left half, right-aligned) | HP icon+number (right half)
-    overlay = BoxLayout(
-        orientation="horizontal",
-        pos_hint={"x": 0, "y": 0}, size_hint=(1, 1),
-        padding=[dp(8), 0],
-    )
-
-    name_lbl = AutoShrinkLabel(
-        text=name, font_size="18sp", bold=True, color=name_color,
-        halign="right", valign="middle",
-        size_hint_x=0.5, size_hint_y=None, height=ROW_H,
-    )
-    name_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
-
-    hp_box = BoxLayout(
-        orientation="horizontal", spacing=0,
-        size_hint_x=0.5, size_hint_y=None, height=ROW_H,
-        padding=[dp(52), 0, 0, 0],
-    )
-    hp_lbl = AutoShrinkLabel(
-        text=fmt_num(max(0, hp)), font_size="18sp", bold=True, color=hp_color,
-        halign="left", valign="middle",
-        size_hint_x=None, size_hint_y=None, height=ROW_H,
-    )
-    hp_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0] + dp(4)))
-    hp_lbl.bind(size=lambda w, s: setattr(w, 'text_size', (None, s[1])))
-    hp_ico = Image(source="icons/ic_hp.png", fit_mode="contain",
-                   size_hint=(None, None), width=ICO_S, height=ICO_S,
-                   pos_hint={"center_y": 0.5})
-    hp_box.add_widget(hp_lbl)
-    hp_box.add_widget(hp_ico)
-
-    overlay.add_widget(name_lbl)
-    overlay.add_widget(hp_box)
-    container.add_widget(overlay)
-
-    container._name_lbl = name_lbl
-    container._hp_lbl = hp_lbl
-
-    if on_tap:
-        _bind_long_tap(container, on_tap)
-
-    if avatar_color is None:
-        return container
-
-    # Wrap: [avatar | hp-bar container]
-    row = BoxLayout(
-        orientation="horizontal", spacing=dp(4),
-        size_hint_y=None, height=dp(44),
-    )
+    # Avatar
     avatar = GladiatorAvatar(
-        accent_color=list(avatar_color),
+        fighter_class=fighter_class,
+        accent_color=list(avatar_color or ACCENT_GREEN),
         tier=tier,
         size_hint=(None, None),
-        width=dp(36), height=dp(44),
+        width=dp(48), height=dp(52),
     )
-    row.add_widget(avatar)
-    row.add_widget(container)
-    # Expose update attributes on wrapper
-    row._bar = container._bar
-    row._name_lbl = container._name_lbl
-    row._hp_lbl = container._hp_lbl
-    return row
+    card.add_widget(avatar)
+
+    # Name
+    name_lbl = AutoShrinkLabel(
+        text=name, font_size="12sp", bold=True, color=name_color,
+        halign="left", size_hint_x=None, width=dp(130),
+        size_hint_y=None, height=ROW_H,
+    )
+    name_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+    card.add_widget(name_lbl)
+
+    # Level
+    level_lbl = AutoShrinkLabel(
+        font_size="11sp", bold=True, color=list(ACCENT_GOLD),
+        halign="left", size_hint_x=None, width=dp(56),
+        size_hint_y=None, height=ROW_H,
+    )
+    level_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+    if level is not None:
+        level_lbl.text = f"LV {level}"
+    card.add_widget(level_lbl)
+
+    # Skill badge (arena only, hidden by default)
+    skill_badge = AutoShrinkLabel(
+        font_size="11sp", bold=True, color=list(TEXT_MUTED),
+        halign="center", size_hint_x=None, width=dp(40) if skill_text else 0,
+        size_hint_y=None, height=ROW_H,
+        opacity=1 if skill_text else 0,
+    )
+    if skill_text:
+        skill_badge.text = skill_text
+        skill_badge.color = list(ACCENT_CYAN if skill_text == "RDY" else TEXT_MUTED)
+    skill_badge.bind(size=lambda w, s: setattr(w, 'text_size', s))
+    card.add_widget(skill_badge)
+
+    # Spacer
+    card.add_widget(Label(size_hint_x=1))
+
+    # HP icon + number — identical to RosterCardView
+    stat_box = BoxLayout(
+        orientation="horizontal", spacing=dp(2),
+        size_hint_x=None, width=dp(94),
+        size_hint_y=None, height=ROW_H,
+    )
+    hp_row = _icon_label(
+        "sprites/icons/ic_hp.png",
+        fmt_num(max(0, hp)),
+        ACCENT_RED if is_low else hp_color,
+        font_size="11sp", height=ROW_H,
+    )
+    stat_box.add_widget(hp_row)
+    card.add_widget(stat_box)
+
+    # Expose refs for in-place updates
+    card._avatar = avatar
+    card._name_lbl = name_lbl
+    card._level_lbl = level_lbl
+    card._skill_badge = skill_badge
+    card._hp_lbl = hp_row.children[0]  # the label inside _icon_label
+
+    if on_tap:
+        _bind_long_tap(card, on_tap)
+
+    return card
 
 
-def build_fighter_pit_card(fighter, on_tap=None):
-    """Fighter card with HP bar for the PIT screen."""
-    name_color = TEXT_PRIMARY if fighter.alive and fighter.hp > 0 else ACCENT_RED
-    hp_color = ACCENT_RED if fighter.hp < fighter.max_hp * LOW_HP_THRESHOLD else (1, 0.3, 0.3, 1)
-    avatar_color = _CLASS_COLORS.get(getattr(fighter, "fighter_class", "mercenary"), ACCENT_GREEN)
-    return _build_unit_card(
+def build_fighter_pit_card(fighter, on_tap=None, skill_text=None):
+    """Fighter card — uses build_unit_card (same as roster)."""
+    fc = getattr(fighter, "fighter_class", "mercenary")
+    return build_unit_card(
         fighter.name, max(0, fighter.hp), fighter.max_hp,
-        HP_PLAYER, HP_PLAYER_BG, border_color=DIVIDER,
-        name_color=name_color, hp_color=hp_color, on_tap=on_tap,
-        avatar_color=avatar_color, tier=getattr(fighter, "tier", 1),
+        name_color=TEXT_PRIMARY if fighter.alive and fighter.hp > 0 else ACCENT_RED,
+        avatar_color=_CLASS_COLORS.get(fc, ACCENT_GREEN),
+        tier=getattr(fighter, "tier", 1),
+        level=getattr(fighter, "level", 1),
+        skill_text=skill_text, fighter_class=fc, on_tap=on_tap,
     )
 
 
 def build_enemy_hp_row(enemy, show_stats=False, on_tap=None):
-    """Enemy card with HP bar for the PIT screen."""
-    hp_color = ACCENT_RED if enemy.hp < enemy.max_hp * LOW_HP_THRESHOLD else (1, 0.3, 0.3, 1)
-    return _build_unit_card(
+    """Enemy card — uses build_unit_card (same layout as fighters)."""
+    fc = getattr(enemy, "fighter_class", "mercenary")
+    return build_unit_card(
         enemy.name, max(0, enemy.hp), enemy.max_hp,
-        HP_ENEMY, HP_ENEMY_BG, border_color=ACCENT_RED,
-        name_color=ACCENT_RED, hp_color=hp_color, on_tap=on_tap,
-        avatar_color=ACCENT_RED, tier=getattr(enemy, "tier", 1),
+        border_color=ACCENT_RED,
+        name_color=ACCENT_RED,
+        avatar_color=ACCENT_RED,
+        tier=getattr(enemy, "tier", 1),
+        level=getattr(enemy, "level", None),
+        fighter_class=fc, on_tap=on_tap,
     )
 
 
-def update_fighter_pit_card(card, fighter):
-    """Update fighter card in-place."""
+def update_fighter_pit_card(card, fighter, skill_text=None):
+    """Update unit card in-place."""
     hp_pct = max(0, fighter.hp) / max(1, fighter.max_hp)
-    card._bar.value = hp_pct
-    card._bar.bar_color = ACCENT_RED if hp_pct < LOW_HP_THRESHOLD else BG_CARD
+    is_low = hp_pct < LOW_HP_THRESHOLD
     card._name_lbl.color = TEXT_PRIMARY if fighter.alive and fighter.hp > 0 else ACCENT_RED
     card._hp_lbl.text = fmt_num(max(0, fighter.hp))
-    card._hp_lbl.color = ACCENT_RED if hp_pct < LOW_HP_THRESHOLD else (1, 0.3, 0.3, 1)
+    card._hp_lbl.color = ACCENT_RED if is_low else (1, 0.3, 0.3, 1)
+    badge = card._skill_badge
+    if badge and skill_text is not None:
+        badge.text = skill_text
+        badge.color = list(ACCENT_CYAN if skill_text == "RDY" else TEXT_MUTED)
+        badge.width = dp(40)
+        badge.opacity = 1
 
 
 def update_enemy_hp_row(row, enemy):
-    """Update enemy card in-place."""
+    """Update unit card in-place."""
     hp_pct = max(0, enemy.hp) / max(1, enemy.max_hp)
-    row._bar.value = hp_pct
-    row._bar.bar_color = ACCENT_RED if hp_pct < LOW_HP_THRESHOLD else BG_CARD
+    is_low = hp_pct < LOW_HP_THRESHOLD
     row._hp_lbl.text = fmt_num(max(0, enemy.hp))
-    row._hp_lbl.color = ACCENT_RED if hp_pct < LOW_HP_THRESHOLD else (1, 0.3, 0.3, 1)
+    row._hp_lbl.color = ACCENT_RED if is_low else (1, 0.3, 0.3, 1)
 
 
 # ============================================================
@@ -1066,23 +1094,23 @@ def build_achievement_card(ach):
         card.border_color = ACCENT_GOLD
         card.card_color = (0.12, 0.12, 0.08, 1)
 
-    info = BoxLayout(orientation="vertical", size_hint_x=0.7, spacing=1)
+    info = BoxLayout(orientation="vertical", size_hint_x=0.7, spacing=dp(4))
     name_color = ACCENT_GOLD if unlocked else TEXT_SECONDARY
     info.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=ach["name"], font_size="18sp", bold=True,
+        text=ach["name"], font_size="11sp", bold=True,
         color=name_color, halign="left", size_hint_y=0.5,
     )))
     info.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=ach["desc"], font_size="19sp",
+        text=ach["desc"], font_size="10sp",
         color=TEXT_MUTED, halign="left", size_hint_y=0.5,
     )))
 
     reward = AnchorLayout(size_hint_x=0.3, anchor_x="center", anchor_y="center")
     if unlocked:
         reward.add_widget(AutoShrinkLabel(
-            text=t("done_label"), font_size="24sp", bold=True,
+            text=t("done_label"), font_size="12sp", bold=True,
             color=ACCENT_GREEN, halign="center", valign="middle",
-            size_hint=(1, 1), text_size=(None, None),
+            size_hint=(1, 1),
         ))
     else:
         reward.add_widget(_diamond_label(ach["diamonds"]))
@@ -1117,8 +1145,11 @@ def refresh_achievement_grid(lore_screen):
 def _show_diamond_item_popup(item, lore_screen):
     """Popup with item description and buy button."""
     content = BoxLayout(orientation="vertical", spacing=dp(10), padding=dp(14))
+    iid = item.get("id", "")
+    desc_text = t("ds_" + iid + "_desc") if iid else item.get("desc", "")
+    name_text = t("ds_" + iid + "_name") if iid else item.get("name", "")
     desc_lbl = AutoShrinkLabel(
-        text=item["desc"], font_size="20sp",
+        text=desc_text, font_size="10sp",
         color=TEXT_SECONDARY, halign="center", valign="middle",
         size_hint_y=0.5,
     )
@@ -1126,16 +1157,16 @@ def _show_diamond_item_popup(item, lore_screen):
     content.add_widget(desc_lbl)
     affordable = item.get("affordable", False)
     buy_btn = MinimalButton(
-        text=f"{item['cost']}", font_size=22,
+        text=f"{item['cost']}", font_size=sp(11),
         btn_color=ACCENT_CYAN if affordable else BTN_DISABLED,
         text_color=BG_DARK if affordable else TEXT_MUTED,
-        icon_source="icons/ic_gem.png",
+        icon_source="sprites/icons/ic_gem.png",
         size_hint_y=None, height=dp(48),
     )
     popup = Popup(
-        title=item["name"],
+        title=name_text,
         title_color=list(ACCENT_CYAN)[:3] + [1],
-        title_size=sp(22),
+        title_size=sp(11),
         content=content,
         size_hint=(0.9, 0.45),
         background_color=list(BG_CARD)[:3] + [1],
@@ -1157,18 +1188,20 @@ def build_diamond_shop_card(item, lore_screen):
     card = BaseCard(orientation="horizontal", size_hint_y=None, height=dp(52),
                     padding=[dp(12), dp(6)], spacing=dp(8))
     card.border_color = ACCENT_CYAN
+    iid = item.get("id", "")
+    name_text = t("ds_" + iid + "_name") if iid else item.get("name", "")
     card.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=item["name"], font_size="18sp", bold=True,
+        text=name_text, font_size="11sp", bold=True,
         color=ACCENT_CYAN, halign="left", size_hint_x=0.55,
     )))
     card.bind(on_press=lambda inst, it=item: _show_diamond_item_popup(it, lore_screen))
 
     affordable = item.get("affordable", False)
     buy_btn = MinimalButton(
-        text=str(item["cost"]), font_size=20, size_hint_x=0.45,
+        text=str(item["cost"]), font_size=sp(10), size_hint_x=0.45,
         btn_color=ACCENT_CYAN if affordable else BTN_DISABLED,
         text_color=BG_DARK if affordable else TEXT_MUTED,
-        icon_source="icons/ic_gem.png",
+        icon_source="sprites/icons/ic_gem.png",
     )
     buy_btn.bind(on_press=lambda inst, iid=item["id"]: lore_screen.buy_diamond_item(iid))
     card.add_widget(buy_btn)

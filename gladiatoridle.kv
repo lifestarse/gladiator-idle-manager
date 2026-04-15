@@ -1,4 +1,4 @@
-# Build: 36
+# Build: 42
 #:kivy 2.0
 #:import dp kivy.metrics.dp
 #:import sp kivy.metrics.sp
@@ -22,7 +22,7 @@
 <NavBar>:
     active_screen: app.sm.current if app.sm else ""
     size_hint_y: None
-    height: dp(80)
+    height: dp(70)
     canvas.before:
         Color:
             rgba: app.nav_bg
@@ -33,35 +33,35 @@
             rgba: app.divider
         Rectangle:
             pos: self.x, self.top - 1
-            size: self.width, 1
+            size: self.width, dp(1)
     NavButton:
         text: app.nav_pit
-        icon_source: "icons/ic_four_star.png"
+        icon_source: "sprites/nav/nav_arena.png"
         is_active: root.active_screen == "arena"
         on_press: app.sm.current = "arena"
     NavButton:
         text: app.nav_squad
-        icon_source: "icons/ic_squad.png"
+        icon_source: "sprites/nav/nav_roster.png"
         is_active: root.active_screen == "roster"
         on_press: app.sm.current = "roster"
     NavButton:
         text: app.nav_anvil
-        icon_source: "icons/ic_anvil.png"
+        icon_source: "sprites/nav/nav_forge.png"
         is_active: root.active_screen == "forge"
         on_press: app.sm.current = "forge"
     NavButton:
         text: app.nav_hunts
-        icon_source: "icons/ic_hunts.png"
+        icon_source: "sprites/nav/nav_expedition.png"
         is_active: root.active_screen == "expedition"
         on_press: app.sm.current = "expedition"
     NavButton:
         text: app.nav_lore
-        icon_source: "icons/ic_lore.png"
+        icon_source: "sprites/nav/nav_lore.png"
         is_active: root.active_screen == "lore"
         on_press: app.sm.current = "lore"
     NavButton:
         text: app.nav_more
-        icon_source: "icons/ic_more.png"
+        icon_source: "sprites/nav/nav_more.png"
         is_active: root.active_screen == "more"
         on_press: app.sm.current = "more"
 
@@ -69,9 +69,9 @@
     title_text: ""
     title_color: app.accent_gold
     size_hint_y: None
-    height: dp(44)
-    padding: [dp(10), dp(4)]
-    spacing: dp(6)
+    height: dp(56)
+    padding: [dp(8), dp(4)]
+    spacing: dp(4)
     canvas.before:
         Color:
             rgba: app.nav_bg
@@ -80,42 +80,42 @@
             size: self.size
     AutoShrinkLabel:
         text: self.parent.title_text if self.parent else ""
-        font_size: "22sp"
+        font_size: "14sp"
         bold: True
         color: self.parent.title_color if self.parent else [1,1,1,1]
         halign: "left"
         text_size: self.size
         valign: "middle"
-        size_hint_x: 0.34
+        size_hint_x: 0.40
     BoxLayout:
         spacing: 0
-        size_hint_x: 0.33
+        size_hint_x: 0.30
         AutoShrinkLabel:
             text: app.top_gold
-            font_size: "24sp"
+            font_size: "12sp"
             bold: True
             color: app.accent_gold
             halign: "right"
             text_size: self.size
             valign: "middle"
         Image:
-            source: "icons/ic_gold.png"
+            source: "sprites/icons/ic_gold.png"
             fit_mode: "contain"
             size_hint: None, 1
             width: dp(20)
     BoxLayout:
         spacing: 0
-        size_hint_x: 0.33
+        size_hint_x: 0.30
         AutoShrinkLabel:
             text: app.top_diamonds
-            font_size: "24sp"
+            font_size: "12sp"
             bold: True
             color: app.accent_cyan
             halign: "right"
             text_size: self.size
             valign: "middle"
         Image:
-            source: "icons/ic_gem.png"
+            source: "sprites/icons/ic_gem.png"
             fit_mode: "contain"
             size_hint: None, 1
             width: dp(20)
@@ -133,9 +133,9 @@
                 pos: self.pos
                 size: self.size
             Color:
-                rgba: 1, 1, 1, 0.15
+                rgba: 1, 1, 1, 0.25
             BorderImage:
-                source: "icons/bg_texture.png"
+                source: "sprites/bg/bg_arena.png"
                 pos: self.pos
                 size: self.size
         BoxLayout:
@@ -169,9 +169,9 @@
                 id: enemy_back_btn
                 text: app.lbl_back_btn
                 btn_color: theme.BTN_PRIMARY
-                font_size: 16
+                font_size: 11
                 size_hint_y: None
-                height: dp(40) if root.arena_view != "battle" else 0
+                height: dp(48) if root.arena_view != "battle" else 0
                 opacity: 1 if root.arena_view != "battle" else 0
                 disabled: root.arena_view == "battle"
                 on_press: app.go_back()
@@ -179,7 +179,7 @@
             # Battle arena content
             TouchPanel:
                 orientation: "vertical"
-                spacing: 4
+                spacing: dp(4)
                 opacity: 1 if root.arena_view == "battle" else 0
                 size_hint_y: 1 if root.arena_view == "battle" else 0.001
                 disabled: root.arena_view != "battle"
@@ -187,7 +187,7 @@
                 # Stats bar: Run · Tier — compact single row
                 BoxLayout:
                     size_hint_y: None
-                    height: dp(32)
+                    height: dp(40)
                     padding: [dp(8), 0]
                     spacing: dp(4)
                     canvas.before:
@@ -198,7 +198,7 @@
                             size: self.size
                     AutoShrinkLabel:
                         text: root.run_text
-                        font_size: "14sp"
+                        font_size: "11sp"
                         bold: True
                         color: app.accent_cyan
                         halign: "left"
@@ -207,7 +207,7 @@
                         size_hint_x: 0.6
                     AutoShrinkLabel:
                         text: root.tier_text
-                        font_size: "16sp"
+                        font_size: "12sp"
                         bold: True
                         color: app.accent_red
                         halign: "right"
@@ -219,8 +219,8 @@
                 BoxLayout:
                     id: heal_btn_box
                     size_hint_y: None
-                    height: dp(40)
-                    padding: [dp(30), 0]
+                    height: dp(48)
+                    padding: [dp(14), 0]
 
                 # Player fighters panel (padded)
                 ScrollView:
@@ -234,8 +234,8 @@
                     GridLayout:
                         id: battle_fighters_grid
                         cols: 1
-                        spacing: dp(4)
-                        padding: [dp(30), 4]
+                        spacing: dp(6)
+                        padding: [dp(14), dp(6)]
                         size_hint_y: None
                         height: self.minimum_height
 
@@ -243,16 +243,16 @@
                 BoxLayout:
                     size_hint_y: None
                     height: dp(24)
-                    padding: [30, 0]
+                    padding: [dp(14), 0]
                     Widget:
                         canvas:
                             Color:
                                 rgba: app.divider
                             Rectangle:
                                 pos: self.x, self.center_y
-                                size: self.width, 1
+                                size: self.width, dp(1)
                     Image:
-                        source: "icons/ic_swords.png"
+                        source: "sprites/icons/ic_swords.png"
                         fit_mode: "contain"
                         size_hint: None, 1
                         width: dp(24)
@@ -263,11 +263,11 @@
                                 rgba: app.divider
                             Rectangle:
                                 pos: self.x, self.center_y
-                                size: self.width, 1
+                                size: self.width, dp(1)
 
                 # Enemy fighters panel
                 ScrollView:
-                    size_hint_y: 0.20
+                    size_hint_y: 0.35
                     bar_width: 2
                     bar_color: app.text_muted
                     do_scroll_x: False
@@ -277,56 +277,34 @@
                     GridLayout:
                         id: battle_enemies_grid
                         cols: 1
-                        spacing: dp(10)
-                        padding: [dp(30), 6]
+                        spacing: dp(6)
+                        padding: [dp(14), dp(6)]
                         size_hint_y: None
                         height: self.minimum_height
-
-                # Battle status (VICTORY / DEFEAT)
-                AutoShrinkLabel:
-                    text: root.battle_status
-                    font_size: "24sp"
-                    bold: True
-                    color: app.accent_gold
-                    size_hint_y: None
-                    height: dp(36)
-                    halign: "center"
-                    text_size: self.width, None
-
-                # Battle log — at bottom, auto-fades
-                AutoShrinkLabel:
-                    id: battle_log_label
-                    text: root.battle_log_text
-                    font_size: "26sp"
-                    color: app.text_secondary
-                    size_hint_y: 0.15
-                    text_size: self.width - 16, None
-                    halign: "left"
-                    valign: "top"
 
             # Action buttons — above nav bar
             BoxLayout:
                 size_hint_y: None
-                height: dp(72)
-                padding: [8, 2]
-                spacing: 6
+                height: dp(56)
+                padding: [dp(8), dp(2)]
+                spacing: dp(6)
                 MinimalButton:
                     text: app.lbl_auto
                     btn_color: theme.BTN_DISABLED if root.is_fighting else theme.BTN_FIGHT
                     text_color: theme.TEXT_MUTED if root.is_fighting else theme.TEXT_PRIMARY
-                    font_size: "15sp"
+                    font_size: "11sp"
                     on_press: root.start_auto_battle()
                 MinimalButton:
                     text: app.lbl_common if root.arena_mode == "boss" else app.lbl_boss
                     btn_color: theme.BTN_DISABLED if root.is_fighting else (theme.BTN_PRIMARY if root.arena_mode == "boss" else theme.ACCENT_PURPLE)
                     text_color: theme.TEXT_MUTED if root.is_fighting else theme.TEXT_PRIMARY
-                    font_size: "15sp"
+                    font_size: "11sp"
                     on_press: root.toggle_arena_mode()
                 MinimalButton:
                     text: app.lbl_skip
                     btn_color: theme.ACCENT_GOLD if root.is_fighting else theme.BG_ELEVATED
                     text_color: theme.BG_DARK if root.is_fighting else theme.TEXT_SECONDARY
-                    font_size: "15sp"
+                    font_size: "11sp"
                     on_press: root.skip_battle()
 # ============================================================
 #  ROSTER (SQUAD)
@@ -341,9 +319,9 @@
                 pos: self.pos
                 size: self.size
             Color:
-                rgba: 1, 1, 1, 0.15
+                rgba: 1, 1, 1, 0.25
             BorderImage:
-                source: "icons/bg_texture.png"
+                source: "sprites/bg/bg_default.png"
                 pos: self.pos
                 size: self.size
 
@@ -365,13 +343,13 @@
             size_hint_y: 1 if root.roster_view == "list" else 0.001
             disabled: root.roster_view != "list"
             RecycleBoxLayout:
-                default_size: None, dp(45)
+                default_size: None, dp(84)
                 default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
                 orientation: 'vertical'
                 spacing: dp(6)
-                padding: [dp(10), dp(6)]
+                padding: [dp(14), dp(8)]
 
         TouchScrollView:
             id: detail_scroll
@@ -386,7 +364,7 @@
                 id: detail_grid
                 cols: 1
                 spacing: dp(6)
-                padding: [dp(12), dp(8)]
+                padding: [dp(14), dp(8)]
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -394,9 +372,9 @@
             id: detail_back_btn
             text: app.lbl_back_btn
             btn_color: theme.BTN_PRIMARY
-            font_size: 16
+            font_size: 11
             size_hint_y: None
-            height: dp(40) if root.roster_view != "list" else 0
+            height: dp(48) if root.roster_view != "list" else 0
             opacity: 1 if root.roster_view != "list" else 0
             disabled: root.roster_view == "list"
             on_press: app.go_back()
@@ -407,17 +385,17 @@
             height: (dp(48) + (dp(48) if root.has_injuries == "true" else 0)) if root.roster_view == "list" else (dp(48) if root.roster_view == "class_detail" else 0)
             opacity: 1 if root.roster_view in ("list", "class_detail") else 0
             disabled: root.roster_view not in ("list", "class_detail")
-            padding: [8, 2]
-            spacing: 4
+            padding: [dp(8), dp(2)]
+            spacing: dp(4)
             MinimalButton:
                 text: root.hire_cost_text or app.lbl_recruit_fighter
                 btn_color: theme.BTN_SUCCESS if root.hire_enabled == "true" else theme.BTN_DISABLED
                 text_color: theme.BG_DARK if root.hire_enabled == "true" else theme.TEXT_MUTED
-                font_size: 16
+                font_size: 11
                 size_hint_y: None
-                height: dp(44) if root.roster_view in ("list", "class_detail") else 0
+                height: dp(48) if root.roster_view in ("list", "class_detail") else 0
                 opacity: 1 if root.roster_view in ("list", "class_detail") else 0
-                icon_source: "icons/ic_gold.png"
+                icon_source: "sprites/icons/ic_gold.png"
                 disabled: root.roster_view not in ("list", "class_detail")
                 on_press: root.hire()
             MinimalButton:
@@ -425,12 +403,12 @@
                 text: root.heal_all_text or app.lbl_heal_all_injuries
                 btn_color: theme.ACCENT_GREEN if root.heal_all_enabled == "true" else theme.BTN_DISABLED
                 text_color: theme.BG_DARK if root.heal_all_enabled == "true" else theme.TEXT_MUTED
-                font_size: 16
+                font_size: 11
                 size_hint_y: None
-                height: dp(44) if root.has_injuries == "true" and root.roster_view == "list" else 0
+                height: dp(48) if root.has_injuries == "true" and root.roster_view == "list" else 0
                 opacity: 1 if root.has_injuries == "true" and root.roster_view == "list" else 0
                 disabled: root.roster_view != "list" or root.has_injuries != "true"
-                icon_source: "icons/ic_gold.png"
+                icon_source: "sprites/icons/ic_gold.png"
                 on_press: root.heal_all_injuries()
 # ============================================================
 #  FORGE (ANVIL)
@@ -445,9 +423,9 @@
                 pos: self.pos
                 size: self.size
             Color:
-                rgba: 1, 1, 1, 0.15
+                rgba: 1, 1, 1, 0.25
             BorderImage:
-                source: "icons/bg_texture.png"
+                source: "sprites/bg/bg_forge.png"
                 pos: self.pos
                 size: self.size
 
@@ -458,7 +436,7 @@
         TouchPanel:
             id: shop_tabs_box
             size_hint_y: None
-            height: dp(44) if not root.show_inventory else 0
+            height: dp(48) if not root.show_inventory else 0
             opacity: 0 if root.show_inventory else 1
             disabled: root.show_inventory
             spacing: dp(4)
@@ -467,19 +445,19 @@
                 text: app.lbl_tab_weapon
                 btn_color: theme.ACCENT_RED if root.forge_tab == "weapon" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.forge_tab == "weapon" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_forge_tab("weapon")
             MinimalButton:
                 text: app.lbl_tab_armor
                 btn_color: theme.ACCENT_BLUE if root.forge_tab == "armor" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.forge_tab == "armor" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_forge_tab("armor")
             MinimalButton:
                 text: app.lbl_tab_accessory
                 btn_color: theme.ACCENT_PURPLE if root.forge_tab == "accessory" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.forge_tab == "accessory" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_forge_tab("accessory")
 
         TouchPanel:
@@ -501,8 +479,8 @@
             GridLayout:
                 id: forge_grid
                 cols: 1
-                spacing: 6
-                padding: [10, 6]
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -510,20 +488,20 @@
             id: forge_back_btn
             text: app.lbl_back_btn
             btn_color: theme.BTN_PRIMARY
-            font_size: 16
+            font_size: 11
             size_hint_y: None
-            height: dp(40) if (not root._show_inv_tabs or root._nav_from) else 0
-            opacity: 1 if (not root._show_inv_tabs or root._nav_from) else 0
-            disabled: root._show_inv_tabs and not root._nav_from
+            height: dp(48) if (root.inv_detail_idx != -1 or root.eq_detail_fighter != -1 or not root._show_inv_tabs) else 0
+            opacity: 1 if (root.inv_detail_idx != -1 or root.eq_detail_fighter != -1 or not root._show_inv_tabs) else 0
+            disabled: root._show_inv_tabs and root.inv_detail_idx == -1 and root.eq_detail_fighter == -1
             on_press: app.go_back()
 
         MinimalButton:
             text: root.inventory_btn_text
             btn_color: theme.ACCENT_CYAN if root.show_inventory else theme.BTN_PRIMARY
             text_color: theme.BG_DARK if root.show_inventory else theme.TEXT_PRIMARY
-            font_size: 17
+            font_size: 11
             size_hint_y: None
-            height: dp(44)
+            height: dp(48)
             on_press: root.toggle_inventory()
 # ============================================================
 #  EXPEDITIONS (HUNTS)
@@ -538,9 +516,9 @@
                 pos: self.pos
                 size: self.size
             Color:
-                rgba: 1, 1, 1, 0.15
+                rgba: 1, 1, 1, 0.25
             BorderImage:
-                source: "icons/bg_texture.png"
+                source: "sprites/bg/bg_expedition.png"
                 pos: self.pos
                 size: self.size
 
@@ -550,7 +528,7 @@
 
         TouchPanel:
             size_hint_y: None
-            height: dp(44) if root.has_active_missions else 0
+            height: dp(48) if root.has_active_missions else 0
             opacity: 1 if root.has_active_missions else 0
             disabled: not root.has_active_missions
             padding: [dp(8), dp(4)]
@@ -559,13 +537,13 @@
                 text: app.lbl_tab_missions
                 btn_color: theme.ACCENT_CYAN if root.expedition_tab == "missions" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.expedition_tab == "missions" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_expedition_tab("missions")
             MinimalButton:
                 text: app.lbl_tab_hunts
                 btn_color: theme.ACCENT_GOLD if root.expedition_tab == "hunts" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.expedition_tab == "hunts" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_expedition_tab("hunts")
 
         ScrollView:
@@ -578,8 +556,8 @@
             GridLayout:
                 id: expedition_grid
                 cols: 1
-                spacing: 6
-                padding: [10, 6]
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
                 size_hint_y: None
                 height: self.minimum_height
 # ============================================================
@@ -602,32 +580,32 @@
 
         TouchPanel:
             size_hint_y: None
-            height: dp(44)
+            height: dp(48)
             spacing: dp(4)
             padding: [dp(8), dp(2)]
             MinimalButton:
                 text: app.lbl_achievements
                 btn_color: theme.ACCENT_GOLD if root.lore_tab == "achievements" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.lore_tab == "achievements" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_lore_tab("achievements")
             MinimalButton:
                 text: app.lbl_diamond_shop
                 btn_color: theme.ACCENT_CYAN if root.lore_tab == "shop" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.lore_tab == "shop" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_lore_tab("shop")
             MinimalButton:
                 text: app.lbl_quests
                 btn_color: theme.ACCENT_GOLD if root.lore_tab == "quests" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.lore_tab == "quests" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_lore_tab("quests")
             MinimalButton:
                 text: app.lbl_stats
                 btn_color: theme.ACCENT_GREEN if root.lore_tab == "stats" else theme.BTN_DISABLED
                 text_color: theme.TEXT_PRIMARY if root.lore_tab == "stats" else theme.TEXT_MUTED
-                font_size: 15
+                font_size: 11
                 on_press: root.set_lore_tab("stats")
 
         ScrollView:
@@ -640,8 +618,8 @@
             GridLayout:
                 id: lore_grid
                 cols: 1
-                spacing: 4
-                padding: [dp(10), dp(6)]
+                spacing: dp(4)
+                padding: [dp(14), dp(8)]
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -649,9 +627,9 @@
             id: lore_back_btn
             text: app.lbl_back_btn
             btn_color: theme.BTN_PRIMARY
-            font_size: 16
+            font_size: 11
             size_hint_y: None
-            height: dp(40) if root.lore_subview else 0
+            height: dp(48) if root.lore_subview else 0
             opacity: 1 if root.lore_subview else 0
             disabled: not root.lore_subview
             on_press: app.go_back()
@@ -659,7 +637,7 @@
         # Bottom buttons — fixed at bottom, only on stats tab
         BoxLayout:
             size_hint_y: None
-            height: dp(48) if root.lore_tab == "stats" and not root.lore_subview else 0
+            height: dp(52) if root.lore_tab == "stats" and not root.lore_subview else 0
             opacity: 1 if root.lore_tab == "stats" and not root.lore_subview else 0
             padding: [dp(8), dp(2)]
             spacing: dp(4)
@@ -667,13 +645,13 @@
                 text: root.battle_log_count or ""
                 btn_color: theme.ACCENT_CYAN
                 text_color: theme.BG_DARK
-                font_size: 16
+                font_size: 11
                 on_press: root._show_battle_log()
             MinimalButton:
                 text: root.event_log_count or ""
                 btn_color: theme.ACCENT_GOLD
                 text_color: theme.BG_DARK
-                font_size: 16
+                font_size: 11
                 on_press: root._show_event_log()
 # ============================================================
 #  MORE (Settings)
@@ -688,9 +666,9 @@
                 pos: self.pos
                 size: self.size
             Color:
-                rgba: 1, 1, 1, 0.15
+                rgba: 1, 1, 1, 0.25
             BorderImage:
-                source: "icons/bg_texture.png"
+                source: "sprites/bg/bg_default.png"
                 pos: self.pos
                 size: self.size
 
@@ -707,31 +685,31 @@
             scroll_timeout: 50
             GridLayout:
                 cols: 1
-                spacing: 8
-                padding: [10, 8]
+                spacing: dp(8)
+                padding: [dp(14), dp(10)]
                 size_hint_y: None
                 height: self.minimum_height
 
                 # --- Remove Ads (hidden when already removed) ---
                 AutoShrinkLabel:
                     text: app.lbl_remove_ads
-                    font_size: "18sp"
+                    font_size: "12sp"
                     bold: True
                     color: app.text_primary
                     halign: "center"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: 0 if root.ads_hidden else dp(28)
+                    height: 0 if root.ads_hidden else dp(34)
                     opacity: 0 if root.ads_hidden else 1
 
                 AutoShrinkLabel:
                     text: root.ads_status
-                    font_size: "15sp"
+                    font_size: "11sp"
                     color: app.text_muted
                     halign: "center"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: 0 if root.ads_hidden else dp(22)
+                    height: 0 if root.ads_hidden else dp(26)
                     opacity: 0 if root.ads_hidden else 1
 
                 MinimalButton:
@@ -739,7 +717,7 @@
                     text: app.lbl_remove_ads_buy
                     btn_color: app.accent_gold
                     text_color: app.bg_dark
-                    font_size: "17sp"
+                    font_size: "12sp"
                     size_hint_y: None
                     height: 0 if root.ads_hidden else dp(46)
                     opacity: 0 if root.ads_hidden else 1
@@ -750,7 +728,7 @@
                     text: app.lbl_restore_purchases
                     btn_color: app.bg_elevated
                     text_color: app.text_secondary
-                    font_size: "16sp"
+                    font_size: "11sp"
                     size_hint_y: None
                     height: 0 if root.ads_hidden else dp(44)
                     opacity: 0 if root.ads_hidden else 1
@@ -760,7 +738,7 @@
                 # --- Divider ---
                 Widget:
                     size_hint_y: None
-                    height: 1
+                    height: dp(1)
                     canvas:
                         Color:
                             rgba: app.divider
@@ -771,36 +749,36 @@
                 # --- Cloud Save ---
                 AutoShrinkLabel:
                     text: app.lbl_cloud_save
-                    font_size: "21sp"
+                    font_size: "13sp"
                     color: app.accent_cyan
                     halign: "left"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: dp(30)
+                    height: dp(34)
 
                 AutoShrinkLabel:
                     text: root.cloud_status
-                    font_size: "15sp"
+                    font_size: "11sp"
                     color: app.text_secondary
                     halign: "center"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: dp(22)
+                    height: dp(34)
 
                 MinimalButton:
                     text: root.google_btn_text if root.google_btn_text else app.lbl_sign_in_google
                     btn_color: app.accent_green if root.google_signed_in else app.accent_blue
-                    font_size: "14sp" if root.google_signed_in else "17sp"
+                    font_size: "10sp" if root.google_signed_in else "12sp"
                     size_hint_y: None
-                    height: dp(46)
+                    height: dp(50)
                     on_press: root.cloud_sign_in()
 
                 MinimalButton:
                     text: app.lbl_sign_out_google
                     btn_color: app.accent_red
-                    font_size: "15sp"
+                    font_size: "11sp"
                     size_hint_y: None
-                    height: dp(40) if root.google_signed_in else 0
+                    height: dp(48) if root.google_signed_in else 0
                     opacity: 1 if root.google_signed_in else 0
                     disabled: not root.google_signed_in
                     on_press: root.cloud_sign_out()
@@ -809,9 +787,9 @@
                     text: app.lbl_save_to_cloud
                     btn_color: app.accent_green
                     text_color: app.bg_dark
-                    font_size: "16sp"
+                    font_size: "11sp"
                     size_hint_y: None
-                    height: dp(46) if root.google_signed_in else 0
+                    height: dp(50) if root.google_signed_in else 0
                     opacity: 1 if root.google_signed_in else 0
                     disabled: not root.google_signed_in
                     on_press: root.cloud_upload()
@@ -819,9 +797,9 @@
                 MinimalButton:
                     text: app.lbl_load_from_cloud
                     btn_color: app.accent_purple
-                    font_size: "16sp"
+                    font_size: "11sp"
                     size_hint_y: None
-                    height: dp(46) if root.google_signed_in else 0
+                    height: dp(50) if root.google_signed_in else 0
                     opacity: 1 if root.google_signed_in else 0
                     disabled: not root.google_signed_in
                     on_press: root.cloud_download()
@@ -829,7 +807,7 @@
                 # --- Divider ---
                 Widget:
                     size_hint_y: None
-                    height: 1
+                    height: dp(1)
                     canvas:
                         Color:
                             rgba: app.divider
@@ -840,26 +818,26 @@
                 # -- LEADERBOARD --
                 AutoShrinkLabel:
                     text: app.lbl_leaderboard
-                    font_size: "21sp"
+                    font_size: "13sp"
                     color: app.accent_gold
                     halign: "left"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: dp(30)
+                    height: dp(34)
 
                 MinimalButton:
                     size_hint_y: None
-                    height: dp(46)
+                    height: dp(50)
                     text: app.lbl_view_leaderboard
                     btn_color: app.accent_gold
                     text_color: app.bg_dark
-                    font_size: "16sp"
+                    font_size: "11sp"
                     on_press: root.show_leaderboard()
 
                 # --- Divider ---
                 Widget:
                     size_hint_y: None
-                    height: 1
+                    height: dp(1)
                     canvas:
                         Color:
                             rgba: app.divider
@@ -870,12 +848,12 @@
                 # --- Buy Diamonds ---
                 AutoShrinkLabel:
                     text: app.lbl_buy_diamonds
-                    font_size: "21sp"
+                    font_size: "13sp"
                     color: app.accent_cyan
                     halign: "left"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: dp(30)
+                    height: dp(34)
 
                 GridLayout:
                     id: diamond_bundles_grid
@@ -887,7 +865,7 @@
                 # --- Divider ---
                 Widget:
                     size_hint_y: None
-                    height: 1
+                    height: dp(1)
                     canvas:
                         Color:
                             rgba: app.divider
@@ -898,17 +876,17 @@
                 # --- Help ---
                 MinimalButton:
                     size_hint_y: None
-                    height: dp(46)
+                    height: dp(50)
                     text: app.lbl_help
                     btn_color: app.accent_green
                     text_color: app.bg_dark
-                    font_size: "16sp"
+                    font_size: "11sp"
                     on_press: root.show_help()
 
                 # --- Divider ---
                 Widget:
                     size_hint_y: None
-                    height: 1
+                    height: dp(1)
                     canvas:
                         Color:
                             rgba: app.divider
@@ -919,17 +897,17 @@
                 # --- Language ---
                 AutoShrinkLabel:
                     text: app.lbl_language
-                    font_size: "21sp"
+                    font_size: "13sp"
                     color: app.accent_cyan
                     halign: "left"
                     text_size: self.width, None
                     size_hint_y: None
-                    height: dp(30)
+                    height: dp(34)
 
                 MinimalButton:
                     size_hint_y: None
-                    height: dp(46)
+                    height: dp(50)
                     text: app.lbl_change_language
                     btn_color: app.accent_purple
-                    font_size: "16sp"
+                    font_size: "11sp"
                     on_press: root.show_language_picker()

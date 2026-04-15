@@ -1,4 +1,4 @@
-# Build: 37
+# Build: 48
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -12,7 +12,7 @@ _log = logging.getLogger(__name__)
 
 import game.models as _m
 from game.models import (
-    Fighter, Enemy, FIGHTER_CLASSES,
+    Fighter, Enemy, Boss, FIGHTER_CLASSES,
     DifficultyScaler, EQUIPMENT_SLOTS,
     get_upgrade_tier, item_display_name, get_max_upgrade,
     get_dynamic_shop_items, fmt_num, get_boss_name, Result,
@@ -53,9 +53,13 @@ class GameEngine:
         self.active_fighter_idx = 0
         self.arena_tier = 1
         self.wins = 0
+        self.total_wins = 0
         self.total_deaths = 0
         self.graveyard: list[dict] = []
-        self.current_enemy: Enemy | None = None
+        self.current_enemy: Enemy | None = None  # first preview enemy
+        self.preview_enemies: list[Enemy] = []
+        self._revenge_common: list[Enemy] = []  # survivors from lost common fight
+        self._revenge_boss: list[Enemy] = []    # survivor boss from lost boss fight
         self.expedition_log: list[str] = []
         self.surgeon_uses = 0
         self.total_gold_earned = 0.0
@@ -77,6 +81,14 @@ class GameEngine:
         self.tutorial_shown: list[str] = []
         self.extra_expedition_slots = 0
         self.fastest_t15_time = 0  # seconds, 0 = not achieved
+
+        # Achievement counters (persistent, survive permadeath)
+        self.total_enchantments_applied = 0
+        self.total_enchantment_procs = 0
+        self.total_gold_spent_equipment = 0
+        self.total_injuries_healed = 0
+        self.total_expeditions_completed = 0
+        self.lore_unlocked: list[str] = []
         self.run_start_time = 0.0  # timestamp when current run started
 
         # Inventory: list of item dicts (unequipped equipment)
@@ -118,7 +130,7 @@ class GameEngine:
         """Submit all leaderboard scores from current engine state."""
         from game.leaderboard import leaderboard_manager
         leaderboard_manager.submit_all(
-            best_tier=self.best_record_tier,
+            best_tier=max(self.best_record_tier, self.arena_tier),
             total_kills=self.wins,
             strongest_gladiator_kills=self.best_record_kills,
             fastest_t15=self.fastest_t15_time,
@@ -164,17 +176,10 @@ class GameEngine:
 
     @staticmethod
     def _find_template(item):
-        """Find JSON template by id, then by name as fallback."""
+        """Find JSON template by id."""
         iid = item.get("id")
         if iid:
-            t = next((i for i in _m.ALL_FORGE_ITEMS if i["id"] == iid), None)
-            if t:
-                return t
-        name = item.get("name")
-        if name:
-            t = next((i for i in _m.ALL_FORGE_ITEMS if i["name"] == name), None)
-            if t:
-                return t
+            return next((i for i in _m.ALL_FORGE_ITEMS if i["id"] == iid), None)
         return None
 
     @staticmethod
@@ -187,16 +192,10 @@ class GameEngine:
             upgrade_level = item.get("upgrade_level", 0)
             enchantment = item.get("enchantment")
             item = dict(template)
-            if upgrade_level:
-                item["upgrade_level"] = upgrade_level
+            item["upgrade_level"] = upgrade_level
             if enchantment:
                 item["enchantment"] = enchantment
             return item
-        # Fallback for unknown items: convert legacy keys
-        if "atk" in item and "str" not in item:
-            item["str"] = item.pop("atk", 0)
-            item["agi"] = item.pop("def", 0)
-            item["vit"] = item.pop("hp", 0)
         return item
 
     def _migrate_all_items(self):
@@ -228,9 +227,11 @@ class GameEngine:
         self.arena_tier = 1
         self.wins = 0
         self.current_enemy = None
+        self.preview_enemies = []
+        self._revenge_common = []
+        self._revenge_boss = []
         self.expedition_log = []
         self.surgeon_uses = 0
-        self.total_gold_earned = 0.0
         self.run_number += 1
         self.run_kills = 0
         self.run_max_tier = 1
@@ -247,11 +248,25 @@ class GameEngine:
         self.save()
 
     def check_t15_clear(self):
-        """Record fastest T15 clear time if this is a new best."""
-        if self.arena_tier == 15 and self.run_start_time > 0:
+        """Record fastest T15 clear time if this is a new best.
+        Called after boss victory; arena_tier is already incremented."""
+        if self.arena_tier >= 15 and self.run_start_time > 0:
             elapsed = int(time.time() - self.run_start_time)
             if self.fastest_t15_time == 0 or elapsed < self.fastest_t15_time:
                 self.fastest_t15_time = elapsed
+                self.pending_notifications.append(
+                    t("new_record_t15", time=self._fmt_time(elapsed))
+                )
+
+    @staticmethod
+    def _fmt_time(seconds):
+        """Format seconds as M:SS or H:MM:SS."""
+        if seconds < 3600:
+            return f"{seconds // 60}:{seconds % 60:02d}"
+        h = seconds // 3600
+        m = (seconds % 3600) // 60
+        s = seconds % 60
+        return f"{h}:{m:02d}:{s:02d}"
 
     # --- Properties ---
 
@@ -275,6 +290,8 @@ class GameEngine:
     @property
     def hire_cost(self):
         alive_count = len([f for f in self.fighters if f.alive])
+        if alive_count == 0:
+            return 0
         return DifficultyScaler.hire_cost(alive_count)
 
     def hire_gladiator(self, fighter_class="mercenary"):
@@ -390,12 +407,22 @@ class GameEngine:
     # --- Battle (turn-based) ---
 
     def _spawn_enemy(self):
-        normals = data_loader.normals_by_tier.get(self.arena_tier)
-        if normals:
-            template = random.choice(normals)
-            self.current_enemy = Enemy.from_template(template, self.arena_tier)
-        else:
-            self.current_enemy = Enemy(tier=self.arena_tier)
+        if self._revenge_common:
+            self.preview_enemies = self._revenge_common
+            self.current_enemy = self._revenge_common[0]
+            return
+        num = max(1, sum(1 for f in self.fighters if f.available))
+        tier = self.arena_tier
+        normals = data_loader.normals_by_tier.get(tier)
+        enemies = []
+        for _ in range(num):
+            if normals:
+                template = random.choice(normals)
+                enemies.append(Enemy.from_template(template, tier))
+            else:
+                enemies.append(Enemy(tier=tier))
+        self.preview_enemies = enemies
+        self.current_enemy = enemies[0] if enemies else None
 
     def award_gold(self, amount):
         self.gold += amount
@@ -415,12 +442,20 @@ class GameEngine:
 
     def spawn_boss_enemy(self):
         """Spawn a boss-tier enemy as current_enemy (no battle start)."""
+        if self._revenge_boss:
+            self.preview_enemies = self._revenge_boss
+            self.current_enemy = self._revenge_boss[0]
+            return
         bosses = data_loader.bosses_by_tier.get(self.arena_tier)
         if bosses:
             template = random.choice(bosses)
-            self.current_enemy = Enemy.create_boss_from_template(template, self.arena_tier)
+            boss = Boss.from_template(template, self.arena_tier)
         else:
-            self.current_enemy = Enemy.create_boss(self.arena_tier)
+            boss = Boss(self.arena_tier)
+        from game.boss_modifiers import BossModifierHandler
+        BossModifierHandler(data_loader.boss_modifiers).assign_modifiers(boss, self.arena_tier)
+        self.preview_enemies = [boss]
+        self.current_enemy = boss
 
     def start_auto_battle(self):
         self._current_battle_messages = []
@@ -464,17 +499,39 @@ class GameEngine:
         if state.phase == BattlePhase.VICTORY:
             if state.is_boss_fight:
                 self.bosses_killed += 1
+                self.check_t15_clear()
             self.run_kills += len([e for e in state.enemies if e.hp <= 0])
             if self.arena_tier > self.run_max_tier:
                 self.run_max_tier = self.arena_tier
             self._record_battle(state, "V")
-            # Fighters already healed in BattleManager._declare_victory()
-            self._spawn_enemy()
+            # Clear revenge for the mode that was just won
+            if state.is_boss_fight:
+                self._revenge_boss = []
+            else:
+                self._revenge_common = []
+            # Note: enemy re-spawn handled by ArenaScreen._check_battle_end()
+            # which knows the current arena_mode (common vs boss)
             self.check_achievements()
 
         # Check if all fighters are dead → roguelike reset
         if state.phase == BattlePhase.DEFEAT:
             self._record_battle(state, "D")
+            # Revenge: surviving enemies carry over with their current HP
+            survivors = [e for e in state.enemies if e.hp > 0]
+            is_boss = state.is_boss_fight
+            if survivors:
+                if is_boss:
+                    self._revenge_boss = survivors
+                else:
+                    self._revenge_common = survivors
+                self.preview_enemies = survivors
+                self.current_enemy = survivors[0]
+            else:
+                if is_boss:
+                    self._revenge_boss = []
+                else:
+                    self._revenge_common = []
+                self._spawn_enemy()
             for f in self.fighters:
                 if f.alive:
                     f.hp = f.max_hp
@@ -530,6 +587,7 @@ class GameEngine:
         if self.gold < item["cost"]:
             return Result(False, t("not_enough_gold", need=fmt_num(item["cost"] - self.gold)), "not_enough_gold")
         self.gold -= item["cost"]
+        self.total_gold_spent_equipment += item["cost"]
         self.inventory.append(dict(item))
         self._log_event("buy", item=item["name"], gold=item["cost"])
         self.save()
@@ -548,11 +606,13 @@ class GameEngine:
         if self.gold < item["cost"]:
             return Result(False, t("not_enough_gold", need=fmt_num(item["cost"] - self.gold)), "not_enough_gold")
         self.gold -= item["cost"]
+        self.total_gold_spent_equipment += item["cost"]
         old = f.equip_item(dict(item))
         if old:
             self.inventory.append(dict(old))
         self._log_event("equip", item=item["name"], fighter=f.name, gold=item["cost"])
         self.save()
+        self.check_achievements()
         return Result(True, t("equipped_msg", item=item['name'], name=f.name))
 
     def equip_from_inventory(self, fighter_idx, inv_index):
@@ -658,6 +718,7 @@ class GameEngine:
             f.on_expedition = False
             f.expedition_id = None
             f.expedition_end = 0.0
+            self.total_expeditions_completed += 1
             if random.random() < exp["danger"]:
                 died, inj_id = f.check_permadeath()
                 if died:
@@ -680,7 +741,10 @@ class GameEngine:
                 tier = shard_info["tier"]
                 amount = random.randint(1, 10)
                 self.shards[tier] = self.shards.get(tier, 0) + amount
-                msg_parts = [f"{f.name} returned from {exp['name']}! +{amount} {shard_info['name']}"]
+                _key = f"shard_tier_{tier}_name"
+                _translated = t(_key)
+                shard_display = _translated if _translated != _key else shard_info['name']
+                msg_parts = [f"{f.name} returned from {exp['name']}! +{amount} {shard_display}"]
             else:
                 msg_parts = [f"{f.name} returned from {exp['name']}!"]
             if random.random() < exp["relic_chance"]:
@@ -832,8 +896,10 @@ class GameEngine:
         self.gold -= gold_cost
         self.shards[shard_tier] -= shard_count
         weapon_dict["enchantment"] = enchantment_id
+        self.total_enchantments_applied += 1
         self._log_event("enchant", item=weapon_dict.get("name", "?"), ench=ench["name"], gold=gold_cost)
         self.save()
+        self.check_achievements()
         return Result(True, t("weapon_enchanted", name=weapon_dict.get("name", "?"), ench=ench["name"]))
 
     # --- Injury healing ---
@@ -855,11 +921,13 @@ class GameEngine:
                 return Result(False, t("not_enough_gold", need=fmt_num(cost - self.gold)), "not_enough_gold")
             self.gold -= cost
             removed = f.injuries.pop(injury_idx)
+            self.total_injuries_healed += 1
             if f.hp > f.max_hp:
                 f.hp = f.max_hp
             inj_name = data_loader.injuries_by_id.get(removed["id"], {}).get("name", "?")
             self._log_event("heal", fighter=f.name, injury=inj_name, gold=cost)
             self.save()
+            self.check_achievements()
             return Result(True, t("healed_injury_msg", name=f.name, injury=inj_name, cost=fmt_num(cost)))
         return Result(False, "Invalid fighter", "invalid_fighter")
 
@@ -893,9 +961,11 @@ class GameEngine:
             else:
                 healed += 1
         f.injuries = keep
+        self.total_injuries_healed += healed
         if f.hp > f.max_hp:
             f.hp = f.max_hp
         self.save()
+        self.check_achievements()
         return Result(True, t("healed_all_injuries_msg", n=healed, cost=fmt_num(cost)))
 
     def heal_all_injuries_cost(self):
@@ -930,7 +1000,9 @@ class GameEngine:
                 f.injuries = keep
                 if f.hp > f.max_hp:
                     f.hp = f.max_hp
+        self.total_injuries_healed += healed
         self.save()
+        self.check_achievements()
         return Result(True, t("healed_all_injuries_msg", n=healed, cost=fmt_num(cost)))
 
     # --- Market (consumables only, no idle boosts) ---
@@ -969,6 +1041,17 @@ class GameEngine:
                     f.hp = f.max_hp
                 self.surgeon_uses += 1
         return Result(True, t("bought_msg", name=item['name']))
+
+    # --- Lore ---
+
+    def unlock_lore(self, entry_id):
+        """Unlock a lore entry by id. Returns True if newly unlocked."""
+        if entry_id not in self.lore_unlocked:
+            self.lore_unlocked.append(entry_id)
+            self.check_achievements()
+            self.save()
+            return True
+        return False
 
     # --- Achievements ---
 
@@ -1073,7 +1156,7 @@ class GameEngine:
             dead = [f for f in self.fighters if not f.alive]
             if not dead:
                 return Result(False, t("no_dead_fighters"), "no_dead")
-            cost = len(dead) * 100
+            cost = max(100, len(dead) * 100)
             if self.diamonds < cost:
                 return Result(False, t("not_enough_diamonds"), "not_enough_diamonds")
             self.diamonds -= cost
@@ -1090,7 +1173,7 @@ class GameEngine:
             total_injuries = sum(f.injury_count for f in self.fighters if f.alive)
             if total_injuries == 0:
                 return Result(False, t("no_injuries"), "no_injuries")
-            cost = total_injuries * 10
+            cost = max(10, total_injuries * 10)
             if self.diamonds < cost:
                 return Result(False, t("not_enough_diamonds"), "not_enough_diamonds")
             self.diamonds -= cost
@@ -1195,6 +1278,7 @@ class GameEngine:
             "active_fighter_idx": self.active_fighter_idx,
             "arena_tier": self.arena_tier,
             "wins": self.wins,
+            "total_wins": self.total_wins,
             "total_deaths": self.total_deaths,
             "graveyard": self.graveyard,
             "fighters": [f.to_dict() for f in self.fighters],
@@ -1225,6 +1309,13 @@ class GameEngine:
             "inventory": self.inventory,
             "shards": self.shards,
             "language": get_language(),
+            # Achievement counters
+            "total_enchantments_applied": self.total_enchantments_applied,
+            "total_enchantment_procs": self.total_enchantment_procs,
+            "total_gold_spent_equipment": self.total_gold_spent_equipment,
+            "total_injuries_healed": self.total_injuries_healed,
+            "total_expeditions_completed": self.total_expeditions_completed,
+            "lore_unlocked": self.lore_unlocked,
         }
         # Atomic write: save to temp file, then rename to avoid corruption
         save_path = self.SAVE_PATH
@@ -1271,8 +1362,19 @@ class GameEngine:
         except Exception as e:
             import traceback
             traceback.print_exc()
-            print(f"[ENGINE] CRITICAL: load() failed: {e}. Starting fresh.")
-            self._load_failed = True  # prevent save() from overwriting good save
+            print(f"[ENGINE] CRITICAL: load() failed: {e}. Backing up corrupt save and starting fresh.")
+            # Move the corrupt save aside so the next save() writes a clean file
+            # instead of leaving the user stuck in read-only mode forever.
+            try:
+                sp = self.SAVE_PATH
+                if os.path.exists(sp):
+                    corrupt_path = sp + ".corrupt"
+                    if os.path.exists(corrupt_path):
+                        os.remove(corrupt_path)
+                    os.rename(sp, corrupt_path)
+                    print(f"[ENGINE] Corrupt save moved to {corrupt_path}")
+            except Exception as _bak_exc:
+                print(f"[ENGINE] Could not back up corrupt save: {_bak_exc}")
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
             self._spawn_enemy()
 
@@ -1282,6 +1384,7 @@ class GameEngine:
         self.active_fighter_idx = data.get("active_fighter_idx", 0)
         self.arena_tier = data.get("arena_tier", 1)
         self.wins = data.get("wins", 0)
+        self.total_wins = data.get("total_wins", 0)
         self.total_deaths = data.get("total_deaths", 0)
         self.graveyard = data.get("graveyard", [])
         self.expedition_log = data.get("expedition_log", [])
@@ -1308,26 +1411,39 @@ class GameEngine:
         self.extra_expedition_slots = data.get("extra_expedition_slots", 0)
         self.fastest_t15_time = data.get("fastest_t15_time", 0)
         self.run_start_time = data.get("run_start_time", 0.0)
-        # war_drums_until removed — kept for backward compat on load
         self.ads_removed = data.get("ads_removed", False)
         self.active_mutators = data.get("active_mutators", [])
+
+        # Achievement counters
+        self.total_enchantments_applied = data.get("total_enchantments_applied", 0)
+        self.total_enchantment_procs = data.get("total_enchantment_procs", 0)
+        self.total_gold_spent_equipment = data.get("total_gold_spent_equipment", 0)
+        self.total_injuries_healed = data.get("total_injuries_healed", 0)
+        self.total_expeditions_completed = data.get("total_expeditions_completed", 0)
+        self.lore_unlocked = data.get("lore_unlocked", [])
 
         saved_lang = data.get("language")
         if saved_lang:
             set_language(saved_lang)
+            # Apply data-level translations (achievements, expeditions, etc.)
+            # from data/languages/data_{lang}.json, then re-wire so models
+            # see the translated names/descs.
+            data_loader.apply_translations(saved_lang)
+            self._wire_data()
 
         self.inventory = data.get("inventory", [])
         shards_raw = data.get("shards", {})
-        self.shards = {int(k): v for k, v in shards_raw.items()} if shards_raw else {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-        fighters_data = data.get("fighters", data.get("gladiators", []))
+        if shards_raw:
+            try:
+                self.shards = {int(k): v for k, v in shards_raw.items()}
+            except (ValueError, TypeError):
+                _log.warning("[ENGINE] Corrupted shard keys, resetting to defaults")
+                self.shards = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        else:
+            self.shards = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        fighters_data = data.get("fighters", [])
         self.fighters = [Fighter.from_dict(fd) for fd in fighters_data]
-        # Migrate overflow relics from old save format
-        for f in self.fighters:
-            overflow = getattr(f, "_overflow_relics", [])
-            if overflow:
-                self.inventory.extend(overflow)
-                f._overflow_relics = []
-        # Refresh all items from JSON (fixes old atk/def/hp format + updates stats)
+        # Refresh all items from JSON templates (updates stats from data files)
         self._migrate_all_items()
         if not self.fighters or not any(f.alive for f in self.fighters):
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]

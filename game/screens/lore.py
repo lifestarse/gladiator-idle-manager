@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 8
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -73,7 +73,7 @@ class LoreScreen(BaseScreen):
 
             def _header(text):
                 lbl = AutoShrinkLabel(
-                    text=text, font_size=sp(16), bold=True,
+                    text=text, font_size=sp(11), bold=True,
                     color=ACCENT_GREEN, halign="left", valign="middle",
                     size_hint_y=None, height=dp(36),
                     padding=[dp(4), 0],
@@ -87,12 +87,12 @@ class LoreScreen(BaseScreen):
                     padding=[dp(8), 0],
                 )
                 lbl = AutoShrinkLabel(
-                    text=label, font_size=sp(14), color=TEXT_MUTED,
+                    text=label, font_size=sp(10), color=TEXT_MUTED,
                     halign="left", valign="middle", size_hint_x=0.55,
                 )
                 bind_text_wrap(lbl)
                 val = AutoShrinkLabel(
-                    text=str(value), font_size=sp(14), bold=True,
+                    text=str(value), font_size=sp(10), bold=True,
                     color=TEXT_PRIMARY, halign="right", valign="middle",
                     size_hint_x=0.45,
                 )
@@ -102,50 +102,50 @@ class LoreScreen(BaseScreen):
                 grid.add_widget(box)
 
             # --- Current Run ---
-            _header("CURRENT RUN")
-            _row("Run #", engine.run_number)
-            _row("Arena Tier", engine.arena_tier)
-            _row("Kills", engine.run_kills)
-            _row("Max Tier", engine.run_max_tier)
+            _header(t("stat_hdr_current_run"))
+            _row(t("stat_row_run_num"), engine.run_number)
+            _row(t("stat_row_arena_tier"), engine.arena_tier)
+            _row(t("stat_row_kills"), engine.run_kills)
+            _row(t("stat_row_max_tier"), engine.run_max_tier)
 
             # --- Records ---
-            _header("RECORDS")
-            _row("Best Tier", engine.best_record_tier if engine.best_record_tier > 0 else "---")
-            _row("Best Kills", engine.best_record_kills if engine.best_record_kills > 0 else "---")
-            _row("Total Runs", engine.total_runs)
+            _header(t("stat_hdr_records"))
+            _row(t("stat_row_best_tier"), engine.best_record_tier if engine.best_record_tier > 0 else "---")
+            _row(t("stat_row_best_kills"), engine.best_record_kills if engine.best_record_kills > 0 else "---")
+            _row(t("stat_row_total_runs"), engine.total_runs)
 
             # --- Combat ---
-            _header("COMBAT")
-            _row("Wins", engine.wins)
-            _row("Bosses Killed", engine.bosses_killed)
-            _row("Fighters Lost", engine.total_deaths)
-            _row("Graveyard", len(engine.graveyard))
+            _header(t("stat_hdr_combat"))
+            _row(t("stat_row_wins"), engine.wins)
+            _row(t("stat_row_bosses_killed"), engine.bosses_killed)
+            _row(t("stat_row_fighters_lost"), engine.total_deaths)
+            _row(t("stat_row_graveyard"), len(engine.graveyard))
 
             # --- Economy ---
-            _header("ECONOMY")
-            _row("Gold", fmt_num(engine.gold))
-            _row("Total Gold Earned", fmt_num(engine.total_gold_earned))
-            _row("Diamonds", fmt_num(engine.diamonds))
+            _header(t("stat_hdr_economy"))
+            _row(t("stat_row_gold"), fmt_num(engine.gold))
+            _row(t("stat_row_total_gold"), fmt_num(engine.total_gold_earned))
+            _row(t("stat_row_diamonds"), fmt_num(engine.diamonds))
 
             # --- Roster ---
-            _header("ROSTER")
+            _header(t("stat_hdr_roster"))
             alive = [f for f in engine.fighters if f.alive]
-            _row("Fighters Alive", len(alive))
+            _row(t("stat_row_fighters_alive"), len(alive))
             total_kills = sum(f.kills for f in engine.fighters)
-            _row("Total Kills", total_kills)
+            _row(t("stat_row_total_kills"), total_kills)
             if engine.fighters:
                 best_f = max(engine.fighters, key=lambda f: f.level)
-                _row("Highest Level", f"{best_f.name} Lv.{best_f.level}")
+                _row(t("stat_row_highest_level"), f"{best_f.name} Lv.{best_f.level}")
             total_injuries = sum(f.injury_count for f in engine.fighters)
-            _row("Total Injuries", total_injuries)
+            _row(t("stat_row_total_injuries"), total_injuries)
 
             # --- Progress ---
-            _header("PROGRESS")
+            _header(t("stat_hdr_progress"))
             unlocked = len(engine.achievements_unlocked)
             total_ach = len(ACHIEVEMENTS)
-            _row("Achievements", f"{unlocked} / {total_ach}")
-            _row("Story Chapter", engine.story_chapter)
-            _row("Expeditions Done", len(engine.expedition_log))
+            _row(t("stat_row_achievements"), f"{unlocked} / {total_ach}")
+            _row(t("stat_row_story_chapter"), engine.story_chapter)
+            _row(t("stat_row_expeditions_done"), len(engine.expedition_log))
             _row(t("battle_log_btn"), len(engine.battle_log))
 
     def _show_battle_log(self):
@@ -162,14 +162,14 @@ class LoreScreen(BaseScreen):
             grid.clear_widgets()
 
             grid.add_widget(AutoShrinkLabel(
-                text=t("battle_log_title"), font_size="20sp", bold=True,
+                text=t("battle_log_title"), font_size="10sp", bold=True,
                 color=ACCENT_CYAN, halign="center",
                 size_hint_y=None, height=dp(32),
             ))
 
             if not engine.battle_log:
                 grid.add_widget(AutoShrinkLabel(
-                    text=t("battle_log_empty"), font_size="16sp",
+                    text=t("battle_log_empty"), font_size="11sp",
                     color=TEXT_MUTED, halign="center",
                     size_hint_y=None, height=dp(40),
                 ))
@@ -197,16 +197,16 @@ class LoreScreen(BaseScreen):
                 card.border_color = result_color
 
                 card.add_text_row(
-                    (result_text, sp(14), True, result_color, 0.35),
-                    (f"T{tier}", sp(13), True, ACCENT_GOLD, 0.12),
-                    (f"+{gold}g", sp(13), True, ACCENT_GOLD, 0.23),
-                    (time_str, sp(11), False, TEXT_MUTED, 0.30),
+                    (result_text, sp(7), True, result_color, 0.35),
+                    (f"T{tier}", sp(7), True, ACCENT_GOLD, 0.12),
+                    (f"+{gold}g", sp(7), True, ACCENT_GOLD, 0.23),
+                    (time_str, sp(6), False, TEXT_MUTED, 0.30),
                     size_hint_y=0.5,
                 )
                 card.add_text_row(
-                    (fighters, sp(12), False, TEXT_SECONDARY, 0.45),
-                    ("vs", sp(11), False, TEXT_MUTED, 0.10),
-                    (enemies, sp(12), False, TEXT_SECONDARY, 0.45),
+                    (fighters, sp(6), False, TEXT_SECONDARY, 0.45),
+                    ("vs", sp(6), False, TEXT_MUTED, 0.10),
+                    (enemies, sp(6), False, TEXT_SECONDARY, 0.45),
                     size_hint_y=0.5,
                 )
                 card.bind(on_press=lambda inst, i=real_idx: self._show_battle_detail(i))
@@ -242,11 +242,11 @@ class LoreScreen(BaseScreen):
 
             grid.add_widget(AutoShrinkLabel(
                 text=f"{result_text}  T{tier}  +{gold}g  {turns} turns",
-                font_size="16sp", bold=True, color=result_color,
+                font_size="11sp", bold=True, color=result_color,
                 halign="center", size_hint_y=None, height=dp(28),
             ))
             grid.add_widget(AutoShrinkLabel(
-                text=time_str, font_size="12sp", color=TEXT_MUTED,
+                text=time_str, font_size="11sp", color=TEXT_MUTED,
                 halign="center", size_hint_y=None, height=dp(18),
             ))
 
@@ -254,7 +254,7 @@ class LoreScreen(BaseScreen):
             log_lines = entry.get("log", [])
             if not log_lines:
                 grid.add_widget(AutoShrinkLabel(
-                    text=t("battle_log_empty"), font_size="14sp",
+                    text=t("battle_log_empty"), font_size="10sp",
                     color=TEXT_MUTED, halign="center",
                     size_hint_y=None, height=dp(30),
                 ))
@@ -276,7 +276,7 @@ class LoreScreen(BaseScreen):
                     color = ACCENT_PURPLE
 
                 lbl = AutoShrinkLabel(
-                    text=line, font_size="12sp", color=color,
+                    text=line, font_size="11sp", color=color,
                     halign="left", size_hint_y=None, height=dp(18),
                 )
                 bind_text_wrap(lbl)
@@ -307,13 +307,13 @@ class LoreScreen(BaseScreen):
         with grid_batch(grid):
             grid.clear_widgets()
             grid.add_widget(AutoShrinkLabel(
-                text=t("event_log_title"), font_size="20sp", bold=True,
+                text=t("event_log_title"), font_size="10sp", bold=True,
                 color=ACCENT_GOLD, halign="center",
                 size_hint_y=None, height=dp(32),
             ))
             if not engine.event_log:
                 grid.add_widget(AutoShrinkLabel(
-                    text=t("event_log_empty"), font_size="16sp",
+                    text=t("event_log_empty"), font_size="11sp",
                     color=TEXT_MUTED, halign="center",
                     size_hint_y=None, height=dp(40),
                 ))
@@ -330,12 +330,12 @@ class LoreScreen(BaseScreen):
                                 height=dp(48), padding=[dp(8), dp(4)], spacing=dp(1))
                 card.border_color = color
                 card.add_text_row(
-                    (label, sp(13), True, color, 0.45),
-                    (time_str, sp(11), False, TEXT_MUTED, 0.30),
+                    (label, sp(7), True, color, 0.45),
+                    (time_str, sp(6), False, TEXT_MUTED, 0.30),
                     size_hint_y=0.45,
                 )
                 card.add_text_row(
-                    (detail, sp(12), False, TEXT_SECONDARY, 1.0),
+                    (detail, sp(6), False, TEXT_SECONDARY, 1.0),
                     size_hint_y=0.55,
                 )
                 grid.add_widget(card)
@@ -386,20 +386,20 @@ class LoreScreen(BaseScreen):
             return
         engine = App.get_running_app().engine
 
-        # Shard name lookup: tier int → display name
-        shard_names = {}
-        for info in SHARD_TIERS.values():
-            shard_names[info["tier"]] = info["name"]
+        def _shard_display(tier):
+            """Translated shard name (falls back to generic if key missing)."""
+            key = f"shard_tier_{tier}_name"
+            val = t(key)
+            return val if val != key else t("shard_name_fallback", tier=tier)
 
         def _reward_text(reward):
             parts = []
             if "diamonds" in reward:
-                parts.append(f"{reward['diamonds']} diamonds")
+                parts.append(t("reward_diamonds", n=reward['diamonds']))
             if "shards" in reward:
                 for tier, count in reward["shards"].items():
-                    name = shard_names.get(tier, f"Shard ({tier})")
-                    parts.append(f"{count}x {name}")
-            return ", ".join(parts) if parts else "—"
+                    parts.append(f"{count}x {_shard_display(tier)}")
+            return ", ".join(parts) if parts else t("reward_none")
 
         with grid_batch(grid):
             grid.clear_widgets()
@@ -408,23 +408,26 @@ class LoreScreen(BaseScreen):
                 locked = ch_idx > engine.story_chapter
                 completed_ch = ch_idx < engine.story_chapter
 
-                # Chapter header
+                # Chapter header — color conveys state.
+                # Completed: green + checkmark prefix. Locked: muted gray.
+                # Current: gold. No more "[DONE]/[LOCKED]" suffix noise.
                 if completed_ch:
                     ch_color = ACCENT_GREEN
-                    ch_suffix = "  [DONE]"
+                    ch_prefix = "✓ "
                 elif locked:
                     ch_color = TEXT_MUTED
-                    ch_suffix = "  [LOCKED]"
+                    ch_prefix = ""
                 else:
                     ch_color = ACCENT_GOLD
-                    ch_suffix = ""
+                    ch_prefix = ""
 
+                chap_name = t("chap_" + chapter['id'])
                 hdr = AutoShrinkLabel(
-                    text=f"{chapter['name']}{ch_suffix}",
-                    font_size=sp(16), bold=True,
+                    text=f"{ch_prefix}{chap_name}",
+                    font_size=sp(12), bold=True,
                     color=ch_color, halign="left", valign="middle",
-                    size_hint_y=None, height=dp(40),
-                    padding=[dp(4), dp(4)],
+                    size_hint_y=None, height=dp(44),
+                    padding=[dp(4), dp(6)],
                 )
                 bind_text_wrap(hdr)
                 grid.add_widget(hdr)
@@ -432,29 +435,31 @@ class LoreScreen(BaseScreen):
                 if locked:
                     continue
 
-                # Quest rows
+                # Quest rows — more breathing room, cleaner status marks.
                 for quest in chapter["quests"]:
                     done = quest["id"] in engine.quests_completed
-                    check_mark = "[OK]  " if done else "[  ]  "
+                    check_mark = "✓  " if done else "·  "
                     q_color = ACCENT_GREEN if done else TEXT_PRIMARY
+                    q_name = t("qst_" + quest['id'] + "_name")
+                    q_desc = t("qst_" + quest['id'] + "_desc")
 
                     row = BoxLayout(
-                        orientation="vertical", size_hint_y=None, height=dp(44),
-                        padding=[dp(12), 0],
+                        orientation="vertical", size_hint_y=None, height=dp(56),
+                        padding=[dp(14), dp(6)], spacing=dp(2),
                     )
                     name_lbl = AutoShrinkLabel(
-                        text=f"{check_mark}{quest['name']}",
-                        font_size=sp(14), bold=True, color=q_color,
-                        halign="left", valign="bottom",
+                        text=f"{check_mark}{q_name}",
+                        font_size=sp(11), bold=True, color=q_color,
+                        halign="left", valign="middle",
                         size_hint_y=None, height=dp(22),
                     )
                     bind_text_wrap(name_lbl)
 
                     desc_lbl = AutoShrinkLabel(
-                        text=f"{quest['desc']}  —  {_reward_text(quest.get('reward', {}))}",
-                        font_size=sp(12), color=TEXT_MUTED,
-                        halign="left", valign="top",
-                        size_hint_y=None, height=dp(20),
+                        text=f"{q_desc}  —  {_reward_text(quest.get('reward', {}))}",
+                        font_size=sp(9), color=TEXT_MUTED,
+                        halign="left", valign="middle",
+                        size_hint_y=None, height=dp(22),
                     )
                     bind_text_wrap(desc_lbl)
 
@@ -488,7 +493,7 @@ class LoreScreen(BaseScreen):
         selector = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(4))
         for i, f in fighters:
             btn = MinimalButton(
-                text=f.name, font_size=14,
+                text=f.name, font_size=11,
                 btn_color=ACCENT_GOLD if i == selected["idx"] else BTN_DISABLED,
             )
             def on_select(inst, idx=i):
@@ -504,7 +509,7 @@ class LoreScreen(BaseScreen):
         # Text input
         name_input = TextInput(
             text=engine.fighters[selected["idx"]].name,
-            font_size=sp(20), multiline=False,
+            font_size=sp(10), multiline=False,
             size_hint_y=None, height=dp(44),
             background_color=(0.15, 0.15, 0.2, 1),
             foreground_color=(1, 1, 1, 1),
@@ -516,13 +521,13 @@ class LoreScreen(BaseScreen):
         # Confirm button
         popup = Popup(
             title=t("rename_title"),
-            title_size=sp(20),
+            title_size=sp(10),
             content=content,
             size_hint=(0.9, 0.38),
             background_color=BG_CARD,
         )
         confirm_btn = MinimalButton(
-            text=t("confirm_btn"), font_size=18,
+            text=t("confirm_btn"), font_size=9,
             btn_color=ACCENT_GOLD, size_hint_y=None, height=dp(42),
         )
         def do_rename(inst):

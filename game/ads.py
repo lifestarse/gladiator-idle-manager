@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 8
 """
 Ad integration module — AdMob via KivMob.
 
@@ -21,11 +21,22 @@ from kivy.utils import platform
 _log = logging.getLogger(__name__)
 
 # --- AdMob Unit IDs ---
-# TEST IDs (safe for development). Replace before release!
+# All IDs are real production units from AdMob console (publisher 9899076646540406).
+# The _is_test_id guard below still blocks any future accidental regressions
+# to Google's test publisher (ca-app-pub-3940256099942544).
 ADMOB_APP_ID = "ca-app-pub-9899076646540406~3867094053"
 BANNER_ID = "ca-app-pub-9899076646540406/9566843992"
-INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"  # test ID — replace with real before release
-REWARDED_ID = "ca-app-pub-3940256099942544/5224354917"      # test ID — replace with real before release
+INTERSTITIAL_ID = "ca-app-pub-9899076646540406/4588376646"
+REWARDED_ID = "ca-app-pub-9899076646540406/7192144243"
+
+# Google's test publisher — used to block accidental shipping of test ads.
+_GOOGLE_TEST_PUBLISHER = "ca-app-pub-3940256099942544"
+
+
+def _is_test_id(unit_id):
+    """True if the ad unit ID belongs to Google's test publisher."""
+    return bool(unit_id) and _GOOGLE_TEST_PUBLISHER in unit_id
+
 
 # Real ads enabled for banner
 USING_REAL_ADS = True
@@ -72,6 +83,12 @@ class AdManager:
     # --- Interstitial ---
 
     def show_interstitial(self):
+        if _is_test_id(INTERSTITIAL_ID):
+            _log.warning(
+                "[AdManager] Interstitial skipped: INTERSTITIAL_ID is a Google test ID. "
+                "Create a real ad unit in AdMob and update ads.py before release."
+            )
+            return
         if not self._initialized or not self._kivmob:
             return
         if self._kivmob.is_interstitial_loaded():
@@ -91,6 +108,12 @@ class AdManager:
         Show rewarded video. on_reward_callback() is called if user
         watches the full video.
         """
+        if _is_test_id(REWARDED_ID):
+            _log.warning(
+                "[AdManager] Rewarded skipped: REWARDED_ID is a Google test ID. "
+                "Create a real ad unit in AdMob and update ads.py before release."
+            )
+            return
         if not self._initialized or not self._kivmob:
             # Stub: just give reward on desktop for testing
             print("[AdManager] Stub: rewarded ad simulated")
@@ -130,9 +153,6 @@ class AdManager:
             )
         except Exception as e:
             print(f"[AdManager] Rewarded ad error: {e}")
-            # Fallback: give reward anyway during development
-            if on_reward_callback:
-                on_reward_callback()
 
     def is_rewarded_loaded(self):
         if not self._initialized or not self._kivmob:
