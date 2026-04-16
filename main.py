@@ -272,31 +272,17 @@ class GladiatorIdleApp(App):
         self.lbl_buy_diamonds = t("buy_diamonds_label")
 
     def build(self):
-        import time as _time
-        _t = _time.perf_counter()
-        def _log(step):
-            nonlocal _t
-            now = _time.perf_counter()
-            print(f"[STARTUP] {step}: {(now-_t)*1000:.0f}ms")
-            _t = now
-
         init_language()
-        _log("init_language")
         self._init_locale_strings()
-        _log("_init_locale_strings")
         self.engine = GameEngine()
-        _log("GameEngine()")
         self.engine.load()
-        _log("engine.load")
         # Re-apply locale strings after load restores saved language
         self._init_locale_strings()
-        _log("_init_locale_strings (2)")
 
         ad_manager.init()
         iap_manager.init()
         cloud_save_manager.on_auto_connected = self._on_cloud_auto_connected
         cloud_save_manager.init()
-        _log("ad/iap/cloud init")
         # Leaderboard init is fully optional — deferred and wrapped so any
         # Play Games failure (missing APP_ID, no account, jnius crash) is
         # silently logged and never propagates to the game.
@@ -341,15 +327,10 @@ class GladiatorIdleApp(App):
         # Was FadeTransition(duration=0.2) which added 200ms perceived lag.
         sm = SwipeScreenManager(transition=NoTransition())
         sm.add_widget(ArenaScreen(name="arena"))
-        _log("ArenaScreen")
         sm.add_widget(RosterScreen(name="roster"))
-        _log("RosterScreen")
         sm.add_widget(ForgeScreen(name="forge"))
-        _log("ForgeScreen")
         sm.add_widget(ExpeditionScreen(name="expedition"))
-        _log("ExpeditionScreen")
         sm.add_widget(LoreScreen(name="lore"))
-        _log("LoreScreen")
         sm.add_widget(MoreScreen(name="more"))
         self.sm = sm
         self._nav_history = []
