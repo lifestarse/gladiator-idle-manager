@@ -1,4 +1,4 @@
-# Build: 19
+# Build: 20
 """
 Turn-based battle system with luck-based combat.
 
@@ -313,9 +313,14 @@ class BattleManager:
         from game.data_loader import data_loader
         self._mod_handler = BossModifierHandler(data_loader.boss_modifiers)
 
+    # Maximum party size per battle — caps fighter/enemy counts to avoid
+    # freezes with huge rosters. Each turn iterates both sides; at 1000+
+    # fighters every turn generates 2000+ events + state updates.
+    MAX_PARTY = 20
+
     def start_auto_battle(self):
         fighters = [f for f in self.engine.fighters
-                    if f.available]
+                    if f.available][:self.MAX_PARTY]
         if not fighters:
             return [BattleEvent("message", message=t("battle_no_fighters"))]
 
@@ -358,7 +363,7 @@ class BattleManager:
 
     def start_boss_fight(self):
         fighters = [f for f in self.engine.fighters
-                    if f.available]
+                    if f.available][:self.MAX_PARTY]
         if not fighters:
             return [BattleEvent("message", message=t("battle_no_fighters"))]
 
