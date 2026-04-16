@@ -1,4 +1,4 @@
-# Build: 27
+# Build: 28
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -50,6 +50,8 @@ class ForgeScreen(BaseScreen):
     # True when in main shop-list mode — forge_rv is visible, forge_scroll hidden.
     # Set False by every non-shop mode (inventory, detail, upgrade, enchant, preview).
     _forge_rv_active = BooleanProperty(False)
+    # True when in inventory-list mode (not detail/upgrade/enchant).
+    _inventory_rv_active = BooleanProperty(False)
     lbl_top_title = StringProperty("")
     _show_inv_tabs = BooleanProperty(False)
 
@@ -161,12 +163,15 @@ class ForgeScreen(BaseScreen):
         s = engine.shards
         self.shard_text = f"I:{s.get(1,0)} II:{s.get(2,0)} III:{s.get(3,0)} IV:{s.get(4,0)} V:{s.get(5,0)}"
         if self.show_inventory:
-            self._forge_rv_active = False  # inventory/detail uses legacy GridLayout
+            self._forge_rv_active = False  # inventory/detail: not shop mode
             if self.weapon_upgrade_active or self.enchant_active:
+                self._inventory_rv_active = False
                 return  # don't redraw while upgrade/enchant screen is open
             if self.inv_detail_idx >= 0:
+                self._inventory_rv_active = False
                 self._show_inv_detail(self.inv_detail_idx)
             elif self.eq_detail_fighter >= 0 and self.eq_detail_slot:
+                self._inventory_rv_active = False
                 f = engine.fighters[self.eq_detail_fighter]
                 item = f.equipment.get(self.eq_detail_slot)
                 if item:
@@ -179,7 +184,8 @@ class ForgeScreen(BaseScreen):
                 self._refresh_inventory_grid()
             return
         if self._preview_item is not None:
-            self._forge_rv_active = False  # preview uses legacy GridLayout
+            self._forge_rv_active = False
+            self._inventory_rv_active = False
             self._show_shop_preview(self._preview_item)
             return
         # Show rarity filter tabs for shop
@@ -218,6 +224,7 @@ class ForgeScreen(BaseScreen):
         self.inventory_btn_text = t("inventory_count", n=inv_count) if inv_count > 0 else t("inventory_label")
         # Shop mode — switch to RecycleView (virtualized 130-item list)
         self._forge_rv_active = True
+        self._inventory_rv_active = False
         refresh_forge_grid(self)
 
     def set_forge_tab(self, tab):
@@ -362,6 +369,17 @@ class ForgeScreen(BaseScreen):
 
         reverse = self.inventory_sort == "best"
         items_list.sort(key=lambda x: self._item_total_stats(x[2]), reverse=reverse)
+
+        # Prefer RecycleView for inventory list
+        inv_rv = self.ids.get("inventory_rv")
+        if inv_rv is not None:
+            self._inventory_rv_active = True
+            from game.ui_helpers import _inventory_item_to_rv_data
+            inv_rv.data = [
+                _inventory_item_to_rv_data(src, idx, item, fn, self)
+                for src, idx, item, fn in items_list
+            ]
+            return
 
         # Fast path: skip rebuild if same items
         inv_key = [(s, i, it.get("id"), it.get("upgrade_level", 0), fn) for s, i, it, fn in items_list]

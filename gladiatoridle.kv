@@ -1,4 +1,4 @@
-# Build: 43
+# Build: 44
 #:kivy 2.0
 #:import dp kivy.metrics.dp
 #:import sp kivy.metrics.sp
@@ -16,6 +16,7 @@
 #:import AutoShrinkLabel game.widgets.AutoShrinkLabel
 #:import RosterCardView game.ui_helpers.RosterCardView
 #:import ForgeCardView game.ui_helpers.ForgeCardView
+#:import InventoryCardView game.ui_helpers.InventoryCardView
 
 # ============================================================
 #  SHARED NAV — 6 tabs (set active_screen per screen)
@@ -492,7 +493,30 @@
                 spacing: dp(6)
                 padding: [dp(14), dp(8)]
 
-        # Detail/upgrade/enchant/inventory modes: legacy GridLayout in ScrollView
+        # Inventory-list mode: RecycleView for player's items (inv + equipped)
+        TouchRecycleView:
+            id: inventory_rv
+            viewclass: 'InventoryCardView'
+            bar_width: 2
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            size_hint_y: 1 if root._inventory_rv_active else 0.001
+            opacity: 1 if root._inventory_rv_active else 0
+            disabled: not root._inventory_rv_active
+            RecycleBoxLayout:
+                default_size: None, dp(75)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+
+        # Detail/upgrade/enchant/shard modes: legacy GridLayout in ScrollView
         ScrollView:
             id: forge_scroll
             bar_width: 2
@@ -501,9 +525,9 @@
             effect_cls: ScrollEffect
             scroll_distance: dp(8)
             scroll_timeout: 50
-            size_hint_y: 0.001 if root._forge_rv_active else 1
-            opacity: 0 if root._forge_rv_active else 1
-            disabled: root._forge_rv_active
+            size_hint_y: 0.001 if (root._forge_rv_active or root._inventory_rv_active) else 1
+            opacity: 0 if (root._forge_rv_active or root._inventory_rv_active) else 1
+            disabled: root._forge_rv_active or root._inventory_rv_active
             GridLayout:
                 id: forge_grid
                 cols: 1
