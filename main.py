@@ -1,4 +1,4 @@
-# Build: 62
+# Build: 61
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -347,11 +347,6 @@ class GladiatorIdleApp(App):
         self._setup_toast()
         Clock.schedule_interval(self._idle_tick, 1.0)
         Clock.schedule_interval(self._auto_save, 30.0)
-        # Force first refresh immediately after window shows — otherwise user
-        # sees engine defaults (gold=0, TIER 1) for up to 1 second until the
-        # first _idle_tick fires. With 1000+ fighters the freshly-loaded save
-        # isn't visible in the UI until then.
-        Clock.schedule_once(lambda dt: self._idle_tick(0), 0)
 
         return root
 

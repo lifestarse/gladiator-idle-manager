@@ -1,4 +1,4 @@
-# Build: 21
+# Build: 20
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -61,12 +61,8 @@ class ArenaScreen(BaseScreen):
             self.best_text = "Best: ---"
         self.run_text = f"Run #{engine.run_number} \u00b7 {engine.run_kills} kills"
 
-        # Cap arena pit display at 20 fighters — each card is a complex
-        # widget with HP bar + skill badge; rendering 1000+ on startup
-        # freezes the UI. Design target is <10 fighters in a party.
-        _all_available = [f for f in engine.fighters if f.available]
-        fighters = _all_available[:20]
-        self.player_summary = t("fighters_ready", n=len(_all_available))
+        fighters = [f for f in engine.fighters if f.available]
+        self.player_summary = t("fighters_ready", n=len(fighters))
 
         if engine.battle_active:
             s = engine.battle_mgr.state
@@ -167,8 +163,8 @@ class ArenaScreen(BaseScreen):
                 self._cached_enemy_names.append(e.name)
                 eg.add_widget(row)
         else:
-            # Outside battle — cap at 20 visible pit cards (see refresh_ui)
-            fighters_list = [f for f in engine.fighters if f.available][:20]
+            # Outside battle — use fast update if possible
+            fighters_list = [f for f in engine.fighters if f.available]
             alive_enemies = list(engine.preview_enemies)
             if self._try_fast_update(fighters_list, alive_enemies, engine):
                 return
@@ -187,10 +183,8 @@ class ArenaScreen(BaseScreen):
                 hb.add_widget(heal_btn)
             self._cached_heal_btn = heal_btn
 
-            # Build once: fighter object id → index, O(N) instead of O(N²)
-            fighter_idx_map = {id(rf): j for j, rf in enumerate(engine.fighters)}
             for idx_f, f in enumerate(fighters_list):
-                real_idx = fighter_idx_map.get(id(f), -1)
+                real_idx = engine.fighters.index(f)
                 card = build_fighter_pit_card(
                     f, on_tap=lambda w, fi=real_idx: self._open_fighter_detail(fi),
                 )
