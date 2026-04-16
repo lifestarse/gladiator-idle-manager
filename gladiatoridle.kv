@@ -1,4 +1,4 @@
-# Build: 42
+# Build: 43
 #:kivy 2.0
 #:import dp kivy.metrics.dp
 #:import sp kivy.metrics.sp
@@ -15,6 +15,7 @@
 #:import TouchRecycleView game.widgets.TouchRecycleView
 #:import AutoShrinkLabel game.widgets.AutoShrinkLabel
 #:import RosterCardView game.ui_helpers.RosterCardView
+#:import ForgeCardView game.ui_helpers.ForgeCardView
 
 # ============================================================
 #  SHARED NAV — 6 tabs (set active_screen per screen)
@@ -468,6 +469,30 @@
             opacity: 1 if root._show_inv_tabs else 0
             disabled: not root._show_inv_tabs
 
+        # Shop-list mode: RecycleView virtualizes 130-item shop grid
+        TouchRecycleView:
+            id: forge_rv
+            viewclass: 'ForgeCardView'
+            bar_width: 2
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            size_hint_y: 1 if root._forge_rv_active else 0.001
+            opacity: 1 if root._forge_rv_active else 0
+            disabled: not root._forge_rv_active
+            RecycleBoxLayout:
+                default_size: None, dp(114)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+
+        # Detail/upgrade/enchant/inventory modes: legacy GridLayout in ScrollView
         ScrollView:
             id: forge_scroll
             bar_width: 2
@@ -476,6 +501,9 @@
             effect_cls: ScrollEffect
             scroll_distance: dp(8)
             scroll_timeout: 50
+            size_hint_y: 0.001 if root._forge_rv_active else 1
+            opacity: 0 if root._forge_rv_active else 1
+            disabled: root._forge_rv_active
             GridLayout:
                 id: forge_grid
                 cols: 1
