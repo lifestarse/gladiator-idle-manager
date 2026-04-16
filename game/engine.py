@@ -1,4 +1,4 @@
-# Build: 48
+# Build: 50
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -141,6 +141,10 @@ class GameEngine:
         """Override hardcoded module-level data in models.py with JSON data."""
         import game.models as m
         dl = data_loader
+        # Build O(1) lookup dict for _find_template (was O(130) linear scan)
+        GameEngine._template_by_id = {i["id"]: i for i in (
+            dl.weapons + dl.armor + dl.accessories
+        )} if dl.weapons else {}
         if dl.fighter_names:
             m.FIGHTER_NAMES = dl.fighter_names
         if dl.weapons:
@@ -176,10 +180,10 @@ class GameEngine:
 
     @staticmethod
     def _find_template(item):
-        """Find JSON template by id."""
+        """Find JSON template by id — O(1) via cached lookup dict."""
         iid = item.get("id")
         if iid:
-            return next((i for i in _m.ALL_FORGE_ITEMS if i["id"] == iid), None)
+            return getattr(GameEngine, '_template_by_id', {}).get(iid)
         return None
 
     @staticmethod
@@ -1272,7 +1276,13 @@ class GameEngine:
         if getattr(self, '_load_failed', False):
             print(f"[ENGINE] save() BLOCKED — load had failed")
             return {}
-        self._migrate_all_items()
+        # NOTE: _migrate_all_items is NOT called here. It replaces items in
+        # inventory/equipment with fresh dicts (dict(template) + preserved
+        # upgrade_level/enchantment). That detaches any open UI reference
+        # (e.g. the forge upgrade button holds `w=item` in its closure) —
+        # subsequent in-place upgrades then mutate a stale detached dict
+        # while save() writes the new dict from inventory, losing the
+        # latest change. Migration only happens on load().
         data = {
             "gold": self.gold,
             "active_fighter_idx": self.active_fighter_idx,

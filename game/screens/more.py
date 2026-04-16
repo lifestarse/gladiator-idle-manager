@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
@@ -361,6 +361,10 @@ class MoreScreen(BaseScreen):
         data_loader.load_all()
         data_loader.apply_translations(lang_code)
         GameEngine._wire_data()
+        # Explicitly migrate inventory + equipment so item names update to the
+        # new language immediately. (save() no longer migrates — see engine.save
+        # note about detached UI references breaking upgrade-many-times.)
+        App.get_running_app().engine._migrate_all_items()
         App.get_running_app().engine.save()
         App.get_running_app()._init_locale_strings()
         self.refresh_more()

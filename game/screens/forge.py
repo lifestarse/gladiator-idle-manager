@@ -1,4 +1,4 @@
-# Build: 25
+# Build: 26
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -653,7 +653,12 @@ class ForgeScreen(BaseScreen):
         elif fighter and slot == "accessory":
             _info_row("VIT+STR", f"{fighter.total_vitality}+{fighter.total_strength}={fighter.total_vitality + fighter.total_strength}", TEXT_SECONDARY)
         if is_relic:
-            _info_row(t("relic_base"), f"ATK+{item.get('atk',0)} DEF+{item.get('def',0)} HP+{item.get('hp',0)}", TEXT_PRIMARY)
+            # Relics provide STR/AGI/VIT (not flat ATK/DEF/HP). These feed into
+            # all three final stats via weapon_upgrade_atk / armor_upgrade_def /
+            # accessory_upgrade_hp formulas.
+            _info_row(t("relic_base"),
+                      f"STR+{item.get('str',0)} AGI+{item.get('agi',0)} VIT+{item.get('vit',0)}",
+                      TEXT_PRIMARY)
         else:
             _info_row(base_label, f"+{base_val}", TEXT_PRIMARY)
         _breakdown(current_lvl * UPGRADE_BONUS_PER_LEVEL, f"+{current_lvl}")
@@ -669,7 +674,7 @@ class ForgeScreen(BaseScreen):
             if is_relic:
                 count *= 10
             have = engine.shards.get(tier, 0)
-            cost_text = f"{count}x {t('shard_name_' + str(tier))}"
+            cost_text = f"{count}x {t('shard_tier_' + str(tier) + '_name')}"
             _info_row(t("cost_label"),
                       f"{cost_text} ({t('have_label')}: {have})",
                       ACCENT_GREEN if have >= count else ACCENT_RED)

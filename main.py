@@ -1,4 +1,4 @@
-# Build: 59
+# Build: 60
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -363,16 +363,22 @@ class GladiatorIdleApp(App):
 
     @staticmethod
     def _any_scroll_active(screen):
-        """Return True if any ScrollView is being touched or still scrolling."""
+        """Return True if any ScrollView is being touched or still scrolling.
+
+        Caches ScrollView references per screen to avoid O(N) tree walk
+        on every tick (N = total widgets on screen, can be 400+ on forge).
+        """
         from kivy.uix.scrollview import ScrollView
-        for w in screen.walk():
-            if isinstance(w, ScrollView):
-                if w._touch is not None:
-                    return True
-                # Check momentum/kinetic scrolling
-                ey = getattr(w, 'effect_y', None)
-                if ey and abs(getattr(ey, 'velocity', 0)) > 5:
-                    return True
+        svs = getattr(screen, '_cached_scrollviews', None)
+        if svs is None:
+            svs = [w for w in screen.walk() if isinstance(w, ScrollView)]
+            screen._cached_scrollviews = svs
+        for sv in svs:
+            if sv._touch is not None:
+                return True
+            ey = getattr(sv, 'effect_y', None)
+            if ey and abs(getattr(ey, 'velocity', 0)) > 5:
+                return True
         return False
 
     def _idle_tick(self, dt):
