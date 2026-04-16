@@ -1,4 +1,4 @@
-# Build: 43
+# Build: 44
 """Dynamic UI builders for all screens — minimalist CardWidget style."""
 
 import time
@@ -600,12 +600,9 @@ def build_forge_card(item, forge_screen):
 
     from kivy.app import App
     def _tap(inst, it=item):
-        app = App.get_running_app()
-        ii = app.engine.find_inventory_index(it["id"])
-        if ii >= 0:
-            app.open_item_detail(ii)
-        else:
-            app.open_shop_preview(it)
+        # Shop tap always opens pristine shop preview (never the
+        # upgraded/enchanted inventory copy — use ИНВЕНТАРЬ for that).
+        App.get_running_app().open_shop_preview(it)
     wrapper.add_widget(build_item_info_card(item, on_tap=_tap))
 
     affordable = item["affordable"]
@@ -767,18 +764,17 @@ class ForgeCardView(RecycleDataViewBehavior, BoxLayout):
             self._forge_screen.buy(self._iid)
 
     def _on_info_tap(self):
+        """Shop tap always shows the pristine shop preview — even if the
+        player already owns a (possibly upgraded/enchanted) copy. The
+        upgraded inventory copy is accessible from the ИНВЕНТАРЬ tab."""
         from kivy.app import App
         app = App.get_running_app()
-        ii = app.engine.find_inventory_index(self._iid)
-        if ii >= 0:
-            app.open_item_detail(ii)
-        else:
-            item = next(
-                (i for i in app.engine.get_forge_items() if i['id'] == self._iid),
-                None,
-            )
-            if item:
-                app.open_shop_preview(item)
+        item = next(
+            (i for i in app.engine.get_forge_items() if i['id'] == self._iid),
+            None,
+        )
+        if item:
+            app.open_shop_preview(item)
 
 
 def _forge_item_to_rv_data(item, forge_screen):
