@@ -1,4 +1,4 @@
-# Build: 20
+# Build: 21
 """
 Turn-based battle system with luck-based combat.
 
@@ -313,14 +313,9 @@ class BattleManager:
         from game.data_loader import data_loader
         self._mod_handler = BossModifierHandler(data_loader.boss_modifiers)
 
-    # Maximum party size per battle — caps fighter/enemy counts to avoid
-    # freezes with huge rosters. Each turn iterates both sides; at 1000+
-    # fighters every turn generates 2000+ events + state updates.
-    MAX_PARTY = 20
-
     def start_auto_battle(self):
         fighters = [f for f in self.engine.fighters
-                    if f.available][:self.MAX_PARTY]
+                    if f.available]
         if not fighters:
             return [BattleEvent("message", message=t("battle_no_fighters"))]
 
@@ -363,7 +358,7 @@ class BattleManager:
 
     def start_boss_fight(self):
         fighters = [f for f in self.engine.fighters
-                    if f.available][:self.MAX_PARTY]
+                    if f.available]
         if not fighters:
             return [BattleEvent("message", message=t("battle_no_fighters"))]
 
@@ -692,6 +687,9 @@ class BattleManager:
 
         Returns True if all fighters are dead (defeat)."""
         s = self.state
+        # Build alive_fighters ONCE (was O(N²) — rebuilt per enemy).
+        # Maintained via swap-pop when a fighter dies mid-phase.
+        alive_fighters = [f for f in s.player_fighters if f.alive and f.hp > 0]
         for enemy in s.enemies:
             if enemy.hp <= 0:
                 continue
@@ -713,10 +711,11 @@ class BattleManager:
                     message=t("battle_is_ensnared", target=enemy.name)))
                 continue
 
-            alive_fighters = [f for f in s.player_fighters if f.alive and f.hp > 0]
             if not alive_fighters:
                 break
-            target = random.choice(alive_fighters)
+            # O(1) target pick; swap-pop at end of attack if target died
+            target_idx = random.randrange(len(alive_fighters))
+            target = alive_fighters[target_idx]
 
             # Shadowstep: auto-dodge next attack
             tgt_ss = s.skill_states.get(id(target))
@@ -776,6 +775,9 @@ class BattleManager:
                         "death", defender=target.name,
                         message=t("knocked_out_injury", name=target.name, injury=inj_name),
                     ))
+                # O(1) swap-pop — target is out of the alive list for this turn
+                alive_fighters[target_idx] = alive_fighters[-1]
+                alive_fighters.pop()
 
         # Check defeat
         if not s.any_fighters_alive():
