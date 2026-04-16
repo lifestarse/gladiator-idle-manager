@@ -1,4 +1,4 @@
-# Build: 28
+# Build: 29
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
@@ -215,7 +215,10 @@ class DifficultyScaler:
 
     @staticmethod
     def hire_cost(alive_count):
-        return int(HIRE_BASE * (HIRE_EXPO ** alive_count))
+        # Cap the exponent at 50 to avoid overflow past fmt_num range
+        # (1.6^50 ≈ 9e9 — already billions). Beyond 50 fighters the cost
+        # stays flat at endgame-max; the design never anticipated >50.
+        return int(HIRE_BASE * (HIRE_EXPO ** min(alive_count, 50)))
 
     @staticmethod
     def upgrade_cost(level):
