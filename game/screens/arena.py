@@ -1,4 +1,4 @@
-# Build: 19
+# Build: 20
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -52,16 +52,14 @@ class ArenaScreen(BaseScreen):
     def refresh_ui(self):
         engine = App.get_running_app().engine
         self._update_top_bar()
-        self.tier_text = t("arena_tier_top", n=engine.arena_tier)
-        # Record & run
+        # Arena header: kept English-only so the pixel PressStart2P font
+        # renders consistently (Cyrillic falls back to a different font).
+        self.tier_text = f"TIER {engine.arena_tier}"
         if engine.best_record_tier > 0:
-            self.best_text = t("arena_best_record",
-                               tier=engine.best_record_tier,
-                               kills=engine.best_record_kills)
+            self.best_text = f"Best: T{engine.best_record_tier} \u00b7 {engine.best_record_kills} kills"
         else:
-            self.best_text = t("arena_best_none")
-        self.run_text = t("arena_run_stats",
-                          n=engine.run_number, kills=engine.run_kills)
+            self.best_text = "Best: ---"
+        self.run_text = f"Run #{engine.run_number} \u00b7 {engine.run_kills} kills"
 
         fighters = [f for f in engine.fighters if f.available]
         self.player_summary = t("fighters_ready", n=len(fighters))
