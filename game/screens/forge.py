@@ -1,4 +1,4 @@
-# Build: 29
+# Build: 30
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -118,6 +118,16 @@ class ForgeScreen(BaseScreen):
             self._entry_depth = 0
         self._cross_screen_pending = False
         self._apply_pending_state()
+
+    def _enter_detail_mode(self):
+        """Common setup when entering any single-item detail screen.
+        Hides the inventory tab filters and both RecycleViews so the
+        legacy forge_scroll/forge_grid becomes the active render target.
+        Call at the top of every _show_* method."""
+        self._show_inv_tabs = False
+        self._inv_tabs_key = None
+        self._forge_rv_active = False
+        self._inventory_rv_active = False
 
     def _reset_forge_state(self, keep_inventory=False):
         """Reset all navigation/detail state. Call on enter or back navigation."""
@@ -441,8 +451,7 @@ class ForgeScreen(BaseScreen):
 
     def _show_inv_detail(self, inv_idx):
         """Show detail view for a single inventory item."""
-        self._show_inv_tabs = False; self._inv_tabs_key = None
-        self._forge_rv_active = False; self._inventory_rv_active = False
+        self._enter_detail_mode()
         self.inv_detail_idx = inv_idx
         sv = self.ids.get("forge_scroll")
         if sv:
@@ -519,8 +528,7 @@ class ForgeScreen(BaseScreen):
 
     def _show_shop_preview(self, item):
         """Show read-only detail view for a shop item (no sell/equip/improve)."""
-        self._show_inv_tabs = False; self._inv_tabs_key = None
-        self._forge_rv_active = False; self._inventory_rv_active = False
+        self._enter_detail_mode()
         sv = self.ids.get("forge_scroll")
         if sv:
             sv.scroll_y = 1
@@ -724,8 +732,7 @@ class ForgeScreen(BaseScreen):
     def _show_enchant_view(self, source, idx, item, fighter=None):
         """Separate enchantment tab for a weapon item."""
         from kivy.uix.label import Label
-        self._show_inv_tabs = False; self._inv_tabs_key = None
-        self._forge_rv_active = False; self._inventory_rv_active = False
+        self._enter_detail_mode()
         self.enchant_active = True
         self._enchant_source = source
         self._enchant_idx = idx
@@ -856,8 +863,7 @@ class ForgeScreen(BaseScreen):
 
     def _show_item_upgrade(self, source, idx, item, fighter=None):
         """Universal upgrade/enchant comparison screen for weapon/armor/accessory."""
-        self._show_inv_tabs = False; self._inv_tabs_key = None
-        self._forge_rv_active = False; self._inventory_rv_active = False
+        self._enter_detail_mode()
         self.weapon_upgrade_active = True
         grid = self.ids.get("forge_grid")
         if not grid:
@@ -901,8 +907,7 @@ class ForgeScreen(BaseScreen):
 
     def _show_equipped_detail(self, fighter_idx, item):
         """Detail view for an item currently equipped on a fighter."""
-        self._show_inv_tabs = False; self._inv_tabs_key = None
-        self._forge_rv_active = False; self._inventory_rv_active = False
+        self._enter_detail_mode()
         self.eq_detail_fighter = fighter_idx
         sv = self.ids.get("forge_scroll")
         if sv:
