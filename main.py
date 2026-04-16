@@ -387,9 +387,13 @@ class GladiatorIdleApp(App):
         if self.engine.pending_notifications:
             msg = self.engine.pending_notifications.pop(0)
             self.show_toast(msg, duration=3.0)
+        # Skip UI refresh if engine state hasn't changed since last refresh
+        if not self.engine._ui_dirty:
+            return
         scr = self.sm.current_screen
         if self._any_scroll_active(scr):
             return
+        self.engine._ui_dirty = False
         # Skip ArenaScreen refresh during battle — _auto_turn already does it
         if hasattr(scr, "refresh_ui") and self.engine.battle_active:
             return
@@ -418,6 +422,7 @@ class GladiatorIdleApp(App):
 
     def _on_screen_change(self, sm, new_screen):
         """Track navigation history whenever the active screen changes."""
+        self.engine._ui_dirty = True  # force refresh on screen switch
         if self._going_back:
             self._going_back = False
         elif new_screen != self._current_screen:

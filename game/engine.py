@@ -1,4 +1,4 @@
-# Build: 50
+# Build: 51
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -99,6 +99,11 @@ class GameEngine:
 
         # Notification queue — drained by UI layer each tick
         self.pending_notifications: list[str] = []
+
+        # Dirty flags — batch achievement checks and UI refreshes.
+        # Set by _mark_dirty() from state-changing methods; consumed by idle_tick.
+        self._ach_dirty = False
+        self._ui_dirty = True  # start dirty so first refresh runs
 
         # Battle history (persistent, survives permadeath)
         self.battle_log: list[dict] = []
@@ -248,7 +253,7 @@ class GameEngine:
         # Spawn fresh enemy
         self._spawn_enemy()
 
-        self.check_achievements()
+        self._mark_dirty()
         self.save()
 
     def check_t15_clear(self):
@@ -306,7 +311,7 @@ class GameEngine:
             f = Fighter(fighter_class=fighter_class)
             self.fighters.append(f)
             self._log_event("hire", name=f.name, cls=f.class_name, gold=cost)
-            self.check_achievements()
+            self._mark_dirty()
             return Result(True, t("recruited_msg", name=f.name, cls=f.class_name))
         return Result(False, t("need_gold", cost=fmt_num(cost)), "not_enough_gold")
 
@@ -321,7 +326,7 @@ class GameEngine:
             self.gold -= cost
             f.level_up()
             self._log_event("level_up", name=f.name, lv=f.level, gold=cost)
-            self.check_achievements()
+            self._mark_dirty()
             return Result(True, t("reached_level", name=f.name, lv=f.level, pts=f.points_per_level))
         return Result(False, t("not_enough_gold", need=fmt_num(cost - self.gold)), "not_enough_gold")
 
@@ -373,7 +378,7 @@ class GameEngine:
             f.hp = min(f.hp + hp_gain, f.max_hp)
         self._log_event("perk", name=f.name, perk=perk["name"])
         self.save()
-        self.check_achievements()
+        self._mark_dirty()
         return Result(True, t("perk_unlocked_msg", name=f.name, perk=perk["name"]))
 
     def dismiss_dead(self, index):
@@ -515,7 +520,7 @@ class GameEngine:
                 self._revenge_common = []
             # Note: enemy re-spawn handled by ArenaScreen._check_battle_end()
             # which knows the current arena_mode (common vs boss)
-            self.check_achievements()
+            self._mark_dirty()
 
         # Check if all fighters are dead → roguelike reset
         if state.phase == BattlePhase.DEFEAT:
@@ -595,7 +600,7 @@ class GameEngine:
         self.inventory.append(dict(item))
         self._log_event("buy", item=item["name"], gold=item["cost"])
         self.save()
-        self.check_achievements()
+        self._mark_dirty()
         return Result(True, f"Bought {item['name']}")
 
     def equip_item_on(self, fighter_idx, item_id):
@@ -616,7 +621,7 @@ class GameEngine:
             self.inventory.append(dict(old))
         self._log_event("equip", item=item["name"], fighter=f.name, gold=item["cost"])
         self.save()
-        self.check_achievements()
+        self._mark_dirty()
         return Result(True, t("equipped_msg", item=item['name'], name=f.name))
 
     def equip_from_inventory(self, fighter_idx, inv_index):
@@ -771,7 +776,7 @@ class GameEngine:
         if results:
             for msg in results:
                 self.pending_notifications.append(msg)
-            self.check_achievements()
+            self._mark_dirty()
         return results
 
     def get_expedition_status(self):
@@ -795,8 +800,17 @@ class GameEngine:
 
     # --- Idle (minimal in roguelike) ---
 
+    def _mark_dirty(self):
+        """Flag state as changed — defers achievement check + UI refresh to next tick."""
+        self._ach_dirty = True
+        self._ui_dirty = True
+
     def idle_tick(self, dt):
         exp_results = self.check_expeditions()
+        # Batch: evaluate achievements at most once per idle tick
+        if self._ach_dirty:
+            self._ach_dirty = False
+            self.check_achievements()
         return exp_results
 
     def get_heal_cost(self):
@@ -903,7 +917,7 @@ class GameEngine:
         self.total_enchantments_applied += 1
         self._log_event("enchant", item=weapon_dict.get("name", "?"), ench=ench["name"], gold=gold_cost)
         self.save()
-        self.check_achievements()
+        self._mark_dirty()
         return Result(True, t("weapon_enchanted", name=weapon_dict.get("name", "?"), ench=ench["name"]))
 
     # --- Injury healing ---
@@ -931,7 +945,7 @@ class GameEngine:
             inj_name = data_loader.injuries_by_id.get(removed["id"], {}).get("name", "?")
             self._log_event("heal", fighter=f.name, injury=inj_name, gold=cost)
             self.save()
-            self.check_achievements()
+            self._mark_dirty()
             return Result(True, t("healed_injury_msg", name=f.name, injury=inj_name, cost=fmt_num(cost)))
         return Result(False, "Invalid fighter", "invalid_fighter")
 
@@ -969,7 +983,7 @@ class GameEngine:
         if f.hp > f.max_hp:
             f.hp = f.max_hp
         self.save()
-        self.check_achievements()
+        self._mark_dirty()
         return Result(True, t("healed_all_injuries_msg", n=healed, cost=fmt_num(cost)))
 
     def heal_all_injuries_cost(self):
@@ -1006,7 +1020,7 @@ class GameEngine:
                     f.hp = f.max_hp
         self.total_injuries_healed += healed
         self.save()
-        self.check_achievements()
+        self._mark_dirty()
         return Result(True, t("healed_all_injuries_msg", n=healed, cost=fmt_num(cost)))
 
     # --- Market (consumables only, no idle boosts) ---
@@ -1052,7 +1066,7 @@ class GameEngine:
         """Unlock a lore entry by id. Returns True if newly unlocked."""
         if entry_id not in self.lore_unlocked:
             self.lore_unlocked.append(entry_id)
-            self.check_achievements()
+            self._mark_dirty()
             self.save()
             return True
         return False
