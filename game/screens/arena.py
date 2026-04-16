@@ -1,4 +1,4 @@
-# Build: 21
+# Build: 22
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -123,8 +123,11 @@ class ArenaScreen(BaseScreen):
 
         if engine.battle_active:
             s = engine.battle_mgr.state
-            fighters_list = [f for f in s.player_fighters if f.alive and f.hp > 0]
-            alive_enemies = list(s.enemies)
+            # Same cap as out-of-battle pit: visible cards limited to 20
+            # (otherwise 1000+ fighters each spawn a complex widget → freeze).
+            fighters_list = [f for f in s.player_fighters
+                             if f.alive and f.hp > 0][:20]
+            alive_enemies = list(s.enemies)[:20]
 
             # Fast path: if cached widgets match, update in-place
             if self._try_fast_update(fighters_list, alive_enemies, engine):
@@ -145,11 +148,10 @@ class ArenaScreen(BaseScreen):
                 hb.add_widget(heal_btn)
             self._cached_heal_btn = heal_btn
 
+            # Build name→index map ONCE (was O(N²) via next() inside loop)
+            roster_idx_by_name = {f.name: j for j, f in enumerate(engine.fighters)}
             for i, f in enumerate(fighters_list):
-                real_battle_idx = i
-                real_roster_idx = next(
-                    (j for j, rf in enumerate(engine.fighters) if rf.name == f.name), -1
-                )
+                real_roster_idx = roster_idx_by_name.get(f.name, -1)
                 card = build_fighter_pit_card(
                     f, on_tap=lambda w, ri=real_roster_idx: self._open_fighter_detail(ri),
                     skill_text=self._get_skill_text(f),
