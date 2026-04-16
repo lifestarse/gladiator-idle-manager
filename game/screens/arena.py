@@ -1,4 +1,4 @@
-# Build: 18
+# Build: 19
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -52,13 +52,16 @@ class ArenaScreen(BaseScreen):
     def refresh_ui(self):
         engine = App.get_running_app().engine
         self._update_top_bar()
-        self.tier_text = f"TIER {engine.arena_tier}"
+        self.tier_text = t("arena_tier_top", n=engine.arena_tier)
         # Record & run
         if engine.best_record_tier > 0:
-            self.best_text = f"Best: T{engine.best_record_tier} \u00b7 {engine.best_record_kills} kills"
+            self.best_text = t("arena_best_record",
+                               tier=engine.best_record_tier,
+                               kills=engine.best_record_kills)
         else:
-            self.best_text = "Best: ---"
-        self.run_text = f"Run #{engine.run_number} \u00b7 {engine.run_kills} kills"
+            self.best_text = t("arena_best_none")
+        self.run_text = t("arena_run_stats",
+                          n=engine.run_number, kills=engine.run_kills)
 
         fighters = [f for f in engine.fighters if f.available]
         self.player_summary = t("fighters_ready", n=len(fighters))
@@ -267,7 +270,7 @@ class ArenaScreen(BaseScreen):
         else:
             App.get_running_app().show_toast(t("not_enough_gold", need=fmt_num(cost)))
             return
-        self._spawn_float(f"Healed {f.name}", ACCENT_GREEN)
+        self._spawn_float(t("healed_name", name=f.name), ACCENT_GREEN)
         if not in_battle:
             engine.save()
         self.refresh_ui()
@@ -292,7 +295,7 @@ class ArenaScreen(BaseScreen):
         total_cost = engine.get_hp_heal_cost(fighters)
         healed, spent = engine.heal_all_hp(fighters)
         if healed > 0:
-            self._spawn_float(f"Healed {healed} (-{spent}g)", ACCENT_GREEN)
+            self._spawn_float(t("healed_amount", n=healed, g=spent), ACCENT_GREEN)
             self.refresh_ui()
         elif total_cost > 0:
             App.get_running_app().show_toast(t("not_enough_gold", need=fmt_num(total_cost)))
@@ -345,7 +348,7 @@ class ArenaScreen(BaseScreen):
             return lbl
 
         grid.add_widget(_lbl(f"{name_prefix}{enemy.name}", sp(13), bold=True))
-        grid.add_widget(_lbl(f"Tier {enemy.tier}", sp(7), color=TEXT_MUTED))
+        grid.add_widget(_lbl(t("arena_tier_enemy", n=enemy.tier), sp(7), color=TEXT_MUTED))
         grid.add_widget(_lbl(
             f"HP  {fmt_num(enemy.max_hp)}", sp(9), bold=True))
         grid.add_widget(_lbl(

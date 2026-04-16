@@ -473,5 +473,17 @@
   "shard_tier_3_name": "Metal Shard (III)",
   "shard_tier_4_name": "Metal Shard (IV)",
   "shard_tier_5_name": "Metal Shard (V)",
-  "shard_name_fallback": "Shard ({tier})"
+  "shard_name_fallback": "Shard ({tier})",
+  "expedition_returned": "{fighter} returned from {exp}!",
+  "expedition_returned_shard": "{fighter} returned from {exp}! +{n} {shard}",
+  "found_relic_msg": "Found: {name} [{rarity}]",
+  "invalid_fighter_err": "Invalid fighter",
+  "not_found_err": "Not found",
+  "arena_best_record": "Best: T{tier} · {kills} kills",
+  "arena_best_none": "Best: ---",
+  "arena_run_stats": "Run #{n} · {kills} kills",
+  "arena_tier_top": "TIER {n}",
+  "arena_tier_enemy": "Tier {n}",
+  "healed_name": "Healed {name}",
+  "healed_amount": "Healed {n} (-{g}g)"
 }

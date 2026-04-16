@@ -473,5 +473,17 @@
   "shard_tier_3_name": "Осколок (III)",
   "shard_tier_4_name": "Осколок (IV)",
   "shard_tier_5_name": "Осколок (V)",
-  "shard_name_fallback": "Осколок ({tier})"
+  "shard_name_fallback": "Осколок ({tier})",
+  "expedition_returned": "{fighter} вернулся из '{exp}'!",
+  "expedition_returned_shard": "{fighter} вернулся из '{exp}'! +{n} {shard}",
+  "found_relic_msg": "Найдено: {name} [{rarity}]",
+  "invalid_fighter_err": "Неверный боец",
+  "not_found_err": "Не найдено",
+  "arena_best_record": "Рекорд: T{tier} · {kills} убийств",
+  "arena_best_none": "Рекорд: ---",
+  "arena_run_stats": "Забег №{n} · {kills} убийств",
+  "arena_tier_top": "ТИР {n}",
+  "arena_tier_enemy": "Тир {n}",
+  "healed_name": "Исцелён: {name}",
+  "healed_amount": "Восст. {n} HP (-{g}g)"
 }

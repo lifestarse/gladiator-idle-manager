@@ -143,6 +143,22 @@ NEW_KEYS = [
     ("shard_name_fallback",     "Shard ({tier})",    "Осколок ({tier})"),
     # --- Shorten Russian diamond shop label so the tab fits (EN unchanged) ---
     ("diamond_shop_label",      "DIAMOND SHOP",      "АЛМАЗЫ"),
+    # --- Toast / popup notifications (previously hardcoded English) ---
+    ("bought_msg",              "Bought {name}",                              "Куплено: {name}"),
+    ("expedition_returned",     "{fighter} returned from {exp}!",             "{fighter} вернулся из '{exp}'!"),
+    ("expedition_returned_shard","{fighter} returned from {exp}! +{n} {shard}","{fighter} вернулся из '{exp}'! +{n} {shard}"),
+    ("found_relic_msg",         "Found: {name} [{rarity}]",                   "Найдено: {name} [{rarity}]"),
+    ("invalid_fighter_err",     "Invalid fighter",                            "Неверный боец"),
+    ("not_found_err",           "Not found",                                  "Не найдено"),
+    # --- Arena stats text labels ---
+    ("arena_best_record",       "Best: T{tier} \u00b7 {kills} kills",         "Рекорд: T{tier} \u00b7 {kills} убийств"),
+    ("arena_best_none",         "Best: ---",                                  "Рекорд: ---"),
+    ("arena_run_stats",         "Run #{n} \u00b7 {kills} kills",              "Забег №{n} \u00b7 {kills} убийств"),
+    ("arena_tier_top",          "TIER {n}",                                   "ТИР {n}"),
+    ("arena_tier_enemy",        "Tier {n}",                                   "Тир {n}"),
+    # --- Floating text (healing) ---
+    ("healed_name",             "Healed {name}",                              "Исцелён: {name}"),
+    ("healed_amount",           "Healed {n} (-{g}g)",                         "Восст. {n} HP (-{g}g)"),
 ]
 
 

@@ -1,4 +1,4 @@
-# Build: 51
+# Build: 52
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -601,7 +601,7 @@ class GameEngine:
         self._log_event("buy", item=item["name"], gold=item["cost"])
         self.save()
         self._mark_dirty()
-        return Result(True, f"Bought {item['name']}")
+        return Result(True, t("bought_msg", name=item['name']))
 
     def equip_item_on(self, fighter_idx, item_id):
         item = next((i for i in _m.ALL_FORGE_ITEMS if i["id"] == item_id), None)
@@ -753,15 +753,18 @@ class GameEngine:
                 _key = f"shard_tier_{tier}_name"
                 _translated = t(_key)
                 shard_display = _translated if _translated != _key else shard_info['name']
-                msg_parts = [f"{f.name} returned from {exp['name']}! +{amount} {shard_display}"]
+                msg_parts = [t("expedition_returned_shard",
+                               fighter=f.name, exp=exp['name'],
+                               n=amount, shard=shard_display)]
             else:
-                msg_parts = [f"{f.name} returned from {exp['name']}!"]
+                msg_parts = [t("expedition_returned",
+                               fighter=f.name, exp=exp['name'])]
             if random.random() < exp["relic_chance"]:
                 rarity = random.choice(exp["relic_pool"])
                 relic_template = random.choice(_m.RELICS[rarity])
                 relic = dict(relic_template)
                 self.inventory.append(relic)
-                msg_parts.append(f"Found: {relic['name']} [{rarity}]")
+                msg_parts.append(t("found_relic_msg", name=relic['name'], rarity=rarity))
             if random.random() < exp["danger"] * 0.5:
                 existing_ids = {inj["id"] for inj in f.injuries}
                 extra_inj_id = data_loader.pick_random_injury(existing_ids)
@@ -947,7 +950,7 @@ class GameEngine:
             self.save()
             self._mark_dirty()
             return Result(True, t("healed_injury_msg", name=f.name, injury=inj_name, cost=fmt_num(cost)))
-        return Result(False, "Invalid fighter", "invalid_fighter")
+        return Result(False, t("invalid_fighter_err"), "invalid_fighter")
 
     def heal_fighter_all_injuries_cost(self, fighter_idx):
         """Total gold cost to heal all non-permanent injuries of one fighter."""
@@ -1164,7 +1167,7 @@ class GameEngine:
     def buy_diamond_item(self, item_id):
         item = next((i for i in DIAMOND_SHOP if i["id"] == item_id), None)
         if not item:
-            return Result(False, "Not found", "not_found")
+            return Result(False, t("not_found_err"), "not_found")
 
         if item_id == "name_change":
             # Special: don't charge yet — UI will show popup, then call rename_fighter
