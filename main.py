@@ -1,4 +1,4 @@
-# Build: 60
+# Build: 61
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -6,7 +6,7 @@ Permadeath resets the run. Stats distributed manually. Fighter classes.
 
 import os
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
+from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -323,7 +323,9 @@ class GladiatorIdleApp(App):
             except Exception as e:
                 print(f"[UI] Edge-to-edge fix error: {e}")
 
-        sm = SwipeScreenManager(transition=FadeTransition(duration=0.2))
+        # NoTransition — instant tab switch (standard for mobile bottom nav).
+        # Was FadeTransition(duration=0.2) which added 200ms perceived lag.
+        sm = SwipeScreenManager(transition=NoTransition())
         sm.add_widget(ArenaScreen(name="arena"))
         sm.add_widget(RosterScreen(name="roster"))
         sm.add_widget(ForgeScreen(name="forge"))
