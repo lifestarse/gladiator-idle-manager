@@ -1,4 +1,4 @@
-# Build: 28
+# Build: 29
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -442,6 +442,7 @@ class ForgeScreen(BaseScreen):
     def _show_inv_detail(self, inv_idx):
         """Show detail view for a single inventory item."""
         self._show_inv_tabs = False; self._inv_tabs_key = None
+        self._forge_rv_active = False; self._inventory_rv_active = False
         self.inv_detail_idx = inv_idx
         sv = self.ids.get("forge_scroll")
         if sv:
@@ -519,6 +520,7 @@ class ForgeScreen(BaseScreen):
     def _show_shop_preview(self, item):
         """Show read-only detail view for a shop item (no sell/equip/improve)."""
         self._show_inv_tabs = False; self._inv_tabs_key = None
+        self._forge_rv_active = False; self._inventory_rv_active = False
         sv = self.ids.get("forge_scroll")
         if sv:
             sv.scroll_y = 1
@@ -723,6 +725,7 @@ class ForgeScreen(BaseScreen):
         """Separate enchantment tab for a weapon item."""
         from kivy.uix.label import Label
         self._show_inv_tabs = False; self._inv_tabs_key = None
+        self._forge_rv_active = False; self._inventory_rv_active = False
         self.enchant_active = True
         self._enchant_source = source
         self._enchant_idx = idx
@@ -854,6 +857,7 @@ class ForgeScreen(BaseScreen):
     def _show_item_upgrade(self, source, idx, item, fighter=None):
         """Universal upgrade/enchant comparison screen for weapon/armor/accessory."""
         self._show_inv_tabs = False; self._inv_tabs_key = None
+        self._forge_rv_active = False; self._inventory_rv_active = False
         self.weapon_upgrade_active = True
         grid = self.ids.get("forge_grid")
         if not grid:
@@ -898,6 +902,7 @@ class ForgeScreen(BaseScreen):
     def _show_equipped_detail(self, fighter_idx, item):
         """Detail view for an item currently equipped on a fighter."""
         self._show_inv_tabs = False; self._inv_tabs_key = None
+        self._forge_rv_active = False; self._inventory_rv_active = False
         self.eq_detail_fighter = fighter_idx
         sv = self.ids.get("forge_scroll")
         if sv:
