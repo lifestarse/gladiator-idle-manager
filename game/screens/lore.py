@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -152,6 +152,36 @@ class LoreScreen(BaseScreen):
         """Show list of battles. Tap a battle to see full event log."""
         import time as _time
         engine = App.get_running_app().engine
+
+        # Prefer RecycleView — virtualizes 200-entry list
+        rv = self.ids.get("battle_log_rv")
+        if rv is not None:
+            self.lore_subview = "blog_list"
+            data = []
+            for idx in range(len(engine.battle_log) - 1, -1, -1):
+                entry = engine.battle_log[idx]
+                is_victory = entry.get("r") == "V"
+                is_boss = entry.get("boss", False)
+                result_color = ACCENT_GREEN if is_victory else ACCENT_RED
+                result_text = t("battle_log_victory") if is_victory else t("battle_log_defeat")
+                if is_boss:
+                    result_text = f"{t('battle_log_boss')} {result_text}"
+                ts = entry.get("t", 0)
+                time_str = _time.strftime("%d.%m %H:%M", _time.localtime(ts)) if ts else "?"
+                data.append({
+                    'log_idx': idx,
+                    '_lore': self,
+                    'result_text': result_text,
+                    'result_color': list(result_color),
+                    'tier_text': f"T{entry.get('tier', 0)}",
+                    'gold_text': f"+{fmt_num(entry.get('g', 0))}g",
+                    'time_text': time_str,
+                    'fighters_text': ", ".join(entry.get("f", [])),
+                    'enemies_text': ", ".join(entry.get("e", [])),
+                })
+            rv.data = data
+            return
+        # Legacy path below — keep as fallback
         self.lore_subview = "blog_list"
         grid = self._get_grid("lore_grid")
         if not grid:
@@ -291,6 +321,34 @@ class LoreScreen(BaseScreen):
         import time as _time
         engine = App.get_running_app().engine
         self.lore_subview = "event_list"
+
+        _EVENT_COLORS = {
+            "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
+            "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
+            "sell": TEXT_SECONDARY, "equip": ACCENT_BLUE, "upgrade": ACCENT_PURPLE,
+            "enchant": ACCENT_PURPLE, "heal": ACCENT_GREEN,
+            "expedition_send": ACCENT_CYAN,
+        }
+
+        # Prefer RecycleView — virtualizes 200-entry list
+        rv = self.ids.get("event_log_rv")
+        if rv is not None:
+            data = []
+            for entry in reversed(engine.event_log):
+                etype = entry.get("type", "?")
+                ts = entry.get("t", 0)
+                time_str = _time.strftime("%d.%m %H:%M", _time.localtime(ts)) if ts else "?"
+                color = _EVENT_COLORS.get(etype, TEXT_PRIMARY)
+                data.append({
+                    'color': list(color),
+                    'label': t(f"evt_{etype}"),
+                    'time_text': time_str,
+                    'detail': self._format_event_detail(entry),
+                })
+            rv.data = data
+            return
+
+        # Legacy path below
         grid = self._get_grid("lore_grid")
         if not grid:
             return

@@ -1,4 +1,4 @@
-# Build: 46
+# Build: 47
 """Dynamic UI builders for all screens — minimalist CardWidget style."""
 
 import time
@@ -1529,6 +1529,130 @@ def _achievement_to_rv_data(ach):
         'diamonds': ach.get('diamonds', 0),
         'unlocked': ach.get('unlocked', False),
     }
+
+
+# ------------------------------------------------------------------
+#  Battle log + Event log — RecycleView viewclasses. Up to 200 entries
+#  each, previously rendered as 200 widgets causing lag on entry.
+# ------------------------------------------------------------------
+
+class BattleLogCardView(RecycleDataViewBehavior, BoxLayout):
+    """Battle log entry — 78dp vertical BaseCard with 2 text rows."""
+
+    def __init__(self, **kwargs):
+        from game.widgets import BaseCard
+        kwargs.setdefault('orientation', 'vertical')
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(78))
+        super().__init__(**kwargs)
+        self._log_idx = -1
+        self._lore_screen = None
+
+        self._card = BaseCard(
+            orientation="vertical", size_hint_y=1,
+            padding=[dp(8), dp(4)], spacing=dp(2),
+        )
+
+        # Row 1: [result] [tier] [gold] [time]
+        row1 = BoxLayout(size_hint_y=0.5, spacing=dp(2))
+        self._result_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
+                                           halign="left", size_hint_x=0.35)
+        self._tier_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
+                                         color=list(ACCENT_GOLD),
+                                         halign="left", size_hint_x=0.12)
+        self._gold_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
+                                         color=list(ACCENT_GOLD),
+                                         halign="left", size_hint_x=0.23)
+        self._time_lbl = AutoShrinkLabel(font_size=sp(6),
+                                         color=list(TEXT_MUTED),
+                                         halign="right", size_hint_x=0.30)
+        for lbl in (self._result_lbl, self._tier_lbl,
+                    self._gold_lbl, self._time_lbl):
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            row1.add_widget(lbl)
+        self._card.add_widget(row1)
+
+        # Row 2: fighters vs enemies
+        row2 = BoxLayout(size_hint_y=0.5, spacing=dp(2))
+        self._fighters_lbl = AutoShrinkLabel(font_size=sp(6),
+                                             color=list(TEXT_SECONDARY),
+                                             halign="left", size_hint_x=0.45)
+        self._vs_lbl = AutoShrinkLabel(text="vs", font_size=sp(6),
+                                       color=list(TEXT_MUTED),
+                                       halign="center", size_hint_x=0.10)
+        self._enemies_lbl = AutoShrinkLabel(font_size=sp(6),
+                                            color=list(TEXT_SECONDARY),
+                                            halign="left", size_hint_x=0.45)
+        for lbl in (self._fighters_lbl, self._vs_lbl, self._enemies_lbl):
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            row2.add_widget(lbl)
+        self._card.add_widget(row2)
+        self.add_widget(self._card)
+
+        _bind_long_tap(self._card, lambda w: self._on_tap())
+
+    def refresh_view_attrs(self, rv, index, data):
+        self._log_idx = data.get('log_idx', -1)
+        self._lore_screen = data.get('_lore')
+        color = list(data.get('result_color', TEXT_PRIMARY))
+        self._card.border_color = color
+
+        self._result_lbl.text = data.get('result_text', '')
+        self._result_lbl.color = color
+        self._tier_lbl.text = data.get('tier_text', '')
+        self._gold_lbl.text = data.get('gold_text', '')
+        self._time_lbl.text = data.get('time_text', '')
+        self._fighters_lbl.text = data.get('fighters_text', '')
+        self._enemies_lbl.text = data.get('enemies_text', '')
+
+    def _on_tap(self):
+        if self._lore_screen and self._log_idx >= 0:
+            self._lore_screen._show_battle_detail(self._log_idx)
+
+
+class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
+    """Event log entry — 48dp vertical BaseCard with 2 text rows."""
+
+    def __init__(self, **kwargs):
+        from game.widgets import BaseCard
+        kwargs.setdefault('orientation', 'vertical')
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(48))
+        super().__init__(**kwargs)
+
+        self._card = BaseCard(
+            orientation="vertical", size_hint_y=1,
+            padding=[dp(8), dp(4)], spacing=dp(1),
+        )
+
+        # Row 1: label + time
+        row1 = BoxLayout(size_hint_y=0.45, spacing=dp(2))
+        self._label_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
+                                          halign="left", size_hint_x=0.70)
+        self._time_lbl = AutoShrinkLabel(font_size=sp(6),
+                                         color=list(TEXT_MUTED),
+                                         halign="right", size_hint_x=0.30)
+        for lbl in (self._label_lbl, self._time_lbl):
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            row1.add_widget(lbl)
+        self._card.add_widget(row1)
+
+        # Row 2: detail
+        self._detail_lbl = AutoShrinkLabel(
+            font_size=sp(6), color=list(TEXT_SECONDARY),
+            halign="left", size_hint_y=0.55,
+        )
+        self._detail_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        self._card.add_widget(self._detail_lbl)
+        self.add_widget(self._card)
+
+    def refresh_view_attrs(self, rv, index, data):
+        color = list(data.get('color', TEXT_PRIMARY))
+        self._card.border_color = color
+        self._label_lbl.text = data.get('label', '')
+        self._label_lbl.color = color
+        self._time_lbl.text = data.get('time_text', '')
+        self._detail_lbl.text = data.get('detail', '')
 
 
 def build_achievement_card(ach):
