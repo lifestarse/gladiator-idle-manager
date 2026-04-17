@@ -129,49 +129,57 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
 
     @staticmethod
     def _wire_data():
-        """Override hardcoded module-level data in models.py with JSON data."""
+        """Override hardcoded module-level data in models.py with JSON data.
+
+        Mutates dicts/lists IN-PLACE (.clear() + .update()/.extend()) rather
+        than rebinding module attributes. This is required because
+        game.models is now a package: submodules like game.models._fighter
+        do `from ._data import *` which captures object references; in-place
+        mutation keeps those references valid, rebinds would not.
+        """
         import game.models as m
         dl = data_loader
-        # Build O(1) lookup dict for _find_template (was O(130) linear scan).
-        # Include relics too — without them, _migrate_item can't refresh
-        # relic names from the current JSON data, so any relic sitting in
-        # a legacy save keeps whatever name was baked in at save time.
-        # (That's how "Уголь Творения" was persisting in inventory even
-        # after item-name translations were turned off.)
+
+        def _replace_list(lst, new_items):
+            lst.clear()
+            lst.extend(new_items)
+
+        def _replace_dict(d, new_d):
+            d.clear()
+            d.update(new_d)
+
         GameEngine._template_by_id = {i["id"]: i for i in (
             dl.weapons + dl.armor + dl.accessories + dl.relics
         )} if (dl.weapons or dl.armor or dl.accessories or dl.relics) else {}
         if dl.fighter_names:
-            m.FIGHTER_NAMES = dl.fighter_names
+            _replace_list(m.FIGHTER_NAMES, dl.fighter_names)
         if dl.weapons:
-            m.FORGE_WEAPONS = dl.weapons
+            _replace_list(m.FORGE_WEAPONS, dl.weapons)
         if dl.armor:
-            m.FORGE_ARMOR = dl.armor
+            _replace_list(m.FORGE_ARMOR, dl.armor)
         if dl.accessories:
-            m.FORGE_ACCESSORIES = dl.accessories
+            _replace_list(m.FORGE_ACCESSORIES, dl.accessories)
         if dl.weapons or dl.armor or dl.accessories:
-            m.ALL_FORGE_ITEMS = m.FORGE_WEAPONS + m.FORGE_ARMOR + m.FORGE_ACCESSORIES
+            _replace_list(m.ALL_FORGE_ITEMS,
+                          m.FORGE_WEAPONS + m.FORGE_ARMOR + m.FORGE_ACCESSORIES)
         if dl.relics:
-            # Rebuild RELICS dict grouped by rarity
-            m.RELICS = {}
+            rebuilt = {}
             for r in dl.relics:
-                rarity = r.get("rarity", "common")
-                m.RELICS.setdefault(rarity, []).append(r)
+                rebuilt.setdefault(r.get("rarity", "common"), []).append(r)
+            _replace_dict(m.RELICS, rebuilt)
         if dl.enchantments:
-            m.ENCHANTMENT_TYPES = dl.enchantments
+            _replace_dict(m.ENCHANTMENT_TYPES, dl.enchantments)
         if dl.fighter_classes:
-            m.FIGHTER_CLASSES = dl.fighter_classes
-            # FIGHTER_CLASSES drives Fighter._get_all_perks_map; flush cache
-            # so perks from the new (possibly translated) data show up.
+            _replace_dict(m.FIGHTER_CLASSES, dl.fighter_classes)
             m.Fighter.invalidate_perks_map_cache()
         if dl.mutators:
             mutator_registry.load(list(dl.mutators.values()))
         if dl.expeditions:
-            m.EXPEDITIONS = dl.expeditions
-            m.SHARD_TIERS = {
+            _replace_list(m.EXPEDITIONS, dl.expeditions)
+            _replace_dict(m.SHARD_TIERS, {
                 e["id"]: {"tier": e["shard_tier"], "name": e["shard_name"]}
                 for e in dl.expeditions if "shard_tier" in e
-            }
+            })
         if dl.achievements_data:
             _ach_module.ACHIEVEMENTS = build_achievements_from_json(dl.achievements_data)
 
