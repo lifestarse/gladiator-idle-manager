@@ -2,6 +2,7 @@
 """ForgeScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from .inventorymixin import _InventoryMixin
+from .inventorygridmixin import _InventoryGridMixin
 from .upgrademixin import _UpgradeMixin
 from .enchantmixin import _EnchantMixin
 from .equipswapmixin import _EquipSwapMixin
@@ -15,7 +16,7 @@ from .equipfighterpopupmixin import _EquipFighterPopupMixin
 
 from .navstatemixin import _NavStateMixin
 
-class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _EquipSwapMixin, _ShopMixin, _ViewStateMixin, _ScrollMixin, _TabsMixin, _ItemDescMixin, _EquipFighterPopupMixin, _NavStateMixin):
+class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _EquipSwapMixin, _ShopMixin, _ViewStateMixin, _ScrollMixin, _TabsMixin, _ItemDescMixin, _EquipFighterPopupMixin, _NavStateMixin, _InventoryGridMixin):
     forge_items = ListProperty()
 
     view_state = StringProperty("shop")
