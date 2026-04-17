@@ -31,4 +31,10 @@ UI показывает **derived** (ATK/DEF/HP), бой использует **
 - `game/engine/` — пакет из 8 mixin'ов: Fighters/Combat/Forge/Expeditions/Healing/Progression/Economy/Persistence. `GameEngine` наследует от всех.
 - `game/screens/roster/`, `game/screens/forge/` — пакеты с mixin'ами (Hire/Injuries/FighterDetail/Perks/Equipment и Inventory/Upgrade/Enchant/EquipSwap/Shop).
 
-Паттерн `import game.models as _m` — **намеренный**: `engine._wire_data()` перезаписывает module-level глобалы (`ALL_FORGE_ITEMS`, `ENCHANTMENT_TYPES`, etc.) из JSON. Прямой импорт `from game.models import X` захватил бы stale reference.
+Паттерн `import game.models as _m` — **намеренный**: `engine._wire_data()` мутирует in-place (`.clear()` + `.update()/.extend()`) module-level коллекции (`ALL_FORGE_ITEMS`, `ENCHANTMENT_TYPES`, etc.). Это требование subpackage-шардинга — сабмодули (`_fighter.py`, `_data.py`) держат ссылки через `from ._data import *`.
+
+# Ограничение размера файла
+Ни один src-файл не должен превышать 10 КБ (исключение: `generate_sprites.py` — оффлайн-тулза). `battle.py` тоже разбит на пакет `game/battle/` из 10 submodules через mixins.
+
+# Кросс-файловые имена
+После sub-mixin расщепления есть риск: метод в mixin_A ссылается на global-имя определённое в mixin_B, но не импортированное. `from X import *` **пропускает** underscore-имена. Защита: `tests/test_name_resolution.py::test_cross_package_name_resolution` обходит bytecode каждого split-пакета и ловит такие случаи. НЕ удалять этот тест.
