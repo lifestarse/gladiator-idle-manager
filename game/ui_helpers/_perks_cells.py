@@ -19,6 +19,7 @@ from game.models import RARITY_COLORS, fmt_num
 from game.slots import SLOTS
 from game.localization import t
 from game.constants import LOW_HP_THRESHOLD
+from ._common import bind_text_wrap
 
 
 # ============================================================

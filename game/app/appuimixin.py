@@ -1,6 +1,7 @@
 # Build: 1
 """App _AppUiMixin."""
 from game.app._shared import *  # noqa: F401,F403
+from game.app._shared import _safe_clear
 
 
 class _AppUiMixin:

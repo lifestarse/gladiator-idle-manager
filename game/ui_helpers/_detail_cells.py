@@ -10,6 +10,7 @@ from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, RoundedRectangle
 from kivy.metrics import dp, sp
+from ._perks_cells import _equip_choice_callbacks
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
 from game.theme import *

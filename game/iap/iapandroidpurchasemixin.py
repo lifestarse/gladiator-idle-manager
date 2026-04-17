@@ -4,6 +4,7 @@
 """IAPManager _IapAndroidMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
+from ._shared import _PRODUCT_ID_TO_KEY
 
 
 from ._shared import _log

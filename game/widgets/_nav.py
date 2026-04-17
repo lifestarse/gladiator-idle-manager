@@ -29,6 +29,7 @@ class NavBar(BoxLayout):
 
     def _sync_font_sizes(self, *args):
         """Make all NavButton labels use the same (smallest) font_size."""
+        from ._buttons import NavButton  # lazy: avoids _nav↔_buttons cycle
         buttons = [c for c in self.children if isinstance(c, NavButton)]
         if not buttons:
             return
