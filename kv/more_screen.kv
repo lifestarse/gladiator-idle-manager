@@ -1,0 +1,261 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import theme game.theme
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
+
+<MoreScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+            Color:
+                rgba: 1, 1, 1, 0.85
+            BorderImage:
+                source: "sprites/bg/bg_default.png"
+                pos: self.pos
+                size: self.size
+
+        TopBar:
+            title_text: app.title_more
+            title_color: app.accent_blue
+
+        TouchScrollView:
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            GridLayout:
+                cols: 1
+                spacing: dp(8)
+                padding: [dp(14), dp(10)]
+                size_hint_y: None
+                height: self.minimum_height
+
+                # --- Remove Ads (hidden when already removed) ---
+                AutoShrinkLabel:
+                    text: app.lbl_remove_ads
+                    font_size: "12sp"
+                    bold: True
+                    color: app.text_primary
+                    halign: "center"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: 0 if root.ads_hidden else dp(34)
+                    opacity: 0 if root.ads_hidden else 1
+
+                AutoShrinkLabel:
+                    text: root.ads_status
+                    font_size: "11sp"
+                    color: app.text_muted
+                    halign: "center"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: 0 if root.ads_hidden else dp(26)
+                    opacity: 0 if root.ads_hidden else 1
+
+                MinimalButton:
+                    id: ads_buy_btn
+                    text: app.lbl_remove_ads_buy
+                    btn_color: app.accent_gold
+                    text_color: app.bg_dark
+                    font_size: "12sp"
+                    size_hint_y: None
+                    height: 0 if root.ads_hidden else dp(46)
+                    opacity: 0 if root.ads_hidden else 1
+                    disabled: root.ads_hidden
+                    on_press: root.buy_remove_ads()
+
+                MinimalButton:
+                    text: app.lbl_restore_purchases
+                    btn_color: app.bg_elevated
+                    text_color: app.text_secondary
+                    font_size: "11sp"
+                    size_hint_y: None
+                    height: 0 if root.ads_hidden else dp(44)
+                    opacity: 0 if root.ads_hidden else 1
+                    disabled: root.ads_hidden
+                    on_press: root.restore_purchases()
+
+                # --- Divider ---
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                # --- Cloud Save ---
+                AutoShrinkLabel:
+                    text: app.lbl_cloud_save
+                    font_size: "13sp"
+                    color: app.accent_cyan
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: dp(34)
+
+                AutoShrinkLabel:
+                    text: root.cloud_status
+                    font_size: "11sp"
+                    color: app.text_secondary
+                    halign: "center"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: dp(34)
+
+                MinimalButton:
+                    text: root.google_btn_text if root.google_btn_text else app.lbl_sign_in_google
+                    btn_color: app.accent_green if root.google_signed_in else app.accent_blue
+                    font_size: "10sp" if root.google_signed_in else "12sp"
+                    size_hint_y: None
+                    height: dp(50)
+                    on_press: root.cloud_sign_in()
+
+                MinimalButton:
+                    text: app.lbl_sign_out_google
+                    btn_color: app.accent_red
+                    font_size: "11sp"
+                    size_hint_y: None
+                    height: dp(48) if root.google_signed_in else 0
+                    opacity: 1 if root.google_signed_in else 0
+                    disabled: not root.google_signed_in
+                    on_press: root.cloud_sign_out()
+
+                MinimalButton:
+                    text: app.lbl_save_to_cloud
+                    btn_color: app.accent_green
+                    text_color: app.bg_dark
+                    font_size: "11sp"
+                    size_hint_y: None
+                    height: dp(50) if root.google_signed_in else 0
+                    opacity: 1 if root.google_signed_in else 0
+                    disabled: not root.google_signed_in
+                    on_press: root.cloud_upload()
+
+                MinimalButton:
+                    text: app.lbl_load_from_cloud
+                    btn_color: app.accent_purple
+                    font_size: "11sp"
+                    size_hint_y: None
+                    height: dp(50) if root.google_signed_in else 0
+                    opacity: 1 if root.google_signed_in else 0
+                    disabled: not root.google_signed_in
+                    on_press: root.cloud_download()
+
+                # --- Divider ---
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                # -- LEADERBOARD --
+                AutoShrinkLabel:
+                    text: app.lbl_leaderboard
+                    font_size: "13sp"
+                    color: app.accent_gold
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: dp(34)
+
+                MinimalButton:
+                    size_hint_y: None
+                    height: dp(50)
+                    text: app.lbl_view_leaderboard
+                    btn_color: app.accent_gold
+                    text_color: app.bg_dark
+                    font_size: "11sp"
+                    on_press: root.show_leaderboard()
+
+                # --- Divider ---
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                # --- Buy Diamonds ---
+                AutoShrinkLabel:
+                    text: app.lbl_buy_diamonds
+                    font_size: "13sp"
+                    color: app.accent_cyan
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: dp(34)
+
+                GridLayout:
+                    id: diamond_bundles_grid
+                    cols: 1
+                    spacing: 4
+                    size_hint_y: None
+                    height: self.minimum_height
+
+                # --- Divider ---
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                # --- Help ---
+                MinimalButton:
+                    size_hint_y: None
+                    height: dp(50)
+                    text: app.lbl_help
+                    btn_color: app.accent_green
+                    text_color: app.bg_dark
+                    font_size: "11sp"
+                    on_press: root.show_help()
+
+                # --- Divider ---
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                # --- Language ---
+                AutoShrinkLabel:
+                    text: app.lbl_language
+                    font_size: "13sp"
+                    color: app.accent_cyan
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: dp(34)
+
+                MinimalButton:
+                    size_hint_y: None
+                    height: dp(50)
+                    text: app.lbl_change_language
+                    btn_color: app.accent_purple
+                    font_size: "11sp"
+                    on_press: root.show_language_picker()

@@ -1,0 +1,136 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import theme game.theme
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
+
+<RosterScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+            Color:
+                rgba: 1, 1, 1, 0.85
+            BorderImage:
+                source: "sprites/bg/bg_default.png"
+                pos: self.pos
+                size: self.size
+
+        TopBar:
+            title_text: app.title_squad
+            title_color: app.accent_green
+
+        TouchRecycleView:
+            id: roster_rv
+            viewclass: 'RosterCardView'
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            opacity: 1 if root.roster_view == "list" else 0
+            size_hint_y: 1 if root.roster_view == "list" else 0.001
+            disabled: root.roster_view != "list"
+            RecycleBoxLayout:
+                default_size: None, dp(84)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+
+        TouchScrollView:
+            id: detail_scroll
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            effect_cls: ScrollEffect
+            # Perk view uses a dedicated RecycleView instead (perk_tree_rv);
+            # hide detail_scroll whenever perk_view is active.
+            opacity: 0 if root.roster_view == "list" or root.perk_view else 1
+            size_hint_y: 0.001 if root.roster_view == "list" or root.perk_view else 1
+            disabled: root.roster_view == "list" or root.perk_view
+            GridLayout:
+                id: detail_grid
+                cols: 1
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+                size_hint_y: None
+                height: self.minimum_height
+
+        # Perk tree — heterogeneous RecycleView (label / tier button / perk card).
+        # Used only when root.perk_view is True; otherwise size_hint_y≈0.
+        TouchRecycleView:
+            id: perk_tree_rv
+            viewclass: 'PerkTreeLabelView'
+            key_viewclass: 'viewclass'
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            opacity: 1 if root.perk_view and root.roster_view != "list" else 0
+            size_hint_y: 1 if root.perk_view and root.roster_view != "list" else 0.001
+            disabled: not (root.perk_view and root.roster_view != "list")
+            RecycleBoxLayout:
+                default_size: None, dp(30)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+
+        MinimalButton:
+            id: detail_back_btn
+            text: app.lbl_back_btn
+            btn_color: theme.BTN_PRIMARY
+            font_size: 11
+            size_hint_y: None
+            height: dp(48) if root.roster_view != "list" else 0
+            opacity: 1 if root.roster_view != "list" else 0
+            disabled: root.roster_view == "list"
+            on_press: app.go_back()
+
+        TouchPanel:
+            orientation: "vertical"
+            size_hint_y: None
+            height: (dp(48) + (dp(48) if root.has_injuries == "true" else 0)) if root.roster_view == "list" else (dp(48) if root.roster_view == "class_detail" else 0)
+            opacity: 1 if root.roster_view in ("list", "class_detail") else 0
+            disabled: root.roster_view not in ("list", "class_detail")
+            padding: [dp(8), dp(2)]
+            spacing: dp(4)
+            MinimalButton:
+                text: root.hire_cost_text or app.lbl_recruit_fighter
+                btn_color: theme.BTN_SUCCESS if root.hire_enabled == "true" else theme.BTN_DISABLED
+                text_color: theme.BG_DARK if root.hire_enabled == "true" else theme.TEXT_MUTED
+                font_size: 11
+                size_hint_y: None
+                height: dp(48) if root.roster_view in ("list", "class_detail") else 0
+                opacity: 1 if root.roster_view in ("list", "class_detail") else 0
+                icon_source: "sprites/icons/ic_gold.png"
+                disabled: root.roster_view not in ("list", "class_detail")
+                on_press: root.hire()
+            MinimalButton:
+                id: heal_all_btn
+                text: root.heal_all_text or app.lbl_heal_all_injuries
+                btn_color: theme.ACCENT_GREEN if root.heal_all_enabled == "true" else theme.BTN_DISABLED
+                text_color: theme.BG_DARK if root.heal_all_enabled == "true" else theme.TEXT_MUTED
+                font_size: 11
+                size_hint_y: None
+                height: dp(48) if root.has_injuries == "true" and root.roster_view == "list" else 0
+                opacity: 1 if root.has_injuries == "true" and root.roster_view == "list" else 0
+                disabled: root.roster_view != "list" or root.has_injuries != "true"
+                icon_source: "sprites/icons/ic_gold.png"
+                on_press: root.heal_all_injuries()
+# ============================================================
+#  FORGE (ANVIL)
+# ============================================================

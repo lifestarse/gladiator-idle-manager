@@ -1,0 +1,149 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import theme game.theme
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
+
+<ForgeScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+            Color:
+                rgba: 1, 1, 1, 0.85
+            BorderImage:
+                source: "sprites/bg/bg_forge.png"
+                pos: self.pos
+                size: self.size
+
+        TopBar:
+            title_text: root.lbl_top_title
+            title_color: app.accent_red if not root.show_inventory else app.accent_cyan
+
+        TouchPanel:
+            id: shop_tabs_box
+            size_hint_y: None
+            height: dp(48) if not root.show_inventory else 0
+            opacity: 0 if root.show_inventory else 1
+            disabled: root.show_inventory
+            spacing: dp(4)
+            padding: [dp(8), dp(2)]
+            MinimalButton:
+                text: app.lbl_tab_weapon
+                btn_color: theme.ACCENT_RED if root.forge_tab == "weapon" else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.forge_tab == "weapon" else theme.TEXT_MUTED
+                font_size: 11
+                on_press: root.set_forge_tab("weapon")
+            MinimalButton:
+                text: app.lbl_tab_armor
+                btn_color: theme.ACCENT_BLUE if root.forge_tab == "armor" else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.forge_tab == "armor" else theme.TEXT_MUTED
+                font_size: 11
+                on_press: root.set_forge_tab("armor")
+            MinimalButton:
+                text: app.lbl_tab_accessory
+                btn_color: theme.ACCENT_PURPLE if root.forge_tab == "accessory" else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.forge_tab == "accessory" else theme.TEXT_MUTED
+                font_size: 11
+                on_press: root.set_forge_tab("accessory")
+
+        TouchPanel:
+            id: inv_tabs_box
+            orientation: "vertical"
+            size_hint_y: None
+            height: self.minimum_height if root._show_inv_tabs else 0
+            opacity: 1 if root._show_inv_tabs else 0
+            disabled: not root._show_inv_tabs
+
+        # Shop-list mode: RecycleView virtualizes 130-item shop grid
+        TouchRecycleView:
+            id: forge_rv
+            viewclass: 'ForgeCardView'
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            size_hint_y: 1 if root._forge_rv_active else 0.001
+            opacity: 1 if root._forge_rv_active else 0
+            disabled: not root._forge_rv_active
+            RecycleBoxLayout:
+                default_size: None, dp(114)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+
+        # Inventory-list mode: RecycleView for player's items (inv + equipped)
+        TouchRecycleView:
+            id: inventory_rv
+            viewclass: 'InventoryCardView'
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            size_hint_y: 1 if root._inventory_rv_active else 0.001
+            opacity: 1 if root._inventory_rv_active else 0
+            disabled: not root._inventory_rv_active
+            RecycleBoxLayout:
+                default_size: None, dp(75)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+
+        # Detail/upgrade/enchant/shard modes: legacy GridLayout in ScrollView
+        TouchScrollView:
+            id: forge_scroll
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            scroll_distance: dp(8)
+            scroll_timeout: 50
+            size_hint_y: 0.001 if (root._forge_rv_active or root._inventory_rv_active) else 1
+            opacity: 0 if (root._forge_rv_active or root._inventory_rv_active) else 1
+            disabled: root._forge_rv_active or root._inventory_rv_active
+            GridLayout:
+                id: forge_grid
+                cols: 1
+                spacing: dp(6)
+                padding: [dp(14), dp(8)]
+                size_hint_y: None
+                height: self.minimum_height
+
+        MinimalButton:
+            id: forge_back_btn
+            text: app.lbl_back_btn
+            btn_color: theme.BTN_PRIMARY
+            font_size: 11
+            size_hint_y: None
+            height: dp(48) if (root.inv_detail_idx != -1 or root.eq_detail_fighter != -1 or not root._show_inv_tabs) else 0
+            opacity: 1 if (root.inv_detail_idx != -1 or root.eq_detail_fighter != -1 or not root._show_inv_tabs) else 0
+            disabled: root._show_inv_tabs and root.inv_detail_idx == -1 and root.eq_detail_fighter == -1
+            on_press: app.go_back()
+
+        MinimalButton:
+            text: root.inventory_btn_text
+            btn_color: theme.ACCENT_BROWN if root.show_inventory else theme.BTN_PRIMARY
+            text_color: theme.TEXT_PRIMARY
+            font_size: 11
+            size_hint_y: None
+            height: dp(48)
+            on_press: root.toggle_inventory()
+# ============================================================
+#  EXPEDITIONS (HUNTS)
+# ============================================================

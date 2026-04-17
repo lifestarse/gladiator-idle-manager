@@ -132,6 +132,17 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
     toast_message = StringProperty("")
 
     def build(self):
+
+        # Load per-screen KV files (split from gladiatoridle.kv in Wave 6).
+        from kivy.lang import Builder
+        import os as _os
+        _kv_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))), "kv")
+        for _fn in (
+            "nav_bar.kv", "arena_screen.kv", "roster_screen.kv",
+            "forge_screen.kv", "expedition_screen.kv",
+            "lore_screen.kv", "more_screen.kv",
+        ):
+            Builder.load_file(_os.path.join(_kv_dir, _fn))
         init_language()
         self._init_locale_strings()
         self.engine = GameEngine()

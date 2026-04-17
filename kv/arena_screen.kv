@@ -1,0 +1,199 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import theme game.theme
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
+
+<ArenaScreen>:
+    FloatLayout:
+        id: arena_zone
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+            Color:
+                rgba: 1, 1, 1, 0.85
+            BorderImage:
+                source: "sprites/bg/bg_arena.png"
+                pos: self.pos
+                size: self.size
+        BoxLayout:
+            orientation: "vertical"
+            pos: self.parent.pos
+            size: self.parent.size
+
+            # Top bar
+            TopBar:
+                title_text: app.title_pit
+                title_color: app.accent_gold
+
+            # Detail/tutorial view (hidden during battle)
+            TouchScrollView:
+                bar_width: dp(8)
+                bar_color: app.text_muted
+                do_scroll_x: False
+                effect_cls: ScrollEffect
+                opacity: 0 if root.arena_view == "battle" else 1
+                size_hint_y: 0.001 if root.arena_view == "battle" else 1
+                disabled: root.arena_view == "battle"
+                GridLayout:
+                    id: enemy_detail_grid
+                    cols: 1
+                    spacing: dp(8)
+                    padding: [dp(16), dp(12)]
+                    size_hint_y: None
+                    height: self.minimum_height
+
+            MinimalButton:
+                id: enemy_back_btn
+                text: app.lbl_back_btn
+                btn_color: theme.BTN_PRIMARY
+                font_size: 11
+                size_hint_y: None
+                height: dp(48) if root.arena_view != "battle" else 0
+                opacity: 1 if root.arena_view != "battle" else 0
+                disabled: root.arena_view == "battle"
+                on_press: app.go_back()
+
+            # Battle arena content
+            TouchPanel:
+                orientation: "vertical"
+                spacing: dp(4)
+                opacity: 1 if root.arena_view == "battle" else 0
+                size_hint_y: 1 if root.arena_view == "battle" else 0.001
+                disabled: root.arena_view != "battle"
+
+                # Stats bar: Run · Tier — compact single row
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(40)
+                    padding: [dp(8), 0]
+                    spacing: dp(4)
+                    canvas.before:
+                        Color:
+                            rgba: app.nav_bg
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    AutoShrinkLabel:
+                        text: root.run_text
+                        font_size: "11sp"
+                        bold: True
+                        color: app.accent_cyan
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+                        size_hint_x: 0.6
+                    AutoShrinkLabel:
+                        text: root.tier_text
+                        font_size: "12sp"
+                        bold: True
+                        color: app.accent_red
+                        halign: "right"
+                        text_size: self.size
+                        valign: "middle"
+                        size_hint_x: 0.4
+
+                # Heal button (filled from Python)
+                BoxLayout:
+                    id: heal_btn_box
+                    size_hint_y: None
+                    height: dp(48)
+                    padding: [dp(14), 0]
+
+                # Player fighters panel (RecycleView — virtualized for large squads)
+                TouchRecycleView:
+                    id: battle_fighters_rv
+                    viewclass: 'ArenaUnitCardView'
+                    size_hint_y: 0.42
+                    bar_width: dp(8)
+                    bar_color: app.text_muted
+                    do_scroll_x: False
+                    scroll_type: ['bars', 'content']
+                    effect_cls: ScrollEffect
+                    scroll_distance: dp(8)
+                    scroll_timeout: 50
+                    RecycleBoxLayout:
+                        default_size: None, dp(84)
+                        default_size_hint: 1, None
+                        size_hint_y: None
+                        height: self.minimum_height
+                        orientation: 'vertical'
+                        spacing: dp(6)
+                        padding: [dp(14), dp(6)]
+
+                # Swords divider
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(24)
+                    padding: [dp(14), 0]
+                    Widget:
+                        canvas:
+                            Color:
+                                rgba: app.divider
+                            Rectangle:
+                                pos: self.x, self.center_y
+                                size: self.width, dp(1)
+                    Image:
+                        source: "sprites/icons/ic_swords.png"
+                        fit_mode: "contain"
+                        size_hint: None, 1
+                        width: dp(24)
+                        color: app.accent_red
+                    Widget:
+                        canvas:
+                            Color:
+                                rgba: app.divider
+                            Rectangle:
+                                pos: self.x, self.center_y
+                                size: self.width, dp(1)
+
+                # Enemy panel (RecycleView — virtualized for large enemy waves)
+                TouchRecycleView:
+                    id: battle_enemies_rv
+                    viewclass: 'ArenaUnitCardView'
+                    size_hint_y: 0.35
+                    bar_width: dp(8)
+                    bar_color: app.text_muted
+                    do_scroll_x: False
+                    scroll_type: ['bars', 'content']
+                    effect_cls: ScrollEffect
+                    scroll_distance: dp(8)
+                    scroll_timeout: 50
+                    RecycleBoxLayout:
+                        default_size: None, dp(84)
+                        default_size_hint: 1, None
+                        size_hint_y: None
+                        height: self.minimum_height
+                        orientation: 'vertical'
+                        spacing: dp(6)
+                        padding: [dp(14), dp(6)]
+
+            # Action buttons — above nav bar
+            BoxLayout:
+                size_hint_y: None
+                height: dp(56)
+                padding: [dp(8), dp(2)]
+                spacing: dp(6)
+                MinimalButton:
+                    text: app.lbl_auto
+                    btn_color: theme.BTN_DISABLED if root.is_fighting else theme.BTN_FIGHT
+                    text_color: theme.TEXT_MUTED if root.is_fighting else theme.TEXT_PRIMARY
+                    font_size: "11sp"
+                    on_press: root.start_auto_battle()
+                MinimalButton:
+                    text: app.lbl_common if root.arena_mode == "boss" else app.lbl_boss
+                    btn_color: theme.BTN_DISABLED if root.is_fighting else (theme.BTN_PRIMARY if root.arena_mode == "boss" else theme.ACCENT_PURPLE)
+                    text_color: theme.TEXT_MUTED if root.is_fighting else theme.TEXT_PRIMARY
+                    font_size: "11sp"
+                    on_press: root.toggle_arena_mode()
+                MinimalButton:
+                    text: app.lbl_skip
+                    btn_color: theme.ACCENT_GOLD if root.is_fighting else theme.BG_ELEVATED
+                    text_color: theme.BG_DARK if root.is_fighting else theme.TEXT_SECONDARY
+                    font_size: "11sp"
+                    on_press: root.skip_battle()
+# ============================================================
+#  ROSTER (SQUAD)
+# ============================================================

@@ -199,7 +199,9 @@ class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
             self._text_label.font_size = max(sp(5), sp(9) * ratio * 0.95)
         elif self.width > 0 and self._text_label.font_size < sp(9):
             self._text_label.font_size = sp(9)
-        # Sync all NavButton font sizes to smallest in parent NavBar
+        # Sync all NavButton font sizes to smallest in parent NavBar.
+        # NavBar lives in ._nav (sibling module); lazy-import to avoid cycle.
+        from ._nav import NavBar  # noqa: PLC0415
         if isinstance(self.parent, NavBar):
             Clock.unschedule(self.parent._sync_font_sizes)
             Clock.schedule_once(self.parent._sync_font_sizes, 0)

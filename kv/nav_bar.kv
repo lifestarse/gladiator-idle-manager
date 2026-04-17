@@ -1,0 +1,109 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import theme game.theme
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
+
+<NavBar>:
+    active_screen: app.sm.current if app.sm else ""
+    size_hint_y: None
+    height: dp(70)
+    canvas.before:
+        Color:
+            rgba: app.nav_bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: app.divider
+        Rectangle:
+            pos: self.x, self.top - 1
+            size: self.width, dp(1)
+    NavButton:
+        text: app.nav_pit
+        icon_source: "sprites/nav/nav_arena.png"
+        is_active: root.active_screen == "arena"
+        on_press: app.sm.current = "arena"
+    NavButton:
+        text: app.nav_squad
+        icon_source: "sprites/nav/nav_roster.png"
+        is_active: root.active_screen == "roster"
+        on_press: app.sm.current = "roster"
+    NavButton:
+        text: app.nav_anvil
+        icon_source: "sprites/nav/nav_forge.png"
+        is_active: root.active_screen == "forge"
+        on_press: app.sm.current = "forge"
+    NavButton:
+        text: app.nav_hunts
+        icon_source: "sprites/nav/nav_expedition.png"
+        is_active: root.active_screen == "expedition"
+        on_press: app.sm.current = "expedition"
+    NavButton:
+        text: app.nav_lore
+        icon_source: "sprites/nav/nav_lore.png"
+        is_active: root.active_screen == "lore"
+        on_press: app.sm.current = "lore"
+    NavButton:
+        text: app.nav_more
+        icon_source: "sprites/nav/nav_more.png"
+        is_active: root.active_screen == "more"
+        on_press: app.sm.current = "more"
+
+<TopBar@BoxLayout>:
+    title_text: ""
+    title_color: app.accent_gold
+    size_hint_y: None
+    height: dp(56)
+    padding: [dp(8), dp(4)]
+    spacing: dp(4)
+    canvas.before:
+        Color:
+            rgba: app.nav_bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    AutoShrinkLabel:
+        text: self.parent.title_text if self.parent else ""
+        font_size: "14sp"
+        bold: True
+        color: self.parent.title_color if self.parent else [1,1,1,1]
+        halign: "left"
+        text_size: self.size
+        valign: "middle"
+        size_hint_x: 0.40
+    BoxLayout:
+        spacing: 0
+        size_hint_x: 0.30
+        AutoShrinkLabel:
+            text: app.top_gold
+            font_size: "12sp"
+            bold: True
+            color: app.accent_gold
+            halign: "right"
+            text_size: self.size
+            valign: "middle"
+        Image:
+            source: "sprites/icons/ic_gold.png"
+            fit_mode: "contain"
+            size_hint: None, 1
+            width: dp(20)
+    BoxLayout:
+        spacing: 0
+        size_hint_x: 0.30
+        AutoShrinkLabel:
+            text: app.top_diamonds
+            font_size: "12sp"
+            bold: True
+            color: app.accent_cyan
+            halign: "right"
+            text_size: self.size
+            valign: "middle"
+        Image:
+            source: "sprites/icons/ic_gem.png"
+            fit_mode: "contain"
+            size_hint: None, 1
+            width: dp(20)
+
+# ============================================================
+#  ARENA (THE PIT) — Battle System
+# ============================================================
