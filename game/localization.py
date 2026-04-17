@@ -1,4 +1,4 @@
-# Build: 29
+# Build: 30
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -27,8 +27,15 @@ def _languages_dir():
     return os.path.join(os.path.dirname(here), "data", "languages")
 
 
-def load_languages():
-    """Load all JSON language files from data/languages/."""
+def load_languages(force=False):
+    """Load all JSON language files from data/languages/.
+
+    Idempotent by default — each lang code is loaded at most once. The
+    bottom of this module auto-loads on import (for tests), and main.py
+    calls init_language() again on app build; without this guard every
+    startup logged each language twice. Pass force=True to re-read from
+    disk (dev hot-reload).
+    """
     lang_dir = _languages_dir()
     if not os.path.isdir(lang_dir):
         _log.warning("Languages directory not found: %s", lang_dir)
@@ -37,6 +44,8 @@ def load_languages():
         if not fname.endswith(".json"):
             continue
         lang_code = fname[:-5]  # "ru.json" → "ru"
+        if lang_code in _LANG_DATA and not force:
+            continue
         path = os.path.join(lang_dir, fname)
         try:
             with open(path, "r", encoding="utf-8") as f:

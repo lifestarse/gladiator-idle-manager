@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 10
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
@@ -75,16 +75,33 @@ class MoreScreen(BaseScreen):
             row = BaseCard(orientation="horizontal", size_hint_y=None, height=dp(48),
                            padding=[dp(10), dp(4)], spacing=dp(6))
             row.border_color = ACCENT_CYAN
-            bonus = bundle.get("bonus", "")
-            label_text = f"{bundle['diamonds']} {bonus}" if bonus else f"{bundle['diamonds']}"
-            # Left side: quantity + gem icon (number-then-icon, matching top-bar pattern)
-            left_box = BoxLayout(orientation="horizontal", size_hint_x=0.5, spacing=dp(4))
-            left_box.add_widget(row._make_label(label_text, sp(11), True, ACCENT_CYAN, "left", 1))
-            left_box.add_widget(Image(
+            # Left side: count label tight against a gem icon — no bonus
+            # suffix ("+10%" etc.) so the pure diamond quantity is the
+            # only thing shown next to the gem. AnchorLayout centres the
+            # pair in the left half of the card; shrink the label to its
+            # texture width so the icon always sits right beside it.
+            from kivy.uix.anchorlayout import AnchorLayout
+            left_anchor = AnchorLayout(anchor_x="center", anchor_y="center",
+                                        size_hint_x=0.5)
+            pair = BoxLayout(orientation="horizontal",
+                             size_hint=(None, None), spacing=dp(6))
+            count_lbl = row._make_label(
+                str(bundle['diamonds']), sp(11), True, ACCENT_CYAN,
+                "right", None,
+            )
+            count_lbl.size_hint_x = None
+            count_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
+            pair.add_widget(count_lbl)
+            gem = Image(
                 source="sprites/icons/ic_gem.png", fit_mode="contain",
-                size_hint=(None, 1), width=dp(18),
-            ))
-            row.add_widget(left_box)
+                size_hint=(None, None), width=dp(20), height=dp(20),
+                pos_hint={'center_y': 0.5},
+            )
+            pair.add_widget(gem)
+            pair.bind(minimum_width=pair.setter('width'))
+            pair.height = dp(40)
+            left_anchor.add_widget(pair)
+            row.add_widget(left_anchor)
             buy_btn = MinimalButton(
                 text=t("buy_btn"), font_size=11, size_hint_x=0.5,
                 btn_color=ACCENT_CYAN, text_color=BG_DARK,
@@ -102,7 +119,12 @@ class MoreScreen(BaseScreen):
         engine = app.engine
         def on_success():
             result = engine.purchase_diamonds(bundle_id)
-            engine.save()
+            # Async save — previously blocked the main thread for ~300-500ms
+            # on desktop and multiple seconds on Android while the 8 MB
+            # save file was serialized + written. The save snapshot is
+            # built synchronously (fast); the JSON + disk write run on a
+            # daemon thread. Diamonds and toast appear immediately.
+            engine.save_async()
             self.refresh_more()
             app.update_top_bar()
             if result.message:
@@ -114,7 +136,7 @@ class MoreScreen(BaseScreen):
         def on_success():
             engine.purchase_remove_ads()
             ad_manager.hide_banner()
-            engine.save()
+            engine.save_async()
             self.refresh_more()
         iap_manager.purchase("remove_ads", on_success)
 
@@ -124,7 +146,7 @@ class MoreScreen(BaseScreen):
             engine.restore_purchases(product_keys)
             if engine.ads_removed:
                 ad_manager.hide_banner()
-            engine.save()
+            engine.save_async()
             self.refresh_more()
         iap_manager.restore_purchases(on_restored)
 

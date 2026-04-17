@@ -1,4 +1,4 @@
-# Build: 30
+# Build: 39
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -13,6 +13,7 @@ from game.models import (
     get_upgrade_tier, item_display_name,
     get_max_upgrade, RARITY_MAX_UPGRADE,
 )
+from game.slots import SLOTS
 from game.theme import *
 from game.theme import popup_color
 from game.constants import (
@@ -30,9 +31,51 @@ from game.screens.shared import _safe_clear, _safe_rebind
 BC = BaseCard  # short alias used in _build_upgrade_comparison_card
 
 
+# ---- View state machine ----------------------------------------------------
+# The forge used to have six independent BooleanProperty flags that could
+# contradict each other (e.g. both weapon_upgrade_active AND enchant_active
+# True). `view_state` is now the single source of truth; the six flags below
+# are derived output kept in sync by `on_view_state` for KV-binding compat.
+#
+# Allowed transitions (enforced by _set_view via the transition map):
+#   shop            <-> shop_preview, inventory_list
+#   inventory_list  <-> shop, inventory_detail, equipped_detail
+#   inventory_detail -> inventory_list, upgrade, enchant
+#   equipped_detail  -> inventory_list, upgrade, enchant
+#   upgrade         -> inventory_detail, equipped_detail
+#   enchant         -> inventory_detail, equipped_detail
+VIEW_STATES = (
+    "shop", "shop_preview",
+    "inventory_list", "inventory_detail", "equipped_detail",
+    "upgrade", "enchant",
+)
+
+# Flag tuple order: (show_inventory, _forge_rv_active, _inventory_rv_active,
+#                    _show_inv_tabs, weapon_upgrade_active, enchant_active)
+_VIEW_FLAGS = {
+    "shop":             (False, True,  False, True,  False, False),
+    "shop_preview":     (False, False, False, False, False, False),
+    "inventory_list":   (True,  False, True,  True,  False, False),
+    "inventory_detail": (True,  False, False, False, False, False),
+    "equipped_detail":  (True,  False, False, False, False, False),
+    "upgrade":          (True,  False, False, False, True,  False),
+    "enchant":          (True,  False, False, False, False, True),
+}
+
+
 class ForgeScreen(BaseScreen):
     forge_items = ListProperty()
+    # One-true-state: written via `_set_view` / `self.view_state = "..."`.
+    view_state = StringProperty("shop")
+    # --- Derived flags (driven by on_view_state). Read-only for outside code;
+    #     KV bindings unchanged so templates keep working. ---
     show_inventory = BooleanProperty(False)
+    _forge_rv_active = BooleanProperty(False)
+    _inventory_rv_active = BooleanProperty(False)
+    _show_inv_tabs = BooleanProperty(False)
+    weapon_upgrade_active = BooleanProperty(False)
+    enchant_active = BooleanProperty(False)
+    # --- Independent payload/filter state (not part of the view machine) ---
     inventory_btn_text = StringProperty("")
     forge_tab = StringProperty("weapon")
     inventory_tab = StringProperty("weapon")
@@ -45,15 +88,26 @@ class ForgeScreen(BaseScreen):
     inv_detail_idx = NumericProperty(-1)
     eq_detail_fighter = NumericProperty(-1)
     eq_detail_slot = StringProperty("")
-    weapon_upgrade_active = BooleanProperty(False)
-    enchant_active = BooleanProperty(False)
-    # True when in main shop-list mode — forge_rv is visible, forge_scroll hidden.
-    # Set False by every non-shop mode (inventory, detail, upgrade, enchant, preview).
-    _forge_rv_active = BooleanProperty(False)
-    # True when in inventory-list mode (not detail/upgrade/enchant).
-    _inventory_rv_active = BooleanProperty(False)
     lbl_top_title = StringProperty("")
-    _show_inv_tabs = BooleanProperty(False)
+
+    def on_view_state(self, inst, new_state):
+        """Derive the 6 KV-bound flags from view_state.
+
+        Kivy calls this whenever view_state changes. Keeps the flags consistent
+        so two contradicting booleans cannot both be True.
+        """
+        flags = _VIEW_FLAGS.get(new_state)
+        if flags is None:
+            return
+        (self.show_inventory, self._forge_rv_active, self._inventory_rv_active,
+         self._show_inv_tabs, self.weapon_upgrade_active,
+         self.enchant_active) = flags
+
+    def _set_view(self, new_state):
+        """Transition to a new view state. No-op if already there."""
+        if new_state not in _VIEW_FLAGS:
+            return
+        self.view_state = new_state  # triggers on_view_state
 
     _preview_item = None
     _pending_state = None
@@ -82,7 +136,7 @@ class ForgeScreen(BaseScreen):
     def get_nav_state(self):
         """Snapshot current view for navigation stack."""
         return {
-            'show_inventory': self.show_inventory,
+            'view_state': self.view_state,
             'forge_tab': self.forge_tab,
             'inventory_tab': self.inventory_tab,
             'inv_detail_idx': self.inv_detail_idx,
@@ -105,11 +159,48 @@ class ForgeScreen(BaseScreen):
         self._pending_state = None
         self._reset_forge_state()
         if state:
+            # Apply payload/filter keys first, then pick the view state
+            # based on WHICH payload keys are present. Legacy callers
+            # (App.open_equipped_detail etc.) pass show_inventory=True
+            # plus eq_detail_fighter/eq_detail_slot — we have to route
+            # those to "equipped_detail", not "inventory_list", or the
+            # tap from Roster lands on the bare inventory grid instead
+            # of the item's detail page.
+            view_key = state.pop('view_state', None)
+            legacy_show_inv = state.pop('show_inventory', False)
+            preview_item = state.pop('_preview_item', None)
             for k, v in state.items():
                 if hasattr(self, k):
                     setattr(self, k, v)
+            if preview_item is not None:
+                self._preview_item = preview_item
+            # Infer view_state from payload when not explicit. Precedence
+            # mirrors on_back_pressed levels so navigation is symmetric.
+            if view_key is None:
+                if self.view_state in ("upgrade", "enchant"):
+                    # Already in a detail-stacked view; don't clobber.
+                    view_key = self.view_state
+                elif (getattr(self, 'eq_detail_fighter', -1) >= 0
+                      and getattr(self, 'eq_detail_slot', "")):
+                    view_key = "equipped_detail"
+                elif getattr(self, 'inv_detail_idx', -1) >= 0:
+                    view_key = "inventory_detail"
+                elif preview_item is not None:
+                    view_key = "shop_preview"
+                elif legacy_show_inv:
+                    view_key = "inventory_list"
+                else:
+                    view_key = "shop"
+            self._set_view(view_key)
         self._scroll_positions = {}
         self.refresh_forge()
+        # Safety net: Kivy RecycleView occasionally misses its first
+        # layout pass when data is set before the screen's widget tree
+        # finishes its own layout (the empty-forge-on-entry bug the
+        # user reported). Re-run the refresh on the next frame — if the
+        # first run succeeded this is a no-op (same rv.data), and if it
+        # didn't, this catches up before the user sees the blank panel.
+        Clock.schedule_once(lambda dt: self.refresh_forge(), 0)
 
     def on_enter(self):
         # _entry_depth is set by _navigate_to_forge for cross-screen entry.
@@ -120,24 +211,15 @@ class ForgeScreen(BaseScreen):
         self._apply_pending_state()
 
     def _enter_detail_mode(self):
-        """Common setup when entering any single-item detail screen.
-        Hides the inventory tab filters and both RecycleViews so the
-        legacy forge_scroll/forge_grid becomes the active render target.
-        Call at the top of every _show_* method."""
-        self._show_inv_tabs = False
+        """Kept for backward-compat. view_state is now managed by the caller
+        via _set_view; this just invalidates cached layout keys."""
         self._inv_tabs_key = None
-        self._forge_rv_active = False
-        self._inventory_rv_active = False
 
     def _reset_forge_state(self, keep_inventory=False):
-        """Reset all navigation/detail state. Call on enter or back navigation."""
-        if not keep_inventory:
-            self.show_inventory = False
+        """Reset navigation payload + view state. Call on enter or back."""
         self.inv_detail_idx = -1
         self.eq_detail_fighter = -1
         self.eq_detail_slot = ""
-        self.weapon_upgrade_active = False
-        self.enchant_active = False
         self._enchant_source = None
         self._enchant_idx = None
         self._enchant_item = None
@@ -148,6 +230,8 @@ class ForgeScreen(BaseScreen):
         self._inv_grid_key = None
         self._shard_grid_key = None
         self._inv_card_cache = {}
+        # Return to the appropriate list view
+        self._set_view("inventory_list" if keep_inventory else "shop")
 
     def _scroll_key(self):
         if self.show_inventory:
@@ -168,38 +252,54 @@ class ForgeScreen(BaseScreen):
     def refresh_forge(self):
         engine = App.get_running_app().engine
         self._update_top_bar()
-        self.lbl_top_title = t("inventory_label") if self.show_inventory else t("title_anvil")
+        # Defensive: on_view_state only fires when view_state *changes*,
+        # so if we re-enter forge while view_state is still what it was
+        # last time, the derived Kivy flags (_forge_rv_active etc.) may
+        # be out of sync with what the KV bindings expect. Re-apply the
+        # flag tuple from _VIEW_FLAGS unconditionally here — it's an O(6)
+        # attr set, and it fixes the "empty forge on re-entry" case where
+        # the RV was hidden from a stale shop_preview / inventory visit.
+        flags = _VIEW_FLAGS.get(self.view_state)
+        if flags is not None:
+            (self.show_inventory, self._forge_rv_active,
+             self._inventory_rv_active, self._show_inv_tabs,
+             self.weapon_upgrade_active, self.enchant_active) = flags
+        # Title: inventory view label when we're anywhere under the inventory
+        # branch, forge label for shop/shop_preview.
+        in_inventory = self.view_state in (
+            "inventory_list", "inventory_detail", "equipped_detail",
+            "upgrade", "enchant",
+        )
+        self.lbl_top_title = t("inventory_label") if in_inventory else t("title_anvil")
         # Shard display
         s = engine.shards
         self.shard_text = f"I:{s.get(1,0)} II:{s.get(2,0)} III:{s.get(3,0)} IV:{s.get(4,0)} V:{s.get(5,0)}"
-        if self.show_inventory:
-            self._forge_rv_active = False  # inventory/detail: not shop mode
-            if self.weapon_upgrade_active or self.enchant_active:
-                self._inventory_rv_active = False
-                return  # don't redraw while upgrade/enchant screen is open
-            if self.inv_detail_idx >= 0:
-                self._inventory_rv_active = False
+        if in_inventory:
+            if self.view_state in ("upgrade", "enchant"):
+                # Detail screen owns the render pass; don't redraw over it.
+                return
+            if self.view_state == "inventory_detail":
                 self._show_inv_detail(self.inv_detail_idx)
-            elif self.eq_detail_fighter >= 0 and self.eq_detail_slot:
-                self._inventory_rv_active = False
+            elif self.view_state == "equipped_detail":
                 f = engine.fighters[self.eq_detail_fighter]
                 item = f.equipment.get(self.eq_detail_slot)
                 if item:
                     self._show_equipped_detail(self.eq_detail_fighter, item)
                 else:
+                    # Equipped item vanished — fall back to the list.
                     self.eq_detail_fighter = -1
                     self.eq_detail_slot = ""
+                    self._set_view("inventory_list")
                     self._refresh_inventory_grid()
-            else:
+            else:  # inventory_list
                 self._refresh_inventory_grid()
             return
         if self._preview_item is not None:
-            self._forge_rv_active = False
-            self._inventory_rv_active = False
+            self._set_view("shop_preview")
             self._show_shop_preview(self._preview_item)
             return
-        # Show rarity filter tabs for shop
-        self._show_inv_tabs = True
+        # Shop mode
+        self._set_view("shop")
         self._inv_tabs_key = None  # clear inventory tabs key
         tabs_box = self.ids.get("inv_tabs_box")
         tabs_key = ("shop", self.forge_tab, self.shop_rarity_filter, self.shop_sort)
@@ -218,7 +318,7 @@ class ForgeScreen(BaseScreen):
             sort_label = t("sort_best") if self.shop_sort == "best" else t("sort_worst")
             sort_btn = MinimalButton(
                 text=sort_label, font_size=11,
-                btn_color=ACCENT_CYAN, text_color=BG_DARK,
+                btn_color=ACCENT_BROWN, text_color=TEXT_PRIMARY,
                 size_hint_y=None, height=dp(30),
                 icon_source=sort_icon,
             )
@@ -232,9 +332,7 @@ class ForgeScreen(BaseScreen):
         self.forge_items.sort(key=self._item_total_stats, reverse=reverse)
         inv_count = len(engine.inventory)
         self.inventory_btn_text = t("inventory_count", n=inv_count) if inv_count > 0 else t("inventory_label")
-        # Shop mode — switch to RecycleView (virtualized 130-item list)
-        self._forge_rv_active = True
-        self._inventory_rv_active = False
+        # view_state already "shop" — derived flags set by on_view_state.
         refresh_forge_grid(self)
 
     def set_forge_tab(self, tab):
@@ -246,9 +344,9 @@ class ForgeScreen(BaseScreen):
 
     def toggle_inventory(self):
         self._save_scroll()
-        new_inv = not self.show_inventory
-        self._reset_forge_state()
-        self.show_inventory = new_inv
+        was_inv = self.show_inventory
+        # _reset_forge_state resets to "shop"; if we were in shop, flip to inv.
+        self._reset_forge_state(keep_inventory=not was_inv)
         self.forge_tab = "weapon"
         self.refresh_forge()
         self._restore_scroll()
@@ -292,13 +390,30 @@ class ForgeScreen(BaseScreen):
 
     @staticmethod
     def _item_total_stats(item):
-        return item.get("str", 0) + item.get("agi", 0) + item.get("vit", 0)
+        """Composite 'power' score used for best/worst sort.
+
+        Returned as a tuple so Python sorts lexicographically:
+
+          1. enchantment flag — ANY enchanted item outranks ANY
+             unenchanted one (user request: enchantment beats +25).
+          2. power score — base stats × upgrade multiplier,
+             capturing the 20%-per-level upgrade mechanic so two
+             identical Abyssal Tridents rank +5 > +4 > +2.
+
+        Within each (enchanted / unenchanted) group, higher power wins.
+        """
+        base = item.get("str", 0) + item.get("agi", 0) + item.get("vit", 0)
+        lvl = item.get("upgrade_level", 0)
+        power = base * (1 + lvl * 0.2)
+        has_ench = 1 if item.get("enchantment") else 0
+        return (has_ench, power)
 
     def _refresh_inventory_grid(self):
         grid = self.ids.get("forge_grid")
         if not grid:
             return
-        self._show_inv_tabs = True
+        # view_state is "inventory_list" here; derived flags (including
+        # _show_inv_tabs=True) have already been set by on_view_state.
         engine = App.get_running_app().engine
 
         # Inventory tab buttons — in fixed box above scroll (rebuild only on tab change)
@@ -335,15 +450,32 @@ class ForgeScreen(BaseScreen):
                 sort_label = t("sort_best") if self.inventory_sort == "best" else t("sort_worst")
                 sort_btn = MinimalButton(
                     text=sort_label, font_size=11,
-                    btn_color=ACCENT_CYAN, text_color=BG_DARK,
+                    btn_color=ACCENT_BROWN, text_color=TEXT_PRIMARY,
                     size_hint_y=None, height=dp(30),
                     icon_source=sort_icon,
                 )
                 sort_btn.bind(on_press=self.toggle_inventory_sort)
                 tabs_box.add_widget(sort_btn)
 
-        # Shard tab — show shard counts
+        # Shard tab — show shard counts. Render goes to forge_grid (the
+        # legacy ScrollView), NOT to inventory_rv (which virtualizes item
+        # cards of a different shape). So we have to force the layout to
+        # hide the inventory RV and expose forge_grid. Without this, the
+        # inventory RV kept its stale data from the previous tab (e.g.
+        # 'relic' items would continue to show under the 'Осколки' tab).
         if self.inventory_tab == "shard":
+            # Flip flags: hide inventory RV, expose forge_grid's ScrollView.
+            # refresh_forge re-applies _VIEW_FLAGS unconditionally next
+            # entry, so these overrides are effectively scoped to this
+            # shard-tab pass.
+            self._inventory_rv_active = False
+            self._forge_rv_active = False
+            # Wipe stale data so nothing shows through if the RV layout
+            # pass lags behind our flag change.
+            inv_rv = self.ids.get("inventory_rv")
+            if inv_rv is not None:
+                inv_rv.data = []
+
             shard_key = tuple(engine.shards.get(t_, 0) for t_ in range(1, 6))
             if not self._needs_rebuild(self, '_shard_grid_key', shard_key, require_children=True):
                 return
@@ -360,6 +492,10 @@ class ForgeScreen(BaseScreen):
                 )
                 grid.add_widget(shard_card)
             return
+
+        # Non-shard tab — make sure inventory RV is back on if we just
+        # came from the shard tab (flags above were force-flipped).
+        self._inventory_rv_active = True
 
         # Build unified list: ("inv", inv_idx, item, None) or ("equip", fighter_idx, item, fighter_name)
         eq_filter = self.inventory_equip_filter
@@ -383,7 +519,7 @@ class ForgeScreen(BaseScreen):
         # Prefer RecycleView for inventory list
         inv_rv = self.ids.get("inventory_rv")
         if inv_rv is not None:
-            self._inventory_rv_active = True
+            # _inventory_rv_active already True via view_state="inventory_list"
             from game.ui_helpers import _inventory_item_to_rv_data
             inv_rv.data = [
                 _inventory_item_to_rv_data(src, idx, item, fn, self)
@@ -449,10 +585,22 @@ class ForgeScreen(BaseScreen):
         card.add_widget(lbl)
         return card
 
+    def _item_slot_subtitle(self, item):
+        """Return the '[SLOT] [RARITY] (max +N)' subtitle, or None if not equipment."""
+        slot = item.get("slot", "?")
+        if slot not in SLOTS:
+            return None
+        rarity = item.get("rarity", "common")
+        max_upg = get_max_upgrade(item)
+        return (f"{t(SLOTS[slot].label_keys['upper'])} "
+                f"[{t('rarity_' + rarity + '_upper')}] "
+                f"{t('item_max_upgrade', n=max_upg)}")
+
     def _show_inv_detail(self, inv_idx):
         """Show detail view for a single inventory item."""
         self._enter_detail_mode()
         self.inv_detail_idx = inv_idx
+        self._set_view("inventory_detail")
         sv = self.ids.get("forge_scroll")
         if sv:
             sv.scroll_y = 1
@@ -464,17 +612,14 @@ class ForgeScreen(BaseScreen):
 
         if inv_idx < 0 or inv_idx >= len(engine.inventory):
             self.inv_detail_idx = -1
+            self._set_view("inventory_list")
             self._refresh_inventory_grid()
             return
 
         item = engine.inventory[inv_idx]
         slot = item.get("slot", "?")
-        rarity = item.get("rarity", "common")
-        max_upg = get_max_upgrade(item)
-        if slot in ("weapon", "armor", "accessory", "relic"):
-            sub = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}] {t('item_max_upgrade', n=max_upg)}"
-        else:
-            sub = None
+        slot_def = SLOTS.get(slot)
+        sub = self._item_slot_subtitle(item)
 
         # Info card
         grid.add_widget(build_item_info_card(item, subtitle=sub))
@@ -494,6 +639,7 @@ class ForgeScreen(BaseScreen):
         def _sell(*a, idx=inv_idx):
             engine.sell_inventory_item(idx)
             self.inv_detail_idx = -1
+            self._set_view("inventory_list")
             self.refresh_forge()
         sell_btn.bind(on_press=_sell)
         action_row.add_widget(sell_btn)
@@ -506,8 +652,8 @@ class ForgeScreen(BaseScreen):
         action_row.add_widget(equip_btn)
         grid.add_widget(action_row)
 
-        # Upgradable items: IMPROVE button
-        if item.get("slot") in ("weapon", "armor", "accessory", "relic"):
+        # Upgradable items: IMPROVE button (any equipment slot is upgradable)
+        if slot_def is not None:
             improve_btn = MinimalButton(
                 text=t("improve_btn"), font_size=11,
                 btn_color=ACCENT_BLUE, text_color=TEXT_PRIMARY,
@@ -516,8 +662,8 @@ class ForgeScreen(BaseScreen):
             improve_btn.bind(on_press=lambda *a: self._show_item_upgrade("inv", inv_idx, item, None))
             grid.add_widget(improve_btn)
 
-        # Weapon enchantment button
-        if item.get("slot") == "weapon":
+        # Enchant button (per slot registry)
+        if slot_def is not None and slot_def.can_enchant:
             enchant_btn = MinimalButton(
                 text=t("tab_enchant"), font_size=11,
                 btn_color=ACCENT_PURPLE, text_color=TEXT_PRIMARY,
@@ -529,6 +675,7 @@ class ForgeScreen(BaseScreen):
     def _show_shop_preview(self, item):
         """Show read-only detail view for a shop item (no sell/equip/improve)."""
         self._enter_detail_mode()
+        # view_state set to "shop_preview" by refresh_forge caller
         sv = self.ids.get("forge_scroll")
         if sv:
             sv.scroll_y = 1
@@ -536,13 +683,7 @@ class ForgeScreen(BaseScreen):
         if not grid:
             return
         _safe_clear(grid)
-        slot = item.get("slot", "?")
-        rarity = item.get("rarity", "common")
-        max_upg = get_max_upgrade(item)
-        if slot in ("weapon", "armor", "accessory", "relic"):
-            sub = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}] {t('item_max_upgrade', n=max_upg)}"
-        else:
-            sub = None
+        sub = self._item_slot_subtitle(item)
 
         grid.add_widget(build_item_info_card(item, subtitle=sub))
         desc_card = self._build_description_card(item)
@@ -558,8 +699,6 @@ class ForgeScreen(BaseScreen):
         self.inv_detail_idx = -1
         self.eq_detail_fighter = -1
         self.eq_detail_slot = ""
-        self.weapon_upgrade_active = False
-        self.enchant_active = False
         self._enchant_source = None
         self._enchant_idx = None
         self._enchant_item = None
@@ -568,21 +707,29 @@ class ForgeScreen(BaseScreen):
         self._shard_grid_key = None
         self._inv_tabs_key = None
         self._inv_card_cache = {}
+        self._set_view("inventory_list")
         self.refresh_forge()
 
     def on_back_pressed(self):
         depth = getattr(self, '_entry_depth', 0)
+        state = self.view_state
         # Level 0: enchant view → back to item detail
-        if self.enchant_active:
+        if state == "enchant":
             self._close_enchant_view()
             return True
-        # Level 1: weapon upgrade → back to item detail
-        if self.weapon_upgrade_active:
-            self.weapon_upgrade_active = False
+        # Level 1: item upgrade → back to item detail
+        if state == "upgrade":
+            # Return to whichever detail spawned the upgrade screen
+            if self.inv_detail_idx >= 0:
+                self._set_view("inventory_detail")
+            elif self.eq_detail_fighter >= 0:
+                self._set_view("equipped_detail")
+            else:
+                self._set_view("inventory_list")
             self.refresh_forge()
             return True
         # Level 2: item detail or equipped detail
-        if self.inv_detail_idx != -1 or self.eq_detail_fighter != -1:
+        if state in ("inventory_detail", "equipped_detail"):
             if depth == 2:
                 self._reset_forge_state()
                 return False  # exit to previous screen
@@ -605,26 +752,44 @@ class ForgeScreen(BaseScreen):
         # Level 5: shop view — let go_back() handle via history
         return False
 
+    _TARGET_LABELS = {"atk": "ATK", "def": "DEF", "hp": "HP"}
+
     @staticmethod
-    def _get_slot_upgrade_config(slot, item):
-        """Return (base_val, stat_pair, stat_label, base_label) for a given slot."""
-        if slot == "weapon":
-            return item.get("str", 0), "STR", "STR", t("weapon_base_atk")
-        elif slot == "armor":
-            return item.get("agi", 0), "AGI", "AGI", t("armor_base_def")
-        elif slot == "relic":
-            return 0, "STR+AGI+VIT", "STR/AGI/VIT", t("relic_base")
-        else:  # accessory
-            return item.get("vit", 0), "VIT", "VIT", t("accessory_base_hp")
+    def _fighter_target_total(fighter, target):
+        """Current totalized final stat on fighter for a given target."""
+        if target == "atk":
+            return fighter.attack
+        if target == "def":
+            return fighter.defense
+        if target == "hp":
+            return fighter.max_hp
+        return 0
+
+    @staticmethod
+    def _fighter_pool_value(fighter, stat_names):
+        """Sum total_<stat> from fighter for a tuple of stat names."""
+        m = {"str": fighter.total_strength,
+             "agi": fighter.total_agility,
+             "vit": fighter.total_vitality}
+        return sum(m[s] for s in stat_names)
 
     def _build_upgrade_comparison_card(self, item, fighter, engine):
-        """Build and return the stat comparison BaseCard for an upgrade screen."""
-        slot = item.get("slot", "weapon")
-        is_relic = (slot == "relic")
+        """Build the stat-comparison BaseCard for an upgrade screen.
+
+        Driven entirely by the SlotDef registry — per-slot branching collapses
+        into a loop over slot.upgrade_targets.
+        """
+        slot_id = item.get("slot", "weapon")
+        slot_def = SLOTS.get(slot_id)
+        if slot_def is None:
+            # Non-equipment fallback (shouldn't reach the upgrade screen, but
+            # leave a safe path in case data drifts).
+            slot_def = SLOTS["weapon"]
+
+        is_relic = (slot_id == "relic")
         rcolor = RARITY_COLORS.get(item.get("rarity", "common"), TEXT_PRIMARY)
         current_lvl = item.get("upgrade_level", 0)
         max_lvl = get_max_upgrade(item)
-        base_val, stat_pair, stat_label, base_label = self._get_slot_upgrade_config(slot, item)
 
         num_rows = (12 if is_relic else 8) if fighter else 5
         comp_card = BC(
@@ -642,59 +807,82 @@ class ForgeScreen(BaseScreen):
                 height=dp(30),
             )
 
+        def _pool_display(stat_names):
+            return "+".join(s.upper() for s in stat_names)
+
         def _breakdown(pct, label_prefix):
+            # No fighter context → compact summary describing the formula.
             if not fighter:
-                if slot == "weapon":
-                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% (STR+AGI) → ATK", ACCENT_GREEN)
-                elif slot == "armor":
-                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% (AGI+VIT) → DEF", ACCENT_GREEN)
-                elif slot == "accessory":
-                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}% (VIT+STR)x5 → HP", ACCENT_GREEN)
-                elif is_relic:
-                    _info_row(f"{label_prefix} {t('bonus_label')}", f"{pct}%/3 → ATK+DEF+HP", ACCENT_GREEN)
+                for target in slot_def.upgrade_targets:
+                    pool = slot_def.pool_for(target)
+                    mult = slot_def.mult_for(target)
+                    mult_s = f"x{int(mult)}" if mult != 1.0 else ""
+                    div_s = f"/{slot_def.split_divisor}" if slot_def.split_divisor > 1 else ""
+                    target_label = self._TARGET_LABELS.get(target, target.upper())
+                    if is_relic:
+                        # Compact single-line summary for relics (they list all 3).
+                        _info_row(
+                            f"{label_prefix} {t('bonus_label')}",
+                            f"{pct}%{div_s} → ATK+DEF+HP",
+                            ACCENT_GREEN,
+                        )
+                        return
+                    _info_row(
+                        f"{label_prefix} {t('bonus_label')}",
+                        f"{pct}% ({_pool_display(pool)}){mult_s} → {target_label}",
+                        ACCENT_GREEN,
+                    )
                 return
 
-            if slot == "weapon":
-                pair_val = fighter.total_strength + fighter.total_agility
-                bonus = int(pair_val * pct / 100)
-                _info_row(f"{label_prefix} ({pct}% STR+AGI)", f"+{bonus} ATK", ACCENT_GREEN)
-                _info_row(f"{t('total_label')} ATK", fighter.attack, ACCENT_GOLD)
-            elif slot == "armor":
-                pair_val = fighter.total_agility + fighter.total_vitality
-                bonus = int(pair_val * pct / 100)
-                _info_row(f"{label_prefix} ({pct}% AGI+VIT)", f"+{bonus} DEF", ACCENT_GREEN)
-                _info_row(f"{t('total_label')} DEF", fighter.defense, ACCENT_GOLD)
-            elif slot == "accessory":
-                pair_val = fighter.total_vitality + fighter.total_strength
-                bonus = int(pair_val * pct / 100 * 5)
-                _info_row(f"{label_prefix} ({pct}% VIT+STR x5)", f"+{bonus} HP", ACCENT_GREEN)
-                _info_row(f"{t('total_label')} HP", fighter.max_hp, ACCENT_GOLD)
-            elif is_relic:
-                sa = fighter.total_strength + fighter.total_agility
-                av = fighter.total_agility + fighter.total_vitality
-                vs = fighter.total_vitality + fighter.total_strength
-                atk_b = int(sa * pct / 100) // 3
-                def_b = int(av * pct / 100) // 3
-                hp_b = int(vs * pct / 100 * 5) // 3
-                _info_row(f"{label_prefix} ATK ({pct}%/3)", f"+{atk_b}", ACCENT_GREEN)
-                _info_row(f"{label_prefix} DEF ({pct}%/3)", f"+{def_b}", ACCENT_GREEN)
-                _info_row(f"{label_prefix} HP ({pct}%x5/3)", f"+{hp_b}", ACCENT_GREEN)
+            # Fighter context → show pool value, computed bonus, running total.
+            for target in slot_def.upgrade_targets:
+                pool = slot_def.pool_for(target)
+                mult = slot_def.mult_for(target)
+                pair_val = self._fighter_pool_value(fighter, pool)
+                bonus = int(pair_val * pct / 100 * mult) // slot_def.split_divisor
+                mult_s = f" x{int(mult)}" if mult != 1.0 else ""
+                div_s = f"/{slot_def.split_divisor}" if slot_def.split_divisor > 1 else ""
+                target_label = self._TARGET_LABELS.get(target, target.upper())
+                if is_relic:
+                    _info_row(
+                        f"{label_prefix} {target_label} ({pct}%{div_s})",
+                        f"+{bonus}",
+                        ACCENT_GREEN,
+                    )
+                else:
+                    _info_row(
+                        f"{label_prefix} ({pct}% {_pool_display(pool)}{mult_s})",
+                        f"+{bonus} {target_label}",
+                        ACCENT_GREEN,
+                    )
+                    _info_row(
+                        f"{t('total_label')} {target_label}",
+                        self._fighter_target_total(fighter, target),
+                        ACCENT_GOLD,
+                    )
 
-        if fighter and slot == "weapon":
+        # Context rows above the breakdown.
+        if fighter and slot_id == "weapon":
             _info_row(f"STR ({fighter.total_strength}) x2", fighter.total_strength * 2, ACCENT_RED)
             _info_row("STR+AGI", f"{fighter.total_strength}+{fighter.total_agility}={fighter.total_strength + fighter.total_agility}", TEXT_SECONDARY)
-        elif fighter and slot == "armor":
+        elif fighter and slot_id == "armor":
             _info_row("AGI+VIT", f"{fighter.total_agility}+{fighter.total_vitality}={fighter.total_agility + fighter.total_vitality}", TEXT_SECONDARY)
-        elif fighter and slot == "accessory":
+        elif fighter and slot_id == "accessory":
             _info_row("VIT+STR", f"{fighter.total_vitality}+{fighter.total_strength}={fighter.total_vitality + fighter.total_strength}", TEXT_SECONDARY)
+
+        base_label_key = slot_def.label_keys.get("base", "")
+        base_label = t(base_label_key) if base_label_key else ""
         if is_relic:
             # Relics provide STR/AGI/VIT (not flat ATK/DEF/HP). These feed into
-            # all three final stats via weapon_upgrade_atk / armor_upgrade_def /
-            # accessory_upgrade_hp formulas.
+            # all three final stats via the upgrade formulas.
             _info_row(t("relic_base"),
                       f"STR+{item.get('str',0)} AGI+{item.get('agi',0)} VIT+{item.get('vit',0)}",
                       TEXT_PRIMARY)
         else:
+            # Non-relic items have a primary stat matching their target.
+            # weapon→STR, armor→AGI, accessory→VIT
+            primary_stat_map = {"weapon": "str", "armor": "agi", "accessory": "vit"}
+            base_val = item.get(primary_stat_map.get(slot_id, "str"), 0)
             _info_row(base_label, f"+{base_val}", TEXT_PRIMARY)
         _breakdown(current_lvl * UPGRADE_BONUS_PER_LEVEL, f"+{current_lvl}")
 
@@ -706,8 +894,7 @@ class ForgeScreen(BaseScreen):
             ))
             _breakdown(next_lvl * UPGRADE_BONUS_PER_LEVEL, f"+{next_lvl}")
             tier, count = get_upgrade_tier(next_lvl)
-            if is_relic:
-                count *= 10
+            count *= slot_def.shard_multiplier
             have = engine.shards.get(tier, 0)
             cost_text = f"{count}x {t('shard_tier_' + str(tier) + '_name')}"
             _info_row(t("cost_label"),
@@ -733,7 +920,7 @@ class ForgeScreen(BaseScreen):
         """Separate enchantment tab for a weapon item."""
         from kivy.uix.label import Label
         self._enter_detail_mode()
-        self.enchant_active = True
+        self._set_view("enchant")
         self._enchant_source = source
         self._enchant_idx = idx
         self._enchant_item = item
@@ -794,8 +981,11 @@ class ForgeScreen(BaseScreen):
             bind_text_wrap(ench_name_lbl)
             card.add_widget(ench_name_lbl)
 
-            # Description
-            desc = ench_data.get("description", "")
+            # Description (localized via enchant_desc_<id>; fallback to JSON)
+            loc_desc_key = f"enchant_desc_{ench_id}"
+            desc = t(loc_desc_key)
+            if desc == loc_desc_key:
+                desc = ench_data.get("description", "")
             if desc:
                 desc_lbl = Label(
                     text=desc, font_size="11sp", font_name='PixelFont', color=TEXT_MUTED,
@@ -852,7 +1042,7 @@ class ForgeScreen(BaseScreen):
 
     def _close_enchant_view(self):
         """Close enchantment view and return to item detail."""
-        self.enchant_active = False
+        # _set_view will be called by the detail show method we re-enter.
         source = self._enchant_source or "inv"
         idx = self._enchant_idx if self._enchant_idx is not None else -1
         item = self._enchant_item
@@ -862,31 +1052,25 @@ class ForgeScreen(BaseScreen):
             self._show_equipped_detail(idx, item)
 
     def _show_item_upgrade(self, source, idx, item, fighter=None):
-        """Universal upgrade/enchant comparison screen for weapon/armor/accessory."""
+        """Universal upgrade screen for any equipment slot."""
         self._enter_detail_mode()
-        self.weapon_upgrade_active = True
+        self._set_view("upgrade")
         grid = self.ids.get("forge_grid")
         if not grid:
             return
         _safe_clear(grid)
         engine = App.get_running_app().engine
-        slot = item.get("slot", "weapon")
+        slot_id = item.get("slot", "weapon")
+        slot_def = SLOTS.get(slot_id)
         current_lvl = item.get("upgrade_level", 0)
         max_lvl = get_max_upgrade(item)
-
-        def _back(*a):
-            self.weapon_upgrade_active = False
-            if source == "inv":
-                self._show_inv_detail(idx)
-            else:
-                self._show_equipped_detail(idx, item)
 
         grid.add_widget(self._build_upgrade_comparison_card(item, fighter, engine))
 
         if current_lvl < max_lvl:
             tier, count = get_upgrade_tier(current_lvl + 1)
-            if slot == "relic":
-                count *= 10
+            if slot_def is not None:
+                count *= slot_def.shard_multiplier
             have = engine.shards.get(tier, 0)
             can_upgrade = have >= count
             upg_btn = MinimalButton(
@@ -909,6 +1093,8 @@ class ForgeScreen(BaseScreen):
         """Detail view for an item currently equipped on a fighter."""
         self._enter_detail_mode()
         self.eq_detail_fighter = fighter_idx
+        self.eq_detail_slot = item.get("slot", "")
+        self._set_view("equipped_detail")
         sv = self.ids.get("forge_scroll")
         if sv:
             sv.scroll_y = 1
@@ -944,16 +1130,23 @@ class ForgeScreen(BaseScreen):
             self.eq_detail_slot = ""
             # Find item in inventory to show its detail
             inv = engine.inventory
+            found_idx = -1
             for idx, it in enumerate(inv):
                 if it.get("name") == item.get("name") and it.get("slot") == s:
-                    self.inv_detail_idx = idx
+                    found_idx = idx
                     break
+            if found_idx >= 0:
+                self.inv_detail_idx = found_idx
+                self._set_view("inventory_detail")
+            else:
+                self._set_view("inventory_list")
             self.refresh_forge()
         unequip_btn.bind(on_press=_unequip)
         grid.add_widget(unequip_btn)
 
-        # Upgradable items: IMPROVE button
-        if item.get("slot") in ("weapon", "armor", "accessory", "relic"):
+        slot_def = SLOTS.get(slot)
+        # Upgradable items: IMPROVE button (any equipment slot)
+        if slot_def is not None:
             improve_btn = MinimalButton(
                 text=t("improve_btn"), font_size=11,
                 btn_color=ACCENT_BLUE, text_color=TEXT_PRIMARY,
@@ -962,8 +1155,8 @@ class ForgeScreen(BaseScreen):
             improve_btn.bind(on_press=lambda *a: self._show_item_upgrade("equip", fighter_idx, item, f))
             grid.add_widget(improve_btn)
 
-        # Weapon enchantment button
-        if item.get("slot") == "weapon":
+        # Enchant button — slot registry decides eligibility
+        if slot_def is not None and slot_def.can_enchant:
             enchant_btn = MinimalButton(
                 text=t("tab_enchant"), font_size=11,
                 btn_color=ACCENT_PURPLE, text_color=TEXT_PRIMARY,
@@ -973,44 +1166,161 @@ class ForgeScreen(BaseScreen):
             grid.add_widget(enchant_btn)
 
     def _show_equip_fighter_popup(self, inv_idx, item):
-        engine = App.get_running_app().engine
-        alive = [(i, f) for i, f in enumerate(engine.fighters)
-                 if f.available]
+        """Pick a fighter to equip `item` on.
+
+        Two fast paths bypass the popup entirely:
+          1. `app.pending_equip_target_idx` is set — user navigated here
+             from an empty slot on a specific fighter's Squad page. We
+             equip on that fighter AND navigate back to their Squad detail
+             so Back behaves naturally ("fill slot → see fighter with the
+             new item"). If they wanted to keep browsing inventory, they
+             would have opened the forge directly rather than tapping an
+             empty slot.
+          2. Roster has only one available fighter — the picker has one
+             option anyway. Stay in the forge inventory in this case,
+             user explicitly came through the forge.
+
+        Otherwise build a TouchRecycleView inside the popup so 1000-fighter
+        rosters open instantly (was 1-2 s for 1000 MinimalButtons).
+        """
+        from kivy.uix.recyclelayout import RecycleLayout  # noqa: F401  (viewclass reg)
+        from kivy.uix.recycleboxlayout import RecycleBoxLayout
+        from game.widgets import TouchRecycleView
+        from game.ui_helpers import _equip_choice_callbacks, FighterEquipChoiceView  # noqa: F401
+        from kivy.metrics import dp as _dp
+
+        app = App.get_running_app()
+        engine = app.engine
+        alive = [(i, f) for i, f in enumerate(engine.fighters) if f.available]
         if not alive:
-            App.get_running_app().show_toast(t("no_fighters"))
+            app.show_toast(t("no_fighters"))
             return
 
-        content = BoxLayout(orientation="vertical", spacing=dp(8), padding=dp(12))
+        # Fast path 1: user came from an empty-slot tap on Squad.
+        pending = getattr(app, 'pending_equip_target_idx', -1)
+        app.pending_equip_target_idx = -1  # one-shot, always clear
+        if 0 <= pending < len(engine.fighters):
+            target = engine.fighters[pending]
+            if target.available:
+                self._equip_and_return_to_roster(pending, inv_idx)
+                return
+
+        # Fast path 2: single fighter — no picker needed.
+        if len(alive) == 1:
+            self._equip_and_refresh(alive[0][0], inv_idx)
+            return
+
+        # Build the picker via RecycleView — only visible rows materialize.
+        popup_box = BoxLayout(orientation="vertical", spacing=dp(4),
+                              padding=dp(8))
+        rv = TouchRecycleView(
+            viewclass='FighterEquipChoiceView',
+            bar_width=2, bar_color=TEXT_MUTED,
+            do_scroll_x=False, scroll_type=['bars', 'content'],
+            scroll_distance=_dp(8), scroll_timeout=50,
+        )
+        rbl = RecycleBoxLayout(
+            default_size=(None, _dp(50)),
+            default_size_hint=(1, None),
+            size_hint_y=None, orientation='vertical',
+            spacing=_dp(4), padding=[_dp(4), _dp(4)],
+        )
+        rbl.bind(minimum_height=rbl.setter('height'))
+        rv.add_widget(rbl)
+        slot = item.get("slot", "weapon")
+        rv.data = [
+            {
+                'fi': fi,
+                'text': f"{f.name}  [{(f.equipment.get(slot) or {}).get('name', '—')}]",
+            }
+            for fi, f in alive
+        ]
+        popup_box.add_widget(rv)
+
+        # Clamp popup to screen — for big rosters it doesn't blow past the
+        # top/bottom of the window.
+        from kivy.core.window import Window
+        rows_h = dp(50 + 4) * min(len(alive), 10)
+        popup_h = min(Window.height * 0.85, dp(80) + rows_h)
         popup = Popup(
             title=f"{t('equip_btn')}: {item_display_name(item)}",
             title_color=popup_color(ACCENT_GOLD),
             title_size=sp(11),
-            content=content,
+            content=popup_box,
             size_hint=(0.85, None),
-            height=dp(80 + len(alive) * 54),
+            height=popup_h,
             background_color=popup_color(BG_CARD),
             separator_color=popup_color(ACCENT_GOLD),
             auto_dismiss=True,
         )
-        for fi, f in alive:
-            cur = f.equipment.get(item.get("slot", "weapon"))
-            cur_name = cur.get("name", "—") if cur else "—"
-            btn = MinimalButton(
-                text=f"{f.name}  [{cur_name}]",
-                font_size=11,
-                btn_color=BTN_PRIMARY,
-            )
-            def _do_equip(inst, fidx=fi):
-                if engine.battle_active:
-                    App.get_running_app().show_toast(t("not_in_battle"))
-                    return
-                engine.equip_from_inventory(fidx, inv_idx)
-                popup.dismiss()
-                self.inv_detail_idx = -1
-                self.refresh_forge()
-            btn.bind(on_press=_do_equip)
-            content.add_widget(btn)
+
+        # Wire the picker callback once per popup-open.
+        def _pick(fidx):
+            if engine.battle_active:
+                app.show_toast(t("not_in_battle"))
+                return
+            popup.dismiss()
+            self._equip_and_refresh(fidx, inv_idx)
+        _equip_choice_callbacks['pick'] = _pick
         popup.open()
+
+    def _equip_and_refresh(self, fighter_idx, inv_idx):
+        """Equip the inventory item onto a specific fighter + refresh view."""
+        engine = App.get_running_app().engine
+        if engine.battle_active:
+            App.get_running_app().show_toast(t("not_in_battle"))
+            return
+        engine.equip_from_inventory(fighter_idx, inv_idx)
+        self.inv_detail_idx = -1
+        self._set_view("inventory_list")
+        self.refresh_forge()
+
+    def _equip_and_return_to_roster(self, fighter_idx, inv_idx):
+        """Equip and navigate back to the fighter's Squad detail.
+
+        Used for the empty-slot → inventory → equip flow. The user started
+        on Squad; going forward to the forge pushed ("roster", ...) onto
+        the nav history, then coming back to Roster would normally push
+        ("forge", ...) on top — so Back would take the user INTO the forge
+        instead of to the roster list.
+
+        Fix: treat this as a Back action rather than forward navigation.
+        Pop the stale ("roster", ...) frame that's already on top of the
+        history (that's where we came from), and set _going_back so the
+        upcoming screen change doesn't append a new frame. Net result:
+        one Back from the Squad detail unwinds to whatever was before the
+        user entered roster — exactly what a user who'd pressed Back from
+        Forge → Roster detail would expect.
+        """
+        app = App.get_running_app()
+        engine = app.engine
+        if engine.battle_active:
+            app.show_toast(t("not_in_battle"))
+            return
+        engine.equip_from_inventory(fighter_idx, inv_idx)
+        # Reset forge UI state so when user enters the forge later they
+        # land on the shop, not on a stale inventory-detail view.
+        self.inv_detail_idx = -1
+        self._set_view("shop")
+
+        # Nav-history cleanup: drop the ("roster", ...) frame we pushed
+        # when entering the forge, and mark the incoming screen change as
+        # a back-step so it doesn't push ("forge", ...).
+        history = getattr(app, '_nav_history', None)
+        if history and history[-1][0] == "roster":
+            history.pop()
+        app._going_back = True
+
+        roster = app.sm.get_screen("roster")
+        # `_return_to_list` tells Roster.on_enter that Back should unwind
+        # to the roster list (not to whatever is below Roster in nav
+        # history). Without this, Back from the fighter detail skips over
+        # the list and lands on Arena/Pit.
+        roster._pending_state = {
+            'detail_index': fighter_idx,
+            '_return_to_list': True,
+        }
+        app.sm.current = "roster"
 
     def buy(self, item_id):
         app = App.get_running_app()

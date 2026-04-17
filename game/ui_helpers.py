@@ -1,4 +1,4 @@
-# Build: 47
+# Build: 55
 """Dynamic UI builders for all screens — minimalist CardWidget style."""
 
 import time
@@ -16,6 +16,7 @@ from kivy.uix.popup import Popup
 from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
 from game.theme import *
 from game.models import RARITY_COLORS, fmt_num
+from game.slots import SLOTS
 from game.localization import t
 from game.constants import LOW_HP_THRESHOLD
 
@@ -406,6 +407,547 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
 
 
 # ============================================================
+#  ARENA UNIT CARD VIEW (RecycleView viewclass — fighters AND enemies)
+# ============================================================
+
+_arena_callbacks = {}
+"""Callbacks registered by ArenaScreen.on_enter.
+Keys:
+  'fighter_tap' → callable(roster_index: int)
+  'enemy_tap'   → callable(enemy_name: str)
+"""
+
+
+class ArenaUnitCardView(RecycleDataViewBehavior, CardWidget):
+    """One viewclass for both fighters and enemies in the arena.
+
+    Before this existed, ArenaScreen._refresh_battle_panels built a fresh
+    CardWidget per unit (10+ widgets each) every time count changed. With
+    dozens of fighters and enemies that was visibly laggy. RecycleView
+    keeps a small pool of these alive — only visible rows are real
+    widgets, regardless of total N.
+
+    Data dict shape (see _fighter_to_arena_data / _enemy_to_arena_data):
+      role:          "fighter" | "enemy"
+      index:         int — roster index for fighters, enemy list index for enemies
+      name:          str (used by arena flash/sprite lookup too)
+      alive:         bool
+      hp, max_hp:    int
+      level:         int | None
+      tier:          int
+      fighter_class: str (for GladiatorAvatar sprite)
+      skill_text:    str | None  (fighter-only, e.g. "RDY" / "3")
+    """
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault('orientation', 'horizontal')
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(84))
+        kwargs.setdefault('padding', [dp(8), dp(10)])
+        kwargs.setdefault('spacing', dp(6))
+        super().__init__(**kwargs)
+        self._role = 'fighter'
+        self._unit_name = ''
+        self._unit_index = 0
+
+        ROW_H = dp(56)
+
+        self._avatar = GladiatorAvatar(
+            fighter_class="mercenary",
+            accent_color=list(ACCENT_GREEN),
+            tier=1,
+            size_hint=(None, None),
+            width=dp(48), height=dp(52),
+        )
+        self._name_lbl = AutoShrinkLabel(
+            font_size="12sp", bold=True, color=list(TEXT_PRIMARY),
+            halign="left", size_hint_x=None, width=dp(130),
+            size_hint_y=None, height=ROW_H,
+        )
+        self._name_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        self._level_lbl = AutoShrinkLabel(
+            font_size="11sp", bold=True, color=list(ACCENT_GOLD),
+            halign="left", size_hint_x=None, width=dp(56),
+            size_hint_y=None, height=ROW_H,
+        )
+        self._level_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        # Skill badge — fighter-only; collapsed to width 0 when empty.
+        self._skill_badge = AutoShrinkLabel(
+            font_size="11sp", bold=True, color=list(TEXT_MUTED),
+            halign="center", size_hint_x=None, width=0,
+            size_hint_y=None, height=ROW_H, opacity=0,
+        )
+        self._skill_badge.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        self._spacer = Label(size_hint_x=1)
+        self._stat_box = BoxLayout(
+            orientation="horizontal", spacing=dp(2),
+            size_hint_x=None, width=dp(94),
+            size_hint_y=None, height=ROW_H,
+        )
+        self._hp_row = _icon_label(
+            "sprites/icons/ic_hp.png", 0, (1, 0.3, 0.3, 1),
+            font_size="11sp", height=ROW_H,
+        )
+        self._stat_box.add_widget(self._hp_row)
+
+        self.add_widget(self._avatar)
+        self.add_widget(self._name_lbl)
+        self.add_widget(self._level_lbl)
+        self.add_widget(self._skill_badge)
+        self.add_widget(self._spacer)
+        self.add_widget(self._stat_box)
+
+        _bind_long_tap(self, lambda w: self._on_tap())
+
+    # --- Exposed for ArenaScreen flash/sprite lookups ---
+    @property
+    def unit_name(self):
+        return self._unit_name
+
+    @property
+    def role(self):
+        return self._role
+
+    # Arena code reaches into ._bar for flash_hp_bar; expose the avatar too.
+    @property
+    def sprite_target(self):
+        return self._avatar
+
+    def _on_tap(self):
+        if self._role == 'fighter':
+            cb = _arena_callbacks.get('fighter_tap')
+            if cb:
+                cb(self._unit_index)
+        else:
+            cb = _arena_callbacks.get('enemy_tap')
+            if cb:
+                cb(self._unit_name)
+
+    def refresh_view_attrs(self, rv, index, data):
+        """Bind this pooled widget to a new unit row."""
+        role = data.get('role', 'fighter')
+        self._role = role
+        self._unit_index = data.get('index', 0)
+        self._unit_name = data.get('name', '')
+
+        alive = data.get('alive', True)
+        hp = max(0, data.get('hp', 0))
+        max_hp = data.get('max_hp', 1)
+        hp_pct = hp / max(1, max_hp)
+        is_low = hp_pct < LOW_HP_THRESHOLD
+
+        # Avatar (shared sprite path logic for both roles)
+        fc = data.get('fighter_class', 'mercenary') or 'mercenary'
+        self._avatar.fighter_class = fc
+        self._avatar.tier = data.get('tier', 1)
+        self._avatar.accent_color = list(
+            _CLASS_COLORS.get(fc, ACCENT_RED if role == 'enemy' else ACCENT_GREEN)
+        )
+        self._avatar.is_wounded = not alive or hp <= 0
+
+        # Card background/border depend on role + alive state.
+        if role == 'enemy':
+            self._bg_color.rgba = list(BG_CARD)
+            self._br_color.rgba = list(ACCENT_RED)
+            self._name_lbl.color = list(ACCENT_RED)
+        elif not alive or hp <= 0:
+            self._bg_color.rgba = (0.15, 0.08, 0.08, 1)
+            self._br_color.rgba = list(ACCENT_RED)
+            self._name_lbl.color = list(ACCENT_RED)
+        else:
+            self._bg_color.rgba = list(BG_CARD)
+            self._br_color.rgba = list(DIVIDER)
+            self._name_lbl.color = list(TEXT_PRIMARY)
+
+        self._name_lbl.text = data.get('name', '?')
+
+        lvl = data.get('level')
+        self._level_lbl.text = f"LV {lvl}" if lvl is not None else ""
+
+        # Skill badge — only fighters show it. width=0 for enemies collapses it.
+        skill_text = data.get('skill_text')
+        if role == 'fighter' and skill_text:
+            self._skill_badge.text = skill_text
+            self._skill_badge.color = list(ACCENT_CYAN if skill_text == "RDY" else TEXT_MUTED)
+            self._skill_badge.width = dp(40)
+            self._skill_badge.opacity = 1
+        else:
+            self._skill_badge.text = ""
+            self._skill_badge.width = 0
+            self._skill_badge.opacity = 0
+
+        self._hp_row.children[0].text = fmt_num(hp)
+        self._hp_row.children[0].color = list(ACCENT_RED) if is_low else (1, 0.3, 0.3, 1)
+        # Do NOT chain to super().refresh_view_attrs (same reason as RosterCardView).
+
+
+def _fighter_to_arena_data(fighter, roster_index, skill_text=None):
+    """Turn a Fighter into the dict shape ArenaUnitCardView expects."""
+    return {
+        'role': 'fighter',
+        'index': roster_index,
+        'name': fighter.name,
+        'alive': bool(fighter.alive and fighter.hp > 0),
+        'hp': max(0, fighter.hp),
+        'max_hp': fighter.max_hp,
+        'level': getattr(fighter, 'level', 1),
+        'tier': getattr(fighter, 'tier', 1),
+        'fighter_class': getattr(fighter, 'fighter_class', 'mercenary'),
+        'skill_text': skill_text,
+    }
+
+
+def _enemy_to_arena_data(enemy, enemy_index):
+    """Turn an Enemy into the dict shape ArenaUnitCardView expects."""
+    return {
+        'role': 'enemy',
+        'index': enemy_index,
+        'name': enemy.name,
+        'alive': enemy.hp > 0,
+        'hp': max(0, enemy.hp),
+        'max_hp': enemy.max_hp,
+        'level': getattr(enemy, 'level', None),
+        'tier': getattr(enemy, 'tier', 1),
+        'fighter_class': getattr(enemy, 'fighter_class', 'mercenary'),
+        'skill_text': None,
+    }
+
+
+def find_arena_view_by_name(rv, unit_name, role=None):
+    """Walk the RV layout manager's live views and return one matching name.
+
+    Used by ArenaScreen._flash_damage / _set_sprite_frame. Only visible
+    (on-screen) views are returned — off-screen units don't animate, which
+    is fine because the user can't see them anyway.
+    """
+    if rv is None:
+        return None
+    lm = getattr(rv, 'layout_manager', None)
+    if lm is None:
+        return None
+    for view in getattr(lm, 'children', []):
+        if not isinstance(view, ArenaUnitCardView):
+            continue
+        if view._unit_name != unit_name:
+            continue
+        if role is not None and view._role != role:
+            continue
+        return view
+    return None
+
+
+# ============================================================
+#  PERK TREE VIEW — heterogeneous RecycleView rows
+# ============================================================
+#
+# Before: RosterScreen._show_perk_tree cleared detail_grid and re-built up
+# to ~40 BaseCards + 6 MinimalButtons on every tier toggle and every perk
+# unlock. Each perk card had 3-4 dynamic property bindings. Visibly laggy
+# when the user flipped tiers open/closed.
+#
+# After: data-driven RecycleView with per-row viewclass. Three viewclass
+# types below; the RV's data list mixes them by setting the `viewclass`
+# key per row. Only visible rows are real widgets, and a tier toggle is
+# just a data-list rebuild (no widget allocation).
+
+_perk_callbacks = {}
+"""Registered by RosterScreen.on_enter.
+Keys:
+  'toggle_tier' → callable(tier_key, fighter_idx)
+  'unlock'      → callable(perk_id, fighter_idx)
+"""
+
+
+class PerkTreeLabelView(RecycleDataViewBehavior, AutoShrinkLabel):
+    """Heading/subheading row — class title, perk points line, section header.
+
+    The RV gives this a fixed height from data; we just update text + color.
+    """
+    def __init__(self, **kwargs):
+        kwargs.setdefault('halign', 'center')
+        kwargs.setdefault('size_hint_y', None)
+        super().__init__(**kwargs)
+
+    def refresh_view_attrs(self, rv, index, data):
+        self.text = data.get('text', '')
+        self.halign = data.get('halign', 'center')
+        self.bold = bool(data.get('bold', False))
+        self.color = list(data.get('color', TEXT_MUTED))
+        fs = data.get('font_size', '10sp')
+        # AutoShrinkLabel resets _base_font_size whenever font_size is
+        # assigned, so this is safe to call on every rebind.
+        self.font_size = fs
+        self.height = data.get('height', dp(30))
+
+
+class PerkTreeTierButtonView(RecycleDataViewBehavior, MinimalButton):
+    """Tier toggle button — arrow + "Tier N (X/Y)". Tapping flips expand state."""
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault('btn_color', list(ACCENT_CYAN))
+        kwargs.setdefault('text_color', list(BG_DARK))
+        kwargs.setdefault('font_size', 11)
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(30))
+        super().__init__(**kwargs)
+        self._tier_key = ''
+        self._fighter_idx = -1
+        self.bind(on_press=lambda *a: self._on_toggle())
+
+    def _on_toggle(self):
+        cb = _perk_callbacks.get('toggle_tier')
+        if cb and self._tier_key:
+            cb(self._tier_key, self._fighter_idx)
+
+    def refresh_view_attrs(self, rv, index, data):
+        self._tier_key = data.get('tier_key', '')
+        self._fighter_idx = data.get('fighter_idx', -1)
+        self.text = data.get('text', '')
+        self.height = data.get('height', dp(30))
+
+
+class PerkTreePerkCardView(RecycleDataViewBehavior, BoxLayout):
+    """One perk card with name, description, and (if locked) an unlock button.
+
+    Height is fixed per row (caller picks via data['height']). Descriptions
+    that overflow the card will clip at valign=top rather than push the
+    card taller — avoids the dynamic-measure dance of the old GridLayout
+    code, which was the main source of perk-tree lag.
+    """
+
+    def __init__(self, **kwargs):
+        from kivy.uix.label import Label
+        from kivy.graphics import Color, Line
+        kwargs.setdefault('orientation', 'vertical')
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(110))
+        kwargs.setdefault('padding', [dp(10), dp(6)])
+        kwargs.setdefault('spacing', dp(2))
+        super().__init__(**kwargs)
+        self._perk_id = ''
+        self._fighter_idx = -1
+
+        # Border — thin line around the card. We update the Color per row
+        # (locked/unlockable/unlocked).
+        with self.canvas.before:
+            self._bg_color = Color(*BG_CARD)
+            self._bg_rect = _RRect = None  # placeholder, assigned via graphics below
+            # We'll use a simple Rectangle via canvas.after for the border.
+        # Use a Kivy Line instruction for the 1px border; recolored per state.
+        with self.canvas.after:
+            self._border_color = Color(*BTN_DISABLED)
+            self._border_line = Line(rectangle=[0, 0, 1, 1], width=1.0)
+        self.bind(pos=self._sync_canvas, size=self._sync_canvas)
+
+        self._name_lbl = AutoShrinkLabel(
+            font_size="10sp", bold=True, color=list(TEXT_PRIMARY),
+            halign="left", size_hint_y=None, height=dp(22),
+        )
+        bind_text_wrap(self._name_lbl)
+        self._desc_lbl = Label(
+            font_size="11sp", font_name='PixelFont', color=list(TEXT_MUTED),
+            halign="left", valign="top", size_hint_y=None,
+        )
+        # Description wraps to width but is clipped by card height; no
+        # height→card-height propagation (that was the perf hit).
+        self._desc_lbl.bind(width=lambda inst, w: setattr(inst, "text_size",
+                                                           (w - dp(20), None)))
+        # Anchor description height to 50% of the remaining card space; this
+        # is recomputed in refresh_view_attrs whenever the card height changes.
+        self._desc_lbl.height = dp(50)
+
+        self._btn = MinimalButton(
+            text="", font_size=11, size_hint_y=None, height=dp(28),
+        )
+        self._btn.bind(on_press=lambda *a: self._on_unlock())
+
+        self.add_widget(self._name_lbl)
+        self.add_widget(self._desc_lbl)
+        self.add_widget(self._btn)
+        self._btn_visible = True  # tracks whether button is currently in the layout
+
+    def _sync_canvas(self, *args):
+        # Background rect
+        if self.canvas.before.children:
+            # Border line follows current rect
+            pass
+        self._border_line.rectangle = [self.x, self.y, self.width, self.height]
+
+    def _on_unlock(self):
+        cb = _perk_callbacks.get('unlock')
+        if cb and self._perk_id:
+            cb(self._perk_id, self._fighter_idx)
+
+    def refresh_view_attrs(self, rv, index, data):
+        self._perk_id = data.get('perk_id', '')
+        self._fighter_idx = data.get('fighter_idx', -1)
+        self.height = data.get('height', dp(110))
+
+        state = data.get('state', 'locked')  # 'unlocked' | 'can_unlock' | 'locked'
+        if state == 'unlocked':
+            border = ACCENT_GOLD
+            name_color = ACCENT_GOLD
+        elif state == 'can_unlock':
+            border = ACCENT_CYAN
+            name_color = TEXT_PRIMARY
+        else:
+            border = BTN_DISABLED
+            name_color = TEXT_MUTED
+        self._border_color.rgba = list(border)
+
+        self._name_lbl.text = data.get('name', '')
+        self._name_lbl.color = list(name_color)
+        self._desc_lbl.text = data.get('desc', '')
+        self._desc_lbl.height = max(dp(24), self.height - dp(60))
+
+        # Button swap: visible only for locked/can_unlock rows.
+        should_show_btn = state != 'unlocked'
+        if should_show_btn and not self._btn_visible:
+            self.add_widget(self._btn)
+            self._btn_visible = True
+        elif not should_show_btn and self._btn_visible:
+            self.remove_widget(self._btn)
+            self._btn_visible = False
+
+        if should_show_btn:
+            self._btn.text = data.get('btn_text', '')
+            can_unlock = state == 'can_unlock'
+            self._btn.btn_color = list(ACCENT_CYAN if can_unlock else BTN_DISABLED)
+            self._btn.text_color = list(BG_DARK if can_unlock else TEXT_MUTED)
+
+
+class BattleDetailLineView(RecycleDataViewBehavior, Label):
+    """One colorized log line inside a battle-detail view.
+
+    Plain Kivy Label (NOT AutoShrinkLabel) — on-device profiling showed
+    AutoShrinkLabel's on_text→font_size→_check_fit cascade re-ran for
+    each row on every layout pass and each rv.data assignment. For the
+    1500-line cap of a 1000-vs-1000 log that was seconds of main-thread
+    work. Log lines are fixed-width, single-line, no shrink needed —
+    plain Label is correct.
+
+    Before (thousands of AutoShrinkLabels in GridLayout): seconds of lag.
+    After (pooled RV + plain Label): just the colour/text reassignment
+    on ~20 visible rows per layout pass.
+    """
+
+    # Pre-allocated colour lists — avoid building a new list every row.
+    _COLOR_CRIT    = list(ACCENT_GOLD)
+    _COLOR_DODGE   = list(ACCENT_CYAN)
+    _COLOR_KILL    = list(ACCENT_RED)
+    _COLOR_VICTORY = list(ACCENT_GREEN)
+    _COLOR_STATUS  = list(ACCENT_PURPLE)
+    _COLOR_DEFAULT = list(TEXT_SECONDARY)
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault('font_size', '11sp')
+        kwargs.setdefault('halign', 'left')
+        kwargs.setdefault('valign', 'middle')
+        kwargs.setdefault('font_name', 'PixelFont')
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(18))
+        # Clip overflow rather than wrap — keeps height stable at dp(18).
+        kwargs.setdefault('shorten', True)
+        super().__init__(**kwargs)
+        # Bind text_size to self.size so halign actually works.
+        self.bind(size=lambda w, s: setattr(w, 'text_size', s))
+
+    def refresh_view_attrs(self, rv, index, data):
+        line = data.get('text', '') or ''
+        self.text = line
+        # Explicit colour wins (used for the two header rows).
+        explicit = data.get('color')
+        if explicit is not None:
+            self.color = list(explicit)
+            self.height = data.get('height', dp(18))
+            self.bold = bool(data.get('bold', False))
+            self.font_size = data.get('font_size', '11sp')
+            return
+        # Keyword scan picks a pre-allocated colour list — no per-call
+        # `list(CONST)` allocations.
+        if "CRIT" in line:
+            self.color = self._COLOR_CRIT
+        elif "DODGE" in line:
+            self.color = self._COLOR_DODGE
+        elif "KILL" in line or "FALLEN" in line or "DEFEAT" in line:
+            self.color = self._COLOR_KILL
+        elif "VICTORY" in line:
+            self.color = self._COLOR_VICTORY
+        elif "POISON" in line or "BLEED" in line or "BURN" in line:
+            self.color = self._COLOR_STATUS
+        else:
+            self.color = self._COLOR_DEFAULT
+        # Height/font/bold are the same for the vast majority of rows —
+        # only assign if they differ from current, to skip redundant
+        # Kivy property dispatches.
+        h = data.get('height', dp(18))
+        if self.height != h:
+            self.height = h
+        fs = data.get('font_size', '11sp')
+        if self.font_size != fs:
+            self.font_size = fs
+        if self.bold:
+            self.bold = False
+
+
+_equip_choice_callbacks = {}
+"""Registered by ForgeScreen._show_equip_fighter_popup before open.
+Keys: 'pick' → callable(fighter_idx: int).
+"""
+
+
+class FighterEquipChoiceView(RecycleDataViewBehavior, MinimalButton):
+    """One button in the 'pick which fighter to equip' popup.
+
+    Lightweight wrapper over MinimalButton that gets recycled by a
+    RecycleView so we don't pay the canvas-setup cost per fighter.
+    Previous impl built 1000 MinimalButton instances up-front for a
+    1000-fighter roster — opening the popup took 1-2 seconds.
+    """
+    def __init__(self, **kwargs):
+        kwargs.setdefault('font_size', 11)
+        kwargs.setdefault('btn_color', list(BTN_PRIMARY))
+        kwargs.setdefault('size_hint_y', None)
+        kwargs.setdefault('height', dp(50))
+        super().__init__(**kwargs)
+        self._fi = -1
+        # Bind once in __init__; dispatch through the module-level callback
+        # table so the pool of recycled buttons doesn't each hold a back-ref
+        # to the popup.
+        self.bind(on_press=self._on_press)
+
+    def refresh_view_attrs(self, rv, index, data):
+        self._fi = data.get('fi', -1)
+        self.text = data.get('text', '')
+
+    def _on_press(self, *a):
+        cb = _equip_choice_callbacks.get('pick')
+        if cb is not None and self._fi >= 0:
+            cb(self._fi)
+
+
+def _measure_perk_card_height(description):
+    """Pick a fixed row height based on description length.
+
+    Cheap linear heuristic — errs on the side of taller cards so short
+    descriptions have breathing room and longer ones don't clip too hard.
+    Exact wrap depends on font/width, but for PressStart2P at 11sp the
+    ~40 chars-per-line estimate is close enough.
+    """
+    n = len(description or "")
+    if n <= 40:
+        lines = 1
+    elif n <= 100:
+        lines = 2
+    elif n <= 180:
+        lines = 3
+    else:
+        lines = 4
+    # name(22) + desc(lines*18) + btn(28) + padding/spacing(28) ≈
+    return dp(22 + lines * 18 + 28 + 28)
+
+
+# ============================================================
 #  ROSTER
 # ============================================================
 
@@ -496,7 +1038,7 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
     rcolor = RARITY_COLORS.get(rarity, TEXT_PRIMARY)
     slot = item.get("slot", "?")
 
-    display_name = item_display_name(item) if slot in ("weapon", "armor", "accessory", "relic") else item.get("name", "?")
+    display_name = item_display_name(item) if slot in SLOTS else item.get("name", "?")
     upgrade_lvl = item.get("upgrade_level", 0)
     level_display = f"+{upgrade_lvl}" if upgrade_lvl > 0 else ""
     ench = item.get("enchantment", "")
@@ -506,6 +1048,8 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
         ench_display = f"[{ench_data['name']}]" if ench_data else f"[{ench}]"
     if subtitle:
         slot_rarity = subtitle
+    elif slot in SLOTS:
+        slot_rarity = f"{t(SLOTS[slot].label_keys['upper'])} [{t('rarity_' + rarity + '_upper')}]"
     else:
         slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
     s, a, v = calc_item_stats(item, fighter)
@@ -986,7 +1530,19 @@ def refresh_forge_grid(forge_screen):
     # Prefer RecycleView — virtualizes to ~10 visible widgets
     rv = forge_screen.ids.get("forge_rv")
     if rv is not None:
-        rv.data = [_forge_item_to_rv_data(i, forge_screen) for i in items]
+        new_data = [_forge_item_to_rv_data(i, forge_screen) for i in items]
+        # Reported bug: navigating into Forge directly from Lore's
+        # blog_detail sometimes left the forge showing tabs but no items.
+        # Root cause: the blog_detail RV occupies the same layout
+        # scheduling queue; when Forge's on_enter fires right after, its
+        # rv.data assignment can collide with pending layout work and the
+        # RV pool fails to materialize the visible rows. Workaround: hard-
+        # reset the RV's pool by going through empty list first, then
+        # explicitly ask for a refresh. Cheap enough to do every time.
+        rv.data = []
+        rv.data = new_data
+        if hasattr(rv, 'refresh_from_data'):
+            rv.refresh_from_data()
         return
 
     # Legacy path: GridLayout with pre-built cached cards (all 130 in tree)
@@ -1537,10 +2093,22 @@ def _achievement_to_rv_data(ach):
 # ------------------------------------------------------------------
 
 class BattleLogCardView(RecycleDataViewBehavior, BoxLayout):
-    """Battle log entry — 78dp vertical BaseCard with 2 text rows."""
+    """Battle log entry — 78dp vertical BaseCard with 2 text rows.
+
+    Uses plain Kivy Label, NOT AutoShrinkLabel. AutoShrinkLabel's
+    on_text cascade (reset font_size → recompute texture → _check_fit
+    → maybe shrink → texture redraw) is catastrophic for huge strings
+    like "fighter1, fighter2, ..., fighter1000" (~10k chars) — Kivy
+    has to render the whole thing once before shrinking. For 20
+    visible rows × 2 such labels = 40 giant text renders per layout
+    pass. Plain Label with `shorten=True` clips at card width instead.
+    Name-list preview is also capped to 5 names + "+N" in the data
+    layer (_show_battle_log's _preview helper).
+    """
 
     def __init__(self, **kwargs):
         from game.widgets import BaseCard
+        from kivy.uix.label import Label as _Label
         kwargs.setdefault('orientation', 'vertical')
         kwargs.setdefault('size_hint_y', None)
         kwargs.setdefault('height', dp(78))
@@ -1553,39 +2121,38 @@ class BattleLogCardView(RecycleDataViewBehavior, BoxLayout):
             padding=[dp(8), dp(4)], spacing=dp(2),
         )
 
+        def _mk_label(size_hint_x, font_size, bold=False, color=TEXT_SECONDARY,
+                      halign="left"):
+            lbl = _Label(font_size=font_size, bold=bold,
+                         color=list(color), halign=halign, valign="middle",
+                         font_name='PixelFont',
+                         size_hint_x=size_hint_x, shorten=True,
+                         shorten_from='right')
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            return lbl
+
         # Row 1: [result] [tier] [gold] [time]
         row1 = BoxLayout(size_hint_y=0.5, spacing=dp(2))
-        self._result_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
-                                           halign="left", size_hint_x=0.35)
-        self._tier_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
-                                         color=list(ACCENT_GOLD),
-                                         halign="left", size_hint_x=0.12)
-        self._gold_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
-                                         color=list(ACCENT_GOLD),
-                                         halign="left", size_hint_x=0.23)
-        self._time_lbl = AutoShrinkLabel(font_size=sp(6),
-                                         color=list(TEXT_MUTED),
-                                         halign="right", size_hint_x=0.30)
+        self._result_lbl = _mk_label(0.35, sp(7), bold=True)
+        self._tier_lbl   = _mk_label(0.12, sp(7), bold=True, color=ACCENT_GOLD)
+        self._gold_lbl   = _mk_label(0.23, sp(7), bold=True, color=ACCENT_GOLD)
+        self._time_lbl   = _mk_label(0.30, sp(6),            color=TEXT_MUTED,
+                                      halign="right")
         for lbl in (self._result_lbl, self._tier_lbl,
                     self._gold_lbl, self._time_lbl):
-            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
             row1.add_widget(lbl)
         self._card.add_widget(row1)
 
-        # Row 2: fighters vs enemies
+        # Row 2: fighters vs enemies (names are pre-capped upstream)
         row2 = BoxLayout(size_hint_y=0.5, spacing=dp(2))
-        self._fighters_lbl = AutoShrinkLabel(font_size=sp(6),
-                                             color=list(TEXT_SECONDARY),
-                                             halign="left", size_hint_x=0.45)
-        self._vs_lbl = AutoShrinkLabel(text="vs", font_size=sp(6),
-                                       color=list(TEXT_MUTED),
-                                       halign="center", size_hint_x=0.10)
-        self._enemies_lbl = AutoShrinkLabel(font_size=sp(6),
-                                            color=list(TEXT_SECONDARY),
-                                            halign="left", size_hint_x=0.45)
-        for lbl in (self._fighters_lbl, self._vs_lbl, self._enemies_lbl):
-            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
-            row2.add_widget(lbl)
+        self._fighters_lbl = _mk_label(0.45, sp(6))
+        self._vs_lbl       = _mk_label(0.10, sp(6), color=TEXT_MUTED,
+                                        halign="center")
+        self._vs_lbl.text = "vs"
+        self._enemies_lbl  = _mk_label(0.45, sp(6))
+        row2.add_widget(self._fighters_lbl)
+        row2.add_widget(self._vs_lbl)
+        row2.add_widget(self._enemies_lbl)
         self._card.add_widget(row2)
         self.add_widget(self._card)
 
@@ -1611,10 +2178,16 @@ class BattleLogCardView(RecycleDataViewBehavior, BoxLayout):
 
 
 class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
-    """Event log entry — 48dp vertical BaseCard with 2 text rows."""
+    """Event log entry — 48dp vertical BaseCard with 2 text rows.
+
+    Plain Label with shorten=True (not AutoShrinkLabel) — same reason
+    as BattleLogCardView: AutoShrinkLabel's text-fit cascade is
+    expensive when strings are long.
+    """
 
     def __init__(self, **kwargs):
         from game.widgets import BaseCard
+        from kivy.uix.label import Label as _Label
         kwargs.setdefault('orientation', 'vertical')
         kwargs.setdefault('size_hint_y', None)
         kwargs.setdefault('height', dp(48))
@@ -1625,24 +2198,31 @@ class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
             padding=[dp(8), dp(4)], spacing=dp(1),
         )
 
+        def _mk(size_hint, font_size, bold=False, color=TEXT_SECONDARY,
+                halign="left"):
+            kw = dict(font_size=font_size, bold=bold, color=list(color),
+                       halign=halign, valign="middle",
+                       font_name='PixelFont', shorten=True,
+                       shorten_from='right')
+            if isinstance(size_hint, tuple):
+                kw['size_hint'] = size_hint
+            else:
+                kw['size_hint_x'] = size_hint
+            lbl = _Label(**kw)
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            return lbl
+
         # Row 1: label + time
         row1 = BoxLayout(size_hint_y=0.45, spacing=dp(2))
-        self._label_lbl = AutoShrinkLabel(font_size=sp(7), bold=True,
-                                          halign="left", size_hint_x=0.70)
-        self._time_lbl = AutoShrinkLabel(font_size=sp(6),
-                                         color=list(TEXT_MUTED),
-                                         halign="right", size_hint_x=0.30)
-        for lbl in (self._label_lbl, self._time_lbl):
-            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
-            row1.add_widget(lbl)
+        self._label_lbl = _mk(0.70, sp(7), bold=True)
+        self._time_lbl  = _mk(0.30, sp(6), color=TEXT_MUTED, halign="right")
+        row1.add_widget(self._label_lbl)
+        row1.add_widget(self._time_lbl)
         self._card.add_widget(row1)
 
         # Row 2: detail
-        self._detail_lbl = AutoShrinkLabel(
-            font_size=sp(6), color=list(TEXT_SECONDARY),
-            halign="left", size_hint_y=0.55,
-        )
-        self._detail_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        self._detail_lbl = _mk(None, sp(6))
+        self._detail_lbl.size_hint_y = 0.55
         self._card.add_widget(self._detail_lbl)
         self.add_widget(self._card)
 

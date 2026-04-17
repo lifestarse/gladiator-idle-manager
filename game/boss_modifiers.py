@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """Boss modifier effects — hooks into battle phases."""
 
 import random
@@ -6,6 +6,16 @@ from game.models import fmt_num
 from game.localization import t
 
 IMPLEMENTED_MODIFIERS = {"regeneration", "enrage", "thorns", "shield", "berserk"}
+
+# Which modifiers actually do work in each hook. Other modifiers on the
+# boss are no-ops in that hook, so we can skip iterating them. At 1000
+# fighters × 40 turns that's ~42k calls to on_boss_hit, each iterating 3
+# modifiers where 2 did nothing — 80k wasted dispatch checks before.
+_HOOK_MODIFIERS = {
+    "on_turn_start":       {"regeneration", "berserk"},
+    "on_boss_hit":         {"thorns", "shield"},
+    "on_boss_attack_pre":  {"enrage"},
+}
 
 
 class BossModifierHandler:
@@ -34,7 +44,10 @@ class BossModifierHandler:
         """Called each turn. Handles regeneration, berserk, shield countdown."""
         from game.battle import BattleEvent
         events = []
+        active_hooks = _HOOK_MODIFIERS["on_turn_start"]
         for mod_id in getattr(boss, 'modifiers', []):
+            if mod_id not in active_hooks:
+                continue
             mod = self._defs.get(mod_id)
             if not mod:
                 continue
@@ -74,7 +87,10 @@ class BossModifierHandler:
         """Called after fighter deals damage to boss. Handles thorns, shield."""
         from game.battle import BattleEvent
         events = []
+        active_hooks = _HOOK_MODIFIERS["on_boss_hit"]
         for mod_id in getattr(boss, 'modifiers', []):
+            if mod_id not in active_hooks:
+                continue  # regeneration/enrage/berserk don't fire on hit
             mod = self._defs.get(mod_id)
             if not mod:
                 continue
@@ -121,7 +137,10 @@ class BossModifierHandler:
     def on_boss_attack_pre(self, boss, tracker):
         """Called before boss damage roll. Returns stat overrides dict."""
         overrides = {}
+        active_hooks = _HOOK_MODIFIERS["on_boss_attack_pre"]
         for mod_id in getattr(boss, 'modifiers', []):
+            if mod_id not in active_hooks:
+                continue
             mod = self._defs.get(mod_id)
             if not mod:
                 continue

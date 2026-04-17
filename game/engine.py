@@ -1,4 +1,4 @@
-# Build: 52
+# Build: 57
 """Core game engine — roguelike manager with permadeath reset."""
 
 import json
@@ -17,8 +17,9 @@ from game.models import (
     get_upgrade_tier, item_display_name, get_max_upgrade,
     get_dynamic_shop_items, fmt_num, get_boss_name, Result,
 )
+from game.slots import SLOTS
 from game.localization import t, get_language, set_language
-from game.battle import BattleManager, BattlePhase
+from game.battle import BattleManager, BattlePhase, BattleResult
 from game.achievements import ACHIEVEMENTS, DIAMOND_SHOP, DIAMOND_BUNDLES, build_achievements_from_json
 import game.achievements as _ach_module
 from game.constants import (
@@ -29,20 +30,36 @@ from game.story import TUTORIAL_STEPS, STORY_CHAPTERS, get_pending_tutorial
 from game.data_loader import data_loader
 from game.mutators import mutator_registry
 
-def _get_save_path():
-    from kivy.utils import platform
+# --- Save schema ---
+CURRENT_SAVE_VERSION = 1
+# Migrations run sequentially: key N transforms schema version N → N+1.
+# Saves without "schema_version" are treated as version 0.
+_SAVE_MIGRATIONS = {
+    # 0: lambda d: d,   # placeholder for future schema bumps
+}
+
+
+def _default_save_path():
+    """Default save location. Kept lazy so engine.py can be imported headless.
+
+    Callers should pass save_path=... to GameEngine(__init__) in tests.
+    """
+    try:
+        from kivy.utils import platform
+    except ImportError:
+        return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
     if platform == "android":
         from android.storage import app_storage_path  # noqa
         return os.path.join(app_storage_path(), ".gladiator_idle_save.json")
     return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
 
-SAVE_PATH = _get_save_path()
-
 
 class GameEngine:
 
-    def __init__(self):
-        self.SAVE_PATH = SAVE_PATH  # instance-level, overridable for tests
+    def __init__(self, save_path=None):
+        # Allow callers (tests, headless sims) to override. Default is computed
+        # lazily so importing this module doesn't require Kivy.
+        self.SAVE_PATH = save_path if save_path is not None else _default_save_path()
         # --- Load data from JSON files ---
         data_loader.load_all()
         self._wire_data()
@@ -146,10 +163,15 @@ class GameEngine:
         """Override hardcoded module-level data in models.py with JSON data."""
         import game.models as m
         dl = data_loader
-        # Build O(1) lookup dict for _find_template (was O(130) linear scan)
+        # Build O(1) lookup dict for _find_template (was O(130) linear scan).
+        # Include relics too — without them, _migrate_item can't refresh
+        # relic names from the current JSON data, so any relic sitting in
+        # a legacy save keeps whatever name was baked in at save time.
+        # (That's how "Уголь Творения" was persisting in inventory even
+        # after item-name translations were turned off.)
         GameEngine._template_by_id = {i["id"]: i for i in (
-            dl.weapons + dl.armor + dl.accessories
-        )} if dl.weapons else {}
+            dl.weapons + dl.armor + dl.accessories + dl.relics
+        )} if (dl.weapons or dl.armor or dl.accessories or dl.relics) else {}
         if dl.fighter_names:
             m.FIGHTER_NAMES = dl.fighter_names
         if dl.weapons:
@@ -170,6 +192,9 @@ class GameEngine:
             m.ENCHANTMENT_TYPES = dl.enchantments
         if dl.fighter_classes:
             m.FIGHTER_CLASSES = dl.fighter_classes
+            # FIGHTER_CLASSES drives Fighter._get_all_perks_map; flush cache
+            # so perks from the new (possibly translated) data show up.
+            m.Fighter.invalidate_perks_map_cache()
         if dl.mutators:
             mutator_registry.load(list(dl.mutators.values()))
         if dl.expeditions:
@@ -479,15 +504,15 @@ class GameEngine:
         return events
 
     def battle_next_turn(self):
-        events = self.battle_mgr.do_turn()
+        events, result = self.battle_mgr.do_turn()
         self._collect_events(events)
-        self._post_battle_check()
+        self._post_battle_check(result)
         return events
 
     def battle_skip(self):
-        events = self.battle_mgr.do_full_battle()
+        events, result = self.battle_mgr.do_full_battle()
         self._collect_events(events)
-        self._post_battle_check()
+        self._post_battle_check(result)
         return events
 
     def _collect_events(self, events):
@@ -499,22 +524,24 @@ class GameEngine:
             if ev.message:
                 buf.append(ev.message)
 
-    def _post_battle_check(self):
+    def _post_battle_check(self, result):
         """After battle turn: check permadeath → roguelike reset.
-        Note: wins, arena_tier, gold, fighter.kills and HP reset are
-        already handled inside BattleManager.do_turn(). Here we only
-        update run-level stats and spawn next enemy."""
-        state = self.battle_mgr.state
-        if state.phase == BattlePhase.VICTORY:
-            if state.is_boss_fight:
+
+        Takes a BattleResult from BattleManager. Wins, arena_tier, gold,
+        fighter.kills and HP reset are already handled inside
+        BattleManager.do_turn(). Here we only update run-level stats and
+        spawn next enemy.
+        """
+        if result.outcome == "victory":
+            if result.is_boss:
                 self.bosses_killed += 1
                 self.check_t15_clear()
-            self.run_kills += len([e for e in state.enemies if e.hp <= 0])
+            self.run_kills += result.enemies_killed
             if self.arena_tier > self.run_max_tier:
                 self.run_max_tier = self.arena_tier
-            self._record_battle(state, "V")
+            self._record_battle(result, "V")
             # Clear revenge for the mode that was just won
-            if state.is_boss_fight:
+            if result.is_boss:
                 self._revenge_boss = []
             else:
                 self._revenge_common = []
@@ -523,20 +550,19 @@ class GameEngine:
             self._mark_dirty()
 
         # Check if all fighters are dead → roguelike reset
-        if state.phase == BattlePhase.DEFEAT:
-            self._record_battle(state, "D")
+        if result.outcome == "defeat":
+            self._record_battle(result, "D")
             # Revenge: surviving enemies carry over with their current HP
-            survivors = [e for e in state.enemies if e.hp > 0]
-            is_boss = state.is_boss_fight
+            survivors = result.survivors
             if survivors:
-                if is_boss:
+                if result.is_boss:
                     self._revenge_boss = survivors
                 else:
                     self._revenge_common = survivors
                 self.preview_enemies = survivors
                 self.current_enemy = survivors[0]
             else:
-                if is_boss:
+                if result.is_boss:
                     self._revenge_boss = []
                 else:
                     self._revenge_common = []
@@ -549,26 +575,38 @@ class GameEngine:
                 # Defer reset so UI can show defeat screen first
                 self._pending_reset = True
 
-    def _record_battle(self, state, result):
+    # Per-battle log retention. Was 500 head-only — which was useless for
+    # users because a 1000 vs 1000 battle generates 5-6k lines and the
+    # *interesting* stuff (who killed whom, victory/defeat, death cascade)
+    # lives at the END. Now we keep head + tail: first HEAD lines for the
+    # battle opening, last TAIL lines for the climax. Middle gets replaced
+    # by one truncation marker. User sees both ends of the fight.
+    MAX_BATTLE_LOG_LINES = 1500
+    BATTLE_LOG_HEAD = 750    # opening: setup, skill summaries, first blood
+    BATTLE_LOG_TAIL = 749    # climax: kills, deaths, victory/defeat
+    # (HEAD + 1 marker + TAIL = 1500, matches MAX_BATTLE_LOG_LINES)
+
+    def _record_battle(self, result, tag):
         """Append full battle log to persistent history."""
         messages = getattr(self, '_current_battle_messages', [])
+        messages = self._truncate_battle_lines(messages)
         self.battle_log.append({
             "t": int(time.time()),
             "tier": self.arena_tier,
-            "boss": state.is_boss_fight,
-            "r": result,
-            "g": state.gold_earned,
-            "turns": state.turn_number,
-            "f": [f.name for f in state.player_fighters],
-            "e": [e.name for e in state.enemies],
+            "boss": result.is_boss,
+            "r": tag,
+            "g": result.gold_earned,
+            "turns": result.turn_number,
+            "f": [f.name for f in result.player_fighters],
+            "e": [e.name for e in result.enemies],
             "log": messages,
         })
         self._current_battle_messages = []
         if len(self.battle_log) > 100:
             self.battle_log = self.battle_log[-100:]
-        r_label = "victory" if result == "V" else "defeat"
+        r_label = "victory" if tag == "V" else "defeat"
         self._log_event("battle", result=r_label, tier=self.arena_tier,
-                        boss=state.is_boss_fight, gold=state.gold_earned)
+                        boss=result.is_boss, gold=result.gold_earned)
 
     @property
     def battle_active(self):
@@ -874,8 +912,9 @@ class GameEngine:
             return Result(False, t("max_upgrade_reached"), "max_level")
         target = current + 1
         tier, count = get_upgrade_tier(target)
-        if item_dict.get("slot") == "relic":
-            count *= 10
+        slot_def = SLOTS.get(item_dict.get("slot"))
+        if slot_def:
+            count *= slot_def.shard_multiplier
         have = self.shards.get(tier, 0)
         if have < count:
             return Result(False, t("not_enough_shards", tier=tier, need=count, have=have), "not_enough_shards")
@@ -1288,19 +1327,50 @@ class GameEngine:
 
     # --- Save / Load ---
 
-    def save(self):
-        # Don't overwrite real save with fresh-start data after failed load
-        if getattr(self, '_load_failed', False):
-            print(f"[ENGINE] save() BLOCKED — load had failed")
-            return {}
-        # NOTE: _migrate_all_items is NOT called here. It replaces items in
-        # inventory/equipment with fresh dicts (dict(template) + preserved
-        # upgrade_level/enchantment). That detaches any open UI reference
-        # (e.g. the forge upgrade button holds `w=item` in its closure) —
-        # subsequent in-place upgrades then mutate a stale detached dict
-        # while save() writes the new dict from inventory, losing the
-        # latest change. Migration only happens on load().
-        data = {
+    def _truncate_battle_lines(self, messages):
+        """Apply HEAD + TAIL truncation to a battle's message list.
+
+        Previously we kept only the first MAX lines, which meant a player
+        who lost a 1000 vs 1000 fight on turn 44 saw only the opening
+        setup + first turn of attacks, never the actual death sequence.
+        Now: first BATTLE_LOG_HEAD lines + a marker + last BATTLE_LOG_TAIL
+        lines. Both ends of the battle survive.
+        """
+        n = len(messages)
+        if n <= self.MAX_BATTLE_LOG_LINES:
+            return list(messages) if not isinstance(messages, list) else messages
+        head = self.BATTLE_LOG_HEAD
+        tail = self.BATTLE_LOG_TAIL
+        dropped = n - head - tail
+        return (list(messages[:head])
+                + [f"... ({dropped} lines skipped — showing start and end of battle)"]
+                + list(messages[-tail:]))
+
+    def _trim_battle_log_entry(self, entry):
+        """Cap an in-memory battle log entry's line list.
+
+        Legacy entries stored before MAX_BATTLE_LOG_LINES was tightened (or
+        before head+tail) can still carry thousands of lines; this shrinks
+        them as they flow through a save. Idempotent — entries already at-
+        or-under the cap pass through untouched.
+        """
+        lines = entry.get("log") or []
+        if len(lines) <= self.MAX_BATTLE_LOG_LINES:
+            return entry
+        new_entry = dict(entry)
+        new_entry["log"] = self._truncate_battle_lines(lines)
+        return new_entry
+
+    def _build_save_data(self):
+        """Assemble the save-state dict. Main-thread-safe; no I/O.
+
+        Split out so `save` can serialize synchronously and `save_async`
+        can ship the dict off to a background thread for the expensive
+        JSON dump + disk write. Both paths must see an identical state
+        snapshot, so we eagerly flatten mutable structures here.
+        """
+        return {
+            "schema_version": CURRENT_SAVE_VERSION,
             "gold": self.gold,
             "active_fighter_idx": self.active_fighter_idx,
             "arena_tier": self.arena_tier,
@@ -1310,15 +1380,19 @@ class GameEngine:
             "graveyard": self.graveyard,
             "fighters": [f.to_dict() for f in self.fighters],
             "expedition_log": self.expedition_log[-20:],
-            "battle_log": self.battle_log[-200:],
+            # Shallow-copy each battle entry so a concurrent write to the
+            # original during a background save can't corrupt the snapshot.
+            # Also trims legacy oversize logs inline.
+            "battle_log": [
+                self._trim_battle_log_entry(entry)
+                for entry in self.battle_log[-200:]
+            ],
             "event_log": self.event_log[-200:],
             "surgeon_uses": self.surgeon_uses,
             "total_gold_earned": self.total_gold_earned,
-            # Run tracking
             "run_number": self.run_number,
             "run_kills": self.run_kills,
             "run_max_tier": self.run_max_tier,
-            # Persistent
             "best_record_tier": self.best_record_tier,
             "best_record_kills": self.best_record_kills,
             "total_runs": self.total_runs,
@@ -1336,7 +1410,6 @@ class GameEngine:
             "inventory": self.inventory,
             "shards": self.shards,
             "language": get_language(),
-            # Achievement counters
             "total_enchantments_applied": self.total_enchantments_applied,
             "total_enchantment_procs": self.total_enchantment_procs,
             "total_gold_spent_equipment": self.total_gold_spent_equipment,
@@ -1344,12 +1417,14 @@ class GameEngine:
             "total_expeditions_completed": self.total_expeditions_completed,
             "lore_unlocked": self.lore_unlocked,
         }
-        # Atomic write: save to temp file, then rename to avoid corruption
+
+    def _write_save_to_disk(self, data):
+        """Serialize `data` and atomically replace the save file. I/O only;
+        may be called from a background thread via save_async()."""
         save_path = self.SAVE_PATH
         tmp_path = save_path + ".tmp"
         with open(tmp_path, "w") as f:
             json.dump(data, f)
-        # Replace old save atomically
         if os.path.exists(save_path):
             backup_path = save_path + ".bak"
             try:
@@ -1359,7 +1434,113 @@ class GameEngine:
             except OSError:
                 pass
         os.rename(tmp_path, save_path)
+
+    def save(self):
+        # Don't overwrite real save with fresh-start data after failed load
+        if getattr(self, '_load_failed', False):
+            print(f"[ENGINE] save() BLOCKED — load had failed")
+            return {}
+        # NOTE: _migrate_all_items is NOT called here. It replaces items in
+        # inventory/equipment with fresh dicts (dict(template) + preserved
+        # upgrade_level/enchantment). That detaches any open UI reference
+        # (e.g. the forge upgrade button holds `w=item` in its closure) —
+        # subsequent in-place upgrades then mutate a stale detached dict
+        # while save() writes the new dict from inventory, losing the
+        # latest change. Migration only happens on load().
+        data = self._build_save_data()
+        self._write_save_to_disk(data)
         return data
+
+    # --- Async save state (class-level singletons; one save file per engine) ---
+    # Lock guards the pending slot AND the worker lifecycle. Single worker
+    # serializes all disk writes so two threads never race for the same
+    # .tmp file or rename target (which on Windows fails with WinError 32).
+    _save_async_lock = None           # threading.Lock; lazy-init
+    _save_async_pending = None        # (data_dict, on_done) | None
+    _save_async_worker = None         # threading.Thread | None
+
+    def save_async(self, on_done=None):
+        """Save without blocking the main thread.
+
+        Snapshot assembly (fighter.to_dict, list copies) still runs on the
+        caller's thread to avoid races with gameplay mutation, but the
+        expensive bit — JSON serialization + atomic file write — runs on a
+        daemon worker thread.
+
+        Coalescing: if the user triggers save_async() rapidly (e.g. bulk
+        IAP purchases), only the most recent snapshot is persisted. Older
+        pending snapshots are dropped before they hit disk — no point
+        writing state that's already stale, and it prevents the file-access
+        collisions we saw when each call spawned its own thread.
+
+        `on_done(ok)` (optional) is invoked on the worker thread when the
+        write this particular call was queued for completes. If the call
+        was coalesced away by a later save_async(), the prior callback is
+        still fired with the outcome of the merged (latest) write.
+        """
+        if getattr(self, '_load_failed', False):
+            return
+        data = self._build_save_data()
+
+        import threading
+        if self._save_async_lock is None:
+            # Double-checked; instance init can race on first call in theory,
+            # but the lock only protects the pending slot / worker handle so
+            # a single extra Lock() is harmless.
+            self._save_async_lock = threading.Lock()
+
+        with self._save_async_lock:
+            # Chain callbacks if a save is already pending so every caller
+            # hears back when their coalesced write lands.
+            if self._save_async_pending is not None:
+                prev_data, prev_cb = self._save_async_pending
+                if prev_cb is not None and on_done is not None:
+                    chained_prev = prev_cb
+                    chained_new = on_done
+                    def _both(ok, a=chained_prev, b=chained_new):
+                        try: a(ok)
+                        except Exception as e: print(f"[ENGINE] save cb: {e}")
+                        try: b(ok)
+                        except Exception as e: print(f"[ENGINE] save cb: {e}")
+                    on_done = _both
+                elif prev_cb is not None and on_done is None:
+                    on_done = prev_cb
+            self._save_async_pending = (data, on_done)
+
+            worker = self._save_async_worker
+            if worker is None or not worker.is_alive():
+                self._save_async_worker = threading.Thread(
+                    target=self._save_async_loop, daemon=True)
+                self._save_async_worker.start()
+
+    def _save_async_loop(self):
+        """Worker: drains the pending slot until empty. Idle-exits so we
+        don't keep a thread around forever when the user isn't saving."""
+        while True:
+            with self._save_async_lock:
+                pending = self._save_async_pending
+                self._save_async_pending = None
+                if pending is None:
+                    # No more work; clear worker handle so the next
+                    # save_async spawns a fresh thread.
+                    self._save_async_worker = None
+                    return
+
+            data, cb = pending
+            ok = False
+            try:
+                self._write_save_to_disk(data)
+                ok = True
+            except Exception as e:
+                print(f"[ENGINE] save_async failed: {e}")
+
+            if cb is not None:
+                try:
+                    cb(ok)
+                except Exception as e:
+                    print(f"[ENGINE] save_async on_done failed: {e}")
+            # Loop: if another save_async queued while we were writing,
+            # pick it up next iteration.
 
     def load(self, data=None):
         if data is None:
@@ -1406,6 +1587,16 @@ class GameEngine:
             self._spawn_enemy()
 
     def _apply_save_data(self, data):
+        # Schema migration: absent version = pre-versioning (v0).
+        # Run registered migrations sequentially until we reach the current
+        # schema. Keeps old saves loadable after format changes.
+        version = data.get("schema_version", 0)
+        while version < CURRENT_SAVE_VERSION:
+            migrate = _SAVE_MIGRATIONS.get(version)
+            if migrate is None:
+                break  # no migration registered — trust .get() defaults below
+            data = migrate(data)
+            version += 1
 
         self.gold = data.get("gold", 100)
         self.active_fighter_idx = data.get("active_fighter_idx", 0)

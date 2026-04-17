@@ -1,4 +1,4 @@
-# Build: 29
+# Build: 31
 """Game data models — fighters, enemies, equipment, expeditions, economy.
 
 Roguelike-manager: permadeath resets the run, stats distributed manually,
@@ -102,7 +102,9 @@ RARITY_MAX_UPGRADE = {
     RARITY_LEGENDARY: MAX_UPGRADE_LEGENDARY,
 }
 
-EQUIPMENT_SLOTS = ["weapon", "armor", "accessory", "relic"]
+# Equipment slot registry (single source of truth for per-slot behavior).
+# Re-exported here for back-compat with existing imports.
+from game.slots import SLOTS, EQUIPMENT_SLOTS  # noqa: E402,F401
 
 # ============================================================
 #  ALL GAME DATA — loaded from data/*.json at import time.
@@ -406,45 +408,69 @@ class Fighter(CombatUnit):
     def total_vitality(self):
         return self.vitality + self.equip_vit
 
-    def _upgrade_bonus(self, slot_name, pool, mult=1):
-        """Generic upgrade bonus: level * 20% * pool * mult."""
-        item = self.equipment.get(slot_name)
+    def _stat_pool(self, stat_names):
+        """Sum total_<stat> for each stat in the tuple (uses total_* properties)."""
+        getters = {
+            "str": lambda: self.total_strength,
+            "agi": lambda: self.total_agility,
+            "vit": lambda: self.total_vitality,
+        }
+        return sum(getters[s]() for s in stat_names)
+
+    def _slot_upgrade_bonus(self, slot_id, target):
+        """Generic per-target upgrade bonus driven by SLOTS registry.
+
+        Formula: pool(slot, target) * lvl * 20% * mult(slot, target) / split_divisor.
+        """
+        slot = SLOTS.get(slot_id)
+        if slot is None:
+            return 0
+        item = self.equipment.get(slot_id)
         if not item:
             return 0
         lvl = item.get("upgrade_level", 0)
         if lvl <= 0:
             return 0
-        return int(pool * lvl * UPGRADE_BONUS_PER_LEVEL / 100 * mult)
+        pool_val = self._stat_pool(slot.pool_for(target))
+        raw = pool_val * lvl * UPGRADE_BONUS_PER_LEVEL / 100 * slot.mult_for(target)
+        return int(raw) // slot.split_divisor
 
+    def upgrade_bonus_for(self, target):
+        """Sum upgrade bonuses from every equipped slot that targets `target`.
+
+        target ∈ ("atk", "def", "hp"). Preserves prior behavior: weapon→atk,
+        armor→def, accessory→hp, relic→all three (split by 3).
+        """
+        total = 0
+        for slot in SLOTS.values():
+            if target in slot.upgrade_targets:
+                total += self._slot_upgrade_bonus(slot.id, target)
+        return total
+
+    # Legacy property names — thin wrappers for call sites elsewhere.
     @property
     def weapon_upgrade_atk(self):
-        """Weapon upgrade: +N*20% of (STR+AGI) → ATK."""
-        return self._upgrade_bonus("weapon", self.total_strength + self.total_agility)
+        return self._slot_upgrade_bonus("weapon", "atk")
 
     @property
     def armor_upgrade_def(self):
-        """Armor upgrade: +N*20% of (AGI+VIT) → DEF."""
-        return self._upgrade_bonus("armor", self.total_agility + self.total_vitality)
+        return self._slot_upgrade_bonus("armor", "def")
 
     @property
     def accessory_upgrade_hp(self):
-        """Accessory upgrade: +N*20% of (VIT+STR)*5 → HP."""
-        return self._upgrade_bonus("accessory", self.total_vitality + self.total_strength, mult=5)
+        return self._slot_upgrade_bonus("accessory", "hp")
 
     @property
     def relic_upgrade_atk(self):
-        """Relic upgrade ATK: +N*20% of (STR+AGI) / 3."""
-        return self._upgrade_bonus("relic", self.total_strength + self.total_agility) // 3
+        return self._slot_upgrade_bonus("relic", "atk")
 
     @property
     def relic_upgrade_def(self):
-        """Relic upgrade DEF: +N*20% of (AGI+VIT) / 3."""
-        return self._upgrade_bonus("relic", self.total_agility + self.total_vitality) // 3
+        return self._slot_upgrade_bonus("relic", "def")
 
     @property
     def relic_upgrade_hp(self):
-        """Relic upgrade HP: +N*20% of (VIT+STR)*5 / 3."""
-        return self._upgrade_bonus("relic", self.total_vitality + self.total_strength, mult=5) // 3
+        return self._slot_upgrade_bonus("relic", "hp")
 
     @property
     def attack(self):
@@ -589,14 +615,30 @@ class Fighter(CombatUnit):
                     return eff
         return None
 
-    @staticmethod
-    def _get_all_perks_map():
-        """Build {perk_id: perk_dict} from all classes."""
+    # Perk registry cache. FIGHTER_CLASSES comes from static JSON so the
+    # map is constant for the lifetime of a data load. Previously this was
+    # rebuilt on every `get_perk_effects` call (profiler showed ~11k calls
+    # per 1000-vs-1000 battle, eating ~13% of total battle time).
+    # `invalidate_perks_map_cache` is called by data_loader on reload.
+    _cached_all_perks_map = None
+
+    @classmethod
+    def _get_all_perks_map(cls):
+        """Cached {perk_id: perk_dict} from all classes."""
+        cache = cls._cached_all_perks_map
+        if cache is not None:
+            return cache
         result = {}
         for cls_data in FIGHTER_CLASSES.values():
             for perk in cls_data.get("perk_tree", []):
                 result[perk["id"]] = perk
+        cls._cached_all_perks_map = result
         return result
+
+    @classmethod
+    def invalidate_perks_map_cache(cls):
+        """Call after reloading FIGHTER_CLASSES (e.g. language switch)."""
+        cls._cached_all_perks_map = None
 
     @property
     def perk_tree_maxed(self):

@@ -1,4 +1,4 @@
-# Build: 21
+# Build: 23
 """
 Turn-based battle system with luck-based combat.
 
@@ -11,12 +11,32 @@ A weak but agile assassin can outperform a strong brute through fortunate rolls.
 """
 
 import random
+from collections import namedtuple
 from enum import Enum, auto
 from game.models import ENCHANTMENT_TYPES, fmt_num
+from game.constants import (
+    DAMAGE_VARIANCE_LOW, DAMAGE_VARIANCE_HIGH, DEFENSE_DIVISOR,
+)
 from game.localization import t
 
 # Shorthand for fmt_num in battle messages
 _fn = fmt_num
+
+
+# --- Outcome contract between BattleManager and the engine ---
+# Exposed by do_turn() and do_full_battle(). Lets callers (GameEngine,
+# future headless sim / tests) read results without reaching into
+# BattleManager.state. All fields are computed from state at return time.
+BattleResult = namedtuple("BattleResult", [
+    "outcome",          # "ongoing" | "victory" | "defeat"
+    "is_boss",          # bool
+    "gold_earned",      # int
+    "enemies_killed",   # int (enemies with hp <= 0)
+    "survivors",        # list[Enemy] — enemies with hp > 0 (for revenge)
+    "turn_number",      # int — for battle log
+    "player_fighters",  # list[Fighter] — for battle log
+    "enemies",          # list[Enemy] — for battle log
+])
 
 
 class BattlePhase(Enum):
@@ -34,7 +54,7 @@ class BattleEvent:
     """Single event in the battle log (for animation)."""
     def __init__(self, event_type, attacker="", defender="", damage=0,
                  message="", is_kill=False, is_crit=False, is_boss=False,
-                 is_dodge=False):
+                 is_dodge=False, skill_type=""):
         self.event_type = event_type
         self.attacker = attacker
         self.defender = defender
@@ -44,6 +64,12 @@ class BattleEvent:
         self.is_crit = is_crit
         self.is_boss = is_boss
         self.is_dodge = is_dodge
+        # For event_type=="skill" only: which skill type fired. Used by
+        # _skill_activation_phase to collapse identical skill activations
+        # from many fighters in one turn into a single summary event —
+        # otherwise 1000 fighters all rallying on turn 1 emits 1000
+        # near-identical lines and buries actual combat events under them.
+        self.skill_type = skill_type
 
 
 class EnemyStatusTracker:
@@ -88,6 +114,21 @@ class BattleState:
         # Active skill system
         self.skill_states: dict = {}    # id(fighter) -> SkillState
         self.team_buffs: list = []      # active team-wide buffs [{type, value, turns_left}]
+        # Lazy snapshot of fighter combat stats (attack/defense/max_hp/crit/
+        # dodge/crit_mult/damage_reduction) keyed by id(fighter). Fighter
+        # stats are the result of heavy property chains (equipment loops +
+        # perk lookups); they're invariant during a battle except when an
+        # injury is added via handle_fighter_death, which invalidates the
+        # entry. Biggest win is in boss fights: same 1000 fighters attack
+        # the same boss for 40+ turns, previously recomputing stats every
+        # single attack.
+        self.fighter_stat_cache: dict = {}
+        # Scalar running total of team atk_bonus_pct. Previously recomputed
+        # via sum(genexpr) on every single player attack — in a 1000-fighter
+        # battle where every merc rallies, that's 1M iterations/turn burning
+        # ~50% of battle CPU. Maintained incrementally by _execute_skill
+        # (buff add) and _tick_skill_buffs (expiry).
+        self.team_atk_bonus_pct: float = 0.0
         self.team_shield = None         # Shield Wall: {reduction_pct, turns_left} or None
         self.enemy_stuns: dict = {}     # id(enemy) -> stun_turns_remaining
 
@@ -276,14 +317,49 @@ def _process_status_ticks(state):
 
 
 def _resolve_attack(attacker, defender, is_boss=False, force_crit=False,
-                    damage_mult=1.0):
+                    damage_mult=1.0, atk_cache=None, def_cache=None):
     """Resolve a single attack: crit -> damage -> dodge -> event.
-    Returns (BattleEvent, actual_damage, is_crit)."""
-    is_crit = force_crit or random.random() < attacker.crit_chance
-    raw = int(attacker.deal_damage() * damage_mult)
+    Returns (BattleEvent, actual_damage, is_crit).
+
+    atk_cache / def_cache: optional pre-computed stat snapshots from
+    BattleManager._fighter_stats. When provided, skips the heavy property
+    chains on Fighter (equipment loops + perk lookups). Enemies use plain
+    attributes so they don't need caching — callers typically pass
+    atk_cache for player attacks and def_cache for enemy attacks.
+    """
+    # --- Attacker stats ---
+    if atk_cache is not None:
+        atk_crit_chance = atk_cache['crit_chance']
+        atk_attack = atk_cache['attack']
+        atk_crit_mult = atk_cache['crit_mult']
+    else:
+        atk_crit_chance = attacker.crit_chance
+        atk_attack = attacker.attack
+        atk_crit_mult = attacker.crit_mult
+
+    is_crit = force_crit or random.random() < atk_crit_chance
+    variance = random.uniform(DAMAGE_VARIANCE_LOW, DAMAGE_VARIANCE_HIGH)
+    raw = int(max(1, int(atk_attack * variance)) * damage_mult)
     if is_crit:
-        raw = int(raw * attacker.crit_mult)
-    actual = defender.take_damage(raw)
+        raw = int(raw * atk_crit_mult)
+
+    # --- Defender: dodge + defense reduction + apply damage ---
+    # Replicates CombatUnit.take_damage inline so we can consult def_cache
+    # without reading the heavy properties every call. Bit-identical to
+    # the original formula.
+    if def_cache is not None:
+        def_dodge = def_cache['dodge_chance']
+        def_defense = def_cache['defense']
+        if random.random() < def_dodge:
+            actual = 0
+        else:
+            reduction = def_defense / (def_defense + DEFENSE_DIVISOR)
+            reduced = max(1, int(raw * (1 - reduction)))
+            defender.hp = max(0, defender.hp - reduced)
+            actual = reduced
+    else:
+        actual = defender.take_damage(raw)
+
     if actual == 0:
         ev = BattleEvent(
             "attack", attacker=attacker.name, defender=defender.name,
@@ -312,6 +388,43 @@ class BattleManager:
         from game.boss_modifiers import BossModifierHandler
         from game.data_loader import data_loader
         self._mod_handler = BossModifierHandler(data_loader.boss_modifiers)
+
+    def _fighter_stats(self, fighter):
+        """Return (cached) combat-stat snapshot for a Fighter.
+
+        All values come from the Fighter's property chain (attack, defense,
+        crit_chance, dodge_chance, crit_mult, max_hp, damage_reduction) —
+        each of which walks the equipment dict + perk tree + injuries list.
+        Cached per battle; invalidated via `_invalidate_fighter_stats` when
+        the fighter's injuries change (permadeath-survived hit).
+        """
+        cache = self.state.fighter_stat_cache
+        key = id(fighter)
+        stats = cache.get(key)
+        if stats is None:
+            # Also snapshot the per-attack perk lookups (lifesteal_pct,
+            # on_kill_heal_pct). Previously those called get_perk_effects
+            # on every single attack / kill — with 1000 fighters and 44
+            # turns that's ~42k + ~1k calls through the perk iteration.
+            gpe = getattr(fighter, 'get_perk_effects', lambda x: 0)
+            stats = {
+                'attack': fighter.attack,
+                'defense': fighter.defense,
+                'crit_chance': fighter.crit_chance,
+                'crit_mult': fighter.crit_mult,
+                'dodge_chance': fighter.dodge_chance,
+                'max_hp': fighter.max_hp,
+                'damage_reduction': getattr(fighter, 'damage_reduction', 0),
+                'lifesteal_pct': gpe('lifesteal_pct'),
+                'on_kill_heal_pct': gpe('on_kill_heal_pct'),
+                'regen_per_turn_pct': gpe('regen_per_turn_pct'),
+            }
+            cache[key] = stats
+        return stats
+
+    def _invalidate_fighter_stats(self, fighter):
+        """Drop the cached stat snapshot for a fighter (e.g. after injury)."""
+        self.state.fighter_stat_cache.pop(id(fighter), None)
 
     def start_auto_battle(self):
         fighters = [f for f in self.engine.fighters
@@ -409,14 +522,22 @@ class BattleManager:
         s = self.state
         status_events = _process_status_ticks(s)
         events.extend(status_events)
-        # Perk: regen_per_turn for fighters
+        # Perk: regen_per_turn for fighters. Read max_hp via the cache —
+        # profiler showed direct access here was the single biggest
+        # remaining boss-fight cost (1000 fighters × 44 turns = 45000 hits
+        # on the expensive property chain).
         for fighter in s.player_fighters:
-            if not fighter.alive or fighter.hp <= 0 or fighter.hp >= fighter.max_hp:
+            if not fighter.alive or fighter.hp <= 0:
                 continue
-            regen = getattr(fighter, 'get_perk_effects', lambda x: 0)("regen_per_turn_pct")
-            if regen > 0:
-                heal = max(1, int(fighter.max_hp * regen))
-                fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+            stats = self._fighter_stats(fighter)
+            regen = stats['regen_per_turn_pct']
+            if regen <= 0:
+                continue
+            mh = stats['max_hp']
+            if fighter.hp >= mh:
+                continue
+            heal = max(1, int(mh * regen))
+            fighter.hp = min(mh, fighter.hp + heal)
         # Boss modifiers: turn start
         if self._mod_handler and s.is_boss_fight:
             for enemy in s.enemies:
@@ -447,8 +568,17 @@ class BattleManager:
         return False
 
     def _skill_activation_phase(self, events):
-        """Auto-activate fighter skills when off cooldown."""
+        """Auto-activate fighter skills when off cooldown.
+
+        Collects the phase's skill events into a local buffer so we can
+        collapse identical skill activations (e.g. 1000 fighters rallying
+        the same turn) into one summary line before forwarding to the
+        main event stream. Without this, big battles produced a log full
+        of 'X uses Rally!' × 1000 that exhausted the 500-line cap before
+        any actual combat event got through.
+        """
         s = self.state
+        phase_events = []
         for fighter in s.player_fighters:
             if not fighter.alive or fighter.hp <= 0:
                 continue
@@ -459,8 +589,96 @@ class BattleManager:
                 ss.cooldown_remaining -= 1
                 continue
             # Skill is ready — fire it
-            self._execute_skill(fighter, ss, events)
+            self._execute_skill(fighter, ss, phase_events)
             ss.cooldown_remaining = ss.skill_def["cooldown"]
+
+        events.extend(self._collapse_skill_events(phase_events))
+
+    # Map skill_type -> (l10n_key_for_summary, which params from _execute_skill
+    # to feed into t()). "stun_enemy" is deliberately absent: it targets a
+    # specific enemy, collapsing multiple stuns loses information (which
+    # enemies got stunned). Those pass through as individual events.
+    _SKILL_SUMMARY_KEYS = {
+        "buff_team_atk":         ("skill_rally_many",       ("pct",)),
+        "guaranteed_crit_dodge": ("skill_shadowstep_many",  ()),
+        "multi_attack":          ("skill_frenzy_many",      ()),
+        "team_damage_reduction": ("skill_shield_wall_many", ("pct",)),
+        "heal_team":             ("skill_heal_team_many",   ()),
+    }
+
+    @classmethod
+    def _collapse_skill_events(cls, phase_events):
+        """Group events by skill_type and replace N same-type events with
+        one name-less summary line ("160 fighters rally! Team ATK +15%!").
+
+        Single occurrences (n == 1) and events without a skill_type tag
+        pass through unchanged — a single activation still reads
+        "Vorn uses Rally!". Only bulk activations get summarized. Order
+        is preserved by flushing accumulated buckets whenever an
+        untagged/non-collapsible event arrives.
+        """
+        if not phase_events:
+            return phase_events
+        out = []
+        buckets = {}    # skill_type -> [events]
+        order = []      # insertion order of skill_types in this phase
+
+        def flush():
+            for key in order:
+                evs = buckets[key]
+                if len(evs) == 1:
+                    out.append(evs[0])
+                    continue
+                out.append(cls._make_skill_summary(key, evs))
+            buckets.clear()
+            order.clear()
+
+        for ev in phase_events:
+            key = getattr(ev, 'skill_type', '') or None
+            # stun_enemy: keep per-target; don't collapse (different defenders)
+            if not key or key == "stun_enemy":
+                flush()
+                out.append(ev)
+                continue
+            if key not in buckets:
+                buckets[key] = []
+                order.append(key)
+            buckets[key].append(ev)
+        flush()
+        return out
+
+    @classmethod
+    def _make_skill_summary(cls, skill_type, evs):
+        """Build one summary event for N activations of the same skill.
+
+        Uses a dedicated l10n key (*_many) that takes {n} and effect
+        params instead of {fighter} — so users see "160 fighters rally!"
+        rather than the earlier misleading "160× Vorn uses Rally!" which
+        read as though one fighter activated it 160 times.
+        """
+        first = evs[0]
+        n = len(evs)
+        summary_info = cls._SKILL_SUMMARY_KEYS.get(skill_type)
+        if summary_info is not None:
+            key, param_names = summary_info
+            kwargs = {"n": n}
+            for p in param_names:
+                # pct was stashed on the BattleEvent by _execute_skill; if
+                # missing for some reason, localization will just render
+                # the placeholder literal. Either way, not a crash.
+                kwargs[p] = getattr(first, f"_skill_{p}", 0)
+            message = t(key, **kwargs)
+            # If the l10n key is missing (returns the key itself), fall
+            # back to a plain count-prefix so the log stays readable.
+            if message == key:
+                message = f"{n}× {first.message}"
+        else:
+            message = f"{n}× {first.message}"
+        return BattleEvent(
+            event_type=first.event_type,
+            message=message,
+            skill_type=skill_type,
+        )
 
     def _execute_skill(self, fighter, ss, events):
         """Dispatch skill execution by skill_type."""
@@ -475,19 +693,26 @@ class BattleManager:
                 "value": params["atk_bonus_pct"],
                 "turns_left": params["duration"],
             })
-            events.append(BattleEvent("skill", attacker=fighter.name,
-                message=t("skill_rally", fighter=fighter.name, skill=skill["name"], pct=int(params["atk_bonus_pct"]*100))))
+            s.team_atk_bonus_pct += params["atk_bonus_pct"]
+            pct = int(params["atk_bonus_pct"] * 100)
+            ev = BattleEvent("skill", attacker=fighter.name,
+                skill_type=skill_type,
+                message=t("skill_rally", fighter=fighter.name, skill=skill["name"], pct=pct))
+            ev._skill_pct = pct  # read by _make_skill_summary on collapse
+            events.append(ev)
 
         elif skill_type == "guaranteed_crit_dodge":
             ss.guaranteed_crit = True
             ss.dodge_next_attack = True
             events.append(BattleEvent("skill", attacker=fighter.name,
+                skill_type=skill_type,
                 message=t("skill_shadowstep", fighter=fighter.name)))
 
         elif skill_type == "multi_attack":
             ss.extra_attacks = params["extra_attacks"]
             ss.extra_attack_mult = params["damage_mult"]
             events.append(BattleEvent("skill", attacker=fighter.name,
+                skill_type=skill_type,
                 message=t("skill_frenzy", fighter=fighter.name)))
 
         elif skill_type == "team_damage_reduction":
@@ -499,8 +724,12 @@ class BattleManager:
                 "reduction_pct": params["reduction_pct"],
                 "turns_left": params["duration"],
             }
-            events.append(BattleEvent("skill", attacker=fighter.name,
-                message=t("skill_shield_wall", fighter=fighter.name, pct=int(params["reduction_pct"]*100))))
+            pct = int(params["reduction_pct"] * 100)
+            ev = BattleEvent("skill", attacker=fighter.name,
+                skill_type=skill_type,
+                message=t("skill_shield_wall", fighter=fighter.name, pct=pct))
+            ev._skill_pct = pct
+            events.append(ev)
 
         elif skill_type == "stun_enemy":
             # Target first alive enemy not already stunned
@@ -516,6 +745,7 @@ class BattleManager:
             s.enemy_stuns[id(target)] = params["stun_turns"]
             events.append(BattleEvent("skill", attacker=fighter.name,
                 defender=target.name,
+                skill_type=skill_type,
                 message=t("skill_net_throw", fighter=fighter.name, target=target.name)))
 
         elif skill_type == "heal_team":
@@ -525,17 +755,24 @@ class BattleManager:
                     heal = max(1, int(f.max_hp * heal_pct))
                     f.hp = min(f.max_hp, f.hp + heal)
             events.append(BattleEvent("skill", attacker=fighter.name,
+                skill_type=skill_type,
                 message=t("skill_heal_team", fighter=fighter.name, skill=skill["name"])))
 
     def _tick_skill_buffs(self):
         """Decrement durations of team buffs and shield after the turn resolves."""
         s = self.state
-        # Team ATK buffs
+        # Team ATK buffs — keep scalar running total in sync with the list
+        # to avoid the O(N) sum(genexpr) hot path every attack.
         remaining = []
+        expired_atk_bonus = 0.0
         for buff in s.team_buffs:
             buff["turns_left"] -= 1
             if buff["turns_left"] > 0:
                 remaining.append(buff)
+            elif buff["type"] == "atk_bonus_pct":
+                expired_atk_bonus += buff["value"]
+        if expired_atk_bonus:
+            s.team_atk_bonus_pct = max(0.0, s.team_atk_bonus_pct - expired_atk_bonus)
         s.team_buffs = remaining
         # Shield Wall
         if s.team_shield:
@@ -567,23 +804,24 @@ class BattleManager:
             if ss and ss.guaranteed_crit:
                 force_crit = True
                 ss.guaranteed_crit = False
-            # Rally: team ATK buff
-            atk_bonus = sum(b["value"] for b in s.team_buffs
-                            if b["type"] == "atk_bonus_pct")
-            if atk_bonus > 0:
-                atk_mult += atk_bonus
+            # Rally: team ATK buff — O(1) scalar read, maintained by
+            # _execute_skill / _tick_skill_buffs.
+            if s.team_atk_bonus_pct:
+                atk_mult += s.team_atk_bonus_pct
 
+            atk_cache = self._fighter_stats(fighter)
             ev, actual, is_crit = _resolve_attack(
                 fighter, target, is_boss=s.is_boss_fight,
-                force_crit=force_crit, damage_mult=atk_mult)
+                force_crit=force_crit, damage_mult=atk_mult,
+                atk_cache=atk_cache)
             events.append(ev)
 
             if actual > 0:
-                # Perk: lifesteal
-                ls_pct = getattr(fighter, 'get_perk_effects', lambda x: 0)("lifesteal_pct")
+                # Perk: lifesteal (cached)
+                ls_pct = atk_cache['lifesteal_pct']
                 if ls_pct > 0:
                     heal = max(1, int(actual * ls_pct))
-                    fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+                    fighter.hp = min(atk_cache['max_hp'], fighter.hp + heal)
 
                 # Enchantment buildup on hit
                 weapon = fighter.equipment.get("weapon")
@@ -608,6 +846,8 @@ class BattleManager:
                     # Thorns may have killed the attacker
                     if fighter.hp <= 0:
                         died_forever, injury_id = self.engine.handle_fighter_death(fighter)
+                        # Stats may have changed via injury — drop cache entry.
+                        self._invalidate_fighter_stats(fighter)
                         if died_forever:
                             events.append(BattleEvent(
                                 "death", defender=fighter.name, is_kill=True,
@@ -633,11 +873,12 @@ class BattleManager:
                 self.engine.award_gold(reward)
                 fighter.kills += 1
 
-                # Perk: on_kill_heal
-                okh_pct = getattr(fighter, 'get_perk_effects', lambda x: 0)("on_kill_heal_pct")
+                # Perk: on_kill_heal (cached)
+                okh_pct = atk_cache['on_kill_heal_pct']
                 if okh_pct > 0:
-                    heal = max(1, int(fighter.max_hp * okh_pct))
-                    fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+                    mh = atk_cache['max_hp']
+                    heal = max(1, int(mh * okh_pct))
+                    fighter.hp = min(mh, fighter.hp + heal)
 
                 if not s.any_enemies_alive():
                     break
@@ -655,13 +896,14 @@ class BattleManager:
                         break
                     ev2, actual2, _ = _resolve_attack(
                         fighter, target, is_boss=s.is_boss_fight,
-                        damage_mult=ss.extra_attack_mult * atk_mult)
+                        damage_mult=ss.extra_attack_mult * atk_mult,
+                        atk_cache=atk_cache)
                     events.append(ev2)
                     if actual2 > 0:
-                        ls_pct = getattr(fighter, 'get_perk_effects', lambda x: 0)("lifesteal_pct")
+                        ls_pct = atk_cache['lifesteal_pct']
                         if ls_pct > 0:
                             heal = max(1, int(actual2 * ls_pct))
-                            fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+                            fighter.hp = min(atk_cache['max_hp'], fighter.hp + heal)
                     if target.hp <= 0:
                         events.append(BattleEvent(
                             "death", defender=target.name, is_kill=True,
@@ -737,12 +979,15 @@ class BattleManager:
                         enemy.attack = overrides['attack']
 
             try:
+                def_cache = self._fighter_stats(target)
                 # Perk: damage_reduction + Shield Wall (multiplicative)
-                dr = getattr(target, 'damage_reduction', 0)
+                dr = def_cache['damage_reduction']
                 shield_dr = s.team_shield["reduction_pct"] if s.team_shield else 0
                 combined_dr = 1 - (1 - dr) * (1 - shield_dr)
                 hp_before = target.hp
-                ev, actual, is_crit = _resolve_attack(enemy, target, is_boss=s.is_boss_fight)
+                ev, actual, is_crit = _resolve_attack(
+                    enemy, target, is_boss=s.is_boss_fight,
+                    def_cache=def_cache)
                 if combined_dr > 0 and actual > 0:
                     reduced = max(1, int(actual * (1 - combined_dr)))
                     target.hp = max(0, hp_before - reduced)
@@ -763,6 +1008,7 @@ class BattleManager:
 
             if target.hp <= 0:
                 died_forever, injury_id = self.engine.handle_fighter_death(target)
+                self._invalidate_fighter_stats(target)
                 if died_forever:
                     events.append(BattleEvent(
                         "death", defender=target.name, is_kill=True,
@@ -791,8 +1037,41 @@ class BattleManager:
             return True
         return False
 
+    def _build_result(self):
+        """Snapshot current battle state as a BattleResult."""
+        s = self.state
+        if s.phase == BattlePhase.VICTORY:
+            outcome = "victory"
+        elif s.phase == BattlePhase.DEFEAT:
+            outcome = "defeat"
+        else:
+            outcome = "ongoing"
+        return BattleResult(
+            outcome=outcome,
+            is_boss=s.is_boss_fight,
+            gold_earned=s.gold_earned,
+            enemies_killed=sum(1 for e in s.enemies if e.hp <= 0),
+            survivors=[e for e in s.enemies if e.hp > 0],
+            turn_number=s.turn_number,
+            player_fighters=list(s.player_fighters),
+            enemies=list(s.enemies),
+        )
+
     def do_turn(self):
-        """Execute one turn. Returns list of events for animation."""
+        """Execute one turn. Returns (events, result).
+
+        events: list[BattleEvent] for animation.
+        result: BattleResult describing current outcome (ongoing/victory/defeat).
+        """
+        s = self.state
+        events = self._do_turn_events()
+        return events, self._build_result()
+
+    def _do_turn_events(self):
+        """Internal: run one turn, return events only.
+
+        Kept separate so do_turn can wrap with the result snapshot.
+        """
         s = self.state
         events = []
 
@@ -827,20 +1106,70 @@ class BattleManager:
         events.append(BattleEvent("message", message=t("battle_turn", n=s.turn_number)))
         return events
 
+    # Cap on skip-mode battle length. Turn-based (not event-based!) — a
+    # 1000-vs-1000 battle legitimately emits thousands of events in a single
+    # turn (one per attack), so the old 200-event cap was tripping on huge
+    # legit battles. Turns, by contrast, don't scale with participant count:
+    # any natural battle ends in 2-20 turns regardless of N. 500 is three
+    # orders of magnitude beyond anything observed in real play, so it only
+    # catches genuine stuck-loop bugs.
+    MAX_SKIP_BATTLE_TURNS = 500
+
     def do_full_battle(self):
-        """Run entire battle instantly (skip mode)."""
+        """Run entire battle instantly (skip mode). Returns (events, result)."""
         all_events = []
+        start_turn = self.state.turn_number
         while self.state.phase not in (BattlePhase.VICTORY, BattlePhase.DEFEAT,
                                         BattlePhase.IDLE):
-            events = self.do_turn()
+            events = self._do_turn_events()
             all_events.extend(events)
-            if len(all_events) > 200:
-                # Safety cap — force defeat to prevent zombie battle
-                if self.state.phase not in (BattlePhase.VICTORY, BattlePhase.DEFEAT):
-                    self.state.phase = BattlePhase.DEFEAT
-                    all_events.append(BattleEvent("defeat", message=t("battle_all_down")))
+            if self.state.turn_number - start_turn > self.MAX_SKIP_BATTLE_TURNS:
+                # Stuck-loop safety: force-terminate by KO'ing every still-
+                # standing fighter through handle_fighter_death (same path the
+                # natural defeat uses), so injuries/permadeaths are applied
+                # consistently. Previously this branch just stamped DEFEAT on
+                # the phase and returned — fighters who still had HP > 0 kept
+                # their pristine state and the user saw "some of my 1000
+                # fighters walked away uninjured from a total defeat".
+                self._force_defeat_cleanup(all_events)
                 break
-        return all_events
+        return all_events, self._build_result()
+
+    def _force_defeat_cleanup(self, events):
+        """End an overrunning battle as a defeat, with injury/death parity.
+
+        For every fighter still standing (alive + hp > 0), drop their HP to
+        0 and route them through engine.handle_fighter_death so they receive
+        either an injury or permadeath, exactly like a fighter who took a
+        killing blow in the final turn. Then emit the 'defeat' event and
+        heal the survivors (alive=True ones) — same as _enemy_attack_phase's
+        natural defeat tail.
+        """
+        from game.data_loader import data_loader
+        s = self.state
+        for f in s.player_fighters:
+            if f.alive and f.hp > 0:
+                f.hp = 0
+                died_forever, injury_id = self.engine.handle_fighter_death(f)
+                self._invalidate_fighter_stats(f)
+                if died_forever:
+                    events.append(BattleEvent(
+                        "death", defender=f.name, is_kill=True,
+                        message=t("fallen_forever", name=f.name),
+                    ))
+                else:
+                    inj_name = data_loader.injuries_by_id.get(
+                        injury_id, {}).get("name", "?")
+                    events.append(BattleEvent(
+                        "death", defender=f.name,
+                        message=t("knocked_out_injury",
+                                  name=f.name, injury=inj_name),
+                    ))
+        s.phase = BattlePhase.DEFEAT
+        events.append(BattleEvent("defeat", message=t("battle_all_down")))
+        for f in s.player_fighters:
+            if f.alive:
+                f.heal()
 
     @property
     def is_active(self):

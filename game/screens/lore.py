@@ -1,4 +1,4 @@
-# Build: 9
+# Build: 10
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -157,6 +157,16 @@ class LoreScreen(BaseScreen):
         rv = self.ids.get("battle_log_rv")
         if rv is not None:
             self.lore_subview = "blog_list"
+            # Cap the name preview: for 1000-vs-1000 battles the raw
+            # list has 1000 names and ", ".join(...) produces a 10k-char
+            # string. Shoving that into an AutoShrinkLabel is the cause
+            # of the battle-log list lag user reported — Kivy renders
+            # the full string then auto-shrinks to fit.
+            def _preview(names, cap=5):
+                if len(names) <= cap:
+                    return ", ".join(names)
+                return ", ".join(names[:cap]) + f", +{len(names) - cap}"
+
             data = []
             for idx in range(len(engine.battle_log) - 1, -1, -1):
                 entry = engine.battle_log[idx]
@@ -176,8 +186,8 @@ class LoreScreen(BaseScreen):
                     'tier_text': f"T{entry.get('tier', 0)}",
                     'gold_text': f"+{fmt_num(entry.get('g', 0))}g",
                     'time_text': time_str,
-                    'fighters_text': ", ".join(entry.get("f", [])),
-                    'enemies_text': ", ".join(entry.get("e", [])),
+                    'fighters_text': _preview(entry.get("f", [])),
+                    'enemies_text': _preview(entry.get("e", [])),
                 })
             rv.data = data
             return
@@ -243,15 +253,23 @@ class LoreScreen(BaseScreen):
                 grid.add_widget(card)
 
     def _show_battle_detail(self, log_idx):
-        """Show full event-by-event log for a single battle."""
+        """Show full event-by-event log for a single battle.
+
+        Previously this built one AutoShrinkLabel + bind_text_wrap per log
+        line. Battles with huge participant counts (e.g. 1000 vs 1000) can
+        generate 10000+ log lines — the plain-widget build blocked the UI
+        thread for seconds. Now routed through battle_detail_rv, which
+        virtualizes to ~20 on-screen rows regardless of total N.
+        """
         import time as _time
         engine = App.get_running_app().engine
         if log_idx < 0 or log_idx >= len(engine.battle_log):
             return
         entry = engine.battle_log[log_idx]
         self.lore_subview = "blog_detail"
-        grid = self._get_grid("lore_grid")
-        if not grid:
+
+        rv = self.ids.get("battle_detail_rv")
+        if rv is None:
             return
 
         is_victory = entry.get("r") == "V"
@@ -260,57 +278,39 @@ class LoreScreen(BaseScreen):
         if entry.get("boss"):
             result_text = f"{t('battle_log_boss')} {result_text}"
 
-        with grid_batch(grid):
-            grid.clear_widgets()
+        ts = entry.get("t", 0)
+        time_str = _time.strftime("%d.%m.%Y %H:%M", _time.localtime(ts)) if ts else "?"
+        tier = entry.get("tier", 0)
+        gold = fmt_num(entry.get("g", 0))
+        turns = entry.get("turns", 0)
+        log_lines = entry.get("log", [])
 
-            # Header
-            ts = entry.get("t", 0)
-            time_str = _time.strftime("%d.%m.%Y %H:%M", _time.localtime(ts)) if ts else "?"
-            tier = entry.get("tier", 0)
-            gold = fmt_num(entry.get("g", 0))
-            turns = entry.get("turns", 0)
+        # Two header rows + one row per log line. All use BattleDetailLineView;
+        # explicit color/height/bold override the keyword-scan fallback.
+        data = [
+            {
+                'text': f"{result_text}  T{tier}  +{gold}g  {turns} turns",
+                'color': result_color, 'bold': True,
+                'font_size': '11sp', 'height': dp(28),
+            },
+            {
+                'text': time_str, 'color': TEXT_MUTED,
+                'font_size': '11sp', 'height': dp(18),
+            },
+        ]
+        if not log_lines:
+            data.append({
+                'text': t("battle_log_empty"), 'color': TEXT_MUTED,
+                'font_size': '10sp', 'height': dp(30),
+            })
+        else:
+            # Cheap comprehension: viewclass recomputes color from the text
+            # lazily for visible rows only. For 10k lines this is ~1ms.
+            data.extend({'text': line} for line in log_lines)
 
-            grid.add_widget(AutoShrinkLabel(
-                text=f"{result_text}  T{tier}  +{gold}g  {turns} turns",
-                font_size="11sp", bold=True, color=result_color,
-                halign="center", size_hint_y=None, height=dp(28),
-            ))
-            grid.add_widget(AutoShrinkLabel(
-                text=time_str, font_size="11sp", color=TEXT_MUTED,
-                halign="center", size_hint_y=None, height=dp(18),
-            ))
-
-            # Full event log
-            log_lines = entry.get("log", [])
-            if not log_lines:
-                grid.add_widget(AutoShrinkLabel(
-                    text=t("battle_log_empty"), font_size="10sp",
-                    color=TEXT_MUTED, halign="center",
-                    size_hint_y=None, height=dp(30),
-                ))
-                return
-
-            for line in log_lines:
-                color = TEXT_SECONDARY
-                if "CRIT" in line:
-                    color = ACCENT_GOLD
-                elif "DODGE" in line:
-                    color = ACCENT_CYAN
-                elif "KILL" in line or "FALLEN" in line:
-                    color = ACCENT_RED
-                elif "VICTORY" in line or t("battle_log_victory").upper() in line.upper():
-                    color = ACCENT_GREEN
-                elif "DEFEAT" in line:
-                    color = ACCENT_RED
-                elif "POISON" in line or "BLEED" in line or "BURN" in line:
-                    color = ACCENT_PURPLE
-
-                lbl = AutoShrinkLabel(
-                    text=line, font_size="11sp", color=color,
-                    halign="left", size_hint_y=None, height=dp(18),
-                )
-                bind_text_wrap(lbl)
-                grid.add_widget(lbl)
+        rv.data = data
+        # Jump to top when opening a battle detail.
+        rv.scroll_y = 1
 
     def _close_subview(self):
         self.lore_subview = ""

@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Mutator registry — loads mutator definitions and computes reward multipliers."""
 
 import logging
@@ -11,9 +11,18 @@ class MutatorRegistry:
         self._mutators = {}  # id -> dict
 
     def load(self, mutator_list):
-        """Load mutators from a list of dicts (each must have 'id')."""
-        self._mutators = {m["id"]: m for m in mutator_list}
-        _log.info("[MutatorRegistry] Loaded %d mutators", len(self._mutators))
+        """Load mutators from a list of dicts (each must have 'id').
+
+        Quiet on re-load: engine._wire_data runs once on startup AND again
+        in _apply_save_data after the saved language is restored (to pick
+        up translated names/descriptions). Same ID set both times — log
+        only the first time so the startup log isn't doubled.
+        """
+        new_mutators = {m["id"]: m for m in mutator_list}
+        first_load = not self._mutators
+        self._mutators = new_mutators
+        if first_load:
+            _log.info("[MutatorRegistry] Loaded %d mutators", len(self._mutators))
 
     def get(self, mutator_id) -> dict | None:
         return self._mutators.get(mutator_id)

@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """
 Pixel art RPG color theme — SNES-era inspired.
 Rich saturated accents, warm indigo backgrounds, cream text.
@@ -17,6 +17,9 @@ ACCENT_RED = (0.85, 0.15, 0.15, 1)      # blood crimson
 ACCENT_BLUE = (0.20, 0.45, 0.85, 1)     # royal blue
 ACCENT_PURPLE = (0.60, 0.25, 0.80, 1)   # vivid purple
 ACCENT_CYAN = (0.20, 0.75, 0.80, 1)     # teal/cyan
+ACCENT_BROWN = (0.45, 0.30, 0.18, 1)    # warm saddle brown — calmer accent
+                                         # for secondary buttons that shouldn't
+                                         # compete with status colours
 
 # Text — warm cream, high contrast
 TEXT_PRIMARY = (0.93, 0.90, 0.82, 1)     # cream white

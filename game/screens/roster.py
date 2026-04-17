@@ -1,4 +1,4 @@
-# Build: 27
+# Build: 32
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -24,6 +24,7 @@ from game.ui_helpers import (
     refresh_roster_grid,
     build_item_info_card,
     _roster_callbacks,
+    _perk_callbacks,
     bind_text_wrap,
     make_styled_popup,
 )
@@ -59,24 +60,33 @@ class RosterScreen(BaseScreen):
     def on_enter(self):
         _roster_callbacks['show_detail'] = self.show_fighter_detail
         _roster_callbacks['dismiss'] = self.dismiss
+        # Perk tree RV dispatch (tier toggle + unlock) — module-level dict
+        # so the viewclass pool doesn't need a back-ref to this screen.
+        _perk_callbacks['toggle_tier'] = self._on_perk_tier_toggle
+        _perk_callbacks['unlock'] = self._on_perk_unlock
         state = self._pending_state
         self._pending_state = None
         self._entered_with_detail = False
+        # `_return_to_list` flag means this entry is a RETURN from forge
+        # back to a detail view the user was already on (auto-equip flow).
+        # Back should unwind to the list instead of skipping to whatever
+        # is below Roster in the nav history.
+        return_to_list = state.get('_return_to_list', False) if state else False
         if state:
             idx = state.get('detail_index', -1)
             view = state.get('roster_view', 'list')
             if view == "skills" and idx >= 0:
-                self._entered_with_detail = True
+                self._entered_with_detail = not return_to_list
                 self._show_skills_view(idx)
                 return
             if idx >= 0:
-                self._entered_with_detail = True
+                self._entered_with_detail = not return_to_list
                 self.show_fighter_detail(idx)
                 if state.get('perk_view'):
                     self._show_perk_tree(idx)
                 return
             if view == "hire":
-                self._entered_with_detail = True
+                self._entered_with_detail = not return_to_list
                 self.roster_view = "hire"
                 self.detail_index = -1
                 self._show_hire_view()
@@ -289,6 +299,45 @@ class RosterScreen(BaseScreen):
             p_desc.bind(height=lambda inst, h, c=p_card: setattr(c, "height", max(dp(70), h + dp(40))))
             p_card.add_widget(p_desc)
             grid.add_widget(p_card)
+
+        # Active skill — same layout as passive but purple accent + cooldown.
+        # Was missing from the hire preview entirely; players couldn't see
+        # what Rally/Frenzy/Shield Wall etc. did until after recruiting.
+        active = cls_data.get("active_skill")
+        if active:
+            grid.add_widget(AutoShrinkLabel(
+                text=t("active_skill_label"), font_size="10sp", bold=True,
+                color=ACCENT_PURPLE, halign="left",
+                size_hint_y=None, height=dp(30),
+            ))
+            a_card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(90),
+                              padding=[dp(10), dp(6)], spacing=dp(2))
+            a_card.border_color = ACCENT_PURPLE
+            active_name_lbl = AutoShrinkLabel(
+                text=active["name"], font_size="12sp", bold=True,
+                color=ACCENT_PURPLE, halign="left",
+                size_hint_y=None, height=dp(30),
+            )
+            bind_text_wrap(active_name_lbl)
+            a_card.add_widget(active_name_lbl)
+            a_desc = Label(
+                text=active.get("description", ""), font_size="11sp", font_name='PixelFont',
+                color=TEXT_MUTED, halign="left", valign="top", size_hint_y=None,
+            )
+            a_desc.bind(width=lambda inst, w: setattr(inst, "text_size", (w - dp(20), None)))
+            a_desc.bind(texture_size=lambda inst, ts: setattr(inst, "height", ts[1]))
+            a_desc.bind(height=lambda inst, h, c=a_card: setattr(c, "height", max(dp(90), h + dp(60))))
+            a_card.add_widget(a_desc)
+            cd = active.get("cooldown", 0)
+            if cd:
+                cd_lbl = AutoShrinkLabel(
+                    text=t("cooldown_label", n=cd), font_size="11sp", bold=True,
+                    color=ACCENT_CYAN, halign="left",
+                    size_hint_y=None, height=dp(26),
+                )
+                bind_text_wrap(cd_lbl)
+                a_card.add_widget(cd_lbl)
+            grid.add_widget(a_card)
 
         # Perk tree preview
         tree = cls_data.get("perk_tree", [])
@@ -638,49 +687,72 @@ class RosterScreen(BaseScreen):
             ))
 
     def _build_fighter_equipment(self, grid, f, index, engine):
-        """Add equipment slot rows to detail grid."""
+        """Add equipment slot rows to detail grid.
+
+        Uses the same card style as the main inventory list: `name`,
+        `SLOT [RARITY]` subtitle (no "max +N" suffix — that's the detail
+        view), and base STR/AGI/VIT stats. No `fighter=` arg and no
+        `equipped_on` badge: we're already on this fighter's own page so
+        owner info would be redundant.
+        """
+        from game.slots import SLOTS
+        from game.localization import t as tr
+
         seen_relic_ids = set()
         inv_relics = []
         for inv_item in engine.inventory:
             if inv_item.get("slot") == "relic" and inv_item.get("id") not in seen_relic_ids:
                 inv_relics.append(inv_item)
                 seen_relic_ids.add(inv_item.get("id"))
-        for slot, icon_src, items_list in [
-            ("weapon", "icons/ic_weapon.png", FORGE_WEAPONS),
-            ("armor", "icons/ic_armor.png", FORGE_ARMOR),
-            ("accessory", "icons/ic_accessory.png", FORGE_ACCESSORIES),
-            ("relic", "icons/ic_accessory.png", inv_relics),
+
+        for slot, icon_src in [
+            ("weapon", "icons/ic_weapon.png"),
+            ("armor", "icons/ic_armor.png"),
+            ("accessory", "icons/ic_accessory.png"),
+            ("relic", "icons/ic_accessory.png"),
         ]:
-            eq_row = BaseCard(
-                orientation="horizontal", size_hint_y=None, height=dp(48),
-                spacing=dp(6), padding=[dp(4), dp(2)],
-                card_color=[0, 0, 0, 0], border_color=[0, 0, 0, 0],
-            )
-            eq_row.add_widget(KvImage(source=icon_src, fit_mode="contain",
-                                      size_hint=(None, 1), width=dp(28)))
             item = f.equipment.get(slot)
             if item:
-                rcolor = RARITY_COLORS.get(item.get("rarity", "common"), TEXT_PRIMARY)
-                eq_row.border_color = rcolor
-                display = item_display_name(item)
-                ulvl = item.get("upgrade_level", 0)
-                if ulvl:
-                    display += f" +{ulvl}"
-                ench = item.get("enchant_id", "")
-                if ench:
-                    display += f" [{ench}]"
-                eq_row.add_widget(eq_row._make_label(display, sp(11), True, rcolor, "left", 1))
+                def _open_eq(inst, fi=index, s=slot):
+                    if not f.available:
+                        return
+                    Clock.schedule_once(
+                        lambda dt: App.get_running_app().open_equipped_detail(fi, s),
+                        0.05)
+
+                card = build_item_info_card(
+                    item,
+                    on_tap=_open_eq if f.available else None,
+                )
+                grid.add_widget(card)
             else:
-                eq_row.add_widget(eq_row._make_label(t("empty_slot"), sp(11), False, TEXT_MUTED, "left", 1))
-            if f.available:
-                if item:
-                    def _open_eq(inst, fi=index, s=slot):
-                        Clock.schedule_once(lambda dt: App.get_running_app().open_equipped_detail(fi, s), 0.05)
-                    eq_row.bind(on_press=_open_eq)
-                else:
+                # Empty-slot placeholder: icon + label, dp(75) to match
+                # non-empty cards so the layout doesn't jump when a slot
+                # flips between filled/empty.
+                from game.widgets import BaseCard
+                empty_card = BaseCard(
+                    orientation="horizontal", size_hint_y=None, height=dp(75),
+                    padding=[dp(12), dp(8)], spacing=dp(8),
+                )
+                empty_card.border_color = TEXT_MUTED
+                empty_card.add_widget(KvImage(
+                    source=icon_src, fit_mode="contain",
+                    size_hint=(None, 1), width=dp(32),
+                ))
+                slot_def = SLOTS.get(slot)
+                slot_label = tr(slot_def.label_keys['upper']) if slot_def else slot.upper()
+                empty_card.add_widget(empty_card._make_label(
+                    f"{slot_label}: {tr('empty_slot')}",
+                    sp(11), False, TEXT_MUTED, "left", 1,
+                ))
+                if f.available:
                     def _open_empty(inst, s=slot, fi=index):
                         def _nav(dt):
                             app = App.get_running_app()
+                            # Stash the source fighter so the forge's
+                            # equip flow auto-targets them instead of
+                            # opening a picker popup.
+                            app.pending_equip_target_idx = fi
                             has_free = any(
                                 it.get("slot") == s for it in app.engine.inventory
                             )
@@ -689,8 +761,8 @@ class RosterScreen(BaseScreen):
                             else:
                                 app.open_forge_tab(s)
                         Clock.schedule_once(_nav, 0.05)
-                    eq_row.bind(on_press=_open_empty)
-            grid.add_widget(eq_row)
+                    empty_card.bind(on_press=_open_empty)
+                grid.add_widget(empty_card)
 
     def _build_fighter_actions(self, grid, f, index, engine):
         """Add kills label, injuries button, and action buttons to detail grid."""
@@ -803,6 +875,8 @@ class RosterScreen(BaseScreen):
         engine = App.get_running_app().engine
         if index < 0 or index >= len(engine.fighters):
             return
+        was_already_on_same = (self.roster_view == "detail"
+                               and self.detail_index == index)
         self.detail_index = index
         self.roster_view = "detail"
         f = engine.fighters[index]
@@ -810,11 +884,28 @@ class RosterScreen(BaseScreen):
         grid = self.ids.get("detail_grid")
         if not grid:
             return
+
+        # Preserve scroll position on re-render of the SAME fighter (train
+        # button, stat allocation, equip/unequip). Without this the grid
+        # rebuild snaps the ScrollView back to the top every time, which
+        # kicked the user off the Train button after every level up.
+        # First-time opens (new fighter) keep default behaviour — scroll
+        # to top so the header is visible.
+        sv = self.ids.get("detail_scroll")
+        preserved_y = sv.scroll_y if (sv and was_already_on_same) else None
+
         _safe_clear(grid)
 
         self._build_fighter_header(grid, f, index, engine)
         self._build_fighter_equipment(grid, f, index, engine)
         self._build_fighter_actions(grid, f, index, engine)
+
+        if preserved_y is not None and sv is not None:
+            # Restore after this frame so layout has re-computed grid
+            # height first — setting scroll_y immediately would clamp
+            # against the stale pre-clear height.
+            Clock.schedule_once(lambda dt, y=preserved_y:
+                                setattr(sv, 'scroll_y', y), 0)
 
     def close_detail(self):
         self.detail_index = -1
@@ -1016,7 +1107,18 @@ class RosterScreen(BaseScreen):
         return card
 
     def _show_perk_tree(self, fighter_idx):
-        """Show perk tree view with collapsible tiers."""
+        """Show perk tree view via the perk_tree_rv RecycleView.
+
+        Previously: cleared detail_grid and rebuilt up to ~40 BaseCards +
+        MinimalButtons per tier toggle, each with dynamic text-wrap binds.
+        That was the biggest remaining rebuild-lag hotspot after the arena
+        refactor.
+
+        Now: compute a flat list of dicts (one per visible row), set
+        perk_tree_rv.data = ... — only visible rows become real widgets,
+        and tier toggles are just another data-list rebuild (no widget
+        allocation, no per-row binds).
+        """
         engine = App.get_running_app().engine
         if fighter_idx >= len(engine.fighters):
             return
@@ -1024,31 +1126,55 @@ class RosterScreen(BaseScreen):
         self.perk_view = True
         self.detail_index = fighter_idx
         self.roster_view = "detail"
-        grid = self.ids.get("detail_grid")
-        if not grid:
+
+        rv = self.ids.get("perk_tree_rv")
+        if not rv:
             return
-        _safe_clear(grid)
 
         if not hasattr(self, '_perk_expanded'):
             self._perk_expanded = {}
         expanded = self._perk_expanded.setdefault(f.name, {})
 
-        grid.add_widget(AutoShrinkLabel(
-            text=f"{f.class_name} — {t('perks_btn')}", font_size="11sp", bold=True,
-            color=ACCENT_CYAN, halign="center", size_hint_y=None, height=dp(30),
-        ))
-        grid.add_widget(AutoShrinkLabel(
-            text=t("perk_points_label", n=f.perk_points), font_size="10sp",
-            color=ACCENT_GOLD if f.perk_points > 0 else TEXT_MUTED,
-            halign="center", size_hint_y=None, height=dp(30),
-        ))
+        rv.data = self._build_perk_tree_data(f, fighter_idx, expanded)
 
+    def _build_perk_tree_data(self, f, fighter_idx, expanded):
+        """Assemble the heterogeneous row-dict list for perk_tree_rv."""
+        from game.ui_helpers import _measure_perk_card_height
+        data = []
+
+        # Class title
+        data.append({
+            'viewclass': 'PerkTreeLabelView',
+            'text': f"{f.class_name} — {t('perks_btn')}",
+            'font_size': '11sp', 'bold': True, 'color': ACCENT_CYAN,
+            'height': dp(30),
+        })
+
+        # Perk points line
+        data.append({
+            'viewclass': 'PerkTreeLabelView',
+            'text': t("perk_points_label", n=f.perk_points),
+            'font_size': '10sp', 'bold': False,
+            'color': ACCENT_GOLD if f.perk_points > 0 else TEXT_MUTED,
+            'height': dp(30),
+        })
+
+        # Passive ability (compact label — full passive card is on skills view)
         cls_data = _m.FIGHTER_CLASSES.get(f.fighter_class, {})
         passive = cls_data.get("passive_ability")
         if passive:
-            grid.add_widget(self._build_passive_card(passive))
+            data.append({
+                'viewclass': 'PerkTreePerkCardView',
+                'perk_id': f"__passive_{f.fighter_class}",
+                'fighter_idx': fighter_idx,
+                'state': 'unlocked',  # passive is always active — show gold border
+                'name': f"{t('perk_passive_label')}: {passive['name']}",
+                'desc': passive.get('description', ''),
+                'btn_text': '',  # ignored for 'unlocked' state
+                'height': _measure_perk_card_height(passive.get('description', '')),
+            })
 
-        # Collect perks
+        # Collect + group perks by section/tier
         all_perks = []
         for cid, cdata in _m.FIGHTER_CLASSES.items():
             for perk in cdata.get("perk_tree", []):
@@ -1063,11 +1189,12 @@ class RosterScreen(BaseScreen):
             if not perks:
                 continue
             if section_label:
-                grid.add_widget(AutoShrinkLabel(
-                    text=section_label, font_size="10sp", bold=True,
-                    color=TEXT_MUTED, halign="center",
-                    size_hint_y=None, height=dp(26),
-                ))
+                data.append({
+                    'viewclass': 'PerkTreeLabelView',
+                    'text': section_label,
+                    'font_size': '10sp', 'bold': True, 'color': TEXT_MUTED,
+                    'height': dp(26),
+                })
 
             tiers = {}
             for cid, perk in perks:
@@ -1080,22 +1207,76 @@ class RosterScreen(BaseScreen):
                 tier_perks = tiers[tier_num]
                 unlocked_count = sum(1 for _, p in tier_perks if p["id"] in f.unlocked_perks)
 
-                tier_btn = MinimalButton(
-                    text=f"{arrow}  {t('perk_tier_label', n=tier_num)}  ({unlocked_count}/{len(tier_perks)})",
-                    font_size=11, btn_color=ACCENT_CYAN, text_color=BG_DARK,
-                    size_hint_y=None, height=dp(30),
-                )
-                def _toggle(inst, tk=tier_key, fi=fighter_idx):
-                    expanded[tk] = not expanded.get(tk, False)
-                    self._show_perk_tree(fi)
-                tier_btn.bind(on_press=_toggle)
-                grid.add_widget(tier_btn)
+                data.append({
+                    'viewclass': 'PerkTreeTierButtonView',
+                    'tier_key': tier_key,
+                    'fighter_idx': fighter_idx,
+                    'text': f"{arrow}  {t('perk_tier_label', n=tier_num)}  "
+                            f"({unlocked_count}/{len(tier_perks)})",
+                    'height': dp(30),
+                })
 
                 if not is_open:
                     continue
+
                 for cid, perk in tier_perks:
                     is_cross = (cid != f.fighter_class)
-                    grid.add_widget(self._build_perk_card(perk, f, fighter_idx, is_cross, engine))
+                    pid = perk["id"]
+                    is_unlocked = pid in f.unlocked_perks
+                    cost = perk["cost"]
+                    if is_cross:
+                        cost = int(cost * perk.get("cross_class_cost_mult", 2.0))
+                    can_unlock = not is_unlocked and f.perk_points >= cost
+                    if is_unlocked:
+                        state = 'unlocked'
+                        name_text = f"{perk['name']}  [{t('perk_unlocked')}]"
+                    elif can_unlock:
+                        state = 'can_unlock'
+                        name_text = perk['name']
+                    else:
+                        state = 'locked'
+                        name_text = perk['name']
+                    data.append({
+                        'viewclass': 'PerkTreePerkCardView',
+                        'perk_id': pid,
+                        'fighter_idx': fighter_idx,
+                        'state': state,
+                        'name': name_text,
+                        'desc': perk.get('description', ''),
+                        'btn_text': t("perk_unlock_btn", cost=cost),
+                        'height': _measure_perk_card_height(perk.get('description', '')),
+                    })
+
+        return data
+
+    def _on_perk_tier_toggle(self, tier_key, fighter_idx):
+        """Callback fired by PerkTreeTierButtonView."""
+        engine = App.get_running_app().engine
+        if fighter_idx >= len(engine.fighters):
+            return
+        f = engine.fighters[fighter_idx]
+        if not hasattr(self, '_perk_expanded'):
+            self._perk_expanded = {}
+        expanded = self._perk_expanded.setdefault(f.name, {})
+        expanded[tier_key] = not expanded.get(tier_key, False)
+        rv = self.ids.get("perk_tree_rv")
+        if rv is not None:
+            rv.data = self._build_perk_tree_data(f, fighter_idx, expanded)
+
+    def _on_perk_unlock(self, perk_id, fighter_idx):
+        """Callback fired by PerkTreePerkCardView's unlock button."""
+        # Passive-row synthetic id: ignore taps on those.
+        if perk_id.startswith("__"):
+            return
+        engine = App.get_running_app().engine
+        if fighter_idx >= len(engine.fighters):
+            return
+        result = engine.unlock_perk(fighter_idx, perk_id)
+        if result.ok:
+            # Rebuild with new unlocked set; expansion state is preserved.
+            self._show_perk_tree(fighter_idx)
+        else:
+            App.get_running_app().show_toast(result.message)
 
 
     def _show_equipment_popup(self, fighter_idx, slot, items_list):

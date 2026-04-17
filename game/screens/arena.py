@@ -1,4 +1,4 @@
-# Build: 20
+# Build: 21
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -21,8 +21,8 @@ from game.battle import BattlePhase
 from game.localization import t
 from game.ads import ad_manager
 from game.ui_helpers import (
-    build_fighter_pit_card, build_enemy_hp_row,
-    update_fighter_pit_card, update_enemy_hp_row,
+    _arena_callbacks, _fighter_to_arena_data, _enemy_to_arena_data,
+    find_arena_view_by_name,
     flash_hp_bar,
     bind_text_wrap,
 )
@@ -45,6 +45,10 @@ class ArenaScreen(BaseScreen):
         app = App.get_running_app()
         if not app or not app.root:
             return
+        # Wire up tap callbacks once per entry — ArenaUnitCardView uses these
+        # to dispatch taps without holding a back-ref to this screen instance.
+        _arena_callbacks['fighter_tap'] = self._open_fighter_detail
+        _arena_callbacks['enemy_tap'] = self._show_enemy_popup_by_name
         self.refresh_ui()
         self._check_tutorial()
         self._check_pending_reset()
@@ -110,134 +114,95 @@ class ArenaScreen(BaseScreen):
         roster._pending_state = {'detail_index': fighter_idx}
         app.sm.current = "roster"
 
+    def _show_enemy_popup_by_name(self, enemy_name):
+        """RV callback — find the enemy object by name, then open detail."""
+        engine = App.get_running_app().engine
+        pool = []
+        if engine.battle_active:
+            pool = list(engine.battle_mgr.state.enemies)
+        else:
+            pool = list(engine.preview_enemies)
+        for e in pool:
+            if e.name == enemy_name:
+                self._show_enemy_popup(e)
+                return
+
     def _refresh_battle_panels(self, engine):
-        fg = self.ids.get("battle_fighters_grid")
-        eg = self.ids.get("battle_enemies_grid")
+        """Populate the arena RecycleViews with fighter/enemy data.
+
+        Previously this built a fresh CardWidget per unit via plain
+        GridLayout+ScrollView. With large squads that was painfully slow
+        on first render — every turn allocated ~10 widgets × N units.
+
+        Now we just hand RecycleView a list of plain dicts; the RV pool
+        (ArenaUnitCardView) keeps only visible rows as real widgets and
+        calls refresh_view_attrs to rebind them. Cost is O(visible_rows),
+        independent of total N.
+        """
+        fighters_rv = self.ids.get("battle_fighters_rv")
+        enemies_rv = self.ids.get("battle_enemies_rv")
         hb = self.ids.get("heal_btn_box")
-        if not fg or not eg:
+        if not fighters_rv or not enemies_rv:
             return
 
         if engine.battle_active:
             s = engine.battle_mgr.state
             fighters_list = [f for f in s.player_fighters if f.alive and f.hp > 0]
-            alive_enemies = list(s.enemies)
-
-            # Fast path: if cached widgets match, update in-place
-            if self._try_fast_update(fighters_list, alive_enemies, engine):
-                return
-
-            # Slow path: full rebuild (battle start, fighter/enemy count changed)
-            fg.clear_widgets()
-            eg.clear_widgets()
-            if hb:
-                hb.clear_widgets()
-            self._fighter_bar_map = {}
-            self._enemy_bar_map = {}
-            self._cached_fighter_names = []
-            self._cached_enemy_names = []
-
-            heal_btn = self._build_heal_btn(fighters_list, self._heal_all_battle)
-            if hb:
-                hb.add_widget(heal_btn)
-            self._cached_heal_btn = heal_btn
-
-            for i, f in enumerate(fighters_list):
-                real_battle_idx = i
-                real_roster_idx = next(
-                    (j for j, rf in enumerate(engine.fighters) if rf.name == f.name), -1
-                )
-                card = build_fighter_pit_card(
-                    f, on_tap=lambda w, ri=real_roster_idx: self._open_fighter_detail(ri),
-                    skill_text=self._get_skill_text(f),
-                )
-                self._fighter_bar_map[f.name] = card
-                self._cached_fighter_names.append(f.name)
-                fg.add_widget(card)
-
-            for e in alive_enemies:
-                row = build_enemy_hp_row(
-                    e, show_stats=True,
-                    on_tap=lambda w, en=e: self._show_enemy_popup(en),
-                )
-                self._enemy_bar_map[e.name] = row
-                self._cached_enemy_names.append(e.name)
-                eg.add_widget(row)
+            # Preserve the full enemy list (including dead) so the panel doesn't
+            # visually shrink mid-battle — card goes greyed/wounded instead.
+            enemies_list = list(s.enemies)
+            heal_callback = self._heal_all_battle
         else:
-            # Outside battle — use fast update if possible
             fighters_list = [f for f in engine.fighters if f.available]
-            alive_enemies = list(engine.preview_enemies)
-            if self._try_fast_update(fighters_list, alive_enemies, engine):
-                return
+            enemies_list = list(engine.preview_enemies)
+            heal_callback = self._heal_all_outside
 
-            fg.clear_widgets()
-            eg.clear_widgets()
-            if hb:
-                hb.clear_widgets()
-            self._fighter_bar_map = {}
-            self._enemy_bar_map = {}
-            self._cached_fighter_names = []
-            self._cached_enemy_names = []
+        # Map fighter name → roster index for tap dispatch.
+        # Built once per refresh instead of per-card with list.index() (O(N²)).
+        roster_idx_by_name = {f.name: i for i, f in enumerate(engine.fighters)}
 
-            heal_btn = self._build_heal_btn(fighters_list, self._heal_all_outside)
-            if hb:
-                hb.add_widget(heal_btn)
-            self._cached_heal_btn = heal_btn
+        fighters_rv.data = [
+            _fighter_to_arena_data(
+                f,
+                roster_index=roster_idx_by_name.get(f.name, -1),
+                skill_text=self._get_skill_text(f),
+            )
+            for f in fighters_list
+        ]
+        enemies_rv.data = [
+            _enemy_to_arena_data(e, enemy_index=i)
+            for i, e in enumerate(enemies_list)
+        ]
 
-            for idx_f, f in enumerate(fighters_list):
-                real_idx = engine.fighters.index(f)
-                card = build_fighter_pit_card(
-                    f, on_tap=lambda w, fi=real_idx: self._open_fighter_detail(fi),
-                )
-                self._fighter_bar_map[f.name] = card
-                self._cached_fighter_names.append(f.name)
-                fg.add_widget(card)
+        # Heal button — single widget, fine to rebuild when state changes.
+        self._refresh_heal_btn(hb, fighters_list, engine, heal_callback)
 
-            for e in alive_enemies:
-                row = build_enemy_hp_row(
-                    e, show_stats=True,
-                    on_tap=lambda w, en=e: self._show_enemy_popup(en),
-                )
-                self._enemy_bar_map[e.name] = row
-                self._cached_enemy_names.append(e.name)
-                eg.add_widget(row)
+    def _refresh_heal_btn(self, hb, fighters_list, engine, callback):
+        """Rebuild or update the Heal All button. O(1) widgets, not per-unit."""
+        if not hb:
+            return
+        cached = getattr(self, "_cached_heal_btn", None)
+        cached_cb = getattr(self, "_cached_heal_cb", None)
+        # Reuse the same button across refreshes — rebuild only if callback
+        # changed (entering/leaving battle flips between _heal_all_battle /
+        # _heal_all_outside).
+        if cached is None or cached.parent is None or cached_cb is not callback:
+            hb.clear_widgets()
+            btn = self._build_heal_btn(fighters_list, callback)
+            hb.add_widget(btn)
+            self._cached_heal_btn = btn
+            self._cached_heal_cb = callback
+            return
 
-    def _try_fast_update(self, fighters_list, alive_enemies, engine):
-        """Update existing widgets in-place. Returns True if successful."""
-
-        cached_f = getattr(self, "_cached_fighter_names", [])
-        cached_e = getattr(self, "_cached_enemy_names", [])
-        current_f = [f.name for f in fighters_list]
-        current_e = [e.name for e in alive_enemies]
-
-        if cached_f != current_f or cached_e != current_e:
-            return False
-
-        # Update heal button — hide when all full HP
-        heal_btn = getattr(self, "_cached_heal_btn", None)
-        if heal_btn:
-            any_damaged = any(f.hp < f.max_hp for f in fighters_list)
-            total_heal_cost = engine.get_hp_heal_cost(fighters_list)
-            can_heal = total_heal_cost > 0 and engine.gold > 0 and any_damaged
-            heal_btn.text = t("heal_all_cost", cost=f"{fmt_num(total_heal_cost)}") if any_damaged else ""
-            heal_btn.btn_color = ACCENT_GREEN if can_heal else BTN_DISABLED
-            heal_btn.text_color = BG_DARK if can_heal else TEXT_MUTED
-            heal_btn.height = dp(40) if any_damaged else 0
-            heal_btn.opacity = 1 if any_damaged else 0
-            heal_btn.icon_source = "sprites/icons/ic_gold.png" if any_damaged else ""
-
-        # Update fighter cards
-        for f in fighters_list:
-            card = self._fighter_bar_map.get(f.name)
-            if card:
-                update_fighter_pit_card(card, f, skill_text=self._get_skill_text(f))
-
-        # Update enemy HP bars
-        for e in alive_enemies:
-            row = self._enemy_bar_map.get(e.name)
-            if row:
-                update_enemy_hp_row(row, e)
-
-        return True
+        any_damaged = any(f.hp < f.max_hp for f in fighters_list)
+        total_heal_cost = engine.get_hp_heal_cost(fighters_list)
+        can_heal = total_heal_cost > 0 and engine.gold > 0 and any_damaged
+        cached.text = t("heal_all_cost", cost=f"{fmt_num(total_heal_cost)}") if any_damaged else ""
+        cached.btn_color = ACCENT_GREEN if can_heal else BTN_DISABLED
+        cached.text_color = BG_DARK if can_heal else TEXT_MUTED
+        cached.height = dp(40) if any_damaged else 0
+        cached.opacity = 1 if any_damaged else 0
+        cached.icon_source = "sprites/icons/ic_gold.png" if any_damaged else ""
 
     def _heal_single_fighter(self, fighter_idx, in_battle):
         """Heal a single fighter's HP. Works both in and outside battle."""
@@ -378,14 +343,27 @@ class ArenaScreen(BaseScreen):
             return True
         return False
 
+    def _find_unit_view(self, unit_name, is_player):
+        """Locate the currently-visible ArenaUnitCardView for a unit, or None.
+
+        RecycleView pool recycles widgets on scroll, so we can't cache a
+        name→widget map like the old code did. We walk the visible views
+        (always small — one screenful). Off-screen units intentionally skip
+        flash/sprite animations since the user can't see them.
+        """
+        rv_id = "battle_fighters_rv" if is_player else "battle_enemies_rv"
+        rv = self.ids.get(rv_id)
+        role = "fighter" if is_player else "enemy"
+        return find_arena_view_by_name(rv, unit_name, role=role)
+
     def _flash_damage(self, defender_name, is_player):
         """Flash the HP bar of a damaged unit + shake the card."""
-        bar_map = self._fighter_bar_map if is_player else self._enemy_bar_map
-        if hasattr(self, '_fighter_bar_map') and defender_name in bar_map:
-            widget = bar_map[defender_name]
-            flash_hp_bar(widget)
-            self._shake_widget(widget)
-            self._set_sprite_frame(widget, "hurt", revert_delay=0.25)
+        widget = self._find_unit_view(defender_name, is_player)
+        if widget is None:
+            return
+        flash_hp_bar(widget)
+        self._shake_widget(widget)
+        self._set_sprite_frame(widget, "hurt", revert_delay=0.25)
 
     def _shake_widget(self, widget, intensity=None, duration=0.15):
         """Quick horizontal shake for hit reaction."""
@@ -564,7 +542,6 @@ class ArenaScreen(BaseScreen):
                 engine.spawn_boss_enemy()
             else:
                 engine._spawn_enemy()
-            self._cached_enemy_names = []
             if engine.should_show_interstitial():
                 ad_manager.show_interstitial()
             if engine.wins % 10 == 0:
@@ -585,9 +562,9 @@ class ArenaScreen(BaseScreen):
 
             # Animate attacker sprite on attack
             if ev.event_type == "attack" and ev.damage > 0 and ev.attacker:
-                atk_map = self._enemy_bar_map if ev.is_boss else self._fighter_bar_map
-                if hasattr(self, '_fighter_bar_map') and ev.attacker in atk_map:
-                    self._set_sprite_frame(atk_map[ev.attacker], "attack", revert_delay=0.3)
+                widget = self._find_unit_view(ev.attacker, is_player=not ev.is_boss)
+                if widget is not None:
+                    self._set_sprite_frame(widget, "attack", revert_delay=0.3)
 
             # Flash HP bar of defender on hit
             if ev.event_type == "attack" and ev.damage > 0 and ev.defender:

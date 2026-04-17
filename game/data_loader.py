@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """Centralized data loader — singleton that loads all JSON data at startup."""
 
 import json
@@ -78,12 +78,15 @@ class DataLoader:
             _log.info("[DataLoader] No translation file for '%s'", lang_code)
             return
 
-        def _apply_to_list(items, section_tr):
-            """Apply translations to a list of dicts keyed by 'id'."""
+        def _apply_to_list(items, section_tr, skip=()):
+            """Apply translations to a list of dicts keyed by 'id'.
+            Fields in `skip` are left at their English originals."""
             for item in items:
                 item_tr = section_tr.get(item.get("id", ""))
                 if item_tr:
                     for field in ("name", "desc", "description", "title", "text"):
+                        if field in skip:
+                            continue
                         if field in item_tr:
                             item[field] = item_tr[field]
 
@@ -96,11 +99,14 @@ class DataLoader:
                         if field in item_tr:
                             item[field] = item_tr[field]
 
-        # Equipment
-        _apply_to_list(self._weapons, tr.get("weapons", {}))
-        _apply_to_list(self._armor, tr.get("armor", {}))
-        _apply_to_list(self._accessories, tr.get("accessories", {}))
-        _apply_to_list(self._relics, tr.get("relics", {}))
+        # Equipment — item NAMES stay English by explicit request
+        # (descriptions still get translated for flavor). Users prefer
+        # seeing "Blade of Ruin", not "Клинок Погибели", so the same
+        # label shows up in forge, inventory, fighter card, and log.
+        _apply_to_list(self._weapons,     tr.get("weapons", {}),     skip=("name",))
+        _apply_to_list(self._armor,       tr.get("armor", {}),       skip=("name",))
+        _apply_to_list(self._accessories, tr.get("accessories", {}), skip=("name",))
+        _apply_to_list(self._relics,      tr.get("relics", {}),      skip=("name",))
         # Game data
         _apply_to_list(self._achievements, tr.get("achievements", {}))
         _apply_to_list(self._enemies, tr.get("enemies", {}))
