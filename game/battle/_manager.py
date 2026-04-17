@@ -74,6 +74,13 @@ class BattleManager(_PlayerAttackPhaseMixin, _EnemyAttackPhaseMixin, _SupportPha
             return [BattleEvent("message", message=t("battle_no_fighters"))]
 
         boss = self.engine.current_enemy
+        if boss is None:
+            # UI normally guarantees spawn_boss_enemy() was called first, but
+            # be defensive: spawn one now rather than AttributeError downstream.
+            self.engine.spawn_boss_enemy()
+            boss = self.engine.current_enemy
+            if boss is None:
+                return [BattleEvent("message", message=t("battle_no_fighters"))]
 
         self.state = BattleState()
         self.state.player_fighters = fighters

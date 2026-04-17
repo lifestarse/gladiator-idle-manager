@@ -68,7 +68,13 @@ class _PersistenceWriteMixin:
 
     def _write_save_to_disk(self, data):
         """Serialize `data` and atomically replace the save file. I/O only;
-        may be called from a background thread via save_async()."""
+        may be called from a background thread via save_async().
+
+        Uses os.replace (not os.rename) for the final step so the write
+        succeeds even if backup rotation fails: on Windows os.rename
+        raises "file already exists" when the target is present. See
+        WinError 183 path we hit on concurrent save() + save_async().
+        """
         save_path = self.SAVE_PATH
         tmp_path = save_path + ".tmp"
         with open(tmp_path, "w") as f:
@@ -76,12 +82,10 @@ class _PersistenceWriteMixin:
         if os.path.exists(save_path):
             backup_path = save_path + ".bak"
             try:
-                if os.path.exists(backup_path):
-                    os.remove(backup_path)
-                os.rename(save_path, backup_path)
+                os.replace(save_path, backup_path)
             except OSError:
                 pass
-        os.rename(tmp_path, save_path)
+        os.replace(tmp_path, save_path)
 
     def save(self):
         # Don't overwrite real save with fresh-start data after failed load

@@ -177,6 +177,7 @@ def calc_item_stats(item, fighter=None):
 def get_dynamic_shop_items(arena_tier, surgeon_uses):
     """Generate shop items: consumables. Equipment is in the Forge."""
     from game.localization import t
+    from ._scaling import DifficultyScaler  # local: avoids circular at module load
     consumables = [
         {
             "id": "heal_potion", "name": t("blood_salve"),
