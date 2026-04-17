@@ -63,25 +63,10 @@ _VIEW_FLAGS = {
 }
 
 
-# `from X import *` skips underscore names unless listed in __all__. Also
-# include public names from game.theme (wildcard) so they propagate.
-import game.theme as _theme_mod
-__all__ = [n for n in dir(_theme_mod) if not n.startswith("_")] + [
-    "App", "BoxLayout", "Popup", "Clock", "dp", "sp",
-    "NumericProperty", "StringProperty", "ListProperty", "BooleanProperty",
-    "BaseScreen", "AutoShrinkLabel", "MinimalButton", "BaseCard", "FloatingText",
-    "_m", "fmt_num", "RARITY_COLORS",
-    "get_upgrade_tier", "item_display_name",
-    "get_max_upgrade", "RARITY_MAX_UPGRADE",
-    "SLOTS",
-    "popup_color",
-    "UPGRADE_BONUS_PER_LEVEL", "RELIC_STAT_SPLIT", "ACCESSORY_HP_MULT",
-    "t",
-    "_batch_fill_grid",
-    "refresh_forge_grid", "build_item_info_card", "build_tab_row",
-    "bind_text_wrap",
-    "_safe_clear", "_safe_rebind",
-    "BC", "VIEW_STATES", "_VIEW_FLAGS",
-]
-
-
+# Star-imports skip underscore names. Build __all__ dynamically from
+# everything imported above so mixin files see BaseScreen, App, etc.
+# `_m` is explicitly added (underscore names are skipped by the filter).
+import game.theme as _theme_mod  # noqa: F401
+import game.models as _m  # module alias for dynamic wire-data refs
+__all__ = [n for n in list(globals().keys())
+           if not n.startswith('__') and n != 'annotations']

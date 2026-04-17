@@ -1,34 +1,24 @@
-# Build: 32
+# Build: 11
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.clock import Clock
-from kivy.properties import NumericProperty, StringProperty, ListProperty, BooleanProperty
+from kivy.uix.textinput import TextInput
+from kivy.properties import StringProperty, ListProperty
 from kivy.metrics import dp, sp
-from kivy.uix.image import Image as KvImage
-from kivy.uix.scrollview import ScrollView
-from kivy.effects.scroll import ScrollEffect
 from game.base_screen import BaseScreen
-from game.widgets import AutoShrinkLabel, MinimalButton, BaseCard
-import game.models as _m
-from game.models import (
-    fmt_num, RARITY_COLORS,
-    FORGE_WEAPONS, FORGE_ARMOR, FORGE_ACCESSORIES,
-    item_display_name,
-)
+from game.widgets import AutoShrinkLabel, MinimalButton
+from game.models import fmt_num, SHARD_TIERS
 from game.theme import *
 from game.theme import popup_color
 from game.localization import t
+from game.achievements import ACHIEVEMENTS
+from game.story import STORY_CHAPTERS
 from game.ui_helpers import (
-    refresh_roster_grid,
-    build_item_info_card,
-    _roster_callbacks,
-    _perk_callbacks,
+    refresh_achievement_grid,
+    refresh_diamond_shop_grid,
+    grid_batch,
     bind_text_wrap,
-    make_styled_popup,
 )
-from game.screens.shared import _safe_clear, _safe_rebind
 
 
 # Star-imports skip underscore names. Build __all__ dynamically from
