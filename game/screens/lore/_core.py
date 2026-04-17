@@ -5,9 +5,10 @@ from ._screen_imports import _m
 from .logsmixin import _LogsMixin
 from .statsquestsmixin import _StatsQuestsMixin
 from .diamondsmixin import _DiamondsMixin
+from .event_logs_mixin import _EventLogsMixin
 
 
-class LoreScreen(BaseScreen, _LogsMixin, _StatsQuestsMixin, _DiamondsMixin):
+class LoreScreen(BaseScreen, _LogsMixin, _StatsQuestsMixin, _DiamondsMixin, _EventLogsMixin):
     achievements_data = ListProperty()
 
     diamond_shop_data = ListProperty()

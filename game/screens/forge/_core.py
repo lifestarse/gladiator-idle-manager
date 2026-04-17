@@ -6,9 +6,14 @@ from .upgrademixin import _UpgradeMixin
 from .enchantmixin import _EnchantMixin
 from .equipswapmixin import _EquipSwapMixin
 from .shopmixin import _ShopMixin
+from ._viewstate import _ViewStateMixin
+from ._scrollmixin import _ScrollMixin
+from ._tabsmixin import _TabsMixin
+from .itemdescmixin import _ItemDescMixin
+from .equipfighterpopupmixin import _EquipFighterPopupMixin
 
 
-class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _EquipSwapMixin, _ShopMixin):
+class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _EquipSwapMixin, _ShopMixin, _ViewStateMixin, _ScrollMixin, _TabsMixin, _ItemDescMixin, _EquipFighterPopupMixin):
     forge_items = ListProperty()
 
     view_state = StringProperty("shop")
@@ -51,46 +56,11 @@ class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _Eq
 
     lbl_top_title = StringProperty("")
 
-    def on_view_state(self, inst, new_state):
-        """Derive the 6 KV-bound flags from view_state.
-
-        Kivy calls this whenever view_state changes. Keeps the flags consistent
-        so two contradicting booleans cannot both be True.
-        """
-        flags = _VIEW_FLAGS.get(new_state)
-        if flags is None:
-            return
-        (self.show_inventory, self._forge_rv_active, self._inventory_rv_active,
-         self._show_inv_tabs, self.weapon_upgrade_active,
-         self.enchant_active) = flags
-
-    def _set_view(self, new_state):
-        """Transition to a new view state. No-op if already there."""
-        if new_state not in _VIEW_FLAGS:
-            return
-        self.view_state = new_state  # triggers on_view_state
-
     _preview_item = None
 
     _pending_state = None
 
     _enchant_source = None
-
-    def _sparkle_effect(self, widget, count=5):
-        """Spawn sparkle particles around a widget on upgrade success."""
-        import random
-        parent = widget.parent
-        if not parent:
-            return
-        for _ in range(count):
-            ft = FloatingText(
-                text="*", font_size="11sp", bold=True,
-                color=list(ACCENT_GOLD),
-                center_x=widget.center_x + random.randint(-20, 20),
-                y=widget.center_y + random.randint(-10, 10),
-                size_hint=(None, None),
-            )
-            parent.add_widget(ft)
 
     _enchant_idx = None
 
@@ -177,45 +147,6 @@ class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _Eq
         self._cross_screen_pending = False
         self._apply_pending_state()
 
-    def _enter_detail_mode(self):
-        """Kept for backward-compat. view_state is now managed by the caller
-        via _set_view; this just invalidates cached layout keys."""
-        self._inv_tabs_key = None
-
-    def _reset_forge_state(self, keep_inventory=False):
-        """Reset navigation payload + view state. Call on enter or back."""
-        self.inv_detail_idx = -1
-        self.eq_detail_fighter = -1
-        self.eq_detail_slot = ""
-        self._enchant_source = None
-        self._enchant_idx = None
-        self._enchant_item = None
-        self._enchant_fighter = None
-        self._preview_item = None
-        self._inv_tabs_key = None
-        self._shop_tabs_key = None
-        self._inv_grid_key = None
-        self._shard_grid_key = None
-        self._inv_card_cache = {}
-        # Return to the appropriate list view
-        self._set_view("inventory_list" if keep_inventory else "shop")
-
-    def _scroll_key(self):
-        if self.show_inventory:
-            return f"inv_{self.inventory_tab}_{self.inventory_rarity_filter}"
-        return f"shop_{self.forge_tab}_{self.shop_rarity_filter}"
-
-    def _save_scroll(self):
-        sv = self.ids.get("forge_scroll")
-        if sv:
-            self._scroll_positions[self._scroll_key()] = sv.scroll_y
-
-    def _restore_scroll(self):
-        sv = self.ids.get("forge_scroll")
-        if sv:
-            pos = self._scroll_positions.get(self._scroll_key(), 1.0)
-            Clock.schedule_once(lambda dt: setattr(sv, 'scroll_y', pos), 0)
-
     def refresh_forge(self):
         engine = App.get_running_app().engine
         self._update_top_bar()
@@ -301,59 +232,6 @@ class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _Eq
         self.inventory_btn_text = t("inventory_count", n=inv_count) if inv_count > 0 else t("inventory_label")
         # view_state already "shop" — derived flags set by on_view_state.
         refresh_forge_grid(self)
-
-    def set_forge_tab(self, tab):
-        self._save_scroll()
-        self._reset_forge_state()
-        self.forge_tab = tab
-        self.refresh_forge()
-        self._restore_scroll()
-
-    def toggle_inventory(self):
-        self._save_scroll()
-        was_inv = self.show_inventory
-        # _reset_forge_state resets to "shop"; if we were in shop, flip to inv.
-        self._reset_forge_state(keep_inventory=not was_inv)
-        self.forge_tab = "weapon"
-        self.refresh_forge()
-        self._restore_scroll()
-
-    def set_inventory_tab(self, tab):
-        self._save_scroll()
-        self.inventory_tab = tab
-        self._inv_grid_key = None
-        self._shard_grid_key = None
-        self.refresh_forge()
-        self._restore_scroll()
-
-    def set_rarity_filter(self, rarity):
-        self._save_scroll()
-        self.inventory_rarity_filter = rarity
-        self._inv_grid_key = None
-        self.refresh_forge()
-        self._restore_scroll()
-
-    def set_equip_filter(self, value):
-        self._save_scroll()
-        self.inventory_equip_filter = value
-        self._inv_grid_key = None
-        self.refresh_forge()
-        self._restore_scroll()
-
-    def set_shop_rarity_filter(self, rarity):
-        self._save_scroll()
-        self.shop_rarity_filter = rarity
-        self.refresh_forge()
-        self._restore_scroll()
-
-    def toggle_shop_sort(self, *a):
-        self.shop_sort = "worst" if self.shop_sort == "best" else "best"
-        self.refresh_forge()
-
-    def toggle_inventory_sort(self, *a):
-        self.inventory_sort = "worst" if self.inventory_sort == "best" else "best"
-        self._inv_grid_key = None
-        self.refresh_forge()
 
     def on_back_pressed(self):
         depth = getattr(self, '_entry_depth', 0)

@@ -7,9 +7,12 @@ from .injuriesmixin import _InjuriesMixin
 from .fighterdetailmixin import _FighterDetailMixin
 from .perksmixin import _PerksMixin
 from .equipmentmixin import _EquipmentMixin
+from .fighterbuildmixin import _FighterBuildMixin
+from .skillsmixin import _SkillsMixin
+from .classdetailmixin import _ClassDetailMixin
 
 
-class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, _PerksMixin, _EquipmentMixin):
+class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, _PerksMixin, _EquipmentMixin, _FighterBuildMixin, _SkillsMixin, _ClassDetailMixin):
     gladiators_data = ListProperty()
 
     graveyard_text = StringProperty("")
