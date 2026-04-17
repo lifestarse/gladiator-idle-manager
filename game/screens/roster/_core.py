@@ -1,6 +1,7 @@
 # Build: 1
 """RosterScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
+from ._screen_imports import _roster_callbacks, _perk_callbacks  # underscore names skipped by `import *`
 from .hiremixin import _HireMixin
 from .injuriesmixin import _InjuriesMixin
 from .fighterdetailmixin import _FighterDetailMixin

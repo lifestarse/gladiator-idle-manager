@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 11
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -334,12 +334,17 @@ class LoreScreen(BaseScreen):
         rv = self.ids.get("event_log_rv")
         if rv is not None:
             data = []
-            for entry in reversed(engine.event_log):
+            # Iterate by index (not reversed()) so we can pass the real
+            # event_log index through for the detail view to pull from.
+            for idx in range(len(engine.event_log) - 1, -1, -1):
+                entry = engine.event_log[idx]
                 etype = entry.get("type", "?")
                 ts = entry.get("t", 0)
                 time_str = _time.strftime("%d.%m %H:%M", _time.localtime(ts)) if ts else "?"
                 color = _EVENT_COLORS.get(etype, TEXT_PRIMARY)
                 data.append({
+                    'log_idx': idx,
+                    '_lore': self,
                     'color': list(color),
                     'label': t(f"evt_{etype}"),
                     'time_text': time_str,
@@ -398,6 +403,75 @@ class LoreScreen(BaseScreen):
                 )
                 grid.add_widget(card)
 
+    def _show_event_detail(self, log_idx):
+        """Render a full event entry as a list of field rows.
+
+        Re-uses `battle_detail_rv` (BattleDetailLineView-based RV) so we
+        don't need a second RV widget in KV. Each row is just a
+        `{text, color, font_size, height}` dict.
+        """
+        import time as _time
+        engine = App.get_running_app().engine
+        if log_idx < 0 or log_idx >= len(engine.event_log):
+            return
+        entry = engine.event_log[log_idx]
+        self.lore_subview = "event_detail"
+
+        rv = self.ids.get("battle_detail_rv")
+        if rv is None:
+            return
+
+        etype = entry.get("type", "?")
+        type_color = {
+            "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
+            "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
+            "sell": TEXT_SECONDARY, "equip": ACCENT_BLUE, "upgrade": ACCENT_PURPLE,
+            "enchant": ACCENT_PURPLE, "heal": ACCENT_GREEN,
+            "expedition_send": ACCENT_CYAN,
+        }.get(etype, TEXT_PRIMARY)
+
+        ts = entry.get("t", 0)
+        time_str = _time.strftime("%d.%m.%Y %H:%M:%S", _time.localtime(ts)) if ts else "?"
+
+        data = [
+            {
+                'text': t(f"evt_{etype}"),
+                'color': type_color, 'bold': True,
+                'font_size': '13sp', 'height': dp(30),
+            },
+            {
+                'text': time_str, 'color': TEXT_MUTED,
+                'font_size': '10sp', 'height': dp(20),
+            },
+            {
+                'text': self._format_event_detail(entry),
+                'color': TEXT_SECONDARY,
+                'font_size': '11sp', 'height': dp(26),
+            },
+            {
+                'text': "─" * 12, 'color': TEXT_MUTED,
+                'font_size': '10sp', 'height': dp(16),
+            },
+        ]
+        # Dump remaining fields (skip already-rendered t/type) as key=value rows
+        for k in sorted(entry.keys()):
+            if k in ("t", "type"):
+                continue
+            v = entry[k]
+            if isinstance(v, (list, dict)):
+                # Keep it short — just length + type
+                v_str = f"<{type(v).__name__}, {len(v)} items>"
+            else:
+                v_str = str(v)
+            data.append({
+                'text': f"{k}: {v_str}",
+                'color': TEXT_PRIMARY,
+                'font_size': '10sp', 'height': dp(20),
+            })
+
+        rv.data = data
+        rv.scroll_y = 1
+
     @staticmethod
     def _format_event_detail(entry):
         etype = entry.get("type", "")
@@ -432,6 +506,9 @@ class LoreScreen(BaseScreen):
     def on_back_pressed(self):
         if self.lore_subview == "blog_detail":
             self._show_battle_log()
+            return True
+        if self.lore_subview == "event_detail":
+            self._show_event_log()
             return True
         if self.lore_subview:
             self._close_subview()

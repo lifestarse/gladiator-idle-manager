@@ -1,6 +1,7 @@
 # Build: 1
 """ForgeScreen _InventoryMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
+from ._screen_imports import _batch_fill_grid
 
 
 class _InventoryMixin:

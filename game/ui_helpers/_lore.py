@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Auto-generated submodule of game.ui_helpers package."""
 from contextlib import contextmanager
 import time
@@ -218,6 +218,9 @@ class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
     Plain Label with shorten=True (not AutoShrinkLabel) — same reason
     as BattleLogCardView: AutoShrinkLabel's text-fit cascade is
     expensive when strings are long.
+
+    Tap opens a detail view for the event (routes to
+    LoreScreen._show_event_detail).
     """
 
     def __init__(self, **kwargs):
@@ -227,6 +230,8 @@ class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
         kwargs.setdefault('size_hint_y', None)
         kwargs.setdefault('height', dp(48))
         super().__init__(**kwargs)
+        self._log_idx = -1
+        self._lore_screen = None
 
         self._card = BaseCard(
             orientation="vertical", size_hint_y=1,
@@ -261,13 +266,21 @@ class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
         self._card.add_widget(self._detail_lbl)
         self.add_widget(self._card)
 
+        _bind_long_tap(self._card, lambda w: self._on_tap())
+
     def refresh_view_attrs(self, rv, index, data):
+        self._log_idx = data.get('log_idx', -1)
+        self._lore_screen = data.get('_lore')
         color = list(data.get('color', TEXT_PRIMARY))
         self._card.border_color = color
         self._label_lbl.text = data.get('label', '')
         self._label_lbl.color = color
         self._time_lbl.text = data.get('time_text', '')
         self._detail_lbl.text = data.get('detail', '')
+
+    def _on_tap(self):
+        if self._lore_screen and self._log_idx >= 0:
+            self._lore_screen._show_event_detail(self._log_idx)
 
 
 def build_achievement_card(ach):

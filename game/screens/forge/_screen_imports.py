@@ -63,3 +63,25 @@ _VIEW_FLAGS = {
 }
 
 
+# `from X import *` skips underscore names unless listed in __all__. Also
+# include public names from game.theme (wildcard) so they propagate.
+import game.theme as _theme_mod
+__all__ = [n for n in dir(_theme_mod) if not n.startswith("_")] + [
+    "App", "BoxLayout", "Popup", "Clock", "dp", "sp",
+    "NumericProperty", "StringProperty", "ListProperty", "BooleanProperty",
+    "BaseScreen", "AutoShrinkLabel", "MinimalButton", "BaseCard", "FloatingText",
+    "_m", "fmt_num", "RARITY_COLORS",
+    "get_upgrade_tier", "item_display_name",
+    "get_max_upgrade", "RARITY_MAX_UPGRADE",
+    "SLOTS",
+    "popup_color",
+    "UPGRADE_BONUS_PER_LEVEL", "RELIC_STAT_SPLIT", "ACCESSORY_HP_MULT",
+    "t",
+    "_batch_fill_grid",
+    "refresh_forge_grid", "build_item_info_card", "build_tab_row",
+    "bind_text_wrap",
+    "_safe_clear", "_safe_rebind",
+    "BC", "VIEW_STATES", "_VIEW_FLAGS",
+]
+
+

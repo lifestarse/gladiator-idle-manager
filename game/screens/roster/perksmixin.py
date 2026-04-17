@@ -1,6 +1,7 @@
 # Build: 1
 """RosterScreen _PerksMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
+from ._screen_imports import _m
 
 
 class _PerksMixin:

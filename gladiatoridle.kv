@@ -1,4 +1,4 @@
-# Build: 46
+# Build: 47
 #:kivy 2.0
 #:import dp kivy.metrics.dp
 #:import sp kivy.metrics.sp
@@ -741,9 +741,9 @@
             effect_cls: ScrollEffect
             scroll_distance: dp(8)
             scroll_timeout: 50
-            size_hint_y: 1 if root.lore_subview == 'blog_detail' else 0.001
-            opacity: 1 if root.lore_subview == 'blog_detail' else 0
-            disabled: root.lore_subview != 'blog_detail'
+            size_hint_y: 1 if root.lore_subview in ('blog_detail', 'event_detail') else 0.001
+            opacity: 1 if root.lore_subview in ('blog_detail', 'event_detail') else 0
+            disabled: root.lore_subview not in ('blog_detail', 'event_detail')
             RecycleBoxLayout:
                 default_size: None, dp(18)
                 default_size_hint: 1, None
@@ -808,9 +808,9 @@
             effect_cls: ScrollEffect
             scroll_distance: dp(8)
             scroll_timeout: 50
-            size_hint_y: 0.001 if (root.lore_subview in ('blog_list', 'blog_detail', 'event_list') or (root.lore_tab == 'achievements' and not root.lore_subview)) else 1
-            opacity: 0 if (root.lore_subview in ('blog_list', 'blog_detail', 'event_list') or (root.lore_tab == 'achievements' and not root.lore_subview)) else 1
-            disabled: root.lore_subview in ('blog_list', 'blog_detail', 'event_list') or (root.lore_tab == 'achievements' and not root.lore_subview)
+            size_hint_y: 0.001 if (root.lore_subview in ('blog_list', 'blog_detail', 'event_list', 'event_detail') or (root.lore_tab == 'achievements' and not root.lore_subview)) else 1
+            opacity: 0 if (root.lore_subview in ('blog_list', 'blog_detail', 'event_list', 'event_detail') or (root.lore_tab == 'achievements' and not root.lore_subview)) else 1
+            disabled: root.lore_subview in ('blog_list', 'blog_detail', 'event_list', 'event_detail') or (root.lore_tab == 'achievements' and not root.lore_subview)
             GridLayout:
                 id: lore_grid
                 cols: 1
