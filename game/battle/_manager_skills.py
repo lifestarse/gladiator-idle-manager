@@ -10,6 +10,17 @@ from ._resolve import _resolve_attack
 
 
 class _SkillsMixin:
+    # Bulk skill-activation summary templates. When N fighters activate the
+    # same skill type in one phase, the N per-fighter events collapse into
+    # one "{n} fighters rally!"-style summary. Untagged skills fall through.
+    _SKILL_SUMMARY_KEYS = {
+        "buff_team_atk":         ("skill_rally_many",       ("pct",)),
+        "guaranteed_crit_dodge": ("skill_shadowstep_many",  ()),
+        "multi_attack":          ("skill_frenzy_many",      ()),
+        "team_damage_reduction": ("skill_shield_wall_many", ("pct",)),
+        "heal_team":             ("skill_heal_team_many",   ()),
+    }
+
     @classmethod
     def _collapse_skill_events(cls, phase_events):
         """Group events by skill_type and replace N same-type events with

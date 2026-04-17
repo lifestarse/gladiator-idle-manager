@@ -15,6 +15,10 @@ from ._manager_stats import _StatsMixin
 
 
 class BattleManager(_PlayerAttackPhaseMixin, _EnemyAttackPhaseMixin, _SupportPhasesMixin, _SkillsMixin, _StatsMixin):
+    # Cap on turn count for the "skip to end" path — prevents infinite battle
+    # loops if both sides keep dodging / healing.
+    MAX_SKIP_BATTLE_TURNS = 500
+
     def __init__(self, engine):
         self.engine = engine
         self.state = BattleState()

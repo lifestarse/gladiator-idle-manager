@@ -86,6 +86,26 @@ def test_engine_names_resolve():
     assert not bad, f"Unresolved globals in engine: {bad}"
 
 
+def test_no_missing_class_attrs_from_splits():
+    """Classes that went through the mixin-splitter sometimes lose their
+    module-level / class-level `UPPER_CASE = ...` constants because the
+    splitter only moved FunctionDefs. This test checks a curated list of
+    well-known constants that MUST exist on the split classes.
+    """
+    from game.battle import BattleManager
+    from game.engine import GameEngine
+
+    expected = [
+        (BattleManager, "MAX_SKIP_BATTLE_TURNS"),
+        (BattleManager, "_SKILL_SUMMARY_KEYS"),
+        (GameEngine,   "MAX_BATTLE_LOG_LINES"),
+        (GameEngine,   "BATTLE_LOG_HEAD"),
+        (GameEngine,   "BATTLE_LOG_TAIL"),
+    ]
+    missing = [(cls.__name__, attr) for (cls, attr) in expected if not hasattr(cls, attr)]
+    assert not missing, f"Split classes missing class-level constants: {missing}"
+
+
 def test_cross_package_name_resolution():
     """Walk every submodule of every split package and flag any method
     that does LOAD_GLOBAL on a name defined in a sibling submodule but
