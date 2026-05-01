@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """CloudSaveManager core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
@@ -48,7 +48,7 @@ class CloudSaveManager(_CloudAuthMixin, _CloudIOMixin):
             self._java["GoogleAuthUtil"] = autoclass(
                 "com.google.android.gms.auth.GoogleAuthUtil"
             )
-            print("[CloudSave] Google Play Services classes loaded")
+            _log.info("[CloudSave] Google Play Services classes loaded")
 
             # Build GSO on main thread
             self._gso = self._build_gso()

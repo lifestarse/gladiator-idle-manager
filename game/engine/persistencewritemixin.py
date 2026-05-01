@@ -1,12 +1,8 @@
-# Build: 1
-"""_PersistenceMixin _PersistenceWriteMixin."""
-# Build: 1
-"""GameEngine _PersistenceMixin — extracted from monolithic engine.py."""
+# Build: 4
+"""GameEngine _PersistenceWriteMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
 
-
-from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
 
 class _PersistenceWriteMixin:
     def _build_save_data(self):
@@ -64,6 +60,7 @@ class _PersistenceWriteMixin:
             "total_injuries_healed": self.total_injuries_healed,
             "total_expeditions_completed": self.total_expeditions_completed,
             "lore_unlocked": self.lore_unlocked,
+            "scripts": self.scripts.to_dict() if hasattr(self, "scripts") else {},
         }
 
     def _write_save_to_disk(self, data):
@@ -83,14 +80,17 @@ class _PersistenceWriteMixin:
             backup_path = save_path + ".bak"
             try:
                 os.replace(save_path, backup_path)
-            except OSError:
-                pass
+            except OSError as exc:
+                # Non-fatal: on Windows, concurrent .bak locks fail here.
+                # The atomic tmp→save replace below still lands correctly;
+                # we just lose this rotation cycle's backup.
+                _log.debug("[ENGINE] backup rotation failed (non-fatal): %s", exc)
         os.replace(tmp_path, save_path)
 
     def save(self):
         # Don't overwrite real save with fresh-start data after failed load
         if getattr(self, '_load_failed', False):
-            print(f"[ENGINE] save() BLOCKED — load had failed")
+            _log.warning("[ENGINE] save() BLOCKED — load had failed")
             return {}
         # NOTE: _migrate_all_items is NOT called here. It replaces items in
         # inventory/equipment with fresh dicts (dict(template) + preserved
@@ -143,9 +143,9 @@ class _PersistenceWriteMixin:
                     chained_new = on_done
                     def _both(ok, a=chained_prev, b=chained_new):
                         try: a(ok)
-                        except Exception as e: print(f"[ENGINE] save cb: {e}")
+                        except Exception as e: _log.warning("[ENGINE] save cb: %s", e)
                         try: b(ok)
-                        except Exception as e: print(f"[ENGINE] save cb: {e}")
+                        except Exception as e: _log.warning("[ENGINE] save cb: %s", e)
                     on_done = _both
                 elif prev_cb is not None and on_done is None:
                     on_done = prev_cb
@@ -176,13 +176,13 @@ class _PersistenceWriteMixin:
                 self._write_save_to_disk(data)
                 ok = True
             except Exception as e:
-                print(f"[ENGINE] save_async failed: {e}")
+                _log.warning("[ENGINE] save_async failed: %s", e)
 
             if cb is not None:
                 try:
                     cb(ok)
                 except Exception as e:
-                    print(f"[ENGINE] save_async on_done failed: {e}")
+                    _log.warning("[ENGINE] save_async on_done failed: %s", e)
 
     def get_save_data_json(self) -> str:
         return json.dumps(self.save())

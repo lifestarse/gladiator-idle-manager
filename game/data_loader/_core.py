@@ -1,11 +1,12 @@
-# Build: 1
+# Build: 3
 """DataLoader core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _data_dir, _log
 from .loadmethodsmixin import _LoadMethodsMixin
+from .translationmixin import _TranslationMixin
 
 
-class DataLoader(_LoadMethodsMixin):
+class DataLoader(_LoadMethodsMixin, _TranslationMixin):
     _instance = None
 
     def __new__(cls):
@@ -46,91 +47,6 @@ class DataLoader(_LoadMethodsMixin):
 
         self._loaded = True
         _log.info("[DataLoader] All data loaded successfully")
-
-    def apply_translations(self, lang_code):
-        """Overlay translated name/desc from data/languages/data_{lang}.json.
-
-        Merges translated text into already-loaded data dicts in-place.
-        Falls back to original English if translation file is missing.
-        """
-        if lang_code == "en":
-            return  # English is the base language in data files
-        path = os.path.join(_data_dir(), "languages", f"data_{lang_code}.json")
-        tr = self._read_json(path)
-        if not tr:
-            _log.info("[DataLoader] No translation file for '%s'", lang_code)
-            return
-
-        def _apply_to_list(items, section_tr, skip=()):
-            """Apply translations to a list of dicts keyed by 'id'.
-            Fields in `skip` are left at their English originals."""
-            for item in items:
-                item_tr = section_tr.get(item.get("id", ""))
-                if item_tr:
-                    for field in ("name", "desc", "description", "title", "text"):
-                        if field in skip:
-                            continue
-                        if field in item_tr:
-                            item[field] = item_tr[field]
-
-        def _apply_to_dict(data, section_tr):
-            """Apply translations to a dict keyed by id."""
-            for key, item in data.items():
-                item_tr = section_tr.get(key)
-                if item_tr and isinstance(item, dict):
-                    for field in ("name", "desc", "description"):
-                        if field in item_tr:
-                            item[field] = item_tr[field]
-
-        # Equipment — item NAMES stay English by explicit request
-        # (descriptions still get translated for flavor). Users prefer
-        # seeing "Blade of Ruin", not "Клинок Погибели", so the same
-        # label shows up in forge, inventory, fighter card, and log.
-        _apply_to_list(self._weapons,     tr.get("weapons", {}),     skip=("name",))
-        _apply_to_list(self._armor,       tr.get("armor", {}),       skip=("name",))
-        _apply_to_list(self._accessories, tr.get("accessories", {}), skip=("name",))
-        _apply_to_list(self._relics,      tr.get("relics", {}),      skip=("name",))
-        # Game data
-        _apply_to_list(self._achievements, tr.get("achievements", {}))
-        _apply_to_list(self._enemies, tr.get("enemies", {}))
-        _apply_to_list(self._injuries, tr.get("injuries", {}))
-        _apply_to_list(self._expeditions, tr.get("expeditions", {}))
-        _apply_to_list(self._lore, tr.get("lore", {}))
-        # Keyed dicts
-        _apply_to_dict(self._enchantments, tr.get("enchantments", {}))
-        _apply_to_dict(self._boss_modifiers, tr.get("boss_modifiers", {}))
-        _apply_to_dict(self._mutators, tr.get("mutators", {}))
-        # Fighter classes (nested: perks, passive, active_skill)
-        classes_tr = tr.get("classes", {})
-        for cls_id, cls_data in self._fighter_classes.items():
-            cls_tr = classes_tr.get(cls_id)
-            if not cls_tr:
-                continue
-            for field in ("name", "desc", "description"):
-                if field in cls_tr:
-                    cls_data[field] = cls_tr[field]
-            # Passive ability
-            pa_tr = cls_tr.get("passive_ability", {})
-            pa = cls_data.get("passive_ability", {})
-            for field in ("name", "description"):
-                if field in pa_tr:
-                    pa[field] = pa_tr[field]
-            # Active skill
-            as_tr = cls_tr.get("active_skill", {})
-            ask = cls_data.get("active_skill", {})
-            for field in ("name", "description"):
-                if field in as_tr:
-                    ask[field] = as_tr[field]
-            # Perks
-            perks_tr = cls_tr.get("perks", {})
-            for perk in cls_data.get("perk_tree", []):
-                perk_tr = perks_tr.get(perk.get("id", ""))
-                if perk_tr:
-                    for field in ("name", "description"):
-                        if field in perk_tr:
-                            perk[field] = perk_tr[field]
-
-        _log.info("[DataLoader] Translations applied for '%s'", lang_code)
 
     @property
     def fighter_names(self) -> list:
@@ -173,8 +89,23 @@ class DataLoader(_LoadMethodsMixin):
     def injuries_by_id(self) -> dict:
         return getattr(self, '_injuries_by_id', {})
 
-    def pick_random_injury(self, existing_ids=None):
-        """Pick a random injury weighted by chance_weight, avoiding duplicates."""
+    # Tier order from worst → least bad. Used to downgrade an injury one
+    # step when reduce_injury_severity rolls successfully. "permanent" is
+    # included even though the injury picker rarely lands on it; if a
+    # design pass adds permanents to the pool, this stays correct.
+    _SEVERITY_ORDER = ("permanent", "severe", "moderate", "minor")
+
+    def pick_random_injury(self, existing_ids=None,
+                           severity_reduction_chance=0.0):
+        """Pick a random injury weighted by chance_weight, avoiding duplicates.
+
+        If `severity_reduction_chance > 0`, with that probability the rolled
+        injury is downgraded by one severity tier — re-rolled from the same
+        pool but filtered to the lesser-severity bucket. Backs the Bone
+        Setter (medicus) and Defy Death (berserker) perks. If the injury
+        is already 'minor' or no lesser-tier injury exists in the pool,
+        the original pick stands.
+        """
         import random
         pool = self._injuries
         if existing_ids:
@@ -183,6 +114,18 @@ class DataLoader(_LoadMethodsMixin):
                 pool = filtered
         weights = [inj.get("chance_weight", 10) for inj in pool]
         chosen = random.choices(pool, weights=weights, k=1)[0]
+
+        if severity_reduction_chance > 0 and random.random() < severity_reduction_chance:
+            sev = chosen.get("severity", "minor")
+            order = self._SEVERITY_ORDER
+            if sev in order:
+                idx = order.index(sev)
+                if idx + 1 < len(order):
+                    target_sev = order[idx + 1]
+                    lesser = [inj for inj in pool if inj.get("severity") == target_sev]
+                    if lesser:
+                        weights2 = [inj.get("chance_weight", 10) for inj in lesser]
+                        chosen = random.choices(lesser, weights=weights2, k=1)[0]
         return chosen["id"]
 
     @property

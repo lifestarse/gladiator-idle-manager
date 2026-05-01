@@ -1,6 +1,7 @@
-# Build: 1
+# Build: 5
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
+from game.app._shared import _log
 from game.app.appnavmixin import _AppNavMixin
 from game.app.appuimixin import _AppUiMixin
 from game.app.applocalemixin import _AppLocaleMixin
@@ -87,6 +88,8 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
 
     lbl_tab_hunts = StringProperty("")
 
+    lbl_scripts = StringProperty("")
+
     lbl_restore_purchases = StringProperty("")
 
     lbl_cloud_save = StringProperty("")
@@ -163,7 +166,7 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
                 if leaderboard_manager.is_ready:
                     self.engine.submit_scores()
             except Exception as exc:
-                print(f"[Leaderboard] Startup init suppressed: {exc}")
+                _log.info("[Leaderboard] Startup init suppressed: %s", exc)
         Clock.schedule_once(_safe_leaderboard_init, 5.0)
 
         if self.engine.should_show_banner():
@@ -186,13 +189,13 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
                         window.setStatusBarColor(dark_color)
                         window.setNavigationBarColor(dark_color)
                         window.setDecorFitsSystemWindows(True)
-                        print("[UI] Set decorFitsSystemWindows=True")
+                        _log.info("[UI] Set decorFitsSystemWindows=True")
                     except Exception as e2:
-                        print(f"[UI] Window fix error: {e2}")
+                        _log.warning("[UI] Window fix error: %s", e2)
 
                 _fix_window()
             except Exception as e:
-                print(f"[UI] Edge-to-edge fix error: {e}")
+                _log.warning("[UI] Edge-to-edge fix error: %s", e)
 
         # NoTransition — instant tab switch (standard for mobile bottom nav).
         # Was FadeTransition(duration=0.2) which added 200ms perceived lag.
@@ -203,6 +206,8 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         sm.add_widget(ExpeditionScreen(name="expedition"))
         sm.add_widget(LoreScreen(name="lore"))
         sm.add_widget(MoreScreen(name="more"))
+        sm.add_widget(ScriptsScreen(name="scripts"))
+        sm.add_widget(ScriptEditorScreen(name="script_editor"))
         self.sm = sm
         self._nav_history = []
         self._current_screen = "arena"
@@ -223,15 +228,23 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
 
     def _on_cloud_auto_connected(self):
         """Auto-sync on silent sign-in at startup."""
+        # Token fetch is async — if user already sat on More screen when
+        # it resolved, cloud_status is still the stale "Not connected"
+        # default. Refresh it now so the label reflects reality.
+        scr = self.sm.current_screen if self.sm else None
+        if scr is not None and hasattr(scr, "refresh_more"):
+            scr.refresh_more()
+
         def on_done(success, result):
             if success and isinstance(result, dict):
                 self.engine.load(data=result)
                 self.engine.save()
-                print("[CloudSave] Auto-loaded cloud save on startup")
+                self.engine._ui_dirty = True
+                _log.info("[CloudSave] Auto-loaded cloud save on startup")
             elif not success and result == "No cloud save found":
                 save_data = self.engine.save()
                 cloud_save_manager.upload_save(save_data)
-                print("[CloudSave] No cloud save — uploaded local on startup")
+                _log.info("[CloudSave] No cloud save — uploaded local on startup")
         cloud_save_manager.download_save(on_done)
 
     def _idle_tick(self, dt):
@@ -257,9 +270,12 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
                 break
 
     def _auto_save(self, dt):
-        save_data = self.engine.save()
+        # Async: JSON serialization + disk write happen on a worker thread.
+        # Main-thread stall was the ~100-300ms CPU spike every 30s once the
+        # battle_log grew past a few hundred KB.
+        self.engine.save_async()
         if cloud_save_manager.is_connected:
-            cloud_save_manager.upload_save(save_data)
+            cloud_save_manager.upload_save(self.engine._build_save_data())
 
     def on_pause(self):
         self.engine.save()

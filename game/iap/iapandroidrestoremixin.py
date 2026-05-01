@@ -1,12 +1,8 @@
-# Build: 1
-"""_IapAndroidMixin _IapAndroidRestoreMixin."""
-# Build: 1
-"""IAPManager _IapAndroidMixin."""
+# Build: 2
+"""IAPManager _IapAndroidRestoreMixin — query existing purchases."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
 
-
-from ._shared import _log
 
 class _IapAndroidRestoreMixin:
     def _restore_android(self, on_restored):

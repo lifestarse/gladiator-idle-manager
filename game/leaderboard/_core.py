@@ -1,9 +1,10 @@
-# Build: 1
+# Build: 4
 """LeaderboardManager core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fix_classloader, _log
 from .leadersubmitmixin import _LeaderSubmitMixin
 from .leaderviewmixin import _LeaderViewMixin
+from game.common import poll_signed_in_account
 
 
 class LeaderboardManager(_LeaderSubmitMixin, _LeaderViewMixin):
@@ -52,11 +53,11 @@ class LeaderboardManager(_LeaderSubmitMixin, _LeaderViewMixin):
                     self._account = account
                     self._initialized = True
                     self.status = "Play Games ready"
-                    print("[Leaderboard] Already signed in")
+                    _log.info("[Leaderboard] Already signed in")
                 else:
                     # Not an error — user just hasn't signed in yet.
                     self.status = "Sign-in required"
-                    print("[Leaderboard] No existing account — sign-in required")
+                    _log.info("[Leaderboard] No existing account — sign-in required")
             except Exception as exc:
                 _log.info("[Leaderboard] Account check failed: %s", exc)
                 self.status = "Not available"
@@ -67,8 +68,8 @@ class LeaderboardManager(_LeaderSubmitMixin, _LeaderViewMixin):
                 self._java["PlayGames"] = autoclass(
                     "com.google.android.gms.games.PlayGames"
                 )
-            except Exception:
-                print("[Leaderboard] PlayGames class not available")
+            except Exception as exc:
+                _log.info("[Leaderboard] PlayGames class not available: %s", exc)
 
         except Exception as exc:
             _log.info("[Leaderboard] Init failed: %s", exc)
@@ -90,8 +91,15 @@ class LeaderboardManager(_LeaderSubmitMixin, _LeaderViewMixin):
                 callback(True)
             return
 
+        # Lazy init: startup init is deferred 5s to dodge a jnius crash.
+        # If the user opens the leaderboard inside that window, _java is
+        # empty and the first attempt dies with KeyError ("Sign-in failed"),
+        # even though the second attempt would succeed.
+        if not self._java:
+            self.init()
+
         if self._signing_in:
-            print("[Leaderboard] Sign-in already in progress, skipping")
+            _log.info("[Leaderboard] Sign-in already in progress, skipping")
             return
 
         self._signing_in = True
@@ -108,37 +116,29 @@ class LeaderboardManager(_LeaderSubmitMixin, _LeaderViewMixin):
             intent = client.getSignInIntent()
             activity.startActivityForResult(intent, RC_SIGN_IN)
             self.status = "Signing in..."
-            print("[Leaderboard] Interactive sign-in launched")
+            _log.info("[Leaderboard] Interactive sign-in launched")
 
-            # Poll on main thread via Clock — avoids background thread + sleep
-            GoogleSignIn = self._java["GoogleSignIn"]
-            act = self._java["PythonActivity"].mActivity
-            _attempts = [0]
+            def _on_found(acc):
+                self._account = acc
+                self._initialized = True
+                self.status = "Play Games ready"
+                self._signing_in = False
+                _log.info("[Leaderboard] Sign-in success (poll)")
+                if callback:
+                    callback(True)
 
-            def _check_sign_in(dt):
-                _attempts[0] += 1
-                if _attempts[0] > 30:
-                    Clock.unschedule(_check_sign_in)
-                    self._signing_in = False
-                    self.status = "Sign-in timeout"
-                    if callback:
-                        callback(False)
-                    return
-                try:
-                    acc = GoogleSignIn.getLastSignedInAccount(act)
-                    if acc is not None:
-                        Clock.unschedule(_check_sign_in)
-                        self._account = acc
-                        self._initialized = True
-                        self.status = "Play Games ready"
-                        self._signing_in = False
-                        print("[Leaderboard] Sign-in success (poll)")
-                        if callback:
-                            callback(True)
-                except Exception as _e:
-                    _log.warning("Sign-in poll error: %s", _e)
+            def _on_timeout():
+                self._signing_in = False
+                self.status = "Sign-in timeout"
+                if callback:
+                    callback(False)
 
-            Clock.schedule_interval(_check_sign_in, 1.0)
+            poll_signed_in_account(
+                google_sign_in=self._java["GoogleSignIn"],
+                activity=self._java["PythonActivity"].mActivity,
+                on_found=_on_found, on_timeout=_on_timeout,
+                label="Leaderboard",
+            )
 
         except Exception as exc:
             self._signing_in = False

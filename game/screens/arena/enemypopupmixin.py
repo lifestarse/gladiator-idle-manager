@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ArenaScreen _EnemyPopupMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -45,7 +45,7 @@ class _EnemyPopupMixin:
         grid.add_widget(_lbl(
             f"HP  {fmt_num(enemy.max_hp)}", sp(9), bold=True))
         grid.add_widget(_lbl(
-            f"ATK  {fmt_num(enemy.attack)}    DEF  {fmt_num(enemy.defense)}", sp(9), bold=True))
+            f"ATK  {fmt_num(enemy.attack)}    DEF  {fmt_def(enemy.defense)}", sp(9), bold=True))
         grid.add_widget(_lbl(
             f"CRIT  {enemy.crit_chance * 100:.0f}%    DODGE  {enemy.dodge_chance * 100:.0f}%",
             sp(8), color=TEXT_SECONDARY))

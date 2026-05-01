@@ -6,9 +6,14 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf
 source.exclude_dirs = bin,.buildozer,.git
 source.exclude_patterns = generate_icons.py
-version = 1.9.12
+version = 1.9.29
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
-orientation = portrait
+orientation = portrait, landscape, portrait-reverse, landscape-reverse
+# Force android:screenOrientation="fullUser" so the app respects the system
+# autorotate toggle. p4a maps a multi-orientation list to "unspecified", which
+# on modern Android behaves like sensor (rotates regardless of the system
+# autorotate setting). --manifest-orientation overrides that mapping.
+p4a.extra_args = --manifest-orientation=fullUser
 fullscreen = 1
 
 # Icon & presplash

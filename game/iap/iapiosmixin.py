@@ -1,8 +1,7 @@
-# Build: 1
+# Build: 2
 """IAPManager _IapIosMixin."""
 from ._shared import *  # noqa: F401,F403
-from ._shared import _log
-from ._shared import _PRODUCT_ID_TO_KEY
+from ._shared import _log, _PRODUCT_ID_TO_KEY
 
 
 class _IapIosMixin:

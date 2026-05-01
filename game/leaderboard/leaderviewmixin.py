@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """LeaderboardManager _LeaderViewMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fix_classloader, _log
@@ -13,7 +13,7 @@ class _LeaderViewMixin:
             on_failure: Called with an error string on failure.
         """
         if not self._initialized:
-            print("[Leaderboard] Not initialised")
+            _log.info("[Leaderboard] Not initialised")
             if on_failure:
                 Clock.schedule_once(lambda dt: on_failure("Not signed in"), 0)
             return
@@ -27,7 +27,7 @@ class _LeaderViewMixin:
                 _fix_classloader()
                 client = self._get_client()
                 if client is None:
-                    print("[Leaderboard] No client for show")
+                    _log.info("[Leaderboard] No client for show")
                     self.status = "Not connected"
                     if on_failure:
                         on_failure("Not connected")
@@ -45,7 +45,7 @@ class _LeaderViewMixin:
                     _ticks[0] += 1
                     if _ticks[0] > 100:  # 10 seconds max
                         Clock.unschedule(_check_task)
-                        print("[Leaderboard] Task timeout")
+                        _log.info("[Leaderboard] Task timeout")
                         if on_failure:
                             on_failure("Timeout")
                         return
@@ -80,7 +80,7 @@ class _LeaderViewMixin:
             activity = self._java["PythonActivity"].mActivity
             activity.startActivityForResult(intent, RC_LEADERBOARD)
             self.status = "Showing leaderboard"
-            print("[Leaderboard] Showing leaderboard UI")
+            _log.info("[Leaderboard] Showing leaderboard UI")
         except Exception as e:
             _log.info("[Leaderboard] Launch error: %s", e)
             self.status = f"Error: {e}"

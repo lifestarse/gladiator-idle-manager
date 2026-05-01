@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 11
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
@@ -9,7 +9,7 @@ from kivy.metrics import dp, sp
 from kivy.core.window import Window
 from game.base_screen import BaseScreen
 from game.widgets import AutoShrinkLabel, MinimalButton, BaseCard
-from game.achievements import DIAMOND_BUNDLES
+from game.diamonds import DIAMOND_BUNDLES
 from game.models import fmt_num
 from game.theme import *
 from game.theme import popup_color

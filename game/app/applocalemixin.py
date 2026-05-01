@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """App _AppLocaleMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
@@ -29,6 +29,7 @@ class _AppLocaleMixin:
         self.lbl_quests = t("quests_label")
         self.lbl_tab_missions = t("tab_missions")
         self.lbl_tab_hunts = t("tab_hunts")
+        self.lbl_scripts = t("scripts_btn")
         self.lbl_restore_purchases = t("restore_purchases")
         self.lbl_cloud_save = t("cloud_save")
         self.lbl_sign_in_google = t("sign_in_google")

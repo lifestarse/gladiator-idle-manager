@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """
 Google Play Games Services leaderboard integration.
 
@@ -18,7 +18,9 @@ from kivy.clock import Clock
 LEADERBOARD_BEST_TIER = "CgkIt_-bs_YQEAIQAQ"
 LEADERBOARD_TOTAL_KILLS = "CgkIt_-bs_YQEAIQAg"
 LEADERBOARD_STRONGEST_GLADIATOR = "CgkIt_-bs_YQEAIQAw"
-LEADERBOARD_FASTEST_T15 = "TBD_FASTEST_T15"
+# NOTE: Fastest T15 leaderboard has no Play Console ID yet — it's an
+# in-game personal-best stat only. If/when a real ID is provisioned, add
+# a LEADERBOARD_FASTEST_T15 constant and a branch in submit_all().
 
 RC_SIGN_IN = 9001
 RC_LEADERBOARD = 9002

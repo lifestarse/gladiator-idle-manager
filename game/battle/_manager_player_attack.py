@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """BattleManager _PlayerAttackPhaseMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -99,6 +99,9 @@ class _PlayerAttackPhaseMixin:
                     is_boss=s.is_boss_fight,
                 ))
                 reward = target.gold_reward
+                gold_bonus = atk_cache['bonus_gold_pct']
+                if gold_bonus > 0:
+                    reward = int(reward * (1 + gold_bonus))
                 s.gold_earned += reward
                 self.engine.award_gold(reward)
                 fighter.kills += 1
@@ -140,6 +143,9 @@ class _PlayerAttackPhaseMixin:
                             message=t("battle_destroyed", target=target.name),
                             is_boss=s.is_boss_fight))
                         reward = target.gold_reward
+                        gold_bonus = atk_cache['bonus_gold_pct']
+                        if gold_bonus > 0:
+                            reward = int(reward * (1 + gold_bonus))
                         s.gold_earned += reward
                         self.engine.award_gold(reward)
                         fighter.kills += 1

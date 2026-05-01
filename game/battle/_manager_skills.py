@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """BattleManager _SkillsMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -96,7 +96,17 @@ class _SkillsMixin:
         )
 
     def _execute_skill(self, fighter, ss, events):
-        """Dispatch skill execution by skill_type."""
+        """Dispatch skill execution by skill_type.
+
+        Returns True if the skill actually fired (caller resets cooldown),
+        False if the skill was held (no valid target / pre-existing buff)
+        and the cooldown should stay at 0 so it retries next turn.
+
+        Without the bool, `_skill_activation_phase` blanket-overwrote the
+        cooldown after every call — defeating the hold-intent here and
+        sending 100 retiarii into a 5-turn cooldown the moment the boss
+        was already stunned by the first one.
+        """
         s = self.state
         skill = ss.skill_def
         skill_type = skill["skill_type"]
@@ -132,9 +142,7 @@ class _SkillsMixin:
 
         elif skill_type == "team_damage_reduction":
             if s.team_shield and s.team_shield["turns_left"] > 0:
-                # Shield already active — hold skill, don't waste cooldown
-                ss.cooldown_remaining = 0
-                return
+                return False
             s.team_shield = {
                 "reduction_pct": params["reduction_pct"],
                 "turns_left": params["duration"],
@@ -147,16 +155,19 @@ class _SkillsMixin:
             events.append(ev)
 
         elif skill_type == "stun_enemy":
-            # Target first alive enemy not already stunned
+            # First alive enemy that is neither stunned nor stun-immune.
+            # Bosses get a post-stun immunity window (BOSS_STUN_IMMUNITY_TURNS)
+            # to prevent a swarm of retiarii from chaining permastun.
             target = None
             for e in s.enemies:
-                if e.hp > 0 and s.enemy_stuns.get(id(e), 0) <= 0:
+                eid = id(e)
+                if (e.hp > 0
+                        and s.enemy_stuns.get(eid, 0) <= 0
+                        and s.enemy_stun_immunity.get(eid, 0) <= 0):
                     target = e
                     break
             if not target:
-                # All alive enemies already stunned — hold skill
-                ss.cooldown_remaining = 0
-                return
+                return False
             s.enemy_stuns[id(target)] = params["stun_turns"]
             events.append(BattleEvent("skill", attacker=fighter.name,
                 defender=target.name,
@@ -173,8 +184,11 @@ class _SkillsMixin:
                 skill_type=skill_type,
                 message=t("skill_heal_team", fighter=fighter.name, skill=skill["name"])))
 
+        return True
+
     def _tick_skill_buffs(self):
-        """Decrement durations of team buffs and shield after the turn resolves."""
+        """Decrement durations of team buffs, shield, and stun immunity
+        after the turn resolves."""
         s = self.state
         # Team ATK buffs — keep scalar running total in sync with the list
         # to avoid the O(N) sum(genexpr) hot path every attack.
@@ -194,3 +208,10 @@ class _SkillsMixin:
             s.team_shield["turns_left"] -= 1
             if s.team_shield["turns_left"] <= 0:
                 s.team_shield = None
+        # Boss post-stun immunity — clean up zero entries so id(enemy)
+        # collisions across battles can't carry stale data over.
+        if s.enemy_stun_immunity:
+            for eid in list(s.enemy_stun_immunity):
+                s.enemy_stun_immunity[eid] -= 1
+                if s.enemy_stun_immunity[eid] <= 0:
+                    del s.enemy_stun_immunity[eid]

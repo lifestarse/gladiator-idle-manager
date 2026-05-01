@@ -30,7 +30,7 @@
             scroll_type: ['bars', 'content']
             effect_cls: ScrollEffect
             scroll_distance: dp(8)
-            scroll_timeout: 50
+            scroll_timeout: 500
             GridLayout:
                 cols: 1
                 spacing: dp(8)
@@ -65,7 +65,7 @@
                     text: app.lbl_remove_ads_buy
                     btn_color: app.accent_gold
                     text_color: app.bg_dark
-                    font_size: "12sp"
+                    font_size: 12
                     size_hint_y: None
                     height: 0 if root.ads_hidden else dp(46)
                     opacity: 0 if root.ads_hidden else 1
@@ -76,7 +76,7 @@
                     text: app.lbl_restore_purchases
                     btn_color: app.bg_elevated
                     text_color: app.text_secondary
-                    font_size: "11sp"
+                    font_size: 11
                     size_hint_y: None
                     height: 0 if root.ads_hidden else dp(44)
                     opacity: 0 if root.ads_hidden else 1
@@ -116,7 +116,7 @@
                 MinimalButton:
                     text: root.google_btn_text if root.google_btn_text else app.lbl_sign_in_google
                     btn_color: app.accent_green if root.google_signed_in else app.accent_blue
-                    font_size: "10sp" if root.google_signed_in else "12sp"
+                    font_size: 10 if root.google_signed_in else 12
                     size_hint_y: None
                     height: dp(50)
                     on_press: root.cloud_sign_in()
@@ -124,7 +124,7 @@
                 MinimalButton:
                     text: app.lbl_sign_out_google
                     btn_color: app.accent_red
-                    font_size: "11sp"
+                    font_size: 11
                     size_hint_y: None
                     height: dp(48) if root.google_signed_in else 0
                     opacity: 1 if root.google_signed_in else 0
@@ -135,7 +135,7 @@
                     text: app.lbl_save_to_cloud
                     btn_color: app.accent_green
                     text_color: app.bg_dark
-                    font_size: "11sp"
+                    font_size: 11
                     size_hint_y: None
                     height: dp(50) if root.google_signed_in else 0
                     opacity: 1 if root.google_signed_in else 0
@@ -145,7 +145,7 @@
                 MinimalButton:
                     text: app.lbl_load_from_cloud
                     btn_color: app.accent_purple
-                    font_size: "11sp"
+                    font_size: 11
                     size_hint_y: None
                     height: dp(50) if root.google_signed_in else 0
                     opacity: 1 if root.google_signed_in else 0
@@ -179,7 +179,7 @@
                     text: app.lbl_view_leaderboard
                     btn_color: app.accent_gold
                     text_color: app.bg_dark
-                    font_size: "11sp"
+                    font_size: 11
                     on_press: root.show_leaderboard()
 
                 # --- Divider ---
@@ -206,7 +206,7 @@
                 GridLayout:
                     id: diamond_bundles_grid
                     cols: 1
-                    spacing: 4
+                    spacing: dp(4)
                     size_hint_y: None
                     height: self.minimum_height
 
@@ -228,7 +228,7 @@
                     text: app.lbl_help
                     btn_color: app.accent_green
                     text_color: app.bg_dark
-                    font_size: "11sp"
+                    font_size: 11
                     on_press: root.show_help()
 
                 # --- Divider ---
@@ -257,5 +257,5 @@
                     height: dp(50)
                     text: app.lbl_change_language
                     btn_color: app.accent_purple
-                    font_size: "11sp"
+                    font_size: 11
                     on_press: root.show_language_picker()

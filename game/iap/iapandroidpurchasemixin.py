@@ -1,13 +1,8 @@
-# Build: 1
-"""_IapAndroidMixin _IapAndroidPurchaseMixin."""
-# Build: 1
-"""IAPManager _IapAndroidMixin."""
+# Build: 2
+"""IAPManager _IapAndroidPurchaseMixin — purchase flow."""
 from ._shared import *  # noqa: F401,F403
-from ._shared import _log
-from ._shared import _PRODUCT_ID_TO_KEY
+from ._shared import _log, _PRODUCT_ID_TO_KEY
 
-
-from ._shared import _log
 
 class _IapAndroidPurchaseMixin:
     def _on_purchases_updated(self, response_code, purchases):

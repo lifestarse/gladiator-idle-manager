@@ -1,28 +1,9 @@
-# Build: 1
-"""Widgets submodule — CardWidget, BaseCard."""
-import os
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.graphics import (
-    Color, RoundedRectangle, Rectangle, Line, Ellipse,
-    PushMatrix, PopMatrix, Rotate,
-)
-from kivy.properties import (
-    NumericProperty, StringProperty, ListProperty, BooleanProperty
-)
-from kivy.animation import Animation
-from kivy.clock import Clock
-from kivy.metrics import dp, sp
-from game.theme import *
+# Build: 3
+"""Widgets — CardWidget, BaseCard."""
+from ._imports import *  # noqa: F401,F403
 from ._scroll import ScrollSafeButtonMixin
 from ._labels import AutoShrinkLabel
-from ._scroll import ScrollSafeButtonMixin
-from ._buttons import MinimalButton
+from ._buttons import MinimalButton  # noqa: F401
 
 class CardWidget(ScrollSafeButtonMixin, ButtonBehavior, BoxLayout):
     """Pixel-art card container with 1px border and 3D bevel. Supports on_press."""

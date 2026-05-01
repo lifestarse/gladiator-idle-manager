@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """MoreScreen _IapMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -51,7 +51,7 @@ class _IapMixin:
             )
             def _buy(inst, bid=bundle["id"]):
                 self.buy_diamonds(bid)
-            buy_btn.bind(on_press=_buy)
+            buy_btn.bind(on_release=_buy)
             row.add_widget(buy_btn)
             cards.append(row)
         self._bundle_cards = cards

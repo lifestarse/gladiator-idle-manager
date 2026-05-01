@@ -414,7 +414,7 @@
         "id": "net_mastery",
         "name": "Net Mastery",
         "description": "Counter-attacks on successful dodge, dealing 50% of normal damage.",
-        "effect": {"type": "on_dodge_counter", "damage_pct": 0.50}
+        "effect": {"type": "on_dodge_counter", "value": 0.50}
       },
       "active_skill": {
         "id": "net_throw",
@@ -467,7 +467,7 @@
           "description": "Counter-attacks on dodge deal 75% damage instead of 50%. The trident punishes every missed swing.",
           "tier": 3,
           "cost": 3,
-          "effect": {"type": "on_dodge_counter_upgrade", "damage_pct": 0.75},
+          "effect": {"type": "on_dodge_counter_upgrade", "value": 0.75},
           "cross_class_cost_mult": 2.0
         },
         {

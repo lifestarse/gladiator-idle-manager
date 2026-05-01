@@ -1,31 +1,18 @@
-# Build: 1
-"""Widgets submodule — MinimalButton, NavButton, CardWidget, BaseCard."""
-import os
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.graphics import (
-    Color, RoundedRectangle, Rectangle, Line, Ellipse,
-    PushMatrix, PopMatrix, Rotate,
-)
-from kivy.properties import (
-    NumericProperty, StringProperty, ListProperty, BooleanProperty
-)
-from kivy.animation import Animation
-from kivy.clock import Clock
-from kivy.metrics import dp, sp
-from game.theme import *
+# Build: 3
+"""Widgets — MinimalButton, NavButton."""
+from ._imports import *  # noqa: F401,F403
+from ._imports import _SCROLL_THRESHOLD  # noqa: F401
 from ._scroll import ScrollSafeButtonMixin
 from ._labels import AutoShrinkLabel
-_SCROLL_THRESHOLD = 12  # px — if finger moves more than this, it's a scroll
 
 
 class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
-    """Flat button with subtle press animation."""
+    """Flat button with subtle press animation.
+
+    font_size is a raw point size: pass plain integers (e.g. 11), NOT
+    sp(11). The button applies sp() internally so the rendered text scales
+    with screen density. Passing already-scaled values would double-scale.
+    """
 
     text = StringProperty("")
     btn_color = ListProperty(BTN_PRIMARY)

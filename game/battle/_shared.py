@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Shared imports + helpers for game.battle package."""
 import random
 from collections import namedtuple
@@ -6,6 +6,7 @@ from enum import Enum, auto
 from game.models import ENCHANTMENT_TYPES, fmt_num
 from game.constants import (
     DAMAGE_VARIANCE_LOW, DAMAGE_VARIANCE_HIGH, DEFENSE_DIVISOR,
+    BOSS_STUN_IMMUNITY_TURNS,
 )
 from game.localization import t
 

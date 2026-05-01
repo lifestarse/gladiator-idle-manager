@@ -1,6 +1,10 @@
-# Build: 2
+# Build: 3
+import logging
+
 from kivy.clock import Clock
 from game.ui_helpers import _invalidate_grid_cache
+
+_log = logging.getLogger(__name__)
 
 SCREEN_ORDER = ["arena", "roster", "forge", "expedition", "lore", "more"]
 
@@ -32,5 +36,7 @@ def _play_hit_sound():
         if _hit_sound:
             _hit_sound.volume = 0.4
             _hit_sound.play()
-    except Exception:
-        pass
+    except Exception as exc:
+        # Non-fatal: audio may be unavailable (headless CI, missing file,
+        # backend error). Log at debug so it doesn't spam production logs.
+        _log.debug("hit sound unavailable: %s", exc)

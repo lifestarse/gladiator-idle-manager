@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """LeaderboardManager _LeaderSubmitMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fix_classloader, _log
@@ -6,7 +6,7 @@ from ._shared import _fix_classloader, _log
 
 class _LeaderSubmitMixin:
     def submit_score(self, leaderboard_id, score):
-        if not self._initialized or not leaderboard_id or leaderboard_id.startswith("TBD"):
+        if not self._initialized or not leaderboard_id:
             _log.info("[Leaderboard] Submit skipped: initialized=%s", self._initialized)
             return
 
@@ -23,8 +23,7 @@ class _LeaderSubmitMixin:
 
         Clock.schedule_once(_do, 0)
 
-    def submit_all(self, best_tier=0, total_kills=0, strongest_gladiator_kills=0,
-                    fastest_t15=0):
+    def submit_all(self, best_tier=0, total_kills=0, strongest_gladiator_kills=0):
         if not self._initialized:
             return
         if best_tier > 0:
@@ -35,5 +34,3 @@ class _LeaderSubmitMixin:
             self.submit_score(
                 LEADERBOARD_STRONGEST_GLADIATOR, strongest_gladiator_kills
             )
-        if fastest_t15 > 0:
-            self.submit_score(LEADERBOARD_FASTEST_T15, fastest_t15)

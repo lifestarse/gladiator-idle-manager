@@ -1,49 +1,47 @@
-# Build: 1
-"""Auto-generated submodule of game.ui_helpers package."""
-from contextlib import contextmanager
-import time
-
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _batch_fill_grid
+# Build: 4
+"""ui_helpers._expedition — expedition cards + status rendering."""
+from ._imports import *  # noqa: F401,F403
+from ._layouts import _batch_fill_grid
 
 
 # ============================================================
 #  EXPEDITIONS
 # ============================================================
 
+# Per-row heights so layout scales cleanly across DPIs (no size_hint
+# proportions that overflow a fixed parent and clip the reward label).
+_EXP_ROW_TITLE   = dp(28)
+_EXP_ROW_DESC    = dp(36)
+_EXP_ROW_STATS   = dp(24)
+_EXP_ROW_REWARD  = dp(24)
+_EXP_ROW_ACTION  = dp(40)
+_EXP_PADDING_V   = dp(8)
+_EXP_SPACING     = dp(6)
+# 5 rows + 4 spacings + 2 paddings.
+_EXP_CARD_H = (_EXP_ROW_TITLE + _EXP_ROW_DESC + _EXP_ROW_STATS
+               + _EXP_ROW_REWARD + _EXP_ROW_ACTION
+               + _EXP_SPACING * 4 + _EXP_PADDING_V * 2)
+
+
 def build_expedition_card(exp, fighters, expedition_screen):
     from game.widgets import BaseCard
     from game.models import SHARD_TIERS
 
-    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(190),
-                    padding=[dp(12), dp(8)], spacing=dp(6))
+    card = BaseCard(orientation="vertical", size_hint_y=None, height=_EXP_CARD_H,
+                    padding=[dp(12), _EXP_PADDING_V], spacing=_EXP_SPACING)
 
     card.add_text_row(
         (exp["name"], sp(11), True, ACCENT_PURPLE, 0.7),
         (exp["duration_text"], sp(10), False, TEXT_SECONDARY, 0.3),
-        size_hint_y=0.3,
+        height=_EXP_ROW_TITLE,
     )
-    card.add_label(exp["desc"], font_size=sp(11), color=TEXT_MUTED, halign="left", size_hint_y=0.2)
+    card.add_label(exp["desc"], font_size=sp(11), color=TEXT_MUTED, halign="left",
+                   height=_EXP_ROW_DESC)
     card.add_text_row(
         (f"Lv.{exp['min_level']}+", sp(11), False, ACCENT_CYAN, 0.33),
         (t("danger_label", v=f"{exp['danger']:.0%}"), sp(11), False, ACCENT_RED, 0.34),
         (t("relic_chance", v=f"{exp['relic_chance']:.0%}"), sp(11), False, ACCENT_GOLD, 0.33),
-        size_hint_y=0.2,
+        height=_EXP_ROW_STATS,
     )
 
     shard_info = SHARD_TIERS.get(exp["id"])
@@ -55,17 +53,21 @@ def build_expedition_card(exp, fighters, expedition_screen):
         _translated = t(_key)
         reward_parts.append(_translated if _translated != _key else shard_info["name"])
     reward_parts.append(f"{t('relic_slot')} ({relic_pct}%)")
-    card.add_label(" + ".join(reward_parts), font_size=sp(10), color=ACCENT_GOLD, size_hint_y=0.12)
+    card.add_label(" + ".join(reward_parts), font_size=sp(10), color=ACCENT_GOLD,
+                   height=_EXP_ROW_REWARD)
 
     eligible = [f for f in fighters if f["level"] >= exp["min_level"]]
     if eligible:
-        send_btn = MinimalButton(text=t("send_btn"), font_size=sp(11), btn_color=ACCENT_PURPLE)
+        # MinimalButton.font_size is a raw point size (sp() applied internally);
+        # passing sp(11) here would double-scale and balloon the SEND label.
+        send_btn = MinimalButton(text=t("send_btn"), font_size=11, btn_color=ACCENT_PURPLE)
         def _open_send_popup(inst, elig=eligible, eid=exp["id"], scr=expedition_screen):
             _show_send_fighter_popup(elig, eid, scr)
         send_btn.bind(on_press=_open_send_popup)
-        card.add_button_row([send_btn], height=dp(190 * 0.25))
+        card.add_button_row([send_btn], height=_EXP_ROW_ACTION)
     else:
-        card.add_label(t("no_eligible"), font_size=sp(11), color=TEXT_MUTED, size_hint_y=0.25)
+        card.add_label(t("no_eligible"), font_size=sp(11), color=TEXT_MUTED,
+                       height=_EXP_ROW_ACTION)
     return card
 
 
@@ -107,7 +109,7 @@ def _show_send_fighter_popup(eligible, expedition_id, expedition_screen):
     for f_data in eligible:
         btn = MinimalButton(
             text=f"{f_data['name']}  LV{f_data['level']}",
-            font_size=sp(11),
+            font_size=11,
             btn_color=ACCENT_PURPLE,
             size_hint_y=None, height=dp(44),
         )

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 3
 """GameEngine _CombatMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -22,6 +22,22 @@ class _CombatMixin:
                 enemies.append(Enemy(tier=tier))
         self.preview_enemies = enemies
         self.current_enemy = enemies[0] if enemies else None
+
+    def refresh_arena_preview(self):
+        """Re-roll the common-arena enemy preview to match available fighter count.
+
+        Called after roster composition changes (bench toggle) so the next
+        fight's enemy count tracks the active pool. No-op during a battle,
+        when a boss is staged, or when revenge enemies are queued (those
+        carry their own count).
+        """
+        if getattr(self, 'battle_active', False):
+            return
+        if self.current_enemy is not None and getattr(self.current_enemy, 'is_boss', False):
+            return
+        if self._revenge_common or self._revenge_boss:
+            return
+        self._spawn_enemy()
 
     def award_gold(self, amount):
         self.gold += amount
@@ -161,6 +177,11 @@ class _CombatMixin:
         r_label = "victory" if tag == "V" else "defeat"
         self._log_event("battle", result=r_label, tier=self.arena_tier,
                         boss=result.is_boss, gold=result.gold_earned)
+        skipped_names = [f.name for f in self.fighters
+                         if f not in result.player_fighters]
+        self._log_event("battle_end", result=r_label, tier=self.arena_tier,
+                        boss=result.is_boss, skipped=skipped_names)
+        self._emit_battle_end(result)
 
     def _truncate_battle_lines(self, messages):
         """Apply HEAD + TAIL truncation to a battle's message list.

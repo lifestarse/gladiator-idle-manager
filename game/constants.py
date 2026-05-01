@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 9
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -25,6 +25,23 @@ EXPEDITION_SLOT_BASE_COST = 200  # doubles each purchase
 
 # --- Injury healing ---
 INJURY_HEAL_BASE_COST = 50       # base gold cost to heal an injury
+
+# --- Stamina / Fatigue ---
+STAMINA_MAX = 100
+FATIGUE_MAX = 100
+STAMINA_DRAIN_PER_BATTLE = 10
+FATIGUE_GAIN_PER_BATTLE = 10
+STAMINA_RECOVERY_PER_REST = 20
+FATIGUE_RECOVERY_PER_REST = 20
+
+# --- Auto-heal injuries ---
+# Number of skipped battles required to auto-heal an injury by severity.
+# permanent injuries never auto-heal.
+SEVERITY_HEAL_THRESHOLD = {
+    "minor": 5,
+    "moderate": 10,
+    "severe": 15,
+}
 
 # --- Shard tiers ---
 SHARD_TIER_COUNT = 5             # tier 1-5
@@ -109,6 +126,12 @@ BOSS_DEF_MULT = 1.3
 BOSS_GOLD_MULT = 10
 BOSS_CRIT_BONUS = 0.10
 BOSS_CRIT_MIN = 0.35
+
+# Stun (Net Throw) anti-permastun: after a stun ends on a boss, the boss
+# becomes immune to fresh stuns for this many turns. Tunes downtime: with
+# stun_turns=2, immunity=4 yields a 5-turn cycle (2 stunned, 3 attacks)
+# = 40% boss downtime even with unlimited retiarii. Lower → more downtime.
+BOSS_STUN_IMMUNITY_TURNS = 4
 
 # --- HP healing costs (engine.py) ---
 HP_HEAL_TIER_MULT = 1.2         # heal cost scales with tier

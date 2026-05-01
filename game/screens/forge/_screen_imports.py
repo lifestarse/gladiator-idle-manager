@@ -1,4 +1,4 @@
-# Build: 39
+# Build: 41
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -9,7 +9,7 @@ from game.base_screen import BaseScreen
 from game.widgets import AutoShrinkLabel, MinimalButton, BaseCard, FloatingText
 import game.models as _m
 from game.models import (
-    fmt_num, RARITY_COLORS,
+    fmt_num, fmt_def, RARITY_COLORS,
     get_upgrade_tier, item_display_name,
     get_max_upgrade, RARITY_MAX_UPGRADE,
 )
@@ -25,6 +25,7 @@ from game.ui_helpers import (
     refresh_forge_grid,
     build_item_info_card, build_tab_row,
     bind_text_wrap,
+    show_item_stats_popup,
 )
 from game.screens.shared import _safe_clear, _safe_rebind
 

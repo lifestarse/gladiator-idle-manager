@@ -1,4 +1,4 @@
-# Build: 32
+# Build: 33
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -13,7 +13,7 @@ from game.base_screen import BaseScreen
 from game.widgets import AutoShrinkLabel, MinimalButton, BaseCard
 import game.models as _m
 from game.models import (
-    fmt_num, RARITY_COLORS,
+    fmt_num, fmt_def, RARITY_COLORS,
     FORGE_WEAPONS, FORGE_ARMOR, FORGE_ACCESSORIES,
     item_display_name,
 )

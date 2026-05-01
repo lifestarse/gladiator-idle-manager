@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Battle type definitions (enums, state dataclasses)."""
 from ._shared import *  # noqa: F401,F403
 
@@ -95,6 +95,11 @@ class BattleState:
         self.team_atk_bonus_pct: float = 0.0
         self.team_shield = None         # Shield Wall: {reduction_pct, turns_left} or None
         self.enemy_stuns: dict = {}     # id(enemy) -> stun_turns_remaining
+        # Post-stun immunity (bosses only): id(enemy) -> turns_remaining.
+        # Set when a boss's stun decrements to 0; ticked down each turn in
+        # _tick_skill_buffs. Anti-permastun guard — without it, stacked
+        # retiarii would lock any boss indefinitely.
+        self.enemy_stun_immunity: dict = {}
 
     @property
     def current_fighter(self):

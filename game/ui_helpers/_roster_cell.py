@@ -1,25 +1,8 @@
-# Build: 1
-"""Auto-generated submodule of game.ui_helpers package."""
-from contextlib import contextmanager
-import time
-
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _CLASS_COLORS, _bind_long_tap, _icon_label
+# Build: 4
+"""ui_helpers._roster_cell — RosterCardView (list row) + callbacks."""
+from ._imports import *  # noqa: F401,F403
+from ._layouts import _bind_long_tap
+from ._widgets import _CLASS_COLORS, _icon_label
 
 
 # ============================================================
@@ -79,7 +62,7 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
 
         # Third slot (dismiss btn / away label / empty)
         self._dismiss_btn = MinimalButton(
-            text="X", btn_color=list(ACCENT_RED), font_size=sp(11),
+            text="X", btn_color=list(ACCENT_RED), font_size=11,
             size_hint_x=None, width=dp(36),
         )
         self._away_lbl = AutoShrinkLabel(

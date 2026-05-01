@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """BattleManager _SupportPhasesMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -99,9 +99,12 @@ class _SupportPhasesMixin:
             if ss.cooldown_remaining > 0:
                 ss.cooldown_remaining -= 1
                 continue
-            # Skill is ready — fire it
-            self._execute_skill(fighter, ss, phase_events)
-            ss.cooldown_remaining = ss.skill_def["cooldown"]
+            # Skill is ready — fire it. Honor the bool: a held skill
+            # (e.g. stun against an immune boss) keeps cooldown at 0
+            # so the next eligible turn fires instead of burning 5
+            # turns in lockstep with the original successful caster.
+            if self._execute_skill(fighter, ss, phase_events):
+                ss.cooldown_remaining = ss.skill_def["cooldown"]
 
         events.extend(self._collapse_skill_events(phase_events))
 

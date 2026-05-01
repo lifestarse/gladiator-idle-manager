@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """BattleManager _StatsMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -44,6 +44,11 @@ class _StatsMixin:
                 'lifesteal_pct': gpe('lifesteal_pct'),
                 'on_kill_heal_pct': gpe('on_kill_heal_pct'),
                 'regen_per_turn_pct': gpe('regen_per_turn_pct'),
+                # Counter on dodge — `get_perk_effects` upgrade-aware:
+                # base passive value is replaced by the *_upgrade perk
+                # value if the upgrade is unlocked.
+                'on_dodge_counter_pct': gpe('on_dodge_counter'),
+                'bonus_gold_pct': gpe('bonus_gold_pct'),
             }
             cache[key] = stats
         return stats

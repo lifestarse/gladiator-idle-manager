@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 3
 """BattleManager _EnemyAttackPhaseMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -10,6 +10,41 @@ from ._resolve import _resolve_attack
 
 
 class _EnemyAttackPhaseMixin:
+    def _apply_dodge_counter(self, defender, attacker, events):
+        """Net Mastery / Riposte: a dodging fighter strikes back for a
+        fraction of their attack. Both Shadowstep auto-dodges and the
+        regular RNG dodge feed into this. Counter can land a kill — same
+        gold/event path the player attack phase uses.
+        """
+        cache = self._fighter_stats(defender)
+        counter_pct = cache['on_dodge_counter_pct']
+        if counter_pct <= 0:
+            return
+        s = self.state
+        counter_dmg = max(1, int(cache['attack'] * counter_pct))
+        hp_before = attacker.hp
+        attacker.hp = max(0, attacker.hp - counter_dmg)
+        actual = hp_before - attacker.hp
+        if actual <= 0:
+            return
+        events.append(BattleEvent(
+            "attack", attacker=defender.name, defender=attacker.name,
+            damage=actual,
+            message=t("battle_counter", defender=defender.name,
+                      attacker=attacker.name, dmg=_fn(actual))))
+        if attacker.hp <= 0:
+            reward = attacker.gold_reward
+            gold_bonus = cache['bonus_gold_pct']
+            if gold_bonus > 0:
+                reward = int(reward * (1 + gold_bonus))
+            s.gold_earned += reward
+            self.engine.award_gold(reward)
+            defender.kills += 1
+            events.append(BattleEvent(
+                "death", defender=attacker.name, is_kill=True,
+                message=t("battle_counter_killed", target=attacker.name),
+                is_boss=getattr(attacker, 'is_boss', False)))
+
     def _enemy_attack_phase(self, events):
         """All enemies attack fighters.
 
@@ -35,6 +70,12 @@ class _EnemyAttackPhaseMixin:
             # Net Throw stun: skip this enemy's turn
             if s.enemy_stuns.get(eid, 0) > 0:
                 s.enemy_stuns[eid] -= 1
+                # Boss-only: when the stun fully expires, grant a brief
+                # immunity window so a roster of retiarii can't lock the
+                # boss permanently. Mobs die fast enough that immunity
+                # there would just be noise.
+                if s.enemy_stuns[eid] == 0 and s.is_boss_fight:
+                    s.enemy_stun_immunity[eid] = BOSS_STUN_IMMUNITY_TURNS
                 events.append(BattleEvent("status", defender=enemy.name,
                     message=t("battle_is_ensnared", target=enemy.name)))
                 continue
@@ -52,6 +93,7 @@ class _EnemyAttackPhaseMixin:
                 events.append(BattleEvent("attack", attacker=enemy.name,
                     defender=target.name, damage=0, is_dodge=True,
                     message=t("battle_shadowstep_dodge", defender=target.name, attacker=enemy.name)))
+                self._apply_dodge_counter(target, enemy, events)
                 continue
 
             # Boss modifiers: pre-attack (temp ATK override)
@@ -90,6 +132,9 @@ class _EnemyAttackPhaseMixin:
                     enemy.attack = _atk_backup
 
             if actual == 0:
+                # Dodged — Net Mastery / Riposte counter applies. Will
+                # be a no-op for fighters without the perk.
+                self._apply_dodge_counter(target, enemy, events)
                 continue
 
             if target.hp <= 0:

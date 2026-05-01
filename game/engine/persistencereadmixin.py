@@ -1,12 +1,8 @@
-# Build: 1
-"""_PersistenceMixin _PersistenceReadMixin."""
-# Build: 1
-"""GameEngine _PersistenceMixin — extracted from monolithic engine.py."""
+# Build: 4
+"""GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
 
-
-from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
 
 class _PersistenceReadMixin:
     def load(self, data=None):
@@ -35,9 +31,10 @@ class _PersistenceReadMixin:
         try:
             self._apply_save_data(data)
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"[ENGINE] CRITICAL: load() failed: {e}. Backing up corrupt save and starting fresh.")
+            _log.exception(
+                "[ENGINE] CRITICAL: load() failed: %s. "
+                "Backing up corrupt save and starting fresh.", e,
+            )
             # Move the corrupt save aside so the next save() writes a clean file
             # instead of leaving the user stuck in read-only mode forever.
             try:
@@ -47,9 +44,9 @@ class _PersistenceReadMixin:
                     if os.path.exists(corrupt_path):
                         os.remove(corrupt_path)
                     os.rename(sp, corrupt_path)
-                    print(f"[ENGINE] Corrupt save moved to {corrupt_path}")
+                    _log.warning("[ENGINE] Corrupt save moved to %s", corrupt_path)
             except Exception as _bak_exc:
-                print(f"[ENGINE] Could not back up corrupt save: {_bak_exc}")
+                _log.warning("[ENGINE] Could not back up corrupt save: %s", _bak_exc)
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
             self._spawn_enemy()
 
@@ -58,6 +55,15 @@ class _PersistenceReadMixin:
         # Run registered migrations sequentially until we reach the current
         # schema. Keeps old saves loadable after format changes.
         version = data.get("schema_version", 0)
+        if version > CURRENT_SAVE_VERSION:
+            # Player downgraded the client (or save is from a future build).
+            # We can't migrate backwards; fall through to .get() defaults and
+            # warn so the user sees why some fields reset.
+            _log.warning(
+                "[ENGINE] save schema_version=%d newer than supported %d; "
+                "loading with best-effort defaults.",
+                version, CURRENT_SAVE_VERSION,
+            )
         while version < CURRENT_SAVE_VERSION:
             migrate = _SAVE_MIGRATIONS.get(version)
             if migrate is None:
@@ -132,6 +138,17 @@ class _PersistenceReadMixin:
         self._migrate_all_items()
         if not self.fighters or not any(f.alive for f in self.fighters):
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
+
+        # Squad scripting — load programs + persistent globals (missing key → empty).
+        # Legacy saves without "scripts" get the built-in example seeded once.
+        try:
+            from game.scripting import ScriptManager
+            self.scripts = ScriptManager.from_dict(data.get("scripts"))
+        except Exception as e:
+            _log.warning("[ENGINE] failed to load scripts, starting fresh: %s", e)
+            from game.scripting import ScriptManager
+            self.scripts = ScriptManager()
+        self.scripts.seed_examples_if_needed()
 
         self.battle_mgr = BattleManager(self)
         self.check_expeditions()

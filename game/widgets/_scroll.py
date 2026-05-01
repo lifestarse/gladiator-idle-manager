@@ -1,32 +1,15 @@
-# Build: 1
-"""Widgets submodule — ScrollSafeButtonMixin, _FatBarScrollMixin, TouchScrollView, TouchRecycleView."""
-import os
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.graphics import (
-    Color, RoundedRectangle, Rectangle, Line, Ellipse,
-    PushMatrix, PopMatrix, Rotate,
-)
-from kivy.properties import (
-    NumericProperty, StringProperty, ListProperty, BooleanProperty
-)
-from kivy.animation import Animation
-from kivy.clock import Clock
-from kivy.metrics import dp, sp
-from game.theme import *
-_SCROLL_THRESHOLD = 12  # px — if finger moves more than this, it's a scroll
+# Build: 3
+"""Widgets — ScrollSafeButtonMixin, _FatBarScrollMixin, TouchScrollView, TouchRecycleView."""
+from ._imports import *  # noqa: F401,F403
+from ._imports import _SCROLL_THRESHOLD  # noqa: F401
 
 
 class ScrollSafeButtonMixin:
     """Mixin that prevents button presses during/after scrolling.
 
-    Records touch_down position, suppresses on_release if finger moved
-    beyond threshold (user was scrolling, not tapping).
+    Records touch_down position, cancels press visual + ungrabs once the
+    finger moves past threshold, and suppresses on_release on touch_up
+    if the touch turned out to be a scroll gesture.
     """
 
     def on_touch_down(self, touch):
@@ -34,13 +17,27 @@ class ScrollSafeButtonMixin:
             touch.ud.setdefault('_btn_origin', {})[id(self)] = touch.pos
         return super().on_touch_down(touch)
 
+    def on_touch_move(self, touch):
+        # Cancel "stuck selected" state when ScrollView gave up the
+        # touch after scroll_timeout but the finger then started moving.
+        origin = touch.ud.get('_btn_origin', {}).get(id(self))
+        if origin:
+            dx = abs(touch.pos[0] - origin[0])
+            dy = abs(touch.pos[1] - origin[1])
+            if dx > _SCROLL_THRESHOLD or dy > _SCROLL_THRESHOLD:
+                if getattr(self, 'state', None) == 'down':
+                    self.state = 'normal'
+                if touch.grab_current is self:
+                    touch.ungrab(self)
+                touch.ud['_btn_origin'].pop(id(self), None)
+        return super().on_touch_move(touch)
+
     def on_touch_up(self, touch):
         origin = touch.ud.get('_btn_origin', {}).get(id(self))
         if origin and self.collide_point(*touch.pos):
             dx = abs(touch.pos[0] - origin[0])
             dy = abs(touch.pos[1] - origin[1])
             if dx > _SCROLL_THRESHOLD or dy > _SCROLL_THRESHOLD:
-                # Finger moved — this was a scroll, cancel the press
                 touch.ud['_btn_origin'].pop(id(self), None)
                 return True
         return super().on_touch_up(touch)

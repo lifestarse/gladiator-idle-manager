@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ArenaScreen _BattleFlowMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -8,6 +8,14 @@ class _BattleFlowMixin:
     def start_auto_battle(self):
         engine = App.get_running_app().engine
         if engine.battle_active:
+            return
+        # No available fighters: bail before flipping is_fighting / scheduling
+        # the turn loop. The kv-side button is greyed out via
+        # has_available_fighters, but a stale tap (e.g. via shortcut) could
+        # still land here; show a toast so the user knows why nothing
+        # happened instead of silently no-op'ing.
+        if not any(f.available for f in engine.fighters):
+            self._spawn_float(t("battle_no_fighters"), ACCENT_RED)
             return
         self.is_fighting = True
         if self.arena_mode == "boss":

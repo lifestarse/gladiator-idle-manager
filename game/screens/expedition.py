@@ -1,5 +1,6 @@
-# Build: 1
+# Build: 2
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.properties import StringProperty, ListProperty, BooleanProperty
 from game.base_screen import BaseScreen
 from game.localization import t
@@ -13,6 +14,7 @@ class ExpeditionScreen(BaseScreen):
     fighters_for_send = ListProperty()
     expedition_tab = StringProperty("hunts")
     has_active_missions = BooleanProperty(False)
+    _tick_ev = None
 
     def set_expedition_tab(self, tab):
         self.expedition_tab = tab
@@ -20,6 +22,23 @@ class ExpeditionScreen(BaseScreen):
 
     def on_enter(self):
         self.refresh_expeditions()
+        if self._tick_ev is None:
+            self._tick_ev = Clock.schedule_interval(self._tick_missions, 1.0)
+
+    def on_leave(self):
+        if self._tick_ev is not None:
+            self._tick_ev.cancel()
+            self._tick_ev = None
+
+    def _tick_missions(self, dt):
+        engine = App.get_running_app().engine
+        now_active = any(f.on_expedition for f in engine.fighters)
+        if now_active != self.has_active_missions:
+            self.refresh_expeditions()
+            return
+        if self.expedition_tab == "missions" and now_active:
+            self.status_data = engine.get_expedition_status()
+            refresh_expedition_grid(self)
 
     def refresh_expeditions(self):
         engine = App.get_running_app().engine

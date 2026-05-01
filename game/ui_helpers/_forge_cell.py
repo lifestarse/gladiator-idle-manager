@@ -1,23 +1,7 @@
-# Build: 1
+# Build: 5
 """ForgeCardView — forge grid cell (RecycleView viewclass)."""
-from contextlib import contextmanager
-import time
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _batch_fill_grid, _bind_long_tap
+from ._imports import *  # noqa: F401,F403
+from ._layouts import _batch_fill_grid, _bind_long_tap
 
 class ForgeCardView(RecycleDataViewBehavior, BoxLayout):
     """RecycleView viewclass for forge shop cards."""
@@ -93,10 +77,10 @@ class ForgeCardView(RecycleDataViewBehavior, BoxLayout):
 
         # Buy button (32dp)
         self._buy_btn = MinimalButton(
-            font_size=sp(11), size_hint_y=None, height=dp(32),
+            font_size=11, size_hint_y=None, height=dp(32),
             icon_source="sprites/icons/ic_gold.png",
         )
-        self._buy_btn.bind(on_press=self._on_buy_press)
+        self._buy_btn.bind(on_release=self._on_buy_press)
         self.add_widget(self._buy_btn)
 
         # Tap on info card → open item detail

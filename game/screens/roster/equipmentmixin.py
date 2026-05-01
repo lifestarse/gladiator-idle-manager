@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """RosterScreen _EquipmentMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 
@@ -99,7 +99,7 @@ class _EquipmentMixin:
                     self.refresh_roster()
                     self._show_equipment_popup(idx, s, il)
                 if affordable:
-                    buy_btn.bind(on_press=_buy)
+                    buy_btn.bind(on_release=_buy)
                 btn_row.add_widget(buy_btn)
             content.add_widget(btn_row)
 

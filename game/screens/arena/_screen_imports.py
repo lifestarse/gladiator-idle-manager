@@ -1,4 +1,4 @@
-# Build: 21
+# Build: 22
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -9,7 +9,7 @@ from kivy.metrics import dp, sp
 from kivy.core.window import Window
 from game.base_screen import BaseScreen
 from game.widgets import AutoShrinkLabel, MinimalButton, FloatingText, BaseCard
-from game.models import fmt_num
+from game.models import fmt_num, fmt_def
 from game.theme import *
 from game.theme import popup_color
 from game.constants import (

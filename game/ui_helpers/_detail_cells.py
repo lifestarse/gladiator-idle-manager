@@ -1,23 +1,12 @@
-# Build: 1
+# Build: 3
 """BattleDetailLineView, FighterEquipChoiceView — RV cells."""
-from contextlib import contextmanager
-import time
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
+from ._imports import *  # noqa: F401,F403
 from ._perks_cells import _equip_choice_callbacks
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
+
+
+_DEFAULT_LINE_HEIGHT = dp(18)
+_DEFAULT_LINE_FONT = '11sp'
+
 
 class BattleDetailLineView(RecycleDataViewBehavior, Label):
     """One colorized log line inside a battle-detail view.
@@ -43,31 +32,26 @@ class BattleDetailLineView(RecycleDataViewBehavior, Label):
     _COLOR_DEFAULT = list(TEXT_SECONDARY)
 
     def __init__(self, **kwargs):
-        kwargs.setdefault('font_size', '11sp')
+        kwargs.setdefault('font_size', _DEFAULT_LINE_FONT)
         kwargs.setdefault('halign', 'left')
         kwargs.setdefault('valign', 'middle')
         kwargs.setdefault('font_name', 'PixelFont')
         kwargs.setdefault('size_hint_y', None)
-        kwargs.setdefault('height', dp(18))
-        # Clip overflow rather than wrap — keeps height stable at dp(18).
+        kwargs.setdefault('height', _DEFAULT_LINE_HEIGHT)
         kwargs.setdefault('shorten', True)
         super().__init__(**kwargs)
-        # Bind text_size to self.size so halign actually works.
         self.bind(size=lambda w, s: setattr(w, 'text_size', s))
 
     def refresh_view_attrs(self, rv, index, data):
         line = data.get('text', '') or ''
         self.text = line
-        # Explicit colour wins (used for the two header rows).
         explicit = data.get('color')
         if explicit is not None:
             self.color = list(explicit)
-            self.height = data.get('height', dp(18))
+            self.height = data.get('height', _DEFAULT_LINE_HEIGHT)
             self.bold = bool(data.get('bold', False))
-            self.font_size = data.get('font_size', '11sp')
+            self.font_size = data.get('font_size', _DEFAULT_LINE_FONT)
             return
-        # Keyword scan picks a pre-allocated colour list — no per-call
-        # `list(CONST)` allocations.
         if "CRIT" in line:
             self.color = self._COLOR_CRIT
         elif "DODGE" in line:
@@ -80,15 +64,10 @@ class BattleDetailLineView(RecycleDataViewBehavior, Label):
             self.color = self._COLOR_STATUS
         else:
             self.color = self._COLOR_DEFAULT
-        # Height/font/bold are the same for the vast majority of rows —
-        # only assign if they differ from current, to skip redundant
-        # Kivy property dispatches.
-        h = data.get('height', dp(18))
-        if self.height != h:
-            self.height = h
-        fs = data.get('font_size', '11sp')
-        if self.font_size != fs:
-            self.font_size = fs
+        if self.height != _DEFAULT_LINE_HEIGHT:
+            self.height = _DEFAULT_LINE_HEIGHT
+        if self.font_size != _DEFAULT_LINE_FONT:
+            self.font_size = _DEFAULT_LINE_FONT
         if self.bold:
             self.bold = False
 

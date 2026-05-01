@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """BattleManager core — orchestrates turns and mixin phases."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -15,9 +15,10 @@ from ._manager_stats import _StatsMixin
 
 
 class BattleManager(_PlayerAttackPhaseMixin, _EnemyAttackPhaseMixin, _SupportPhasesMixin, _SkillsMixin, _StatsMixin):
-    # Cap on turn count for the "skip to end" path — prevents infinite battle
-    # loops if both sides keep dodging / healing.
-    MAX_SKIP_BATTLE_TURNS = 500
+    # Last-resort safety against infinite loops only (both sides permanent
+    # dodge/heal lock). Real battle length is player-driven — no artificial
+    # cap on a legit fight.
+    MAX_SKIP_BATTLE_TURNS = 1_000_000
 
     def __init__(self, engine):
         self.engine = engine

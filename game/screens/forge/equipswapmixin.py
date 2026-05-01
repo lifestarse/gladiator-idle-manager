@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ForgeScreen _EquipSwapMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 
@@ -22,8 +22,11 @@ class _EquipSwapMixin:
         f = engine.fighters[fighter_idx]
         slot = item.get("slot", "?")
         max_upg = get_max_upgrade(item)
-        # Info card
-        grid.add_widget(build_item_info_card(item, fighter=f, equipped_on=f.name))
+        # Info card — tap opens a popup that names each stat in plain text
+        grid.add_widget(build_item_info_card(
+            item, fighter=f, equipped_on=f.name,
+            on_tap=lambda *_a, it=item: show_item_stats_popup(it),
+        ))
         desc_card = self._build_description_card(item)
         if desc_card:
             grid.add_widget(desc_card)
