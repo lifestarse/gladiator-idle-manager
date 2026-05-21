@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf
 source.exclude_dirs = bin,.buildozer,.git
 source.exclude_patterns = generate_icons.py
-version = 1.9.31
+version = 1.9.33
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
 orientation = portrait, landscape, portrait-reverse, landscape-reverse
 # Force android:screenOrientation="fullUser" so the app respects the system

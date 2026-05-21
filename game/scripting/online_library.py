@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import ssl
 import time
 import urllib.error
 import urllib.request
@@ -37,6 +38,35 @@ from pathlib import Path
 from typing import Any
 
 _log = logging.getLogger(__name__)
+
+
+def _ssl_context() -> ssl.SSLContext:
+    """Build an SSLContext that uses ``certifi``'s CA bundle.
+
+    On Android (python-for-android) the stdlib ``ssl`` module doesn't
+    pick up the system root certificate store, so a default-context
+    HTTPS request fails with::
+
+        ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED]
+        unable to get local issuer certificate (_ssl.c:1006)
+
+    even when ``certifi`` is listed in buildozer requirements — the
+    bundle is shipped but never wired into the default context. The
+    fix is to build a context explicitly from ``certifi.where()``,
+    which works on every platform (desktop too — there it's harmless
+    since the file is the same one stdlib would have found anyway).
+
+    If certifi import fails for any reason (unlikely with it in
+    buildozer.spec requirements), we fall back to the default context.
+    The fallback path is still functional on desktop and gives a
+    clearer error than a silent ImportError in the worker thread.
+    """
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception as exc:
+        _log.warning("[online_library] certifi unavailable, using default SSL context: %s", exc)
+        return ssl.create_default_context()
 
 
 # Update this when you move the manifest. The .lifestarse.github.io path
@@ -143,13 +173,13 @@ def fetch_remote(
     try:
         req = urllib.request.Request(
             url, headers={"User-Agent": "gladiator-idle-manager/1.0"})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout, context=_ssl_context()) as resp:
             raw = resp.read()
         data = json.loads(raw.decode("utf-8"))
     except (urllib.error.URLError, urllib.error.HTTPError,
             json.JSONDecodeError, OSError, ValueError) as exc:
-        _log.info("[online_library] fetch failed (%s): %s",
-                  type(exc).__name__, exc)
+        _log.warning("[online_library] fetch failed (%s): %s",
+                     type(exc).__name__, exc)
         return None
     payload = _validate_manifest(data)
     if payload is None:
