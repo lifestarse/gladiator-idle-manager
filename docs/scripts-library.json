@@ -389,10 +389,11 @@
         ]
       }
     },
+ {
   "kind": "gladiator_script_v1",
   "program": {
     "name": "auto-farm to 500k",
-    "trigger": "on_tick",
+    "trigger": "on_demand",
     "enabled": true,
     "tick_interval": 1,
     "ops_per_sec": 0,
