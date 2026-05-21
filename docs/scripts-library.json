@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-05-21T15:45:00Z",
+  "updated": "2026-05-21T17:03:07Z",
   "source": "https://github.com/lifestarse/gladiator-idle-manager",
   "scripts": [
     {
@@ -388,39 +388,6 @@
           }
         ]
       }
-    },
- {
-  "kind": "gladiator_script_v1",
-  "program": {
-    "name": "auto-farm to 500k",
-    "trigger": "on_demand",
-    "enabled": true,
-    "tick_interval": 1,
-    "ops_per_sec": 0,
-    "g_var_init": {},
-    "body": [
-      {
-        "_kind": "While",
-        "cond": {
-          "_kind": "BinOp",
-          "op": "<",
-          "lhs": {
-            "_kind": "EngineField",
-            "field_name": "gold"
-          },
-          "rhs": {
-            "_kind": "Const",
-            "value": 1000000
-          }
-        },
-        "body": [
-          {
-            "_kind": "Action",
-            "name": "start_arena_battle",
-            "args": []
-          }
-        ]
-      }
-    ]
-  }
+    }
+  ]
 }
