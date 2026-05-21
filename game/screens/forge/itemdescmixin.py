@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """_ItemDescMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -62,8 +62,11 @@ class _ItemDescMixin:
         slot_def = SLOTS.get(slot)
         sub = self._item_slot_subtitle(item)
 
-        # Info card
-        grid.add_widget(build_item_info_card(item, subtitle=sub))
+        # Info card — tap opens a popup that names each stat in plain text
+        grid.add_widget(build_item_info_card(
+            item, subtitle=sub,
+            on_tap=lambda *_a, it=item: show_item_stats_popup(it),
+        ))
         desc_card = self._build_description_card(item)
         if desc_card:
             grid.add_widget(desc_card)

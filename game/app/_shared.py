@@ -1,11 +1,14 @@
-# Build: 61
+# Build: 63
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
 """
 
+import logging
 import os
 from kivy.app import App
+
+_log = logging.getLogger(__name__)
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -36,6 +39,7 @@ from game.screens.forge import ForgeScreen
 from game.screens.expedition import ExpeditionScreen
 from game.screens.lore import LoreScreen
 from game.screens.more import MoreScreen
+from game.screens.scripts import ScriptsScreen, ScriptEditorScreen
 
 # Window.size only on desktop — crashes Android
 if platform not in ("android", "ios"):

@@ -1,4 +1,4 @@
-# Build: 30
+# Build: 32
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -89,11 +89,11 @@ def get_available_languages():
 
 
 def init_language():
-    """Load language files and set default. User choice is restored from save."""
-    global _current_lang
+    """Load language files. Current language is left at module default ("ru");
+    a saved language code is applied later by engine.load() via set_language().
+    """
     load_languages()
     _refresh_strings()
-    _current_lang = "en"
 
 
 # ---- Backward compat: STRINGS dict (read-only, built from JSON) ----
@@ -127,5 +127,7 @@ def _refresh_strings():
 try:
     load_languages()
     _refresh_strings()
-except Exception:
-    pass
+except Exception as exc:
+    # Import-time best effort. Swallow to avoid blocking test collection, but
+    # surface the reason so a missing / malformed language file is debuggable.
+    _log.warning("localization auto-load failed: %s", exc)

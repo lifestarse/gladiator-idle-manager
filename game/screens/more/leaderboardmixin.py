@@ -1,7 +1,11 @@
-# Build: 1
+# Build: 3
 """MoreScreen _LeaderboardMixin — extracted from monolithic screen."""
+import logging
+
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
+
+_log = logging.getLogger(__name__)
 
 
 class _LeaderboardMixin:
@@ -9,19 +13,29 @@ class _LeaderboardMixin:
         """Open Play Games fullscreen leaderboard. Sign in first if needed."""
         engine = App.get_running_app().engine
 
+        # Don't block UI if score submission crashes (network, jnius, sign-out
+        # race). The leaderboard popup still opens; the user just sees stale
+        # scores until the next successful submit. Log so we can diagnose
+        # reports from the field.
         try:
             engine.submit_scores()
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.warning("[Leaderboard] submit_scores before show failed: %s", exc)
 
         if leaderboard_manager.is_ready:
             leaderboard_manager.show_all_leaderboards(
                 on_failure=lambda err: self._leaderboard_error(err),
             )
         else:
-            # Sign in first, then show leaderboard
+            # Sign in first, then submit scores and show leaderboard.
+            # Submitting before sign-in is a no-op (_initialized=False), so
+            # the very first open would otherwise show a user with no score.
             def _after_sign_in(success):
                 if success:
+                    try:
+                        engine.submit_scores()
+                    except Exception as exc:
+                        _log.warning("[Leaderboard] submit_scores after sign-in failed: %s", exc)
                     leaderboard_manager.show_all_leaderboards(
                         on_failure=lambda err: self._leaderboard_error(err),
                     )

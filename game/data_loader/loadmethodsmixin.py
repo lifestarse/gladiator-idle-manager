@@ -1,7 +1,7 @@
-# Build: 1
+# Build: 2
 """DataLoader _LoadMethodsMixin."""
 from ._shared import *  # noqa: F401,F403
-from ._shared import _data_dir, _log
+from ._shared import _data_dir, _log, _validate_ids
 
 
 class _LoadMethodsMixin:
@@ -46,7 +46,9 @@ class _LoadMethodsMixin:
         data = self._read_json(os.path.join(base, filename))
         if not data:
             return []
-        return [self._normalize_item(i) for i in data.get("items", [])]
+        raw = data.get("items", [])
+        _validate_ids(raw, filename)
+        return [self._normalize_item(i) for i in raw]
 
     def _load_list(self, base, filename, key):
         """Load a file and return data[key] as a list."""
@@ -69,6 +71,7 @@ class _LoadMethodsMixin:
         if isinstance(section, dict):
             return section
         # list of dicts → convert
+        _validate_ids(section, filename)
         result = {}
         for item in section:
             item_id = item.get("id") if isinstance(item, dict) else None

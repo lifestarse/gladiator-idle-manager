@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 6
 """RosterScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _roster_callbacks, _perk_callbacks  # underscore names skipped by `import *`
@@ -8,11 +8,13 @@ from .fighterdetailmixin import _FighterDetailMixin
 from .perksmixin import _PerksMixin
 from .equipmentmixin import _EquipmentMixin
 from .fighterbuildmixin import _FighterBuildMixin
+from .equipmentbuildmixin import _EquipmentBuildMixin
+from .actionsbuildmixin import _ActionsBuildMixin
 from .skillsmixin import _SkillsMixin
 from .classdetailmixin import _ClassDetailMixin
 
 
-class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, _PerksMixin, _EquipmentMixin, _FighterBuildMixin, _SkillsMixin, _ClassDetailMixin):
+class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, _PerksMixin, _EquipmentMixin, _FighterBuildMixin, _EquipmentBuildMixin, _ActionsBuildMixin, _SkillsMixin, _ClassDetailMixin):
     gladiators_data = ListProperty()
 
     graveyard_text = StringProperty("")
@@ -30,6 +32,11 @@ class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, 
     detail_index = NumericProperty(-1)
 
     roster_view = StringProperty("list")  # "list", "detail", "hire", "class_detail"
+
+    roster_tab = StringProperty("active")  # "active" (in formation) or "bench" (benched + dead)
+
+    tab_active_text = StringProperty("")
+    tab_bench_text = StringProperty("")
 
     perk_view = BooleanProperty(False)
 
@@ -93,13 +100,28 @@ class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, 
         # Fast path: skip if fighters haven't changed
         roster_key = tuple(
             (f.name, f.level, f.hp, f.alive, f.injury_count, f.on_expedition,
-             i == engine.active_fighter_idx)
+             f.is_active, f.attack, i == engine.active_fighter_idx,
+             f.stamina, f.fatigue)
             for i, f in enumerate(engine.fighters)
         )
         hire_affordable = engine.gold >= engine.hire_cost
-        full_key = (roster_key, hire_affordable)
+        full_key = (roster_key, hire_affordable, self.roster_tab)
         if not self._needs_rebuild(self, '_roster_key', full_key):
             return
+
+        def _in_active_tab(f):
+            return f.alive and f.is_active
+        active_count = sum(1 for f in engine.fighters if _in_active_tab(f))
+        bench_count = len(engine.fighters) - active_count
+        self.tab_active_text = t("tab_active", n=active_count)
+        self.tab_bench_text = t("tab_bench", n=bench_count)
+
+        if self.roster_tab == "active":
+            visible = [(i, f) for i, f in enumerate(engine.fighters) if _in_active_tab(f)]
+        else:
+            visible = [(i, f) for i, f in enumerate(engine.fighters) if not _in_active_tab(f)]
+        # Sort: living before dead, then by combat power (attack) desc.
+        visible.sort(key=lambda pair: (not pair[1].alive, -pair[1].attack))
 
         self.gladiators_data = [
             {
@@ -117,12 +139,16 @@ class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, 
                 "perk_points": f.perk_points,
                 "death_chance": f.death_chance,
                 "on_expedition": f.on_expedition,
+                "is_active": f.is_active,
+                "stamina": f.stamina,
+                "fatigue": f.fatigue,
+                "exhausted": f.is_exhausted,
                 "weapon": f.equipment.get("weapon"),
                 "armor": f.equipment.get("armor"),
                 "accessory": f.equipment.get("accessory"),
                 "relic": f.equipment.get("relic"),
             }
-            for i, f in enumerate(engine.fighters)
+            for i, f in visible
         ]
         self.hire_cost_text = t("recruit_btn", cost=fmt_num(engine.hire_cost))
         self.hire_enabled = "true" if hire_affordable else "false"
@@ -143,6 +169,12 @@ class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, 
 
     def set_active(self, index):
         App.get_running_app().engine.active_fighter_idx = index
+        self.refresh_roster()
+
+    def set_roster_tab(self, tab):
+        if tab not in ("active", "bench") or self.roster_tab == tab:
+            return
+        self.roster_tab = tab
         self.refresh_roster()
 
     _CLASS_COLORS = {

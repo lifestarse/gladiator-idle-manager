@@ -84,3 +84,95 @@ def test_engine_names_resolve():
         if cls.__name__ == "GameEngine" or cls.__name__.endswith("Mixin"):
             bad.extend(_check_class(cls))
     assert not bad, f"Unresolved globals in engine: {bad}"
+
+
+def test_no_missing_class_attrs_from_splits():
+    """Classes that went through the mixin-splitter sometimes lose their
+    module-level / class-level `UPPER_CASE = ...` constants because the
+    splitter only moved FunctionDefs. This test checks a curated list of
+    well-known constants that MUST exist on the split classes.
+    """
+    from game.battle import BattleManager
+    from game.engine import GameEngine
+
+    expected = [
+        (BattleManager, "MAX_SKIP_BATTLE_TURNS"),
+        (BattleManager, "_SKILL_SUMMARY_KEYS"),
+        (GameEngine,   "MAX_BATTLE_LOG_LINES"),
+        (GameEngine,   "BATTLE_LOG_HEAD"),
+        (GameEngine,   "BATTLE_LOG_TAIL"),
+    ]
+    missing = [(cls.__name__, attr) for (cls, attr) in expected if not hasattr(cls, attr)]
+    assert not missing, f"Split classes missing class-level constants: {missing}"
+
+
+def test_cross_package_name_resolution():
+    """Walk every submodule of every split package and flag any method
+    that does LOAD_GLOBAL on a name defined in a sibling submodule but
+    not imported. This is the test that would have caught the
+    NavBar/NavButton/theme/etc. crashes that only fire on clock tick.
+    """
+    import os
+    import importlib
+
+    PKGS = [
+        "game.widgets", "game.models", "game.iap", "game.app",
+        "game.engine", "game.cloud_save", "game.leaderboard",
+        "game.data_loader", "game.ui_helpers",
+        "game.screens.roster", "game.screens.forge", "game.screens.arena",
+        "game.screens.lore", "game.screens.more",
+    ]
+
+    # Names we intentionally resolve via lazy-import-inside-function:
+    LAZY_OK = {"NavBar", "NavButton"}
+
+    issues = []
+    for pkg_name in PKGS:
+        try:
+            pkg = importlib.import_module(pkg_name)
+        except Exception as e:
+            issues.append(f"{pkg_name}: import FAIL {e}")
+            continue
+        pkg_dir = os.path.dirname(pkg.__file__)
+
+        defined_in = {}
+        submods = []
+        for fn in sorted(os.listdir(pkg_dir)):
+            if not fn.endswith(".py") or fn.startswith("__"):
+                continue
+            try:
+                mod = importlib.import_module(f"{pkg_name}.{fn[:-3]}")
+            except Exception:
+                continue
+            submods.append(mod)
+            for name in vars(mod):
+                defined_in.setdefault(name, []).append(fn[:-3])
+
+        for mod in submods:
+            mod_globals = set(vars(mod).keys())
+            for name, obj in list(vars(mod).items()):
+                if not isinstance(obj, type):
+                    continue
+                if obj.__module__ != mod.__name__:
+                    continue
+                for meth_name, m in vars(obj).items():
+                    if not callable(m) or not hasattr(m, "__code__"):
+                        continue
+                    for instr in dis.get_instructions(m):
+                        if instr.opname not in ("LOAD_GLOBAL", "LOAD_NAME"):
+                            continue
+                        n = instr.argval[1] if isinstance(instr.argval, tuple) else instr.argval
+                        if not isinstance(n, str):
+                            continue
+                        if n in mod_globals or n in _BUILTIN_NAMES:
+                            continue
+                        if n in LAZY_OK:
+                            continue
+                        if n in defined_in:
+                            issues.append(
+                                f"{pkg_name}.{os.path.basename(mod.__file__)[:-3]}."
+                                f"{obj.__name__}.{meth_name} uses {n!r} "
+                                f"(defined in sibling {defined_in[n]})"
+                            )
+
+    assert not issues, "Cross-package name-resolution issues:\n  " + "\n  ".join(issues)

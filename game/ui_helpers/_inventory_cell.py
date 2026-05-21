@@ -1,23 +1,7 @@
-# Build: 1
+# Build: 3
 """InventoryCardView — inventory grid cell (RecycleView viewclass)."""
-from contextlib import contextmanager
-import time
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _batch_fill_grid, _bind_long_tap
+from ._imports import *  # noqa: F401,F403
+from ._layouts import _batch_fill_grid, _bind_long_tap
 
 class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
     """RecycleView viewclass for inventory item cards."""

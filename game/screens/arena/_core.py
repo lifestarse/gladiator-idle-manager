@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ArenaScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -21,6 +21,13 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
     arena_view = StringProperty("battle")  # "battle" or "enemy_detail"
 
     is_fighting = BooleanProperty(False)
+
+    # True iff at least one roster fighter is `available` (alive + not
+    # benched + stamina/fatigue OK). Used by the kv to disable the
+    # "Auto" button when there's no one to send into the arena —
+    # without this, clicking the button entered an awkward half-state
+    # (is_fighting flipped to True for one tick, then auto-unscheduled).
+    has_available_fighters = BooleanProperty(False)
 
     player_hp_pct = NumericProperty(1.0)
 
@@ -56,6 +63,7 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
 
         fighters = [f for f in engine.fighters if f.available]
         self.player_summary = t("fighters_ready", n=len(fighters))
+        self.has_available_fighters = bool(fighters)
 
         if engine.battle_active:
             s = engine.battle_mgr.state

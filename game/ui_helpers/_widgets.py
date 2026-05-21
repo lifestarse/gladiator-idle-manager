@@ -1,32 +1,7 @@
-# Build: 1
-"""Auto-generated submodule of game.ui_helpers package."""
-from contextlib import contextmanager
-import time
+# Build: 2
+"""ui_helpers._widgets — widget factories: buttons, popups, labels, icons."""
+from ._imports import *  # noqa: F401,F403
 
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-
-
-_HOLD_MS = 100  # minimum hold time in ms to open popup
-
-
-def bind_text_wrap(label):
-    """Make a Kivy Label wrap text to its widget size. Call after construction."""
-    label.bind(size=lambda w, s: setattr(w, "text_size", s))
 
 _CLASS_COLORS = {
     "mercenary": ACCENT_GREEN,
@@ -38,36 +13,15 @@ _CLASS_COLORS = {
 }
 
 
-from contextlib import contextmanager
-
-def _invalidate_grid_cache(grid):
-    """Wipe every _*_key cache stored on a grid widget."""
-    for attr in list(vars(grid)):
-        if attr.endswith('_key'):
-            setattr(grid, attr, None)
-
-
-@contextmanager
-def grid_batch(grid):
-    """Context manager: unbinds minimum_height during widget adds, rebinds after.
-    Usage:
-        with grid_batch(grid):
-            grid.clear_widgets()
-            grid.add_widget(...)
-    """
-    _invalidate_grid_cache(grid)
-    grid.unbind(minimum_height=grid.setter('height'))
-    try:
-        yield grid
-    finally:
-        grid.height = grid.minimum_height
-        grid.bind(minimum_height=grid.setter('height'))
+def bind_text_wrap(label):
+    """Make a Kivy Label wrap text to its widget size. Call after construction."""
+    label.bind(size=lambda w, s: setattr(w, "text_size", s))
 
 
 def build_back_btn(callback):
     """Standard back button used across all detail views."""
     btn = MinimalButton(
-        text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=sp(11),
+        text=t("back_btn"), btn_color=BTN_PRIMARY, font_size=11,
         size_hint_y=None, height=dp(48),
     )
     btn.bind(on_press=lambda *a: callback())
@@ -98,58 +52,8 @@ def make_dynamic_label(text, font_size="11sp", color=TEXT_SECONDARY,
     return lbl
 
 
-def _batch_fill_grid(grid, widgets):
-    """Add widgets to grid with only one layout pass instead of N.
-
-    Unbinds the minimum_height→height KV rule before the loop so that
-    each add_widget() does NOT trigger a full layout recalculation.
-    Sets height once at the end, then rebinds.
-    Skips reparenting if widgets are already the grid's children.
-    """
-    # Skip if already showing these exact widgets in order
-    if (grid.children and len(grid.children) == len(widgets)
-            and all(a is b for a, b in zip(reversed(grid.children), widgets))):
-        return
-    _invalidate_grid_cache(grid)
-    grid.unbind(minimum_height=grid.setter('height'))
-    grid.clear_widgets()
-    for w in widgets:
-        if w.parent:
-            w.parent.remove_widget(w)
-        grid.add_widget(w)
-    grid.height = grid.minimum_height
-    grid.bind(minimum_height=grid.setter('height'))
-
-
-def _bind_long_tap(widget, callback):
-    """Bind simple tap (with scroll protection) to fire callback on touch_up."""
-    def _on_down(w, touch):
-        if not w.collide_point(*touch.pos):
-            return False
-        touch.ud.setdefault('_tap_t', {})[id(w)] = True
-        return False  # don't consume — let scroll etc. work
-
-    def _on_up(w, touch):
-        if touch.grab_current is not None:
-            return False
-        if not w.collide_point(*touch.pos):
-            return False
-        if hasattr(touch, 'ox') and hasattr(touch, 'oy'):
-            dx = abs(touch.x - touch.ox)
-            dy = abs(touch.y - touch.oy)
-            if dx > dp(8) or dy > dp(8):
-                return False
-        if not touch.ud.get('_tap_t', {}).get(id(w)):
-            return False
-        callback(w)
-        return True
-
-    widget.bind(on_touch_down=_on_down)
-    widget.bind(on_touch_up=_on_up)
-
-
 def build_tab_row(tabs, current, on_select, active_color=None, inactive_color=None,
-                  height=None, font_size=sp(10)):
+                  height=None, font_size=10):
     """Build a horizontal row of tab buttons.
 
     Args:

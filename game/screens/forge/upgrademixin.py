@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ForgeScreen _UpgradeMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 
@@ -105,9 +105,11 @@ class _UpgradeMixin:
                         f"+{bonus} {target_label}",
                         ACCENT_GREEN,
                     )
+                    total_val = self._fighter_target_total(fighter, target)
+                    total_disp = fmt_def(total_val) if target == "def" else total_val
                     _info_row(
                         f"{t('total_label')} {target_label}",
-                        self._fighter_target_total(fighter, target),
+                        total_disp,
                         ACCENT_GOLD,
                     )
 

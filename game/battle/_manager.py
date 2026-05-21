@@ -1,0 +1,224 @@
+# Build: 2
+"""BattleManager core — orchestrates turns and mixin phases."""
+from ._shared import *  # noqa: F401,F403
+from ._shared import _fn
+from ._types import (BattlePhase, BattleEvent, EnemyStatusTracker,
+                      SkillState, BattleState)
+from ._enchantments import (_init_enemy_status, _trigger_enchantment,
+                             _process_status_ticks)
+from ._resolve import _resolve_attack
+from ._manager_player_attack import _PlayerAttackPhaseMixin
+from ._manager_enemy_attack import _EnemyAttackPhaseMixin
+from ._manager_support import _SupportPhasesMixin
+from ._manager_skills import _SkillsMixin
+from ._manager_stats import _StatsMixin
+
+
+class BattleManager(_PlayerAttackPhaseMixin, _EnemyAttackPhaseMixin, _SupportPhasesMixin, _SkillsMixin, _StatsMixin):
+    # Last-resort safety against infinite loops only (both sides permanent
+    # dodge/heal lock). Real battle length is player-driven — no artificial
+    # cap on a legit fight.
+    MAX_SKIP_BATTLE_TURNS = 1_000_000
+
+    def __init__(self, engine):
+        self.engine = engine
+        self.state = BattleState()
+        self._mod_handler = None
+
+    def start_auto_battle(self):
+        fighters = [f for f in self.engine.fighters
+                    if f.available]
+        if not fighters:
+            return [BattleEvent("message", message=t("battle_no_fighters"))]
+
+        from game.models import Enemy
+        from game.data_loader import data_loader
+        import random as _rand
+        # Use all preview enemies (already pre-spawned to match fighter count)
+        enemies = list(self.engine.preview_enemies)
+        boss_revenge = any(getattr(e, 'is_boss', False) for e in enemies)
+        # Fallback: if preview is empty or count mismatch, fill up
+        num_enemies = max(1, len(fighters))
+        tier = self.engine.arena_tier
+        normals = data_loader.normals_by_tier.get(tier)
+        while len(enemies) < num_enemies:
+            if normals:
+                template = _rand.choice(normals)
+                enemies.append(Enemy.from_template(template, tier))
+            else:
+                enemies.append(Enemy(tier=tier))
+
+        self.state = BattleState()
+        self.state.player_fighters = fighters
+        self.state.enemies = enemies
+        self.state.phase = BattlePhase.STARTING
+        self.state.is_boss_fight = False
+        for f in fighters:
+            skill = getattr(f, 'get_active_skill', lambda: None)()
+            if skill:
+                self.state.skill_states[id(f)] = SkillState(skill)
+        for e in enemies:
+            _init_enemy_status(self.state, e)
+        if any(getattr(e, 'modifiers', None) for e in enemies):
+            self._init_mod_handler()
+
+        events = []
+        if boss_revenge:
+            events.append(BattleEvent("message", message=t("boss_revenge")))
+        events.append(BattleEvent("message", message=t("battle_start", n=len(fighters), m=len(enemies))))
+        return events
+
+    def start_boss_fight(self):
+        fighters = [f for f in self.engine.fighters
+                    if f.available]
+        if not fighters:
+            return [BattleEvent("message", message=t("battle_no_fighters"))]
+
+        boss = self.engine.current_enemy
+        if boss is None:
+            # UI normally guarantees spawn_boss_enemy() was called first, but
+            # be defensive: spawn one now rather than AttributeError downstream.
+            self.engine.spawn_boss_enemy()
+            boss = self.engine.current_enemy
+            if boss is None:
+                return [BattleEvent("message", message=t("battle_no_fighters"))]
+
+        self.state = BattleState()
+        self.state.player_fighters = fighters
+        self.state.enemies = [boss]
+        self.state.phase = BattlePhase.BOSS_INTRO
+        self.state.is_boss_fight = True
+        for f in fighters:
+            skill = getattr(f, 'get_active_skill', lambda: None)()
+            if skill:
+                self.state.skill_states[id(f)] = SkillState(skill)
+        _init_enemy_status(self.state, boss)
+        if getattr(boss, 'modifiers', None):
+            self._init_mod_handler()
+
+        mod_names = ""
+        if getattr(boss, 'modifiers', None):
+            from game.data_loader import data_loader
+            names = [data_loader.boss_modifiers.get(m, {}).get("name", m) for m in boss.modifiers]
+            mod_names = f"\n[{', '.join(names)}]"
+        return [BattleEvent("boss_intro",
+                            message=t("battle_boss_appears", name=boss.name, hp=_fn(boss.hp), mods=mod_names),
+                            is_boss=True)]
+
+    def _build_result(self):
+        """Snapshot current battle state as a BattleResult."""
+        s = self.state
+        if s.phase == BattlePhase.VICTORY:
+            outcome = "victory"
+        elif s.phase == BattlePhase.DEFEAT:
+            outcome = "defeat"
+        else:
+            outcome = "ongoing"
+        return BattleResult(
+            outcome=outcome,
+            is_boss=s.is_boss_fight,
+            gold_earned=s.gold_earned,
+            enemies_killed=sum(1 for e in s.enemies if e.hp <= 0),
+            survivors=[e for e in s.enemies if e.hp > 0],
+            turn_number=s.turn_number,
+            player_fighters=list(s.player_fighters),
+            enemies=list(s.enemies),
+        )
+
+    def do_turn(self):
+        """Execute one turn. Returns (events, result).
+
+        events: list[BattleEvent] for animation.
+        result: BattleResult describing current outcome (ongoing/victory/defeat).
+        """
+        s = self.state
+        events = self._do_turn_events()
+        return events, self._build_result()
+
+    def _do_turn_events(self):
+        """Internal: run one turn, return events only.
+
+        Kept separate so do_turn can wrap with the result snapshot.
+        """
+        s = self.state
+        events = []
+
+        if s.phase in (BattlePhase.IDLE, BattlePhase.VICTORY, BattlePhase.DEFEAT):
+            return events
+
+        if s.phase in (BattlePhase.STARTING, BattlePhase.BOSS_INTRO):
+            s.phase = BattlePhase.TURN_PLAYER
+            s.turn_number = 1
+            events.append(BattleEvent("message", message=t("battle_turn", n=s.turn_number)))
+            return events
+
+        # --- Status effect ticks (DOT/debuffs) ---
+        if self._status_tick_phase(events):
+            return events
+
+        # --- Active skills fire ---
+        self._skill_activation_phase(events)
+
+        # --- All fighters attack ---
+        if self._player_attack_phase(events):
+            return events
+
+        # --- All enemies attack ---
+        if self._enemy_attack_phase(events):
+            return events
+
+        # --- Tick down skill buff durations ---
+        self._tick_skill_buffs()
+
+        s.turn_number += 1
+        events.append(BattleEvent("message", message=t("battle_turn", n=s.turn_number)))
+        return events
+
+    def do_full_battle(self):
+        """Run entire battle instantly (skip mode). Returns (events, result)."""
+        all_events = []
+        start_turn = self.state.turn_number
+        while self.state.phase not in (BattlePhase.VICTORY, BattlePhase.DEFEAT,
+                                        BattlePhase.IDLE):
+            events = self._do_turn_events()
+            all_events.extend(events)
+            if self.state.turn_number - start_turn > self.MAX_SKIP_BATTLE_TURNS:
+                # Stuck-loop safety: force-terminate by KO'ing every still-
+                # standing fighter through handle_fighter_death (same path the
+                # natural defeat uses), so injuries/permadeaths are applied
+                # consistently. Previously this branch just stamped DEFEAT on
+                # the phase and returned — fighters who still had HP > 0 kept
+                # their pristine state and the user saw "some of my 1000
+                # fighters walked away uninjured from a total defeat".
+                self._force_defeat_cleanup(all_events)
+                break
+        return all_events, self._build_result()
+
+    @property
+    def is_active(self):
+        return self.state.phase not in (BattlePhase.IDLE, BattlePhase.VICTORY,
+                                         BattlePhase.DEFEAT)
+
+    def cancel(self):
+        """Abort the current battle: drop phase to IDLE without victory/defeat
+        processing.
+
+        Hard-cancel semantics:
+            - No gold / kill / death awarded for this battle.
+            - No log entry written (the script that called us is expected
+              to issue its own log_event if it wants one).
+            - Fighter HP stays at whatever it currently is — partial damage
+              already taken is NOT rolled back.
+            - Enemy preview is left in place so the UI doesn't blank.
+
+        Idempotent: if no battle is active, this is a no-op.
+
+        Intended caller: ``GameEngine.stop_auto_battle`` from a squad script
+        that needs to bail out (e.g. detected the wrong roster composition).
+        Not meant for general gameplay flow — victory/defeat handling lives
+        in the regular turn machinery in ``do_turn`` / ``do_full_battle``.
+        """
+        if not self.is_active:
+            return False
+        self.state.phase = BattlePhase.IDLE
+        return True

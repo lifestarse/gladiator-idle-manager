@@ -1,36 +1,6 @@
-# Build: 1
-"""Auto-split submodule: _fighter.py."""
-import random
-import time
-import math
-from collections import namedtuple
-from game.constants import (
-    FIGHTER_BASE_HP, FIGHTER_HP_PER_VIT, FIGHTER_HP_PER_LEVEL,
-    FIGHTER_ATK_PER_STR, FIGHTER_ATK_PER_LEVEL, FIGHTER_STARTING_POINTS,
-    CRIT_K, CRIT_MULT_BASE, CRIT_MULT_PER_AGI,
-    DODGE_AGI_FACTOR, DODGE_DIMINISH_FACTOR,
-    DEATH_CHANCE_BASE, DEATH_CHANCE_CAP,
-    DAMAGE_VARIANCE_LOW, DAMAGE_VARIANCE_HIGH, DEFENSE_DIVISOR,
-    UPGRADE_BONUS_PER_LEVEL, RELIC_STAT_SPLIT, ACCESSORY_HP_MULT,
-    ENEMY_ATK_BASE, ENEMY_ATK_PER_TIER, ENEMY_ATK_EXPO,
-    ENEMY_DEF_BASE, ENEMY_DEF_PER_TIER, ENEMY_DEF_EXPO,
-    ENEMY_HP_BASE, ENEMY_HP_PER_TIER, ENEMY_HP_EXPO,
-    REWARD_BASE, REWARD_EXPO, HIRE_BASE, HIRE_EXPO,
-    UPGRADE_COST_BASE, UPGRADE_COST_EXPO,
-    HEAL_BASE, HEAL_TIER_MULT, SURGEON_BASE, SURGEON_INFLATION,
-    ENEMY_CRIT_CAP, ENEMY_CRIT_BASE, ENEMY_CRIT_PER_TIER,
-    ENEMY_DODGE_CAP, ENEMY_DODGE_PER_TIER, ENEMY_CRIT_MULT,
-    BOSS_TIER_OFFSET, BOSS_HP_MULT, BOSS_ATK_MULT, BOSS_DEF_MULT,
-    BOSS_GOLD_MULT, BOSS_CRIT_BONUS, BOSS_CRIT_MIN,
-    INJURY_HEAL_BASE_COST, TONIC_BASE_COST, TONIC_TIER_EXPO, TIER_BAND_MULT,
-    MAX_UPGRADE_COMMON, MAX_UPGRADE_UNCOMMON, MAX_UPGRADE_RARE,
-    MAX_UPGRADE_EPIC, MAX_UPGRADE_LEGENDARY,
-    ROLE_MULT, ROLE_STAT_MULT, STAT_BIAS_MULT,
-    PERK_POINT_EVERY_N_LEVELS,
-    FIGHTER_CRIT_CAP, FIGHTER_DODGE_CAP,
-)
-from game.slots import SLOTS, EQUIPMENT_SLOTS  # noqa: E402,F401
-
+# Build: 6
+"""models._fighter — Fighter class + stats/equip/perks/serialize mixins."""
+from ._imports import *  # noqa: F401,F403
 from ._helpers import *  # noqa: F401,F403
 from ._scaling import DifficultyScaler
 from ._combat import CombatUnit
@@ -74,12 +44,75 @@ class Fighter(CombatUnit, _FighterStatsMixin, _FighterEquipMixin, _FighterPerksM
         self.on_expedition = False
         self.expedition_id = None
         self.expedition_end = 0.0
+        self.is_active = True
+        # Stamina/Fatigue. Stamina drains per battle; once at 0, fatigue rises
+        # in its place. Fatigue >= FATIGUE_MAX locks the fighter out of arena.
+        from game.constants import STAMINA_MAX
+        self.stamina = STAMINA_MAX
+        self.fatigue = 0
+        # When True, level_up triggers engine.auto_distribute (stats by class
+        # base_str/agi/vit profile, own-class perks tier-asc).
+        self.auto_distribute_enabled = False
         self.hp = self.max_hp
 
     @property
     def available(self):
-        """True if fighter can act: alive and not on expedition."""
-        return self.alive and not self.on_expedition
+        """True if fighter can act: alive, not on expedition, not benched, not exhausted."""
+        from game.constants import FATIGUE_MAX
+        if self.fatigue >= FATIGUE_MAX:
+            return False
+        return self.alive and not self.on_expedition and self.is_active
+
+    @property
+    def fatigue_mult(self):
+        """Combat-stat multiplier from fatigue: 1.0 at 0 fatigue, 0.0 at 100."""
+        from game.constants import FATIGUE_MAX
+        return max(0.0, 1.0 - self.fatigue / FATIGUE_MAX)
+
+    @property
+    def is_exhausted(self):
+        from game.constants import FATIGUE_MAX
+        return self.fatigue >= FATIGUE_MAX
+
+    def apply_battle_fought(self):
+        """Drain stamina; once at 0, accrue fatigue. Called per battle participated."""
+        from game.constants import (STAMINA_DRAIN_PER_BATTLE,
+                                    FATIGUE_GAIN_PER_BATTLE,
+                                    FATIGUE_MAX)
+        if self.stamina > 0:
+            self.stamina = max(0, self.stamina - STAMINA_DRAIN_PER_BATTLE)
+        else:
+            self.fatigue = min(FATIGUE_MAX, self.fatigue + FATIGUE_GAIN_PER_BATTLE)
+        # max_hp may have shrunk from new fatigue — keep current hp in bounds.
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+
+    def apply_battle_skipped(self):
+        """Recover from a skipped battle: priority fatigue → stamina.
+        Also progresses injury auto-heal counters and removes healed injuries.
+        """
+        from game.constants import (STAMINA_MAX,
+                                    STAMINA_RECOVERY_PER_REST,
+                                    FATIGUE_RECOVERY_PER_REST,
+                                    SEVERITY_HEAL_THRESHOLD)
+        if self.fatigue > 0:
+            self.fatigue = max(0, self.fatigue - FATIGUE_RECOVERY_PER_REST)
+        elif self.stamina < STAMINA_MAX:
+            self.stamina = min(STAMINA_MAX, self.stamina + STAMINA_RECOVERY_PER_REST)
+        # Progress injury heal counters.
+        remaining = []
+        for inj in self.injuries:
+            data = self._get_injury_data(inj["id"])
+            severity = data.get("severity", "minor")
+            threshold = SEVERITY_HEAL_THRESHOLD.get(severity)
+            if threshold is None:
+                # permanent or unknown severity: never auto-heals.
+                remaining.append(inj)
+                continue
+            inj["heal_progress"] = inj.get("heal_progress", 0) + 1
+            if inj["heal_progress"] < threshold:
+                remaining.append(inj)
+        self.injuries = remaining
 
     @property
     def class_name(self):
@@ -144,6 +177,43 @@ class Fighter(CombatUnit, _FighterStatsMixin, _FighterEquipMixin, _FighterPerksM
         self.unused_points -= 1
         return True
 
+    def auto_distribute_stats(self):
+        """Allocate all unused_points to STR/AGI/VIT by class base-stat ratios.
+
+        Each point goes to the stat whose current allocated share lags
+        farthest behind its target weight (greedy weighted distribution).
+        Converges to the class profile over many levels regardless of
+        prior manual allocations. Returns count of points spent.
+        """
+        if self.unused_points <= 0:
+            return 0
+        cls_data = FIGHTER_CLASSES.get(self.fighter_class, FIGHTER_CLASSES["mercenary"])
+        base_str = cls_data.get("base_str", 0)
+        base_agi = cls_data.get("base_agi", 0)
+        base_vit = cls_data.get("base_vit", 0)
+        total_base = max(1, base_str + base_agi + base_vit)
+        weights = {
+            "strength": base_str / total_base,
+            "agility": base_agi / total_base,
+            "vitality": base_vit / total_base,
+        }
+        spent = 0
+        while self.unused_points > 0:
+            allocated = {
+                "strength": max(0, self.strength - base_str),
+                "agility": max(0, self.agility - base_agi),
+                "vitality": max(0, self.vitality - base_vit),
+            }
+            denom = sum(allocated.values()) + 1
+            best_stat = max(
+                weights.keys(),
+                key=lambda s: weights[s] - allocated[s] / denom,
+            )
+            if not self.distribute_point(best_stat):
+                break
+            spent += 1
+        return spent
+
     def level_up(self):
         """Level up: gain stat points based on class, perk point every 5 levels."""
         self.level += 1
@@ -162,7 +232,10 @@ class Fighter(CombatUnit, _FighterStatsMixin, _FighterEquipMixin, _FighterPerksM
             return True, None
         from game.data_loader import data_loader
         existing_ids = {inj["id"] for inj in self.injuries}
-        injury_id = data_loader.pick_random_injury(existing_ids)
+        injury_id = data_loader.pick_random_injury(
+            existing_ids,
+            severity_reduction_chance=self.get_perk_effects("reduce_injury_severity"),
+        )
         self.injuries.append({"id": injury_id})
         if self.hp > self.max_hp:
             self.hp = self.max_hp

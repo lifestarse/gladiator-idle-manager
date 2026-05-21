@@ -71,3 +71,68 @@ def test_save_creates_backup(engine):
     with open(engine.SAVE_PATH + ".bak", "r", encoding="utf-8") as f:
         bak = json.load(f)
     assert bak["gold"] == 100
+
+
+def test_load_survives_utf8_save_written_externally(tmp_save_path):
+    """Regression: an external editor (or a Python script using the templates
+    factory) that writes the save file with ``ensure_ascii=False`` and real
+    UTF-8 bytes must not make the next engine.load() silently fall back to .bak.
+
+    Before the encoding='utf-8' fix in persistencereadmixin.py, on Windows
+    open() defaulted to cp1252, and any byte outside Latin-1 (0x81, 0x8D,
+    0x8F, 0x90, 0x9D — which the byte sequence for the Russian letter 'я'
+    contains as 0x8F) would raise UnicodeDecodeError, get caught by the
+    "corrupt save" handler, and the engine would load the .bak instead —
+    silently losing every program with a non-ASCII name.
+    """
+    from game.engine import GameEngine
+    from game.scripting.ast_nodes import (
+        Program, Trigger, ForEach, Action, BinOp, Const,
+        FighterField, LocalVar,
+    )
+
+    # 1) Build a save dict with a Russian program name + run it through the
+    #    real AST serializer so the structure matches what the engine expects.
+    prog = Program(
+        name="активация готовых",   # contains 'я' → byte 0x8F in UTF-8
+        trigger=Trigger.ON_BATTLE_END,
+        body=[
+            ForEach(
+                var_name="f", source="fighters",
+                where=BinOp(">=", FighterField(LocalVar("f"), "stamina"), Const(100)),
+                body=[Action("activate", [LocalVar("f")])],
+            ),
+        ],
+    )
+    raw_save = {
+        "schema_version": 1,
+        "gold": 0, "diamonds": 0, "wins": 0, "arena_tier": 1,
+        "fighters": [],
+        "inventory": [],
+        "shards": {},
+        "scripts": {
+            "programs": [prog.to_dict()],
+            "g_vars": {"_examples_seeded": True},
+        },
+    }
+
+    # 2) Write it EXTERNALLY with ensure_ascii=False (real UTF-8 bytes, like
+    #    a hand-edited file or a third-party tool would produce).
+    with open(tmp_save_path, "w", encoding="utf-8") as f:
+        json.dump(raw_save, f, ensure_ascii=False, indent=2)
+
+    # 3) Engine must read it back without falling through to .bak (which
+    #    doesn't even exist here — if the fix regressed, the test would fail
+    #    with "no fighters" because the missing-file branch would fire).
+    eng = GameEngine(save_path=tmp_save_path)
+    eng.load()
+    assert len(eng.scripts.programs) == 1, (
+        "engine.load() lost the program — likely fell back to .bak because "
+        "UTF-8 save couldn't be decoded under the platform's default locale"
+    )
+    assert eng.scripts.programs[0].name == "активация готовых"
+    # AST must be intact too, not just the name
+    body = eng.scripts.programs[0].body
+    assert len(body) == 1
+    assert isinstance(body[0], ForEach)
+    assert body[0].body[0].name == "activate"

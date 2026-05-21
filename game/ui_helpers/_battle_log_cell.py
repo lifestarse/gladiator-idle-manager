@@ -1,23 +1,6 @@
-# Build: 1
+# Build: 4
 """BattleLogCardView — battle log RV cell."""
-from contextlib import contextmanager
-import time
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _batch_fill_grid, _bind_long_tap, _auto_text_size, _diamond_label
+from ._imports import *  # noqa: F401,F403
 
 class BattleLogCardView(RecycleDataViewBehavior, BoxLayout):
     """Battle log entry — 78dp vertical BaseCard with 2 text rows.
@@ -83,7 +66,11 @@ class BattleLogCardView(RecycleDataViewBehavior, BoxLayout):
         self._card.add_widget(row2)
         self.add_widget(self._card)
 
-        _bind_long_tap(self._card, lambda w: self._on_tap())
+        # BaseCard is already ButtonBehavior+ScrollSafeButtonMixin, so on_release
+        # fires only on a real tap (blocked when user scrolls >12px). Previously
+        # this was _bind_long_tap which duplicated the touch-handler work on
+        # every frame during scroll — redundant for a ButtonBehavior widget.
+        self._card.bind(on_release=lambda *a: self._on_tap())
 
     def refresh_view_attrs(self, rv, index, data):
         self._log_idx = data.get('log_idx', -1)

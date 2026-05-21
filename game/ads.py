@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 """
 Ad integration module — AdMob via KivMob.
 
@@ -53,7 +53,7 @@ class AdManager:
     def init(self):
         """Initialize ads. Call once at app start."""
         if platform != "android":
-            print("[AdManager] Not on Android — ads disabled (stub mode)")
+            _log.info("[AdManager] Not on Android — ads disabled (stub mode)")
             self._initialized = False
             return
 
@@ -65,9 +65,9 @@ class AdManager:
             self._kivmob.request_banner()
             self._kivmob.request_interstitial()
             self._initialized = True
-            print("[AdManager] Initialized with KivMob")
+            _log.info("[AdManager] Initialized with KivMob")
         except ImportError:
-            print("[AdManager] KivMob not installed — ads disabled")
+            _log.info("[AdManager] KivMob not installed — ads disabled")
             self._initialized = False
 
     # --- Banner ---
@@ -116,7 +116,7 @@ class AdManager:
             return
         if not self._initialized or not self._kivmob:
             # Stub: just give reward on desktop for testing
-            print("[AdManager] Stub: rewarded ad simulated")
+            _log.info("[AdManager] Stub: rewarded ad simulated")
             if on_reward_callback:
                 on_reward_callback()
             return
@@ -152,7 +152,7 @@ class AdManager:
                 RewardListener(on_reward_callback)
             )
         except Exception as e:
-            print(f"[AdManager] Rewarded ad error: {e}")
+            _log.warning("[AdManager] Rewarded ad error: %s", e)
 
     def is_rewarded_loaded(self):
         if not self._initialized or not self._kivmob:

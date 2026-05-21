@@ -1,25 +1,9 @@
-# Build: 1
-"""Auto-generated submodule of game.ui_helpers package."""
-from contextlib import contextmanager
-import time
-
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _auto_text_size
+# Build: 4
+"""ui_helpers._item_card — item info card builder."""
+from ._imports import *  # noqa: F401,F403
+from ._widgets import _auto_text_size
+from kivy.uix.scrollview import ScrollView
+from game.constants import FIGHTER_ATK_PER_STR, FIGHTER_HP_PER_VIT
 
 
 # ============================================================
@@ -125,3 +109,83 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
     if on_tap:
         card.bind(on_press=on_tap)
     return card
+
+
+# ============================================================
+#  ITEM STATS POPUP — tap-on-card detail in detail/equipped/preview views
+# ============================================================
+
+
+def show_item_stats_popup(item):
+    """Popup that spells out the item's stats in plain language.
+
+    Triggered by tapping the item card while already inside the item-detail,
+    equipped-detail, or shop-preview view. The compact card up top only shows
+    icons + numbers, which testers found unintuitive — this popup names each
+    stat and explains the per-point effect.
+    """
+    import game.models as _m
+    from game.models import item_display_name, calc_item_stats
+
+    rarity = item.get("rarity", "common")
+    rcolor = RARITY_COLORS.get(rarity, TEXT_PRIMARY)
+    title = item_display_name(item)
+    upgrade_lvl = item.get("upgrade_level", 0)
+    if upgrade_lvl > 0:
+        title = f"{title} +{upgrade_lvl}"
+
+    s, a, v = calc_item_stats(item)
+
+    lines = []
+    if s > 0:
+        lines.append(t("item_stat_str_line", n=s, atk=s * FIGHTER_ATK_PER_STR))
+    if a > 0:
+        lines.append(t("item_stat_agi_line", n=a))
+    if v > 0:
+        lines.append(t("item_stat_vit_line", n=v, **{"def": v, "hp": v * FIGHTER_HP_PER_VIT}))
+    if not lines:
+        lines.append(t("item_no_stats"))
+
+    if upgrade_lvl > 0:
+        lines.append(t("item_upgrade_bonus_note", lvl=upgrade_lvl))
+
+    ench = item.get("enchantment", "")
+    if ench:
+        ench_data = _m.ENCHANTMENT_TYPES.get(ench)
+        ench_name = ench_data["name"] if ench_data else ench
+        lines.append(t("item_enchant_line", name=ench_name))
+
+    desc = item.get("description", "")
+    if desc:
+        lines.append(desc)
+
+    body_text = "\n\n".join(lines)
+
+    content = BoxLayout(orientation="vertical", size_hint_y=None,
+                        padding=[dp(12), dp(10)], spacing=dp(6))
+    content.bind(minimum_height=content.setter("height"))
+
+    lbl = AutoShrinkLabel(
+        text=body_text, font_size=sp(11),
+        color=TEXT_SECONDARY, halign="left", valign="top",
+        markup=True, size_hint_y=None,
+    )
+    lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w, None)))
+    lbl.bind(texture_size=lambda inst, ts: setattr(inst, "height", ts[1] + dp(8)))
+    content.add_widget(lbl)
+
+    scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+    scroll.add_widget(content)
+
+    popup = Popup(
+        title=title,
+        title_color=popup_color(rcolor),
+        title_size=sp(13),
+        content=scroll,
+        size_hint=(0.92, 0.7),
+        background_color=popup_color(BG_CARD),
+        separator_color=popup_color(rcolor),
+        auto_dismiss=True,
+    )
+    popup.open()
+    return popup

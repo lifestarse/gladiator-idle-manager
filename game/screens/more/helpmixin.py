@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """MoreScreen _HelpMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -59,7 +59,7 @@ class _HelpMixin:
                 text=f"{'> ' if is_current else ''}{name}",
                 size_hint_y=None, height=dp(44),
                 btn_color=ACCENT_GOLD if is_current else ACCENT_BLUE,
-                font_size=sp(9),
+                font_size=9,
             )
             btn.bind(on_press=lambda inst, c=code, p=popup: self._set_language(c, p))
             content.add_widget(btn)

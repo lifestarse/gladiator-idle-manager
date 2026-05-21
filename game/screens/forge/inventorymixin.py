@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ForgeScreen _InventoryMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _batch_fill_grid
@@ -39,7 +39,10 @@ class _InventoryMixin:
         _safe_clear(grid)
         sub = self._item_slot_subtitle(item)
 
-        grid.add_widget(build_item_info_card(item, subtitle=sub))
+        grid.add_widget(build_item_info_card(
+            item, subtitle=sub,
+            on_tap=lambda *_a, it=item: show_item_stats_popup(it),
+        ))
         desc_card = self._build_description_card(item)
         if desc_card:
             grid.add_widget(desc_card)

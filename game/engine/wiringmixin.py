@@ -1,32 +1,8 @@
-# Build: 1
-"""GameEngine _WiringMixin."""
-# Build: 1
-"""GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
+# Build: 2
+"""GameEngine _WiringMixin — JSON→module wiring + item migration."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
-from game.engine._fighters import _FightersMixin
-from game.engine._combat import _CombatMixin
-from game.engine._forge import _ForgeMixin
-from game.engine._expeditions import _ExpeditionsMixin
-from game.engine._healing import _HealingMixin
-from game.engine._progression import _ProgressionMixin
-from game.engine._economy import _EconomyMixin
-from game.engine._persistence import _PersistenceMixin
 
-
-def _default_save_path():
-    """Default save location. Kept lazy so engine.py can be imported headless."""
-    try:
-        from kivy.utils import platform
-    except ImportError:
-        return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
-    if platform == "android":
-        from android.storage import app_storage_path  # noqa
-        return os.path.join(app_storage_path(), ".gladiator_idle_save.json")
-    return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
-
-
-from game.engine._shared import _m, _log, _ach_module
 
 class _WiringMixin:
     @staticmethod

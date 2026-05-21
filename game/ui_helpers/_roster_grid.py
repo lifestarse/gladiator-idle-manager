@@ -1,25 +1,7 @@
-# Build: 1
-"""Auto-generated submodule of game.ui_helpers package."""
-from contextlib import contextmanager
-import time
-
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
-from kivy.graphics import Color, RoundedRectangle
-from kivy.metrics import dp, sp
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-
-from game.widgets import CardWidget, MinimalButton, MinimalBar, AutoShrinkLabel, GladiatorAvatar
-from game.theme import *
-from game.models import RARITY_COLORS, fmt_num
-from game.slots import SLOTS
-from game.localization import t
-from game.constants import LOW_HP_THRESHOLD
-from ._common import _bind_long_tap, _auto_text_size
+# Build: 6
+"""ui_helpers._roster_grid — refresh_roster_grid entry point."""
+from ._imports import *  # noqa: F401,F403
+from ._widgets import _auto_text_size
 
 
 # ============================================================
@@ -29,19 +11,33 @@ from ._common import _bind_long_tap, _auto_text_size
 
 def build_roster_card(data, roster_screen):
     """Minimal card: name, level, STR/AGI/HP icons. Tap to open detail popup."""
-    from game.widgets import BaseCard
+    from game.widgets import BaseCard, MinimalBar
 
-    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(72),
+    stamina = data.get("stamina", 100)
+    fatigue = data.get("fatigue", 0)
+    exhausted = data.get("exhausted", False)
+
+    card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(96),
                     padding=[dp(10), dp(6)], spacing=dp(4))
 
     if not data["alive"]:
         card.card_color = (0.15, 0.08, 0.08, 1)
         card.border_color = ACCENT_RED
+    elif exhausted:
+        card.card_color = (0.18, 0.06, 0.06, 1)
+        card.border_color = ACCENT_RED
+    elif fatigue >= 50:
+        card.card_color = (0.18, 0.12, 0.06, 1)
+    elif stamina <= 20:
+        card.card_color = (0.18, 0.16, 0.06, 1)
 
     idx = data["index"]
 
     if not data["alive"]:
         name_text = f"{data['name']} [{t('dead_tag')}]"
+        name_color = ACCENT_RED
+    elif exhausted:
+        name_text = f"{data['name']} 🔒"
         name_color = ACCENT_RED
     elif data["on_expedition"]:
         name_text = data["name"]
@@ -54,7 +50,7 @@ def build_roster_card(data, roster_screen):
     status_widget = Label(size_hint_x=0.25)
     if not data["alive"]:
         status_widget = MinimalButton(
-            text="X", btn_color=ACCENT_RED, font_size=sp(11), size_hint_x=0.25,
+            text="X", btn_color=ACCENT_RED, font_size=11, size_hint_x=0.25,
         )
         status_widget.bind(on_press=lambda inst, i=idx: roster_screen.dismiss(i))
     elif data["on_expedition"]:
@@ -74,7 +70,28 @@ def build_roster_card(data, roster_screen):
         ("sprites/icons/ic_hp.png", fmt_num(data['hp']), (1, 0.3, 0.3, 1), sp(8)),
     ], height=dp(28), spacing=dp(8))
 
-    _bind_long_tap(card, lambda w, i=idx: roster_screen.show_fighter_detail(i))
+    # Row 3: stamina + fatigue mini-bars (only meaningful for living fighters).
+    if data["alive"]:
+        sta_color = (0.95, 0.85, 0.2, 1) if stamina <= 20 else (0.4, 0.85, 0.4, 1)
+        if exhausted:
+            fat_color = (0.95, 0.2, 0.2, 1)
+        elif fatigue >= 50:
+            fat_color = (0.95, 0.55, 0.15, 1)
+        else:
+            fat_color = (0.55, 0.55, 0.65, 1)
+        bars = BoxLayout(orientation="horizontal", size_hint_y=None,
+                         height=dp(8), spacing=dp(4))
+        sta_bar = MinimalBar(value=stamina / 100.0,
+                             bar_color=list(sta_color),
+                             bg_color=[0.12, 0.12, 0.12, 1])
+        fat_bar = MinimalBar(value=fatigue / 100.0,
+                             bar_color=list(fat_color),
+                             bg_color=[0.12, 0.12, 0.12, 1])
+        bars.add_widget(sta_bar)
+        bars.add_widget(fat_bar)
+        card.add_widget(bars)
+
+    card.bind(on_release=lambda *a, i=idx: roster_screen.show_fighter_detail(i))
     return card
 
 

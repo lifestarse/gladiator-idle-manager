@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 3
 """App _AppLocaleMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
@@ -17,6 +17,19 @@ class _AppLocaleMixin:
         self.title_hunts = t("title_hunts")
         self.title_lore = t("title_lore")
         self.title_more = t("title_more")
+        self.title_scripts = t("title_scripts")
+        self.scr_new_btn = t("scr_new_btn")
+        self.scr_tmpl_btn = t("scr_tmpl_btn")
+        self.scr_export_all_btn = t("scr_export_all_btn")
+        self.scr_import_btn = t("scr_import_btn")
+        self.scr_run_btn = t("scr_run_btn")
+        self.scr_log_btn = t("scr_log_btn")
+        self.scr_tab_all = t("scr_tab_all")
+        self.scr_tab_running = t("scr_tab_running")
+        self.scr_stop_btn = t("scr_stop_btn")
+        self.scr_undo_btn = t("scr_undo_btn")
+        self.scr_redo_btn = t("scr_redo_btn")
+        self.scr_online_btn = t("scr_online_btn")
         self.lbl_vs = t("vs")
         self.lbl_auto = t("btn_auto")
         self.lbl_back_btn = t("back_btn")
@@ -29,6 +42,7 @@ class _AppLocaleMixin:
         self.lbl_quests = t("quests_label")
         self.lbl_tab_missions = t("tab_missions")
         self.lbl_tab_hunts = t("tab_hunts")
+        self.lbl_scripts = t("scripts_btn")
         self.lbl_restore_purchases = t("restore_purchases")
         self.lbl_cloud_save = t("cloud_save")
         self.lbl_sign_in_google = t("sign_in_google")
@@ -37,6 +51,7 @@ class _AppLocaleMixin:
         self.lbl_load_from_cloud = t("load_from_cloud")
         self.lbl_language = t("language")
         self.lbl_change_language = t("change_language")
+        self.lbl_sound_volume = t("sound_volume")
         self.lbl_heal_all_injuries = t("heal_all_injuries")
         self.lbl_recruit_fighter = t("recruit_fighter_btn")
         self.lbl_remove_ads = t("remove_ads_label")

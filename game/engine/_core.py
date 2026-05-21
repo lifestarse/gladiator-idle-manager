@@ -1,7 +1,8 @@
-# Build: 1
+# Build: 8
 """GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
+from game.scripting import ScriptManager
 from game.engine._fighters import _FightersMixin
 from game.engine._combat import _CombatMixin
 from game.engine._forge import _ForgeMixin
@@ -10,6 +11,7 @@ from game.engine._healing import _HealingMixin
 from game.engine._progression import _ProgressionMixin
 from game.engine._economy import _EconomyMixin
 from game.engine._persistence import _PersistenceMixin
+from game.engine.wiringmixin import _WiringMixin
 
 
 def _default_save_path():
@@ -23,8 +25,6 @@ def _default_save_path():
         return os.path.join(app_storage_path(), ".gladiator_idle_save.json")
     return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
 
-
-from .wiringmixin import _WiringMixin
 
 class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _HealingMixin, _ProgressionMixin, _EconomyMixin, _PersistenceMixin, _WiringMixin):
     def __init__(self, save_path=None):
@@ -99,6 +99,9 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Unified event log — all important game events
         self.event_log: list[dict] = []
 
+        # Battle-end subscribers: callables(result, participants, skipped)
+        self._battle_end_subscribers: list = []
+
         # Battle manager
         self.battle_mgr = BattleManager(self)
 
@@ -107,6 +110,66 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
 
         # Monetization
         self.ads_removed = False
+
+        # Audio settings — global sound volume (0.0..1.0). Read by
+        # game/screens/shared.py::_play_hit_sound, set from the More tab slider.
+        self.sound_volume = 1.0
+
+        # Stamina/fatigue + injury auto-heal: drive off battle_end events.
+        self.subscribe_battle_end(self._on_battle_end_stamina_fatigue)
+
+        # Squad scripting (rule processor with variables, loops, conditions).
+        # Subscribed AFTER stamina/fatigue so scripts see post-battle state.
+        self.scripts = ScriptManager()
+        # Seed the built-in example program("bench tired") for brand-new
+        # engines (no save). The seeding flag is persisted, so existing
+        # players who delete/edit it never see it re-appear.
+        self.scripts.seed_examples_if_needed()
+        self.subscribe_battle_end(self._on_battle_end_scripts)
+
+    def _on_battle_end_scripts(self, result, participants, skipped):
+        # Re-entrancy guard: a script reacting to on_battle_end can call
+        # start_arena_battle, which (via builtins._start_arena_battle's
+        # battle_skip) resolves the new battle synchronously and fires
+        # _emit_battle_end again from inside our own callback. Without this
+        # guard, a "farm to X gold" pattern would recurse straight into a
+        # RecursionError instead of farming one battle per natural Arena tick.
+        # With the guard, scripted battles fire-and-forget: the inner battle
+        # still resolves (gold/wins/loss recorded), but its on_battle_end
+        # event is swallowed so we don't pile programs on top of each other.
+        if getattr(self, "_on_battle_end_running", False):
+            return
+        self._on_battle_end_running = True
+        try:
+            self.scripts.on_battle_end(self)
+        except Exception as e:
+            _log.exception("[ENGINE] scripts.on_battle_end failed: %s", e)
+        finally:
+            self._on_battle_end_running = False
+
+    @staticmethod
+    def _on_battle_end_stamina_fatigue(result, participants, skipped):
+        for f in participants:
+            if f.alive:
+                f.apply_battle_fought()
+        for f in skipped:
+            if f.alive:
+                f.apply_battle_skipped()
+
+    def subscribe_battle_end(self, callback):
+        """Register callback(result, participants, skipped) fired once per arena battle end.
+
+        skipped = roster fighters that did not participate (benched, on
+        expedition, dead, or simply not chosen for this fight).
+        """
+        self._battle_end_subscribers.append(callback)
+
+    def _emit_battle_end(self, result):
+        participants = list(result.player_fighters)
+        participant_ids = {id(f) for f in participants}
+        skipped = [f for f in self.fighters if id(f) not in participant_ids]
+        for cb in self._battle_end_subscribers:
+            cb(result, participants, skipped)
 
     def _log_event(self, event_type: str, **data):
         """Append an event to the unified event log."""
@@ -126,7 +189,6 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
             best_tier=max(self.best_record_tier, self.arena_tier),
             total_kills=self.wins,
             strongest_gladiator_kills=self.best_record_kills,
-            fastest_t15=self.fastest_t15_time,
         )
 
     def roguelike_reset(self):
@@ -167,11 +229,14 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         self._mark_dirty()
         self.save()
 
-    MAX_BATTLE_LOG_LINES = 1500
+    # Effectively unlimited — previous 1500-line head+tail truncation dropped
+    # the middle of long battles. The detail view uses a RecycleView so even
+    # 100k lines render fine (only visible rows are instantiated).
+    MAX_BATTLE_LOG_LINES = 1_000_000
 
-    BATTLE_LOG_HEAD = 750    # opening: setup, skill summaries, first blood
+    BATTLE_LOG_HEAD = 500_000
 
-    BATTLE_LOG_TAIL = 749    # climax: kills, deaths, victory/defeat
+    BATTLE_LOG_TAIL = 499_999
 
     @property
     def battle_active(self):
@@ -197,6 +262,11 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         if self._ach_dirty:
             self._ach_dirty = False
             self.check_achievements()
+        # Squad scripts on_tick trigger (per-program interval gates inside).
+        try:
+            self.scripts.on_tick(self, dt)
+        except Exception as e:
+            _log.exception("[ENGINE] scripts.on_tick failed: %s", e)
         return exp_results
 
     _save_async_lock = None           # threading.Lock; lazy-init

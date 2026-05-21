@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _FightersMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -49,6 +49,8 @@ class _FightersMixin:
             self.gold -= cost
             f.level_up()
             self._log_event("level_up", name=f.name, lv=f.level, gold=cost)
+            if f.auto_distribute_enabled:
+                self._auto_distribute_fighter(f)
             self._mark_dirty()
             return Result(True, t("reached_level", name=f.name, lv=f.level, pts=f.points_per_level))
         return Result(False, t("not_enough_gold", need=fmt_num(cost - self.gold)), "not_enough_gold")
@@ -148,3 +150,59 @@ class _FightersMixin:
         self.fighters[fighter_idx].name = new_name
         self.save()
         return Result(True, t("renamed_msg", old=old_name, new=new_name))
+
+    def _auto_unlock_perks(self, f):
+        """Spend perk_points on own-class perks: lowest tier first, then cost.
+
+        Cross-class perks are skipped (2x cost makes them a poor auto pick;
+        the player can still take them manually). Returns list of unlocked
+        perk dicts so the caller can log each one.
+        """
+        cls_data = _m.FIGHTER_CLASSES.get(f.fighter_class, {})
+        tree = cls_data.get("perk_tree", [])
+        if not tree:
+            return []
+        locked = [p for p in tree if p["id"] not in f.unlocked_perks]
+        locked.sort(key=lambda p: (p.get("tier", 99), p.get("cost", 99)))
+        unlocked = []
+        for perk in locked:
+            cost = perk.get("cost", 1)
+            if f.perk_points < cost:
+                continue
+            old_max = f.max_hp
+            f.perk_points -= cost
+            f.unlocked_perks.append(perk["id"])
+            hp_gain = f.max_hp - old_max
+            if hp_gain > 0:
+                f.hp = min(f.hp + hp_gain, f.max_hp)
+            unlocked.append(perk)
+        return unlocked
+
+    def _auto_distribute_fighter(self, f):
+        """Apply class-profile auto-distribution to one fighter.
+
+        Stats first, then perks. Does NOT save — caller is responsible
+        (level_up wraps in _mark_dirty; the manual toggle saves explicitly).
+        Returns (stats_spent, perks_unlocked_list).
+        """
+        stats_spent = f.auto_distribute_stats()
+        perks = self._auto_unlock_perks(f)
+        for perk in perks:
+            self._log_event("perk", name=f.name, perk=perk["name"])
+        return stats_spent, perks
+
+    def set_auto_distribute(self, fighter_idx, enabled):
+        """Toggle auto-distribute on a fighter.
+
+        Turning ON immediately spends current unused_points + perk_points
+        according to the class profile (so the player sees instant effect),
+        then persists the flag.
+        """
+        if fighter_idx >= len(self.fighters):
+            return Result(False, "", "invalid")
+        f = self.fighters[fighter_idx]
+        f.auto_distribute_enabled = bool(enabled)
+        if f.auto_distribute_enabled and f.alive:
+            self._auto_distribute_fighter(f)
+        self.save()
+        return Result(True, "")

@@ -113,7 +113,7 @@
                     scroll_type: ['bars', 'content']
                     effect_cls: ScrollEffect
                     scroll_distance: dp(8)
-                    scroll_timeout: 50
+                    scroll_timeout: 500
                     RecycleBoxLayout:
                         default_size: None, dp(84)
                         default_size_hint: 1, None
@@ -160,7 +160,7 @@
                     scroll_type: ['bars', 'content']
                     effect_cls: ScrollEffect
                     scroll_distance: dp(8)
-                    scroll_timeout: 50
+                    scroll_timeout: 500
                     RecycleBoxLayout:
                         default_size: None, dp(84)
                         default_size_hint: 1, None
@@ -178,8 +178,8 @@
                 spacing: dp(6)
                 MinimalButton:
                     text: app.lbl_auto
-                    btn_color: theme.BTN_DISABLED if root.is_fighting else theme.BTN_FIGHT
-                    text_color: theme.TEXT_MUTED if root.is_fighting else theme.TEXT_PRIMARY
+                    btn_color: theme.BTN_DISABLED if root.is_fighting or not root.has_available_fighters else theme.BTN_FIGHT
+                    text_color: theme.TEXT_MUTED if root.is_fighting or not root.has_available_fighters else theme.TEXT_PRIMARY
                     font_size: "11sp"
                     on_press: root.start_auto_battle()
                 MinimalButton:

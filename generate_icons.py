@@ -32,6 +32,18 @@ ICONS = {
     "ic_expand":    "\u25BC",   # down triangle
     "ic_collapse":  "\u25B6",   # right triangle
     "ic_four_star": "\u2726",   # four-pointed star
+    # Scripts toolbar \u2014 added when the screen moved to the kv-driven layout.
+    # Each pairs with a kv-side reference in scripts_screen.kv.
+    "ic_back":      "\u25c0",   # \u25c0 back-arrow (left-pointing triangle)
+    "ic_templates": "\u2630",   # \u2630 trigram (looks like a stack of templates)
+    "ic_export":    "\u2191",   # \u2191 up-arrow (data going out)
+    "ic_import":    "\u2193",   # \u2193 down-arrow (data coming in)
+    "ic_log":       "\u2261",   # \u2261 identical-to (log lines)
+    "ic_stop":      "\u25a0",   # \u25a0 square (stop)
+    "ic_undo":      "\u21b6",   # \u21b6 anticlockwise top semicircle arrow
+    "ic_redo":      "\u21b7",   # \u21b7 clockwise top semicircle arrow
+    "ic_dots":      "\u22ee",   # \u22ee vertical ellipsis \u2014 gear menu trigger
+    "ic_online":    "\u2601",   # \u2601 cloud \u2014 online scripts library
 }
 
 COLORS = {
@@ -54,6 +66,18 @@ COLORS = {
     "ic_expand":    (200, 200, 220, 255),
     "ic_collapse":  (200, 200, 220, 255),
     "ic_four_star": (255, 200, 60, 255),
+    # Scripts toolbar palette: neutral / gold / cyan / green / purple / red.
+    # Purple for log matches the Scripts screen accent (app.accent_purple).
+    "ic_back":      (180, 180, 200, 255),
+    "ic_templates": (255, 200, 60, 255),
+    "ic_export":    (100, 200, 255, 255),
+    "ic_import":    (100, 255, 150, 255),
+    "ic_log":       (180, 100, 255, 255),
+    "ic_stop":      (255, 80, 80, 255),
+    "ic_undo":      (200, 200, 220, 255),
+    "ic_redo":      (200, 200, 220, 255),
+    "ic_dots":      (200, 200, 220, 255),
+    "ic_online":    (100, 200, 255, 255),   # cyan — like cloud_save UI
 }
 
 font = ImageFont.truetype(FONT_PATH, FONT_SIZE)

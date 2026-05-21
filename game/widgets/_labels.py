@@ -1,25 +1,6 @@
-# Build: 1
-"""Widgets submodule — AutoShrinkLabel."""
-import os
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.graphics import (
-    Color, RoundedRectangle, Rectangle, Line, Ellipse,
-    PushMatrix, PopMatrix, Rotate,
-)
-from kivy.properties import (
-    NumericProperty, StringProperty, ListProperty, BooleanProperty
-)
-from kivy.animation import Animation
-from kivy.clock import Clock
-from kivy.metrics import dp, sp
-from game.theme import *
-_SCROLL_THRESHOLD = 12  # px — if finger moves more than this, it's a scroll
+# Build: 2
+"""Widgets — AutoShrinkLabel."""
+from ._imports import *  # noqa: F401,F403
 
 
 class AutoShrinkLabel(Label):
