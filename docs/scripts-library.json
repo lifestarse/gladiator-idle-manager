@@ -389,133 +389,38 @@
         ]
       }
     },
-    {
-      "id": "t9",
-      "title": "Farm to 500k gold",
-      "description": "After every battle: start a new arena battle while gold < 500000 and no battle is running. Stops automatically once you hit the goal.",
-      "author": "lifestarse",
-      "tags": [
-        "bundled"
-      ],
-      "stars": 0,
-      "program": {
-        "name": "farm to 500k",
-        "trigger": "on_battle_end",
-        "enabled": true,
-        "tick_interval": 5,
-        "ops_per_sec": 10000,
-        "g_var_init": {},
-        "body": [
-          {
-            "_kind": "If",
-            "cond": {
-              "_kind": "BinOp",
-              "op": "and",
-              "lhs": {
-                "_kind": "BinOp",
-                "op": "<",
-                "lhs": {
-                  "_kind": "EngineField",
-                  "field_name": "gold"
-                },
-                "rhs": {
-                  "_kind": "Const",
-                  "value": 500000
-                }
-              },
-              "rhs": {
-                "_kind": "UnaryOp",
-                "op": "not",
-                "operand": {
-                  "_kind": "EngineField",
-                  "field_name": "battle_active"
-                }
-              }
-            },
-            "then_body": [
-              {
-                "_kind": "Action",
-                "name": "start_arena_battle",
-                "args": []
-              }
-            ],
-            "else_body": []
-          }
-        ]
-      }
-    },
-    {
-      "id": "t10",
-      "title": "Auto-farm to 500k gold (tick)",
-      "description": "Every second: start an arena battle while gold < 500000 and no battle is running. Keeps farming even while you sit on the Scripts screen.",
-      "author": "lifestarse",
-      "tags": [
-        "bundled"
-      ],
-      "stars": 0,
-      "program": {
-        "name": "auto-farm to 500k",
-        "trigger": "on_tick",
-        "enabled": true,
-        "tick_interval": 1,
-        "ops_per_sec": 10000,
-        "g_var_init": {},
-        "body": [
-          {
-            "_kind": "ForEach",
-            "var_name": "f",
-            "source": "fighters",
-            "body": [
-              {
-                "_kind": "Action",
-                "name": "rest",
-                "args": [
-                  {
-                    "_kind": "LocalVar",
-                    "name": "f"
-                  }
-                ]
-              }
-            ],
-            "where": null
+ {
+  "kind": "gladiator_script_v1",
+  "program": {
+    "name": "auto-farm to 500k",
+    "trigger": "on_demand",
+    "enabled": true,
+    "tick_interval": 1,
+    "ops_per_sec": 0,
+    "g_var_init": {},
+    "body": [
+      {
+        "_kind": "While",
+        "cond": {
+          "_kind": "BinOp",
+          "op": "<",
+          "lhs": {
+            "_kind": "EngineField",
+            "field_name": "gold"
           },
+          "rhs": {
+            "_kind": "Const",
+            "value": 1000000
+          }
+        },
+        "body": [
           {
-            "_kind": "If",
-            "cond": {
-              "_kind": "BinOp",
-              "op": "and",
-              "lhs": {
-                "_kind": "BinOp",
-                "op": "<",
-                "lhs": {
-                  "_kind": "EngineField",
-                  "field_name": "gold"
-                },
-                "rhs": {
-                  "_kind": "Const",
-                  "value": 500000
-                }
-              },
-              "rhs": {
-                "_kind": "UnaryOp",
-                "op": "not",
-                "operand": {
-                  "_kind": "EngineField",
-                  "field_name": "battle_active"
-                }
-              }
-            },
-            "then_body": [
-              {
-                "_kind": "Action",
-                "name": "start_arena_battle",
-                "args": []
-              }
-            ],
-            "else_body": []
+            "_kind": "Action",
+            "name": "start_arena_battle",
+            "args": []
           }
         ]
       }
-    }
-  ]
+    ]
+  }
 }
