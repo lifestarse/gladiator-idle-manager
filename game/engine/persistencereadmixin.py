@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 6
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -13,14 +13,23 @@ class _PersistenceReadMixin:
                 self._spawn_enemy()
                 return
             try:
-                with open(save_path, "r") as f:
+                # encoding='utf-8' is REQUIRED on Windows: the default locale
+                # codec (cp1252 on most user setups) will raise UnicodeDecodeError
+                # on any save containing non-Latin-1 bytes — for example a
+                # program name in Russian written by an external editor. The
+                # except below catches that (UnicodeDecodeError → UnicodeError →
+                # ValueError) and the engine silently falls back to .bak, which
+                # is almost always WORSE than the file we just couldn't read.
+                # See: PR fixing the squad-scripts "activate" program vanishing
+                # after external edits.
+                with open(save_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
             except (json.JSONDecodeError, ValueError):
                 # Corrupted save — try backup
                 backup_path = save_path + ".bak"
                 if os.path.exists(backup_path):
                     try:
-                        with open(backup_path, "r") as f:
+                        with open(backup_path, "r", encoding="utf-8") as f:
                             data = json.load(f)
                     except (json.JSONDecodeError, ValueError):
                         data = None
@@ -104,6 +113,13 @@ class _PersistenceReadMixin:
         self.run_start_time = data.get("run_start_time", 0.0)
         self.ads_removed = data.get("ads_removed", False)
         self.active_mutators = data.get("active_mutators", [])
+        # Clamp to [0,1] — guard against tampered/corrupt saves writing
+        # arbitrary floats that would saturate audio backends.
+        try:
+            vol = float(data.get("sound_volume", 1.0))
+        except (TypeError, ValueError):
+            vol = 1.0
+        self.sound_volume = max(0.0, min(1.0, vol))
 
         # Achievement counters
         self.total_enchantments_applied = data.get("total_enchantments_applied", 0)

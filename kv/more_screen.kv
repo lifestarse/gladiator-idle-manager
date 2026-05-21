@@ -242,6 +242,41 @@
                             pos: self.pos
                             size: self.size
 
+                # --- Sound volume ---
+                AutoShrinkLabel:
+                    text: app.lbl_sound_volume + "  " + str(int(volume_slider.value * 100)) + "%"
+                    font_size: "13sp"
+                    color: app.accent_cyan
+                    halign: "left"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: dp(34)
+
+                Slider:
+                    id: volume_slider
+                    min: 0
+                    max: 1
+                    step: 0.01
+                    value: root.sound_volume
+                    size_hint_y: None
+                    height: dp(40)
+                    cursor_size: dp(20), dp(20)
+                    background_width: dp(28)
+                    value_track: True
+                    value_track_color: app.accent_cyan
+                    on_value: root._on_volume_change(self.value)
+
+                # --- Divider ---
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                 # --- Language ---
                 AutoShrinkLabel:
                     text: app.lbl_language

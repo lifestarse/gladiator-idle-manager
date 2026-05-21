@@ -21,7 +21,8 @@ from .ast_nodes import (
 )
 from .interpreter import Interpreter, ScriptError, BreakSignal, ContinueSignal
 from .builtins import BUILTIN_ACTIONS, BUILTIN_FIELDS, BUILTIN_CALLS
-from .manager import ScriptManager
+from .manager import ScriptManager, RunStats
+from . import labels, templates
 
 __all__ = [
     "Program", "Trigger",
@@ -32,5 +33,6 @@ __all__ = [
     "node_to_dict", "node_from_dict",
     "Interpreter", "ScriptError", "BreakSignal", "ContinueSignal",
     "BUILTIN_ACTIONS", "BUILTIN_FIELDS", "BUILTIN_CALLS",
-    "ScriptManager",
+    "ScriptManager", "RunStats",
+    "labels", "templates",
 ]

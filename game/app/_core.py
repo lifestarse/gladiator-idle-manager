@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 7
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -64,6 +64,26 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
 
     title_more = StringProperty("")
 
+    # Stylized header for the Scripts screen. Matches the pattern of every
+    # other screen so the TopBar shows "С К Р И П Т Ы" / "S C R I P T S"
+    # in the same spaced-caps style as title_pit / title_lore / etc.
+    title_scripts = StringProperty("")
+
+    # Toolbar button labels for the Scripts screen — bound from kv so the
+    # buttons follow language changes the same way every other screen does.
+    scr_new_btn = StringProperty("")
+    scr_tmpl_btn = StringProperty("")
+    scr_export_all_btn = StringProperty("")
+    scr_import_btn = StringProperty("")
+    scr_run_btn = StringProperty("")
+    scr_log_btn = StringProperty("")
+    scr_tab_all = StringProperty("")
+    scr_tab_running = StringProperty("")
+    scr_stop_btn = StringProperty("")
+    scr_undo_btn = StringProperty("")
+    scr_redo_btn = StringProperty("")
+    scr_online_btn = StringProperty("")
+
     lbl_vs = StringProperty("")
 
     lbl_auto = StringProperty("")
@@ -106,6 +126,8 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
 
     lbl_change_language = StringProperty("")
 
+    lbl_sound_volume = StringProperty("")
+
     lbl_heal_all_injuries = StringProperty("")
 
     lbl_recruit_fighter = StringProperty("")
@@ -143,7 +165,7 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         for _fn in (
             "nav_bar.kv", "arena_screen.kv", "roster_screen.kv",
             "forge_screen.kv", "expedition_screen.kv",
-            "lore_screen.kv", "more_screen.kv",
+            "lore_screen.kv", "more_screen.kv", "scripts_screen.kv",
         ):
             Builder.load_file(_os.path.join(_kv_dir, _fn))
         init_language()
@@ -190,6 +212,13 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
                         window.setNavigationBarColor(dark_color)
                         window.setDecorFitsSystemWindows(True)
                         _log.info("[UI] Set decorFitsSystemWindows=True")
+                        # SDL2 forces SCREEN_ORIENTATION_FULL_SENSOR at startup,
+                        # which ignores the Android rotation-lock toggle. Reset
+                        # to FULL_USER so the manifest's `fullUser` actually wins
+                        # and the game respects the system auto-rotate setting.
+                        ActivityInfo = autoclass("android.content.pm.ActivityInfo")
+                        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER)
+                        _log.info("[UI] Set requestedOrientation=FULL_USER")
                     except Exception as e2:
                         _log.warning("[UI] Window fix error: %s", e2)
 
@@ -264,7 +293,8 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         if hasattr(scr, "refresh_ui") and self.engine.battle_active:
             return
         for attr in ("refresh_ui", "refresh_roster", "refresh_forge",
-                     "refresh_expeditions", "refresh_lore", "refresh_more"):
+                     "refresh_expeditions", "refresh_lore", "refresh_more",
+                     "refresh_scripts"):
             if hasattr(scr, attr):
                 getattr(scr, attr)()
                 break

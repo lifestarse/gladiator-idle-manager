@@ -78,6 +78,35 @@ class _CombatMixin:
         self._collect_events(events)
         return events
 
+    def stop_auto_battle(self):
+        """Cancel the in-progress battle. See ``BattleManager.cancel`` for
+        full semantics: no rewards, no log entry, partial damage stays.
+
+        Returns True if a battle was cancelled, False if no battle was active
+        (call was a no-op). The return value lets scripts and tests verify
+        the cancel actually happened.
+
+        Side effects on engine state:
+            - ``_current_battle_messages`` is cleared (so the next
+              ``_record_battle`` doesn't carry over the cancelled fight's
+              log lines).
+            - Preview enemies are re-rolled so the UI shows the upcoming
+              fight rather than the cancelled one. Skipped if a boss is
+              currently staged or revenge enemies are queued — those are
+              special cases that own their preview.
+        """
+        if not self.battle_mgr.cancel():
+            return False
+        self._current_battle_messages = []
+        # Refresh preview unless something stage-owned (boss / revenge) is
+        # holding it — same guard used in refresh_arena_preview.
+        if (self.current_enemy is None
+                or not getattr(self.current_enemy, "is_boss", False)) \
+                and not self._revenge_common and not self._revenge_boss:
+            self._spawn_enemy()
+        self._mark_dirty()
+        return True
+
     def start_boss_fight(self):
         self._current_battle_messages = []
         events = self.battle_mgr.start_boss_fight()

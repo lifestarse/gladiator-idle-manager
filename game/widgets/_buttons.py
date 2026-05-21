@@ -125,6 +125,13 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         elif self._icon:
             self._box.remove_widget(self._icon)
             self._icon = None
+        # _on_tex normally drives _box.size from the label's texture_size,
+        # but when text="" the texture is (0,0) and _on_tex fires BEFORE
+        # the icon is added (during __init__) — Kivy never refires it on
+        # a child add, so the icon would end up in a zero-width container
+        # and render invisible. Forcing _on_tex after icon mutation picks
+        # up the icon's dimensions and re-centres the layout.
+        self._on_tex()
 
     def on_press(self):
         Animation.cancel_all(self, "_press_alpha")

@@ -1,0 +1,521 @@
+{
+  "version": 1,
+  "updated": "2026-05-21",
+  "source": "https://github.com/lifestarse/gladiator-idle-manager",
+  "scripts": [
+    {
+      "id": "t1",
+      "title": "Bench tired fighters",
+      "description": "After every battle: bench anyone with fatigue >= 80.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "bench tired",
+        "trigger": "on_battle_end",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "ForEach",
+            "var_name": "f",
+            "source": "fighters",
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "bench",
+                "args": [
+                  {
+                    "_kind": "LocalVar",
+                    "name": "f"
+                  }
+                ]
+              }
+            ],
+            "where": {
+              "_kind": "BinOp",
+              "op": ">=",
+              "lhs": {
+                "_kind": "FighterField",
+                "fighter": {
+                  "_kind": "LocalVar",
+                  "name": "f"
+                },
+                "field_name": "fatigue"
+              },
+              "rhs": {
+                "_kind": "Const",
+                "value": 80
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "t2",
+      "title": "Activate rested fighters",
+      "description": "After every battle: re-activate anyone whose stamina is full.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "activate ready",
+        "trigger": "on_battle_end",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "ForEach",
+            "var_name": "f",
+            "source": "fighters",
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "activate",
+                "args": [
+                  {
+                    "_kind": "LocalVar",
+                    "name": "f"
+                  }
+                ]
+              }
+            ],
+            "where": {
+              "_kind": "BinOp",
+              "op": ">=",
+              "lhs": {
+                "_kind": "FighterField",
+                "fighter": {
+                  "_kind": "LocalVar",
+                  "name": "f"
+                },
+                "field_name": "stamina"
+              },
+              "rhs": {
+                "_kind": "Const",
+                "value": 100
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "t3",
+      "title": "Auto-buy weapons if rich",
+      "description": "After every battle: if gold > 1000, buy a weapon.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "buy weapon if rich",
+        "trigger": "on_battle_end",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "If",
+            "cond": {
+              "_kind": "BinOp",
+              "op": ">",
+              "lhs": {
+                "_kind": "EngineField",
+                "field_name": "gold"
+              },
+              "rhs": {
+                "_kind": "Const",
+                "value": 1000
+              }
+            },
+            "then_body": [
+              {
+                "_kind": "Action",
+                "name": "buy_item",
+                "args": [
+                  {
+                    "_kind": "Const",
+                    "value": "weapon"
+                  }
+                ]
+              }
+            ],
+            "else_body": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "t4",
+      "title": "Equip empty weapon slots",
+      "description": "After every battle: for each fighter without a weapon, equip the best one.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "equip empty weapons",
+        "trigger": "on_battle_end",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "ForEach",
+            "var_name": "f",
+            "source": "fighters",
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "equip_best",
+                "args": [
+                  {
+                    "_kind": "LocalVar",
+                    "name": "f"
+                  },
+                  {
+                    "_kind": "Const",
+                    "value": "weapon"
+                  }
+                ]
+              }
+            ],
+            "where": {
+              "_kind": "UnaryOp",
+              "op": "not",
+              "operand": {
+                "_kind": "FighterField",
+                "fighter": {
+                  "_kind": "LocalVar",
+                  "name": "f"
+                },
+                "field_name": "has_weapon"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "t5",
+      "title": "Auto-start arena (idle)",
+      "description": "Every 60 s: start arena battle if there are >=3 active fighters and no battle running.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "auto-arena (idle)",
+        "trigger": "on_tick",
+        "enabled": true,
+        "tick_interval": 60,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "If",
+            "cond": {
+              "_kind": "BinOp",
+              "op": "and",
+              "lhs": {
+                "_kind": "BinOp",
+                "op": ">=",
+                "lhs": {
+                  "_kind": "EngineField",
+                  "field_name": "active_count"
+                },
+                "rhs": {
+                  "_kind": "Const",
+                  "value": 3
+                }
+              },
+              "rhs": {
+                "_kind": "UnaryOp",
+                "op": "not",
+                "operand": {
+                  "_kind": "EngineField",
+                  "field_name": "battle_active"
+                }
+              }
+            },
+            "then_body": [
+              {
+                "_kind": "Action",
+                "name": "start_arena_battle",
+                "args": []
+              }
+            ],
+            "else_body": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "t6",
+      "title": "Train everyone to level 5",
+      "description": "On demand: train every fighter up to level 5.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "train to 5",
+        "trigger": "on_demand",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "ForEach",
+            "var_name": "f",
+            "source": "fighters",
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "train_to",
+                "args": [
+                  {
+                    "_kind": "LocalVar",
+                    "name": "f"
+                  },
+                  {
+                    "_kind": "Const",
+                    "value": 5
+                  }
+                ]
+              }
+            ],
+            "where": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "t7",
+      "title": "Unequip exhausted",
+      "description": "After every battle: strip equipment from exhausted fighters.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "unequip exhausted",
+        "trigger": "on_battle_end",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "ForEach",
+            "var_name": "f",
+            "source": "exhausted",
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "unequip_all",
+                "args": [
+                  {
+                    "_kind": "LocalVar",
+                    "name": "f"
+                  }
+                ]
+              }
+            ],
+            "where": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "t8",
+      "title": "Periodic expedition T1",
+      "description": "Every 5 minutes: start a tier-1 expedition if none is active.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "expedition T1",
+        "trigger": "on_tick",
+        "enabled": true,
+        "tick_interval": 300,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "If",
+            "cond": {
+              "_kind": "UnaryOp",
+              "op": "not",
+              "operand": {
+                "_kind": "EngineField",
+                "field_name": "expedition_active"
+              }
+            },
+            "then_body": [
+              {
+                "_kind": "Action",
+                "name": "start_expedition",
+                "args": [
+                  {
+                    "_kind": "Const",
+                    "value": 1
+                  }
+                ]
+              }
+            ],
+            "else_body": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "t9",
+      "title": "Farm to 500k gold",
+      "description": "After every battle: start a new arena battle while gold < 500000 and no battle is running. Stops automatically once you hit the goal.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "farm to 500k",
+        "trigger": "on_battle_end",
+        "enabled": true,
+        "tick_interval": 5,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "If",
+            "cond": {
+              "_kind": "BinOp",
+              "op": "and",
+              "lhs": {
+                "_kind": "BinOp",
+                "op": "<",
+                "lhs": {
+                  "_kind": "EngineField",
+                  "field_name": "gold"
+                },
+                "rhs": {
+                  "_kind": "Const",
+                  "value": 500000
+                }
+              },
+              "rhs": {
+                "_kind": "UnaryOp",
+                "op": "not",
+                "operand": {
+                  "_kind": "EngineField",
+                  "field_name": "battle_active"
+                }
+              }
+            },
+            "then_body": [
+              {
+                "_kind": "Action",
+                "name": "start_arena_battle",
+                "args": []
+              }
+            ],
+            "else_body": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "t10",
+      "title": "Auto-farm to 500k gold (tick)",
+      "description": "Every second: start an arena battle while gold < 500000 and no battle is running. Keeps farming even while you sit on the Scripts screen.",
+      "author": "lifestarse",
+      "tags": [
+        "bundled"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "auto-farm to 500k",
+        "trigger": "on_tick",
+        "enabled": true,
+        "tick_interval": 1,
+        "ops_per_sec": 10000,
+        "g_var_init": {},
+        "body": [
+          {
+            "_kind": "ForEach",
+            "var_name": "f",
+            "source": "fighters",
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "rest",
+                "args": [
+                  {
+                    "_kind": "LocalVar",
+                    "name": "f"
+                  }
+                ]
+              }
+            ],
+            "where": null
+          },
+          {
+            "_kind": "If",
+            "cond": {
+              "_kind": "BinOp",
+              "op": "and",
+              "lhs": {
+                "_kind": "BinOp",
+                "op": "<",
+                "lhs": {
+                  "_kind": "EngineField",
+                  "field_name": "gold"
+                },
+                "rhs": {
+                  "_kind": "Const",
+                  "value": 500000
+                }
+              },
+              "rhs": {
+                "_kind": "UnaryOp",
+                "op": "not",
+                "operand": {
+                  "_kind": "EngineField",
+                  "field_name": "battle_active"
+                }
+              }
+            },
+            "then_body": [
+              {
+                "_kind": "Action",
+                "name": "start_arena_battle",
+                "args": []
+              }
+            ],
+            "else_body": []
+          }
+        ]
+      }
+    }
+  ]
+}

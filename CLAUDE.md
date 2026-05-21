@@ -14,6 +14,13 @@
 # Перед сдачей
 pytest, import check, grep на старые ключи. Не говори "готово" пока сам не проверил.
 
+# Перед записью в `~/.gladiator_idle_save.json` или вызовом `engine.load()` / `engine.save()` на нём
+**Закрой игру сначала.** Юзер забывает её закрывать. Если игра запущена, её in-memory state перезатрёт любую внешнюю запись на ближайшем автосейве — твой edit будет потерян и ты будешь долго думать «почему он не видит мою программу». Команда (PowerShell через `pwsh.exe` или `powershell.exe`):
+```
+powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { $_.CommandLine -like '*gladiator-idle-manager*' -and $_.CommandLine -like '*main.py*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force; 'Killed PID ' + $_.ProcessId }"
+```
+Не убивает текущий шелл — фильтр по `main.py` отсекает test-runner'ы. Идемпотентно: если процесса нет, ничего не печатает и возвращает 0. Делай это **первым шагом** любого скрипта который трогает save или симулирует engine.load — pytest сюда не входит (он создаёт свой engine на tmp_save_path и реальный save не трогает).
+
 # Build
 `# Build: N` на строке 1 каждого файла. Инкрементируй при каждом изменении. Версию в buildozer.spec бампай перед билдом. AAB всегда подписывай. `.buildozer/` не удаляй.
 

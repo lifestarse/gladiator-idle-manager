@@ -139,6 +139,30 @@ def _bench(engine, fighter):
         fighter.is_active = False
 
 
+def _rest(engine, fighter):
+    """Apply one "skipped battle" worth of recovery to the fighter.
+
+    Maps to Fighter.apply_battle_skipped(), the same routine the engine
+    runs every battle for fighters that didn't participate (benched, on
+    expedition, etc.). Calling it from a script lets long-running farm
+    programs work even with a single fighter — without it, scripted
+    battles drain stamina to 0 in ~10 fights, then push fatigue to 100
+    in ~10 more, at which point ``available`` flips to False and the
+    farm silently no-ops until the player notices.
+
+    Idempotent at the resource ceiling: when stamina is already full
+    and fatigue is already 0, apply_battle_skipped is a no-op.
+    """
+    if fighter is None:
+        return
+    fn = getattr(fighter, "apply_battle_skipped", None)
+    if callable(fn):
+        try:
+            fn()
+        except Exception:
+            pass
+
+
 def _activate(engine, fighter):
     if fighter is None:
         return
@@ -147,35 +171,105 @@ def _activate(engine, fighter):
 
 
 def _unequip_all(engine, fighter):
+    """Unequip every slot the fighter has equipped.
+
+    Routes through ``engine.unequip_from_fighter(idx, slot)`` because the real
+    engine API takes a fighter index, not a Fighter object, and writes through
+    the ``equipment`` dict (Fighter instances don't have direct ``.weapon``/
+    ``.armor`` attributes). The old getattr-based fallback would call setattr
+    on attributes that don't exist on the real Fighter dataclass and silently
+    do nothing — fixed here so the action actually works.
+    """
     if fighter is None:
         return
-    fn = getattr(engine, "unequip_all", None)
-    if callable(fn):
-        fn(fighter)
+    fidx = _find_fighter_idx(engine, fighter)
+    if fidx < 0:
         return
-    # Fallback: clear known equip slots if they exist as attributes.
-    for slot in ("weapon", "armor", "accessory", "relic"):
-        if hasattr(fighter, slot):
-            setattr(fighter, slot, None)
+    fn = getattr(engine, "unequip_from_fighter", None)
+    if not callable(fn):
+        return
+    eq = getattr(fighter, "equipment", None)
+    if not isinstance(eq, dict):
+        return
+    for slot, item in list(eq.items()):
+        if item is not None:
+            try:
+                fn(fidx, slot)
+            except Exception:
+                pass
 
 
 def _unequip_slot(engine, fighter, slot):
+    """Unequip a single slot via ``engine.unequip_from_fighter``."""
     if fighter is None or not isinstance(slot, str):
         return
-    fn = getattr(engine, "unequip_slot", None)
-    if callable(fn):
-        fn(fighter, slot)
+    if slot not in _VALID_SLOTS:
         return
-    if hasattr(fighter, slot):
-        setattr(fighter, slot, None)
+    fidx = _find_fighter_idx(engine, fighter)
+    if fidx < 0:
+        return
+    fn = getattr(engine, "unequip_from_fighter", None)
+    if not callable(fn):
+        return
+    try:
+        fn(fidx, slot)
+    except Exception:
+        pass
 
 
 def _start_arena_battle(engine):
+    """Begin an arena battle AND resolve it synchronously.
+
+    Three steps required to make scripted farming actually produce gold:
+
+    1. ``engine._spawn_enemy()`` — REQUIRED. ``start_auto_battle`` reads
+       ``engine.preview_enemies`` directly. In the UI flow,
+       ``ArenaScreen._check_battle_end()`` re-spawns the preview after
+       every victory; scripts run outside that callback, so without an
+       explicit respawn the second scripted battle reuses the previous
+       battle's enemies — already at hp=0 — and ``any_enemies_alive()``
+       returns False at the very first phase, declaring instant VICTORY
+       with ``gold_earned=0`` and no ``battle_destroyed`` events. That's
+       why a player saw "VICTORY! +0g, 1 turn" 100 battles in a row.
+
+       Guarded by the same conditions ``refresh_arena_preview`` uses, so
+       we don't blow away a staged boss or revenge enemies that own
+       their preview.
+
+    2. ``engine.start_auto_battle()`` puts the new battle into STARTING.
+    3. ``engine.battle_skip()`` resolves it synchronously — there's no UI
+       Clock when the script runs from the Scripts screen.
+
+    The re-entrancy guard in ``_on_battle_end_scripts`` prevents recursive
+    script firing when a farm-style program would otherwise restart the
+    cycle from within the same call stack.
+    """
     if getattr(engine, "battle_active", False):
         return
-    fn = getattr(engine, "start_auto_battle", None)
-    if callable(fn):
-        fn()
+    start = getattr(engine, "start_auto_battle", None)
+    if not callable(start):
+        return
+
+    # Respawn preview if we're not in a stage-owned state (boss / revenge).
+    cur = getattr(engine, "current_enemy", None)
+    is_boss_staged = cur is not None and getattr(cur, "is_boss", False)
+    has_revenge = bool(getattr(engine, "_revenge_common", None)
+                       or getattr(engine, "_revenge_boss", None))
+    if not is_boss_staged and not has_revenge:
+        spawn = getattr(engine, "_spawn_enemy", None)
+        if callable(spawn):
+            try:
+                spawn()
+            except Exception:
+                pass
+
+    start()
+    skip = getattr(engine, "battle_skip", None)
+    if callable(skip):
+        try:
+            skip()
+        except Exception:
+            pass
 
 
 def _stop_arena_battle(engine):
@@ -185,21 +279,63 @@ def _stop_arena_battle(engine):
 
 
 def _start_expedition(engine, tier):
+    """Pick the first available fighter and send them on the first expedition
+    that matches ``tier``. The real engine API is
+    ``send_on_expedition(fighter_idx, expedition_id)`` — there is no
+    "start by tier" shortcut, so we resolve both ourselves here. No-op when
+    no available fighter, no matching expedition, or the fighter is already
+    on one.
+    """
     try:
         tier = int(tier)
     except (TypeError, ValueError):
         return
-    if getattr(engine, "expedition_active", False):
+    get_list = getattr(engine, "get_expeditions", None)
+    send_fn  = getattr(engine, "send_on_expedition", None)
+    if not (callable(get_list) and callable(send_fn)):
         return
-    fn = getattr(engine, "start_expedition", None)
-    if callable(fn):
-        fn(tier)
+    # First available fighter (alive, not exhausted, not already away)
+    fighters = getattr(engine, "fighters", []) or []
+    fidx = -1
+    for i, f in enumerate(fighters):
+        if (getattr(f, "alive", True)
+                and not getattr(f, "is_exhausted", False)
+                and not getattr(f, "is_away", False)):
+            fidx = i
+            break
+    if fidx < 0:
+        return
+    try:
+        exps = get_list() or []
+    except Exception:
+        return
+    # Find a matching expedition. get_expeditions() returns a list of dicts
+    # with at least an "id" and "tier" key in current builds. If the schema
+    # differs we silently skip rather than blow up scripts.
+    target = None
+    for ex in exps:
+        if isinstance(ex, dict) and ex.get("tier") == tier and "id" in ex:
+            target = ex["id"]
+            break
+    if target is None:
+        return
+    try:
+        send_fn(fidx, target)
+    except Exception:
+        pass
 
 
 def _stop_expedition(engine):
-    fn = getattr(engine, "stop_expedition", None)
+    """No-op: engine has no public cancel_expedition API. Kept callable so
+    scripts referencing the action don't crash; ACTION_META marks it as
+    unavailable so the UI flags it for the user.
+    """
+    fn = getattr(engine, "stop_expedition", None) or getattr(engine, "cancel_expedition", None)
     if callable(fn):
-        fn()
+        try:
+            fn()
+        except Exception:
+            pass
 
 
 def _spawn_boss(engine):
@@ -211,12 +347,22 @@ def _spawn_boss(engine):
 
 
 def _log(engine, message):
-    fn = getattr(engine, "log_event", None) or getattr(engine, "add_event", None)
-    if callable(fn):
-        try:
-            fn(str(message))
-        except Exception:
-            pass
+    """Push a custom line into engine.event_log so the user sees their script's
+    output in the in-game event panel. The engine has no log_event/add_event
+    method — it manipulates ``event_log`` directly elsewhere, so we mirror
+    that pattern. ``event_log`` is a list[dict]; we use the same {kind, text}
+    shape the engine's own callsites use."""
+    log_list = getattr(engine, "event_log", None)
+    if not isinstance(log_list, list):
+        return
+    try:
+        log_list.append({"kind": "script", "text": str(message)})
+        # Engine truncates to 200 elsewhere; mirror that so scripts can't
+        # bloat the log indefinitely.
+        if len(log_list) > 200:
+            del log_list[: len(log_list) - 200]
+    except Exception:
+        pass
 
 
 # ---------- forge / inventory side-effects ----------
@@ -234,33 +380,64 @@ def _find_fighter_idx(engine, fighter):
     return -1
 
 
+def _affordable_forge_items(engine, slot):
+    """Return all affordable forge items with matching slot, or [] on any
+    engine-API gap. Centralised so the four buy_* siblings stay in lockstep.
+    """
+    if slot not in _VALID_SLOTS:
+        return []
+    get_items = getattr(engine, "get_forge_items", None)
+    if not callable(get_items):
+        return []
+    try:
+        items = get_items()
+    except Exception:
+        return []
+    return [
+        i for i in items
+        if isinstance(i, dict)
+        and i.get("slot") == slot
+        and i.get("affordable")
+    ]
+
+
 def _buy_item(engine, slot):
     """Buy the cheapest *affordable* forge item with matching slot.
 
     No-op if `slot` invalid, no affordable items, or required engine
     methods are unavailable. Item lands in `engine.inventory`.
     """
-    if slot not in _VALID_SLOTS:
-        return
-    get_items = getattr(engine, "get_forge_items", None)
-    buy_fn = getattr(engine, "buy_forge_item", None)
-    if not callable(get_items) or not callable(buy_fn):
-        return
-    try:
-        items = get_items()
-    except Exception:
-        return
-    affordable = [
-        i for i in items
-        if isinstance(i, dict)
-        and i.get("slot") == slot
-        and i.get("affordable")
-    ]
+    affordable = _affordable_forge_items(engine, slot)
     if not affordable:
+        return
+    buy_fn = getattr(engine, "buy_forge_item", None)
+    if not callable(buy_fn):
         return
     cheapest = min(affordable, key=lambda i: i.get("cost", 0))
     try:
         buy_fn(cheapest["id"])
+    except Exception:
+        pass
+
+
+def _buy_best(engine, slot):
+    """Buy the most expensive *affordable* forge item of `slot`.
+
+    Mirror of _buy_item but picks the high end — useful when farming gold
+    and wanting to convert it into the strongest equipment available right
+    now rather than the cheapest filler. ``affordable`` is decided by the
+    engine (it's a per-item flag returned by get_forge_items), so this
+    will silently skip rarities you can't afford yet.
+    """
+    affordable = _affordable_forge_items(engine, slot)
+    if not affordable:
+        return
+    buy_fn = getattr(engine, "buy_forge_item", None)
+    if not callable(buy_fn):
+        return
+    priciest = max(affordable, key=lambda i: i.get("cost", 0))
+    try:
+        buy_fn(priciest["id"])
     except Exception:
         pass
 
@@ -418,6 +595,7 @@ def _ast_const_str(value):
 BUILTIN_ACTIONS: dict[str, dict] = {
     "bench":              {"fn": _bench,              "args": (1, 1), "fighter_arg": True},
     "activate":           {"fn": _activate,           "args": (1, 1), "fighter_arg": True},
+    "rest":               {"fn": _rest,               "args": (1, 1), "fighter_arg": True},
     "unequip_all":        {"fn": _unequip_all,        "args": (1, 1), "fighter_arg": True},
     "unequip_slot":       {"fn": _unequip_slot,       "args": (2, 2), "fighter_arg": True,
                            "default_args_after_fighter": [_ast_const_str("weapon")]},
@@ -430,6 +608,8 @@ BUILTIN_ACTIONS: dict[str, dict] = {
     "log":                {"fn": _log,                "args": (1, 1), "fighter_arg": False,
                            "default_args": [_ast_const_str("hello")]},
     "buy_item":           {"fn": _buy_item,           "args": (1, 1), "fighter_arg": False,
+                           "default_args": [_ast_const_str("weapon")]},
+    "buy_best":           {"fn": _buy_best,           "args": (1, 1), "fighter_arg": False,
                            "default_args": [_ast_const_str("weapon")]},
     "equip_best":         {"fn": _equip_best,         "args": (2, 2), "fighter_arg": True,
                            "default_args_after_fighter": [_ast_const_str("weapon")]},

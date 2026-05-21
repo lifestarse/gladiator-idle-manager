@@ -198,3 +198,27 @@ class BattleManager(_PlayerAttackPhaseMixin, _EnemyAttackPhaseMixin, _SupportPha
     def is_active(self):
         return self.state.phase not in (BattlePhase.IDLE, BattlePhase.VICTORY,
                                          BattlePhase.DEFEAT)
+
+    def cancel(self):
+        """Abort the current battle: drop phase to IDLE without victory/defeat
+        processing.
+
+        Hard-cancel semantics:
+            - No gold / kill / death awarded for this battle.
+            - No log entry written (the script that called us is expected
+              to issue its own log_event if it wants one).
+            - Fighter HP stays at whatever it currently is — partial damage
+              already taken is NOT rolled back.
+            - Enemy preview is left in place so the UI doesn't blank.
+
+        Idempotent: if no battle is active, this is a no-op.
+
+        Intended caller: ``GameEngine.stop_auto_battle`` from a squad script
+        that needs to bail out (e.g. detected the wrong roster composition).
+        Not meant for general gameplay flow — victory/defeat handling lives
+        in the regular turn machinery in ``do_turn`` / ``do_full_battle``.
+        """
+        if not self.is_active:
+            return False
+        self.state.phase = BattlePhase.IDLE
+        return True

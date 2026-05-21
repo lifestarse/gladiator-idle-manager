@@ -104,6 +104,35 @@ class _ExpeditionsMixin:
             self._mark_dirty()
         return results
 
+    def stop_expedition(self):
+        """Cancel every active expedition: bring fighters back home with no
+        reward, no danger roll, no shard / relic drops.
+
+        Returns the number of expeditions cancelled (0 if nothing was running).
+        ``f.on_expedition``, ``f.expedition_id`` and ``f.expedition_end`` are
+        cleared for each affected fighter — symmetric with what
+        ``check_expeditions`` does on natural completion, just without the
+        reward path.
+
+        Intended caller: a squad script that detected a wrong assignment
+        (e.g. sent a low-level fighter on a high-danger expedition by
+        mistake) and wants to abort before the danger roll fires. The
+        cancellation is silent in the event log (we DO emit a structured
+        "expedition_cancel" event so the player can spot it in the history);
+        scripts that want a visible toast should issue their own log action.
+        """
+        cancelled = 0
+        for f in self.fighters:
+            if f.on_expedition:
+                f.on_expedition = False
+                f.expedition_id = None
+                f.expedition_end = 0.0
+                cancelled += 1
+        if cancelled:
+            self._log_event("expedition_cancel", n=cancelled)
+            self._mark_dirty()
+        return cancelled
+
     def get_expedition_status(self):
         now = time.time()
         return [

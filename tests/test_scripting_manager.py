@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ScriptManager tests: trigger dispatch, persistence, error isolation."""
 import pytest
 
@@ -9,7 +9,7 @@ from game.scripting import (
 
 
 class FakeFighter:
-    def __init__(self, name, is_active=True, fatigue=0, hp=100, max_hp=100):
+    def __init__(self, name, is_active=True, fatigue=0, hp=100, max_hp=100, stamina=100):
         self.name = name
         self.is_active = is_active
         self.fatigue = fatigue
@@ -21,7 +21,7 @@ class FakeFighter:
         self.strength = 5
         self.agility = 5
         self.vitality = 5
-        self.stamina = 100
+        self.stamina = stamina
         self.fighter_class = "mercenary"
 
     @property
@@ -43,6 +43,10 @@ class FakeEngine:
         self.current_floor = 1
         self.battle_active = False
         self.expedition_active = False
+        # event_log is the surface ``_log`` writes into (the action used to
+        # call engine.log_event/add_event but now goes through the same list
+        # the real engine uses internally).
+        self.event_log: list[dict] = []
 
 
 def test_round_trip_save_load():
@@ -130,11 +134,11 @@ def test_run_on_demand_runs_disabled():
     m.add_program(Program("manual", trigger=Trigger.ON_DEMAND, enabled=False, body=[
         Action("log", [Const("hi")]),
     ]))
-    e.events = []
-    e.log_event = lambda msg: e.events.append(msg)
     err = m.run_on_demand(e, "manual")
     assert err is None
-    assert e.events == ["hi"]
+    # The log action appends a {kind, text} dict into engine.event_log.
+    assert len(e.event_log) == 1
+    assert e.event_log[0]["text"] == "hi"
 
 
 def test_error_isolated_per_program():
@@ -200,8 +204,9 @@ def test_seed_example_benches_tired_fighter():
     m = ScriptManager()
     m.seed_examples_if_needed()
 
-    f_tired = FakeFighter("tired", fatigue=85)
-    f_fresh = FakeFighter("fresh", fatigue=10)
+    # Realistic states: in-game, fatigue only rises after stamina hits 0.
+    f_tired = FakeFighter("tired", fatigue=85, stamina=0)
+    f_fresh = FakeFighter("fresh", fatigue=0, stamina=100)
     e = FakeEngine([f_tired, f_fresh])
     m.on_battle_end(e)
 

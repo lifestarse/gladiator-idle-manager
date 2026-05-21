@@ -47,6 +47,19 @@ class FakeFighter:
 
 
 class FakeEngine:
+    """Minimal stand-in for GameEngine used to test scripting in isolation.
+
+    Surface MUST match what ``game/scripting/builtins.py`` actually pokes:
+        - ``event_log`` list (where ``_log`` appends script messages)
+        - ``unequip_from_fighter(fidx, slot)`` (where ``_unequip_*`` route)
+        - ``get_expeditions()`` + ``send_on_expedition(fidx, expedition_id)``
+          (where ``_start_expedition`` route)
+        - ``start_auto_battle()`` (where ``_start_arena_battle`` routes)
+    Engine methods we have no real implementation for (stop_auto_battle,
+    cancel_expedition) are intentionally absent so the matching action is a
+    no-op — mirrors the real engine.
+    """
+
     def __init__(self, fighters=None, gold=0, diamonds=0):
         self.fighters = fighters or []
         self.gold = gold
@@ -56,9 +69,20 @@ class FakeEngine:
         self.battle_active = False
         self.expedition_active = False
         self.current_floor = 1
-        self.events = []
         self.battles_started = 0
-        self.expeditions_started = []
+        # New-style log list (engine.event_log). ``_log`` appends
+        # {"kind": "script", "text": <msg>} entries here.
+        self.event_log: list[dict] = []
+        # Legacy mirror, kept so existing assertions like
+        # `e.events == ["hello"]` still work. Populated alongside event_log.
+        self.events: list[str] = []
+        # Test mirror of which tiers got started, populated through
+        # send_on_expedition (the only real engine entry point).
+        self.expeditions_started: list[int] = []
+        # Default catalogue for get_expeditions(); per-test code can override.
+        self.expeditions_catalogue = [
+            {"id": f"exp_t{t}", "tier": t} for t in (1, 2, 3, 4, 5)
+        ]
 
     def start_auto_battle(self):
         if self.battle_active:
@@ -66,20 +90,31 @@ class FakeEngine:
         self.battle_active = True
         self.battles_started += 1
 
-    def stop_battle(self):
-        self.battle_active = False
+    # --- expedition API (matches real _ExpeditionsMixin signature) ---
 
-    def start_expedition(self, tier):
-        if self.expedition_active:
+    def get_expeditions(self):
+        return list(self.expeditions_catalogue)
+
+    def send_on_expedition(self, fighter_idx, expedition_id):
+        for ex in self.expeditions_catalogue:
+            if ex["id"] == expedition_id:
+                self.expedition_active = True
+                self.expeditions_started.append(ex["tier"])
+                return
+
+    # --- unequip API (matches real _ForgeMixin signature) ---
+
+    def unequip_from_fighter(self, fighter_idx, slot):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return
-        self.expedition_active = True
-        self.expeditions_started.append(tier)
-
-    def stop_expedition(self):
-        self.expedition_active = False
-
-    def log_event(self, msg):
-        self.events.append(msg)
+        f = self.fighters[fighter_idx]
+        eq = getattr(f, "equipment", None)
+        if isinstance(eq, dict):
+            eq[slot] = None
+        # Also clear a direct attribute if one was set — keeps tests that pre-
+        # date the equipment-dict refactor working (FakeFighter is permissive).
+        if hasattr(f, slot):
+            setattr(f, slot, None)
 
 
 def _run(body, engine=None, g_vars=None, **kw):
@@ -349,13 +384,16 @@ def test_action_activate():
     assert f.is_active is True
 
 
-def test_action_unequip_all_fallback():
+def test_action_unequip_all():
+    """unequip_all routes through engine.unequip_from_fighter for every
+    non-empty slot on the fighter's equipment dict."""
     f = FakeFighter()
-    f.weapon = object()
-    f.armor = object()
+    f.equipment = {"weapon": {"id": "w1"}, "armor": {"id": "a1"},
+                    "accessory": None, "relic": None}
     e = FakeEngine(fighters=[f])
     _run([ForEach("f", "fighters", body=[Action("unequip_all", [LocalVar("f")])])], engine=e)
-    assert f.weapon is None and f.armor is None
+    assert f.equipment == {"weapon": None, "armor": None,
+                            "accessory": None, "relic": None}
 
 
 def test_action_start_arena_idempotent():
@@ -367,7 +405,11 @@ def test_action_start_arena_idempotent():
 
 
 def test_action_start_expedition():
-    e = FakeEngine()
+    """start_expedition(tier) finds the first available fighter and the first
+    matching expedition_id by tier, then routes through send_on_expedition.
+    """
+    f = FakeFighter()  # alive, not exhausted, not away by default
+    e = FakeEngine(fighters=[f])
     _run([Action("start_expedition", [Const(3)])], engine=e)
     assert e.expeditions_started == [3]
 
@@ -375,7 +417,10 @@ def test_action_start_expedition():
 def test_action_log():
     e = FakeEngine()
     _run([Action("log", [Const("hello")])], engine=e)
-    assert e.events == ["hello"]
+    # New: messages land in event_log as {"kind": "script", "text": ...}
+    assert len(e.event_log) == 1
+    assert e.event_log[0]["kind"] == "script"
+    assert e.event_log[0]["text"] == "hello"
 
 
 def test_unknown_action():

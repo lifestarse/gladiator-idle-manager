@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -111,6 +111,10 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Monetization
         self.ads_removed = False
 
+        # Audio settings — global sound volume (0.0..1.0). Read by
+        # game/screens/shared.py::_play_hit_sound, set from the More tab slider.
+        self.sound_volume = 1.0
+
         # Stamina/fatigue + injury auto-heal: drive off battle_end events.
         self.subscribe_battle_end(self._on_battle_end_stamina_fatigue)
 
@@ -124,10 +128,24 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         self.subscribe_battle_end(self._on_battle_end_scripts)
 
     def _on_battle_end_scripts(self, result, participants, skipped):
+        # Re-entrancy guard: a script reacting to on_battle_end can call
+        # start_arena_battle, which (via builtins._start_arena_battle's
+        # battle_skip) resolves the new battle synchronously and fires
+        # _emit_battle_end again from inside our own callback. Without this
+        # guard, a "farm to X gold" pattern would recurse straight into a
+        # RecursionError instead of farming one battle per natural Arena tick.
+        # With the guard, scripted battles fire-and-forget: the inner battle
+        # still resolves (gold/wins/loss recorded), but its on_battle_end
+        # event is swallowed so we don't pile programs on top of each other.
+        if getattr(self, "_on_battle_end_running", False):
+            return
+        self._on_battle_end_running = True
         try:
             self.scripts.on_battle_end(self)
         except Exception as e:
             _log.exception("[ENGINE] scripts.on_battle_end failed: %s", e)
+        finally:
+            self._on_battle_end_running = False
 
     @staticmethod
     def _on_battle_end_stamina_fatigue(result, participants, skipped):

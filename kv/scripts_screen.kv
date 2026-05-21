@@ -1,0 +1,247 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import theme game.theme
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
+
+# Squad Scripts — list of programs.
+#
+# Shell (background, TopBar, top toolbar buttons) lives here in kv so it
+# matches every other screen's pattern. The dynamic content (one card per
+# saved program) is built in Python and attached to ``ids.program_list``.
+
+<ScriptsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        TopBar:
+            title_text: app.title_scripts
+            title_color: app.accent_purple
+
+        # Tabs: All / Running — same pattern as Lore tabs.
+        TouchPanel:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(4)
+            padding: [dp(8), dp(2)]
+            MinimalButton:
+                text: app.scr_tab_all
+                icon_source: "icons/ic_templates.png"
+                btn_color: theme.ACCENT_PURPLE if root.scripts_tab == "all" else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.scripts_tab == "all" else theme.TEXT_MUTED
+                font_size: 12
+                on_press: root.set_tab("all")
+            MinimalButton:
+                text: app.scr_tab_running
+                icon_source: "icons/ic_play.png"
+                btn_color: theme.ACCENT_PURPLE if root.scripts_tab == "running" else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.scripts_tab == "running" else theme.TEXT_MUTED
+                font_size: 12
+                on_press: root.set_tab("running")
+
+        # Toolbar 1 — back / new program
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            padding: [dp(8), dp(4)]
+            spacing: dp(6)
+            MinimalButton:
+                text: app.lbl_back_btn
+                icon_source: "icons/ic_back.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                size_hint_x: None
+                width: dp(96)
+                on_press: app.go_back()
+            Widget:                          # flexible spacer pushes 'new' to the right
+            MinimalButton:
+                text: app.scr_new_btn or "New"
+                icon_source: "icons/ic_plus.png"
+                btn_color: theme.ACCENT_GOLD
+                text_color: theme.BG_DARK
+                font_size: 12
+                size_hint_x: None
+                width: dp(108)
+                on_press: root._new_program()
+
+        # Toolbar 2 — templates / export / import (only on All tab; Running
+        # is a read-only view of what's currently firing)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40) if root.scripts_tab == "all" else 0
+            opacity: 1 if root.scripts_tab == "all" else 0
+            disabled: root.scripts_tab != "all"
+            padding: [dp(8), 0]
+            spacing: dp(6)
+            MinimalButton:
+                text: app.scr_tmpl_btn or "Templates"
+                icon_source: "icons/ic_templates.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                on_press: root._open_templates()
+            MinimalButton:
+                text: app.scr_online_btn or "Online"
+                icon_source: "icons/ic_online.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                on_press: root._open_online()
+            MinimalButton:
+                text: app.scr_export_all_btn or "Export all"
+                icon_source: "icons/ic_export.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                on_press: root._export_all()
+            MinimalButton:
+                text: app.scr_import_btn or "Import"
+                icon_source: "icons/ic_import.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                on_press: root._import_dialog()
+
+        # Thin separator line
+        BoxLayout:
+            size_hint_y: None
+            height: dp(1)
+            canvas:
+                Color:
+                    rgba: app.divider
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # Dynamic program-card list lives here. Python wipes & refills.
+        ScrollView:
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            BoxLayout:
+                id: program_list
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(6)
+                padding: [dp(8), dp(8)]
+
+
+# Squad Scripts — single-program editor.
+#
+# Top bar shows the program name (root.editor_title) instead of a static
+# screen heading. Body is a ScrollView of inline block cards, which Python
+# builds because the recursive nesting of BlockCard + ExpressionCell is
+# hard to express declaratively. The container ``ids.editor_body`` is the
+# Python target.
+
+<ScriptEditorScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: app.bg_dark
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        TopBar:
+            title_text: root.editor_title or app.title_scripts
+            title_color: app.accent_purple
+
+        # Toolbar — back, run, log
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            padding: [dp(8), dp(4)]
+            spacing: dp(6)
+            MinimalButton:
+                text: app.lbl_back_btn
+                icon_source: "icons/ic_back.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                size_hint_x: None
+                width: dp(96)
+                on_press: app.go_back()
+            # Undo / Redo — greyed when stacks are empty (background flips
+            # to BTN_DISABLED + reduced opacity so the user can see at a
+            # glance whether there's anything to revert / restore).
+            MinimalButton:
+                text: app.scr_undo_btn
+                icon_source: "icons/ic_undo.png"
+                btn_color: theme.BTN_PRIMARY if root.can_undo else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.can_undo else theme.TEXT_MUTED
+                opacity: 1 if root.can_undo else 0.5
+                disabled: not root.can_undo
+                font_size: 11
+                size_hint_x: None
+                width: dp(80)
+                on_press: root._undo()
+            MinimalButton:
+                text: app.scr_redo_btn
+                icon_source: "icons/ic_redo.png"
+                btn_color: theme.BTN_PRIMARY if root.can_redo else theme.BTN_DISABLED
+                text_color: theme.TEXT_PRIMARY if root.can_redo else theme.TEXT_MUTED
+                opacity: 1 if root.can_redo else 0.5
+                disabled: not root.can_redo
+                font_size: 11
+                size_hint_x: None
+                width: dp(80)
+                on_press: root._redo()
+            Widget:
+            MinimalButton:
+                # Same button slot, swap label + colour + callback + icon
+                # depending on whether this program is currently considered
+                # "running" (enabled + auto-fires through on_tick / on_battle_end).
+                text: app.scr_stop_btn if root.is_running else app.scr_run_btn
+                icon_source: "icons/ic_stop.png" if root.is_running else "icons/ic_play.png"
+                btn_color: theme.ACCENT_RED if root.is_running else theme.ACCENT_GOLD
+                text_color: theme.TEXT_PRIMARY if root.is_running else theme.BG_DARK
+                font_size: 12
+                size_hint_x: None
+                width: dp(96)
+                on_press: root._stop_now() if root.is_running else root._run_now()
+            MinimalButton:
+                text: app.scr_log_btn or "Log"
+                icon_source: "icons/ic_log.png"
+                btn_color: theme.BTN_PRIMARY
+                text_color: theme.TEXT_PRIMARY
+                font_size: 12
+                size_hint_x: None
+                width: dp(84)
+                on_press: root._open_log()
+
+        # Thin separator
+        BoxLayout:
+            size_hint_y: None
+            height: dp(1)
+            canvas:
+                Color:
+                    rgba: app.divider
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # Dynamic editor body: name field, trigger picker, recursive blocks.
+        ScrollView:
+            bar_width: dp(8)
+            bar_color: app.text_muted
+            do_scroll_x: False
+            scroll_type: ['bars', 'content']
+            effect_cls: ScrollEffect
+            BoxLayout:
+                id: editor_body
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(4)
+                padding: [dp(4), dp(6), dp(4), dp(40)]

@@ -48,6 +48,11 @@ class Interpreter:
         self.locals: dict[str, Any] = {}
         self.steps = 0
         self.loop_depth = 0
+        # Number of side-effect actions that actually fired during this run.
+        # Surfaced via ScriptManager.last_runs for the editor's "Run log" panel
+        # so the user can verify "yes, something happened" without having to
+        # cross-check gold/inventory numbers manually.
+        self.actions_fired = 0
         self.max_steps = max_steps
         self.max_loop_iters = max_loop_iters
         self.max_loop_depth = max_loop_depth
@@ -68,7 +73,11 @@ class Interpreter:
 
     def _tick(self):
         self.steps += 1
-        if self.steps > self.max_steps:
+        # max_steps == 0 disables the global cap — used by force-runs from
+        # the Scripts editor where the user has explicitly asked for a
+        # long-running while loop (e.g. "farm until 500k gold"). The
+        # per-loop cap below has the same opt-out.
+        if self.max_steps > 0 and self.steps > self.max_steps:
             raise ScriptError(f"step limit exceeded ({self.max_steps})")
 
     def _exec_body(self, stmts):
@@ -107,7 +116,7 @@ class Interpreter:
             iters = 0
             while self._truthy(self._eval(node.cond)):
                 iters += 1
-                if iters > self.max_loop_iters:
+                if self.max_loop_iters > 0 and iters > self.max_loop_iters:
                     raise ScriptError(f"while iteration limit exceeded ({self.max_loop_iters})")
                 try:
                     self._exec_body(node.body)
@@ -129,7 +138,7 @@ class Interpreter:
             iters = 0
             for item in source:
                 iters += 1
-                if iters > self.max_loop_iters:
+                if self.max_loop_iters > 0 and iters > self.max_loop_iters:
                     raise ScriptError(f"foreach iteration limit exceeded ({self.max_loop_iters})")
                 self.locals[node.var_name] = item
                 if node.where is not None and not self._truthy(self._eval(node.where)):
@@ -175,6 +184,7 @@ class Interpreter:
             spec["fn"](self.engine, *args)
         except Exception as e:
             raise ScriptError(f"action {node.name!r} failed: {e}") from e
+        self.actions_fired += 1
 
     def _exec_Break(self, node: ast.Break):
         if self.loop_depth == 0:

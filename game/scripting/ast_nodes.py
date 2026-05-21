@@ -202,6 +202,15 @@ class Program:
     trigger: str = Trigger.ON_BATTLE_END
     enabled: bool = True
     tick_interval: int = 5  # seconds, used only when trigger == on_tick
+    # Rate cap for force-runs (Run button in the editor on an on_demand
+    # program). 0 = unlimited rate (UI will freeze for the duration of
+    # the synchronous loop). Any positive value throttles via
+    # ``time.sleep(1/ops_per_sec)`` per interpreter step IN A BACKGROUND
+    # THREAD — UI stays responsive, gold/diamond counters tick live, the
+    # user can hit Stop mid-run. Typical values: 1000 (slow visible
+    # progression), 10000 (fast farming with smooth UI), 100000 (very
+    # fast — UI may flicker but still interactive).
+    ops_per_sec: int = 10000
     body: list[Statement] = field(default_factory=list)
     g_var_init: dict[str, Any] = field(default_factory=dict)
 
@@ -210,6 +219,9 @@ class Program:
             raise ValueError(f"unknown trigger: {self.trigger!r}")
         if self.tick_interval < 1 or self.tick_interval > 3600:
             raise ValueError(f"tick_interval out of range [1,3600]: {self.tick_interval}")
+        if self.ops_per_sec < 0:
+            raise ValueError(
+                f"ops_per_sec cannot be negative: {self.ops_per_sec}")
 
     def to_dict(self) -> dict:
         return {
@@ -217,6 +229,7 @@ class Program:
             "trigger": self.trigger,
             "enabled": self.enabled,
             "tick_interval": self.tick_interval,
+            "ops_per_sec": self.ops_per_sec,
             "g_var_init": dict(self.g_var_init),
             "body": [node_to_dict(s) for s in self.body],
         }
@@ -228,6 +241,11 @@ class Program:
             trigger=d.get("trigger", Trigger.ON_BATTLE_END),
             enabled=bool(d.get("enabled", True)),
             tick_interval=int(d.get("tick_interval", 5)),
+            # Old saves: read ops_per_sec, fall back to default 10000.
+            # The transitional field max_iters_per_run from an earlier
+            # build is silently ignored — its semantic (count cap) has
+            # been replaced by rate cap + async execution.
+            ops_per_sec=int(d.get("ops_per_sec", 10000)),
             g_var_init=dict(d.get("g_var_init", {})),
             body=[node_from_dict(x) for x in d.get("body", [])],
         )

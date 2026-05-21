@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """GameEngine _PersistenceWriteMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -61,6 +61,7 @@ class _PersistenceWriteMixin:
             "total_expeditions_completed": self.total_expeditions_completed,
             "lore_unlocked": self.lore_unlocked,
             "scripts": self.scripts.to_dict() if hasattr(self, "scripts") else {},
+            "sound_volume": self.sound_volume,
         }
 
     def _write_save_to_disk(self, data):
@@ -74,7 +75,12 @@ class _PersistenceWriteMixin:
         """
         save_path = self.SAVE_PATH
         tmp_path = save_path + ".tmp"
-        with open(tmp_path, "w") as f:
+        # encoding='utf-8' for symmetry with the read side. json.dump's default
+        # ensure_ascii=True already produces pure ASCII output, so on a fresh
+        # save this changes nothing on disk — but if an external editor (or a
+        # future change) ever flips ensure_ascii=False, we won't lose the file
+        # the next time the engine tries to read it.
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(data, f)
         if os.path.exists(save_path):
             backup_path = save_path + ".bak"
