@@ -50,6 +50,7 @@ class _PersistenceWriteMixin:
             "fastest_t15_time": self.fastest_t15_time,
             "run_start_time": self.run_start_time,
             "ads_removed": self.ads_removed,
+            "review_shown_after_first_purchase": self._review_shown_after_first_purchase,
             "active_mutators": self.active_mutators,
             "inventory": self.inventory,
             "shards": self.shards,

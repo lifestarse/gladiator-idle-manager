@@ -175,6 +175,16 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         # Re-apply locale strings after load restores saved language
         self._init_locale_strings()
 
+        # Wire In-App Review prompt to fire on the player's first
+        # successful forge purchase. Lazy import keeps pyjnius out of
+        # desktop test paths (the play package gracefully no-ops if
+        # jnius is unavailable, but the import alone is wasted there).
+        try:
+            from game.play import maybe_show_review as _maybe_review
+            self.engine.subscribe_first_purchase(_maybe_review)
+        except Exception as _e:
+            _log.warning("[app] couldn't wire In-App Review hook: %s", _e)
+
         ad_manager.init()
         iap_manager.init()
         cloud_save_manager.on_auto_connected = self._on_cloud_auto_connected

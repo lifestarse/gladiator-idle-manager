@@ -111,6 +111,15 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Monetization
         self.ads_removed = False
 
+        # In-app review trigger — fires once, after the user's first
+        # successful forge purchase. Tracked here so a re-install with
+        # a restored save doesn't re-prompt (Play Core also rate-limits
+        # internally, but we want to be polite at our layer too).
+        self._review_shown_after_first_purchase = False
+        # App-level subscribers (set in game/app on startup): callables()
+        # invoked once when the flag flips False -> True.
+        self._on_first_purchase_subscribers: list = []
+
         # Audio settings — global sound volume (0.0..1.0). Read by
         # game/screens/shared.py::_play_hit_sound, set from the More tab slider.
         self.sound_volume = 1.0
@@ -126,6 +135,26 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # players who delete/edit it never see it re-appear.
         self.scripts.seed_examples_if_needed()
         self.subscribe_battle_end(self._on_battle_end_scripts)
+
+    def subscribe_first_purchase(self, cb) -> None:
+        """Register a no-arg callable to fire once on the player's first
+        successful forge purchase. Used by the App layer to trigger the
+        Play In-App Review prompt without dragging pyjnius into engine."""
+        if cb not in self._on_first_purchase_subscribers:
+            self._on_first_purchase_subscribers.append(cb)
+
+    def _maybe_emit_first_purchase(self) -> None:
+        """Forge methods call this after a successful purchase. Idempotent:
+        only the first call (when the flag is still False) fires
+        subscribers and flips the flag. Subsequent purchases are no-ops."""
+        if self._review_shown_after_first_purchase:
+            return
+        self._review_shown_after_first_purchase = True
+        for cb in list(self._on_first_purchase_subscribers):
+            try:
+                cb()
+            except Exception as exc:
+                _log.warning("[engine] first-purchase subscriber failed: %s", exc)
 
     def _on_battle_end_scripts(self, result, participants, skipped):
         # Re-entrancy guard: a script reacting to on_battle_end can call

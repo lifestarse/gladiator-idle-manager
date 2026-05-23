@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf
 source.exclude_dirs = bin,.buildozer,.git
 source.exclude_patterns = generate_icons.py
-version = 1.9.33
+version = 1.9.34
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
 orientation = portrait, landscape, portrait-reverse, landscape-reverse
 # Force android:screenOrientation="fullUser" so the app respects the system
@@ -32,7 +32,7 @@ android.allow_backup = True
 android.env = LDFLAGS=-Wl,-z,max-page-size=16384
 
 # Google Play Services + Billing
-android.gradle_dependencies = com.google.android.gms:play-services-auth:21.0.0,com.google.android.gms:play-services-auth-base:18.0.10,com.google.android.gms:play-services-games-v2:20.1.2,com.android.billingclient:billing:6.2.1
+android.gradle_dependencies = com.google.android.gms:play-services-auth:21.0.0,com.google.android.gms:play-services-auth-base:18.0.10,com.google.android.gms:play-services-games-v2:20.1.2,com.android.billingclient:billing:6.2.1,com.google.android.play:review:2.0.2
 android.enable_androidx = True
 
 # Play Games Services APP_ID — replace YOUR_APP_ID with the numeric ID from

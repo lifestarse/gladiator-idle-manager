@@ -112,6 +112,11 @@ class _PersistenceReadMixin:
         self.fastest_t15_time = data.get("fastest_t15_time", 0)
         self.run_start_time = data.get("run_start_time", 0.0)
         self.ads_removed = data.get("ads_removed", False)
+        # Old saves default to False; on next purchase they'll fire the
+        # In-App Review prompt (one-time). If the player already bought
+        # things before this code shipped, they get one extra prompt.
+        self._review_shown_after_first_purchase = data.get(
+            "review_shown_after_first_purchase", False)
         self.active_mutators = data.get("active_mutators", [])
         # Clamp to [0,1] — guard against tampered/corrupt saves writing
         # arbitrary floats that would saturate audio backends.

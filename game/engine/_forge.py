@@ -21,6 +21,8 @@ class _ForgeMixin:
         self._log_event("buy", item=item["name"], gold=item["cost"])
         self.save()
         self._mark_dirty()
+        # First-purchase hook for In-App Review trigger. Idempotent.
+        self._maybe_emit_first_purchase()
         return Result(True, t("bought_msg", name=item['name']))
 
     def equip_item_on(self, fighter_idx, item_id):
@@ -42,6 +44,8 @@ class _ForgeMixin:
         self._log_event("equip", item=item["name"], fighter=f.name, gold=item["cost"])
         self.save()
         self._mark_dirty()
+        # equip_item_on is a buy+equip combo; counts as first purchase too.
+        self._maybe_emit_first_purchase()
         return Result(True, t("equipped_msg", item=item['name'], name=f.name))
 
     def equip_from_inventory(self, fighter_idx, inv_index):
