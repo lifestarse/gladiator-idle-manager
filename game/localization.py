@@ -18,7 +18,7 @@ _current_lang = "ru"
 # {lang_code: {key: translated_string}}
 _LANG_DATA: dict[str, dict] = {}
 
-SUPPORTED_LANGUAGES = ("ru", "en")
+SUPPORTED_LANGUAGES = ("ru", "en", "uk", "de", "es", "fr", "it", "pt", "pl")
 
 
 def _languages_dir():

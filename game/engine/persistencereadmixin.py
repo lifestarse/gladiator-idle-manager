@@ -9,6 +9,7 @@ class _PersistenceReadMixin:
         if data is None:
             save_path = self.SAVE_PATH
             if not os.path.exists(save_path):
+                self._is_first_launch = True
                 self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
                 self._spawn_enemy()
                 return

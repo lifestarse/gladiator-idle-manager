@@ -42,13 +42,26 @@ class _HelpMixin:
         popup.open()
 
     def show_language_picker(self):
-        languages = [("English", "en"), ("Русский", "ru")]
+        languages = [
+            ("English", "en"),
+            ("Русский", "ru"),
+            ("Українська", "uk"),
+            ("Deutsch", "de"),
+            ("Español", "es"),
+            ("Français", "fr"),
+            ("Italiano", "it"),
+            ("Português", "pt"),
+            ("Polski", "pl"),
+        ]
         current = get_language()
-        content = BoxLayout(orientation="vertical", spacing=dp(6), padding=dp(8))
+        scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+        content = BoxLayout(orientation="vertical", spacing=dp(6), padding=dp(8), size_hint_y=None)
+        content.bind(minimum_height=content.setter("height"))
+        scroll.add_widget(content)
         popup = Popup(
             title=t("language"),
-            content=content,
-            size_hint=(0.85, 0.4),
+            content=scroll,
+            size_hint=(0.85, 0.85),
             background_color=popup_color(BG_CARD),
             title_color=popup_color(ACCENT_GOLD),
             separator_color=popup_color(ACCENT_GOLD),

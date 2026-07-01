@@ -263,6 +263,11 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         Clock.schedule_interval(self._idle_tick, 1.0)
         Clock.schedule_interval(self._auto_save, 30.0)
 
+        # First-run only: block with a mandatory language picker before the
+        # player sees the game. Scheduled for next frame so the popup opens
+        # against a fully-attached window.
+        Clock.schedule_once(self._maybe_show_language_picker, 0)
+
         return root
 
     def _on_cloud_auto_connected(self):

@@ -88,6 +88,11 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Notification queue — drained by UI layer each tick
         self.pending_notifications: list[str] = []
 
+        # True only when load() finds no save file at all (brand-new
+        # install). The App layer uses this to show a mandatory language
+        # picker before the player sees anything else.
+        self._is_first_launch = False
+
         # Dirty flags — batch achievement checks and UI refreshes.
         # Set by _mark_dirty() from state-changing methods; consumed by idle_tick.
         self._ach_dirty = False

@@ -1,0 +1,1126 @@
+{
+  "achievements": {
+    "first_blood": {
+      "name": "Primo sangue",
+      "desc": "Vinci la tua prima battaglia"
+    },
+    "warrior_10": {
+      "name": "Guerriero esperto",
+      "desc": "Vinci 10 battaglie"
+    },
+    "warrior_50": {
+      "name": "Veterano dell'Arena",
+      "desc": "Vinci 50 battaglie"
+    },
+    "warrior_200": {
+      "name": "Leggenda vivente",
+      "desc": "Vinci 200 battaglie"
+    },
+    "warrior_500": {
+      "name": "Sangue",
+      "desc": "Vinci 500 battaglie"
+    },
+    "warrior_1000": {
+      "name": "Campione eterno",
+      "desc": "Vinci 1.000 battaglie"
+    },
+    "boss_slayer": {
+      "name": "Ammazzaboss",
+      "desc": "Sconfiggi il tuo primo boss"
+    },
+    "boss_10": {
+      "name": "Distruttore di titani",
+      "desc": "Sconfiggi 10 boss"
+    },
+    "boss_25": {
+      "name": "Colosso Feller",
+      "desc": "Sconfiggi 25 boss"
+    },
+    "boss_50": {
+      "name": "Dio Macellaio",
+      "desc": "Sconfiggi 50 boss"
+    },
+    "tier_5": {
+      "name": "Stella nascente",
+      "desc": "Raggiungi il livello 5 dell'arena"
+    },
+    "tier_10": {
+      "name": "Campione della fossa",
+      "desc": "Raggiungi il livello 10 dell'arena"
+    },
+    "tier_15": {
+      "name": "Cancello di ferro",
+      "desc": "Raggiungi il livello 15 dell'arena"
+    },
+    "tier_20": {
+      "name": "Signore della guerra",
+      "desc": "Raggiungi il livello 20 dell'arena"
+    },
+    "runs_5": {
+      "name": "Ciclo del sangue",
+      "desc": "Completa 5 corse"
+    },
+    "runs_20": {
+      "name": "Massacro senza fine",
+      "desc": "Completa 20 corse"
+    },
+    "recruit_3": {
+      "name": "Caposquadra",
+      "desc": "Avere 3 combattenti vivi"
+    },
+    "recruit_6": {
+      "name": "Banda da guerra",
+      "desc": "Avere 6 combattenti vivi"
+    },
+    "recruit_10": {
+      "name": "Comandante della Legione",
+      "desc": "Avere 10 combattenti vivi"
+    },
+    "level_10": {
+      "name": "Maestro Formatore",
+      "desc": "Addestra un combattente al livello 10"
+    },
+    "level_20": {
+      "name": "Gran Maestro",
+      "desc": "Addestra un combattente al livello 20"
+    },
+    "all_classes": {
+      "name": "Completa Ludus",
+      "desc": "Avere tutte e 6 le classi nel tuo elenco"
+    },
+    "class_berserker": {
+      "name": "Scatena la bestia",
+      "desc": "Recluta un Berserker"
+    },
+    "class_retiarius": {
+      "name": "Rete e Tridente",
+      "desc": "Recluta un Retiarius"
+    },
+    "class_medicus": {
+      "name": "Chirurgo sul campo",
+      "desc": "Recluta un Medicus"
+    },
+    "perks_5": {
+      "name": "Indurito dalla battaglia",
+      "desc": "Sblocca 5 vantaggi su un singolo combattente"
+    },
+    "perk_tree_max": {
+      "name": "Predatore dell'apice",
+      "desc": "Massimizza l'albero dei vantaggi di un combattente"
+    },
+    "gold_1k": {
+      "name": "Collezionista di monete",
+      "desc": "Guadagna 1.000 oro totale"
+    },
+    "gold_10k": {
+      "name": "Ricco",
+      "desc": "Guadagna 10.000 oro in totale"
+    },
+    "gold_100k": {
+      "name": "Magnate",
+      "desc": "Guadagna 100.000 oro in totale"
+    },
+    "gold_1m": {
+      "name": "Fortuna di sangue",
+      "desc": "Guadagna 1.000.000 di oro totale"
+    },
+    "spend_500k_equip": {
+      "name": "Patrono della Forgia",
+      "desc": "Spendi 500.000 oro in equipaggiamento"
+    },
+    "first_death": {
+      "name": "Prezzo del sangue",
+      "desc": "Perdere un combattente a causa della morte permanente"
+    },
+    "graveyard_5": {
+      "name": "Scavatore di tombe",
+      "desc": "Perdi 5 combattenti a causa della morte permanente"
+    },
+    "survivor": {
+      "name": "Sopravvissuto sfregiato",
+      "desc": "Fai sopravvivere un combattente con più di 5 feriti"
+    },
+    "permanent_injury": {
+      "name": "Rotto ma respira",
+      "desc": "Sopravvivi a una battaglia con una ferita permanente"
+    },
+    "heal_20": {
+      "name": "Guaritore di carne",
+      "desc": "Cura 20 ferite in totale"
+    },
+    "first_equip": {
+      "name": "Armati e pronti",
+      "desc": "Equipaggia qualsiasi oggetto dall'incudine"
+    },
+    "legendary_equip": {
+      "name": "Imprenditore leggendario",
+      "desc": "Equipaggia un oggetto leggendario"
+    },
+    "relic_hunter": {
+      "name": "Cacciatore di reliquie",
+      "desc": "Raccogli 5 reliquie"
+    },
+    "relic_hoarder": {
+      "name": "Accumulatore di reliquie",
+      "desc": "Raccogli 20 reliquie"
+    },
+    "first_enchant": {
+      "name": "Runebound",
+      "desc": "Applica il tuo primo incantesimo"
+    },
+    "enchant_proc_50": {
+      "name": "Furia Arcana",
+      "desc": "Attiva 50 effetti di incantesimo in combattimento"
+    },
+    "explorer": {
+      "name": "Esploratore",
+      "desc": "Completa 10 spedizioni"
+    },
+    "void_walker": {
+      "name": "Camminatore del Vuoto",
+      "desc": "Ritorna vivo dalla Fenditura del Vuoto"
+    },
+    "lore_10": {
+      "name": "Custode dei sussurri",
+      "desc": "Scopri 10 voci della tradizione"
+    },
+    "lore_all": {
+      "name": "Cronaca delle ombre",
+      "desc": "Scopri tutte le 30 voci della tradizione"
+    },
+    "ch1_complete": {
+      "name": "Capitolo I",
+      "desc": "Completa il primo capitolo della storia"
+    },
+    "ch3_complete": {
+      "name": "Capitolo III",
+      "desc": "Completa la storia capitolo 3"
+    },
+    "story_complete": {
+      "name": "La fine...?",
+      "desc": "Completa la storia principale"
+    }
+  },
+  "expeditions": {
+    "dark_tunnels": {
+      "name": "Tunnel oscuri",
+      "desc": "Esplora i tunnel sotto l'arena"
+    },
+    "bandit_outpost": {
+      "name": "Avamposto dei banditi",
+      "desc": "Razzia un accampamento di banditi sulle colline"
+    },
+    "cursed_ruins": {
+      "name": "Rovine Maledette",
+      "desc": "Antico tempio con trappole mortali"
+    },
+    "dragon_wastes": {
+      "name": "Le Distese del Drago",
+      "desc": "Terre bruciate dove pochi ritornano"
+    },
+    "void_rift": {
+      "name": "Spaccatura del Vuoto",
+      "desc": "Una lacrima in realtà. Rischio massimo."
+    }
+  },
+  "weapons": {
+    "rusty_blade": {
+      "name": "Lama arrugginita",
+      "description": "Una spada corta bucherellata e corrosa rinvenuta in una fossa comune sotto l'arena. Il suo filo è smussato, ma la disperazione affila la mano che lo brandisce. Molti schiavi hanno versato il loro primo sangue con una cosa così atroce."
+    },
+    "iron_sword": {
+      "name": "Spada di ferro",
+      "description": "Un semplice gladio di emissione legionaria forgiato nelle fornaci del campo. Manca di eleganza ma consegna la morte con efficienza a regola d'arte. Il ferro mantiene il filo abbastanza a lungo per un buon combattimento."
+    },
+    "chipped_hatchet": {
+      "name": "Ascia scheggiata",
+      "description": "Uno strumento da taglialegna riproposto per il pavimento dell'arena. Il manico è avvolto in stracci macchiati per assorbire il sudore e il sangue. Spacca i teschi quasi come una volta spaccava la legna da ardere."
+    },
+    "bone_shiv": {
+      "name": "Pugnale d'osso",
+      "description": "Scolpito dal femore di un gladiatore caduto e affilato contro le pareti della cella. È l'arma di un condannato che non ha più nulla da perdere. Le macchie del midollo non vengono mai rimosse completamente."
+    },
+    "training_gladius": {
+      "name": "Gladio da allenamento",
+      "description": "Una spada da allenamento smussata consegnata alle nuove reclute nel ludus. Anche se pensato per il combattimento, un braccio forte può comunque trafiggerlo attraverso il cuoio e la carne. Meglio dei pugni nudi contro le bestie."
+    },
+    "bent_trident": {
+      "name": "Tridente piegato",
+      "description": "Un polo è spezzato e un altro si piega con una brutta angolazione, ma il dente rimanente perfora ancora. È stato estratto dal cadavere di un reziario che aveva scommesso sulla battaglia sbagliata."
+    },
+    "slave_cleaver": {
+      "name": "Mannaia da schiavo",
+      "description": "Una pesante lama da macellaio rubata dalle cucine dell'arena. Il suo peso lo rende lento ma devastante all'impatto. La carne che è stata fatta tagliare non è poi così diversa dalla carne nell'arena."
+    },
+    "pit_fighter_knife": {
+      "name": "Coltello del Guerriero della Fossa",
+      "description": "Un rozzo pugio preferito negli scontri mortali sotterranei sotto la città. La sua breve portata costringe chi lo impugna a un raggio d'azione intimo e brutale. L'impugnatura in cuoio è permanentemente oscurata dal sangue vecchio."
+    },
+    "notched_sica": {
+      "name": "Sica dentellata",
+      "description": "Una lama tracia ricurva, scheggiata da anni di abusi, ma ancora in grado di agganciare il bordo di uno scudo. Ogni tacca sul bordo segna un colpo che ha trovato l'osso. Il lanista li vende a buon mercato ai combattenti usa e getta."
+    },
+    "corroded_spear": {
+      "name": "Lancia corrosa",
+      "description": "Un pilum lasciato a marcire nei barili della pioggia dietro l'armeria. La corrosione verde corrode la testa di ferro, ma l'albero è ancora sano. Mantiene i nemici a distanza, che è tutto ciò di cui un uomo disperato ha bisogno."
+    },
+    "steel_falcata": {
+      "name": "Falcata in acciaio",
+      "description": "Una lama iberica ricurva in avanti, forgiata in buon acciaio, progettata per concentrare la forza del colpo sulla punta. I mercenari ispanici hanno portato questo disegno nell'arena e il pubblico adora i suoi brutali colpi taglienti."
+    },
+    "bronze_spatha": {
+      "name": "Spatha di bronzo",
+      "description": "Una spada da cavalleria più lunga, fusa in bronzo e incisa con motivi di alloro. È stato forgiato per il combattimento a cavallo, ma funziona bene anche a piedi grazie alla sua portata superiore. Il bronzo brilla come un sole funesto sotto le torce dell'arena."
+    },
+    "barbed_trident": {
+      "name": "Tridente Spinato",
+      "description": "Tre rebbi malvagi dotati di uncini rivolti all'indietro che lacerano la carne quando si ritirano. I Retiarii che portano quest'arma sono temuti per le ferite atroci che infliggono. La folla ruggisce quando arrivano i colpi."
+    },
+    "gladiators_mace": {
+      "name": "Mazza del Gladiatore",
+      "description": "Una mazza di ferro flangiata progettata per frantumare le ossa attraverso l'armatura. Richiede forza bruta piuttosto che finezza, preferita dai provocatori che preferiscono sottomettere i loro avversari. Ogni flangia è macchiata di un rosso ruggine permanente."
+    },
+    "ashen_spear": {
+      "name": "Lancia di cenere",
+      "description": "Un giavellotto scolpito nel legno estratto da una pira crematoria, con la punta indurita dalle stesse fiamme che consumavano i morti. I combattenti superstiziosi credono che porti con sé l'ira dei morti inquieti. Il fusto è caldo al tatto anche in inverno."
+    },
+    "serpent_dagger": {
+      "name": "Pugnale del serpente",
+      "description": "Un pugio dalla lama ondulata modellato su una vipera sorprendente, il suo bordo ondulato lascia ferite lacere che resistono alla cucitura. Gli assassini e i dimachaeri apprezzano molto queste lame a due zanne. Il pomo è fuso come un serpente attorcigliato con gli occhi granati."
+    },
+    "scorched_gladius": {
+      "name": "Gladio bruciato",
+      "description": "Estratta dalle rovine di un ludus in fiamme, questa lama è annerita ma sana. Il trattamento termico ha temperato accidentalmente l'acciaio oltre l'abilità originale del fabbro. La fuliggine si attacca ad esso, non importa quante volte viene pulito."
+    },
+    "twin_sica": {
+      "name": "Gemella Sica",
+      "description": "Una coppia abbinata di lame traci ricurve pensate per essere brandite insieme in un vortice di archi taglienti. Lo stile di combattimento del dimachaerus richiede velocità e aggressività piuttosto che difesa. Ogni lama reca l'incisione di un lupo specchiato."
+    },
+    "wardens_flail": {
+      "name": "Mazzafrusto del guardiano",
+      "description": "Un mazzafrusto collegato a catena un tempo utilizzato dai guardiani dell'arena per disciplinare i gladiatori ribelli. La sua testa appuntita avvolge gli scudi e afferra gli arti. La catena tintinna come le chiavi di un carceriere ad ogni colpo."
+    },
+    "iron_war_pick": {
+      "name": "Piccone da guerra di ferro",
+      "description": "Un'arma perforante brutale progettata per sconfiggere armature pesanti con forza concentrata. La punta stretta trova gli spazi vuoti nelle piastre e nella maglia con precisione chirurgica. I secutores hanno imparato a temere questo strumento più di tutti gli altri."
+    },
+    "obsidian_edge": {
+      "name": "Bordo di ossidiana",
+      "description": "Un gladio con una lama di vetro vulcanico spezzata incastonata in un'elsa di bronzo. Il filo è più affilato di qualsiasi acciaio ma fragile come la misericordia di un tiranno. Quando si frantuma, lascia schegge di vetro conficcate nella ferita."
+    },
+    "bloodthorn_spatha": {
+      "name": "Spatha Spinarossa",
+      "description": "Una lunga spada la cui gualca è rivestita da minuscole spine di ferro che bevono il sangue versato attraverso canali capillari. La lama diventa cremisi durante il combattimento prolungato quando le spine si saturano. I guaritori dicono che le ferite di quest'arma non si chiudono mai completamente."
+    },
+    "centurions_pilum": {
+      "name": "Pilum del centurione",
+      "description": "Un giavellotto pesante capolavoro, un tempo portato da un centurione decorato caduto in disgrazia e nell'arena. Il lungo gambo di ferro si piega all'impatto, rendendo impossibile l'estrazione dallo scudo. Porta il peso dell'onore infranto di un soldato."
+    },
+    "shadow_sica": {
+      "name": "Ombra Sica",
+      "description": "Una lama curva temprata con inchiostro e belladonna, che trasforma l'acciaio in un nero innaturale che sembra inghiottire la luce delle torce. I combattenti che lo brandiscono sembrano colpire dall'oscurità stessa. La lama lascia ferite color viola e nero."
+    },
+    "bone_reaper": {
+      "name": "Mietitore di ossa",
+      "description": "Una massiccia falce a due mani con una lama di osso e ferro stratificati, forgiata da un prigioniero daco che giurò vendetta contro Roma. Si aggancia ai bordi dello scudo e stacca l'armatura. Gli strati ossei gli conferiscono un aspetto chiazzato e malato."
+    },
+    "vipers_fang": {
+      "name": "Zanna della vipera",
+      "description": "Una spada sottile e potente con un canale cavo che corre per tutta la lunghezza della lama, un tempo utilizzata per diffondere il veleno. I serbatoi del veleno sono asciutti da tempo, ma la punta sottile come un ago perfora più profondamente di qualsiasi gladio. I medici dell’arena temono di curarne le ferite."
+    },
+    "ember_hammer": {
+      "name": "Martello di brace",
+      "description": "Un martello da guerra la cui testa di ferro è stata spenta nelle scorie fuse di una fucina crollata. Deboli vene arancioni di calore intrappolato brillano ancora nel metallo nelle notti fredde. Ogni impatto lascia un anello bruciato sia sulla carne che sull'acciaio."
+    },
+    "gladius_of_the_condemned": {
+      "name": "Gladio dei condannati",
+      "description": "Su questa lama sono incisi i nomi di tutti i gladiatori che la brandirono prima di morire nell'arena. C'è ancora spazio per un altro nome. I combattenti superstiziosi dicono che i nomi dei morti sussurrano tattiche durante il combattimento."
+    },
+    "crimson_trident": {
+      "name": "Tridente Cremisi",
+      "description": "Forgiato in ferro rosso estratto sotto un cimitero di battaglia, questo tridente sembra perennemente macchiato di sangue. I tre poli sono terribilmente lunghi e spinati alla base. L'acqua non può lavare il rosso dalla sua superficie."
+    },
+    "wraithclaw_dagger": {
+      "name": "Pugnale Wraithclaw",
+      "description": "Un pugnale nero corvino che lascia tracce di vapore oscuro quando viene brandito, come se la lama tagliasse il velo tra i mondi. Fu ritrovato stretto nella mano di un gladiatore che morì in piedi. La presa è innaturalmente fredda."
+    },
+    "inferno_cleaver": {
+      "name": "Mannaia Infernale",
+      "description": "Un'enorme arma a lama larga forgiata nelle bocche vulcaniche sotto il Vesuvio. Il metallo trattiene un calore innaturale che provoca vesciche sulla pelle al contatto. Le fiamme sembrano danzare lungo il suo bordo alla luce delle torce dell'arena, e le ferite che infligge diventano nere."
+    },
+    "doom_gladius": {
+      "name": "Destino Gladio",
+      "description": "Un antico gladius portato alla luce da un campo di battaglia maledetto dove un'intera legione è scomparsa durante la notte. Rune oscure pulsano lungo la lama in un linguaggio che nessuno studioso è in grado di decifrare. Coloro che lo brandiscono combattono con ferocia disumana ma sentono sussurri nel sonno."
+    },
+    "void_trident": {
+      "name": "Tridente del Vuoto",
+      "description": "Un tridente forgiato in un metallo così scuro che nella realtà sembra un buco tagliato. Dove i suoi poli colpiscono, l'aria crepita e la luce si piega. I Retiarii che la portano dicono che la rete non è necessaria perché gli avversari si bloccano quando vedono avvicinarsi il vuoto."
+    },
+    "blood_drinker": {
+      "name": "Bevitore di sangue",
+      "description": "Una falcata la cui lama è crivellata di pori microscopici che assorbono il sangue al contatto, facendo diventare l'acciaio di un rosso più intenso ad ogni uccisione. I gladiatori veterani affermano che la lama diventa più pesante con le vite che ha consumato. Ronza debolmente dopo una nuova uccisione."
+    },
+    "tyrants_maul": {
+      "name": "Mazza del tiranno",
+      "description": "Un colossale martello da guerra un tempo montato sopra il trono di un imperatore deposto, abbattuto dalla folla e portato nell'arena. La sua testa di ferro ha la forma di un volto urlante. Ogni colpo va a segno con l'autorità dell'ira di un impero."
+    },
+    "nightfall_spatha": {
+      "name": "Spatha del Crepuscolo",
+      "description": "Una lunga spada la cui lama passa dall'argento lucido dell'elsa al nero assoluto della punta, come se fosse immersa nell'oscurità concentrata. Si dice che sia stato forgiato durante un'eclissi solare da uno spadaccino cieco. La luce della torcia muore entro un palmo dal bordo."
+    },
+    "wailing_falx": {
+      "name": "Falx piangente",
+      "description": "Una grande falce da guerra dacica ricurva, dotata di fori lungo la spina dorsale che producono un grido orribile quando vengono lanciati a velocità elevata. Il suono paralizza i combattenti minori con un terrore primordiale. Le folle dell'arena ammutoliscono quando sentono il grido della sua banshee."
+    },
+    "scorpion_sting": {
+      "name": "Puntura di scorpione",
+      "description": "Una lama segmentata che si flette come la coda di uno scorpione, sferrando colpi da angolazioni inaspettate. La punta secerne un residuo corrosivo derivante dal trattamento alchemico dell'acciaio. Le ferite si deteriorano e anneriscono nel giro di poche ore se non trattate."
+    },
+    "ashen_executioner": {
+      "name": "Boia cinereo",
+      "description": "Un'ascia dalla punta larga forgiata dalle catene sciolte di migliaia di prigionieri giustiziati. La cenere grigia si sfalda continuamente dalla lama, come se bruciasse dall'interno. I condannati riconoscono le loro catene nel suo acciaio e perdono la voglia di combattere."
+    },
+    "plaguebringer_mace": {
+      "name": "Mazza Portatrice di Piaga",
+      "description": "Mazza flangiata rivestita di verderame e avvolta in strisce di stoffa imbevute di acqua pestilenziale. Ogni ferita che infligge si deteriora con una velocità innaturale. I medici dell'arena bruciano gli stracci dopo aver curato le vittime, ma l'infezione ritorna sempre."
+    },
+    "blade_of_ruin": {
+      "name": "Lama della rovina",
+      "description": "Un'arma leggendaria che si dice sia stata forgiata nelle profondità del Tartaro dalle catene spezzate di un titano. Il suo filo non si attenua mai e il suo peso cambia per adattarsi alla volontà di chi lo impugna. Intere dinastie di campioni sono salite e cadute grazie a questa spada."
+    },
+    "soul_harvest": {
+      "name": "Raccolta dell'anima",
+      "description": "Una grande falce di ferro nero che brilla di una luminescenza verde malaticcia in presenza dei morenti. Le leggende dicono che fu trasportato dal campione della Morte nella prima arena mai costruita. Ogni anima che rivendica aggiunge un debole granello verde che orbita attorno alla lama."
+    },
+    "emperors_verdict": {
+      "name": "Verdetto dell'Imperatore",
+      "description": "Un gladio d'oro portato dal leggendario Imperatore-Campione che scendeva nell'arena per combattere al fianco dei suoi gladiatori. La lama è intarsiata di porpora imperiale e reca le parole del giudizio finale. Quando viene sollevato, anche gli dei trattengono il respiro."
+    },
+    "abyssal_trident": {
+      "name": "Tridente abissale",
+      "description": "Estratto dalle profondità oscure di un colosseo allagato dove un'intera naumachia è andata storta, questo tridente è incrostato di escrescenze delle profondità marine che pulsano di bioluminescenza. L'acqua lo segue sfidando la gravità. I morti annegati si muovono quando è vicino."
+    },
+    "cataclysm": {
+      "name": "Cataclisma",
+      "description": "Un martello da guerra a due mani forgiato da un meteorite che colpì l'arena durante un incontro di campionato, uccidendo entrambi i combattenti. Il metallo cosmico sfida la metallurgia convenzionale e diventa più forte ad ogni impatto. Il terreno si spezza sotto i suoi colpi."
+    },
+    "sanguine_majesty": {
+      "name": "Maestà sanguigna",
+      "description": "Una spatha cerimoniale bagnata nel sangue di cento campioni imbattuti in un secolo di combattimenti nell'arena. Il sangue si è fuso con l'acciaio a livello molecolare, creando un metallo affamato. Vibra con violenza appena contenuta quando viene disegnato."
+    },
+    "eclipse_falcata": {
+      "name": "Eclissi Falcata",
+      "description": "Una lama curva che esiste parzialmente al di fuori della normale realtà, il cui bordo è visibile solo come una distorsione nell'aria come un luccichio di calore. È stato forgiato durante l'ultima eclissi totale da un fabbro che è diventato cieco mentre lo completava. Ciò che taglia resta tagliato per sempre."
+    },
+    "throne_breaker": {
+      "name": "Il distruttore del trono",
+      "description": "Una colossale falce con incisi i nomi di ogni tiranno ucciso dalla rivolta dei gladiatori nel corso della storia. La lama si scalda davanti a chi abusa del potere. Era brandito dal leggendario re-schiavo che rase al suolo tre arene."
+    },
+    "deaths_whisper": {
+      "name": "Il sussurro della morte",
+      "description": "Un sottile estoc così sottile che è quasi invisibile se visto di profilo, eppure perfora l'armatura più pesante come una pergamena. Coloro che ne sono colpiti sentono una voce tranquilla che dice loro di sdraiarsi e riposare. Molti obbediscono prima di rendersi conto che la ferita è fatale."
+    },
+    "godslayer_pilum": {
+      "name": "Pilum uccisore di Dei",
+      "description": "Un giavellotto di ferro scuro sulla cui punta c'è un frammento di qualcosa di più antico di Roma stessa, recuperato dalle catacombe più profonde sotto il Colosseo. Una volta fu lanciato contro un dio vivente e suscitò sangue divino. La macchia sulla punta si illumina debolmente d'oro a mezzanotte."
+    }
+  },
+  "armor": {
+    "leather_vest": {
+      "name": "Gilet in pelle",
+      "description": "Un semplice gilet di cuoio bollito, rigido e screpolato da anni di utilizzo. Porta le cicatrici di innumerevoli allenamenti nel ludus. Ogni gladiatore inizia con uno: pochi sopravvivono abbastanza a lungo da sostituirlo."
+    },
+    "chain_mail": {
+      "name": "Cotta di maglia",
+      "description": "Anelli di ferro intrecciati forgiati da fabbri che non vedono mai il sole. La cotta tintinna dolcemente ad ogni passo, un suono temuto da coloro che la sentono nei tunnel sotto l'arena. La ruggine lo macchia come sangue secco."
+    },
+    "pit_rags": {
+      "name": "Stracci di fossa",
+      "description": "Strisce di stoffa sudicia avvolte strette intorno al busto, imbevute di aceto per indurirle contro i colpi. Gli schiavi condannati all'arena li indossano come prima e spesso ultima protezione. Puzzano di disperazione."
+    },
+    "hemp_gambeson": {
+      "name": "Canapa Gambeson",
+      "description": "Una tunica imbottita imbottita con fibre di canapa grezza, cucita insieme da sarte cieche nelle cantine dell'arena. Assorbe sorprendentemente bene gli urti delle armi contundenti. Il tessuto è permanentemente macchiato di sudore vecchio."
+    },
+    "bone_harness": {
+      "name": "Imbracatura ossea",
+      "description": "Un rozzo pezzo di petto assemblato con le costole di bestie cadute, legate insieme con tendini. Gli sciamani dell'arena affermano che le ossa ricordano il dolore e lo deviano da chi le indossa. Il rumore che fa è inquietante per gli avversari."
+    },
+    "iron_subarmalis": {
+      "name": "Ferro Subarmalis",
+      "description": "Sottoveste romana imbottita rinforzata con sottili strisce di ferro cucite tra strati di lino. I legionari lo scartarono perché troppo pesante, ma i gladiatori apprezzano la protezione extra. Sfrega terribilmente contro la pelle nuda."
+    },
+    "tar_coated_hide": {
+      "name": "Pelle ricoperta di catrame",
+      "description": "Pelle di animale immersa nel catrame bollente finché non si indurisce in un guscio rigido. La superficie nera assorbe il calore del sole dell'arena, cuocendo lentamente chi lo indossa. I gladiatori dicono che odora come il mondo sotterraneo stesso."
+    },
+    "rust_lorica": {
+      "name": "Ruggine Lorica",
+      "description": "Una lorica segmentata malconcia recuperata dal cadavere di un legionario, le sue fasce di ferro corrose fino a diventare di un arancione intenso. I cardini gemono ad ogni movimento. Tiene insieme il dispetto più che l'artigianato."
+    },
+    "gladiator_wrap": {
+      "name": "Fascia da gladiatore",
+      "description": "Spesse bende di lino avvolte attorno al petto e all'addome nello stile dei combattenti reziarii. Immerso in acqua salata ed essiccato al sole finché diventa duro come il legno. Offrono poco contro l'acciaio ma possono salvare una vita contro denti e artigli."
+    },
+    "scrap_cuirass": {
+      "name": "Corazza di scarto",
+      "description": "Martellato insieme da frammenti di scudo rotti e chiodi piegati da un fabbro imprigionato. Non esistono due pezzi corrispondenti e i bordi tagliano la carne di chi lo indossa. Brutto come il peccato, ma ferma abbastanza bene una lama."
+    },
+    "bronze_plate": {
+      "name": "Piastra in bronzo",
+      "description": "Una scintillante corazza di bronzo martellato, modellata per imitare la muscolatura degli dei. Un tempo era un'armatura cerimoniale per i guardiani del tempio, prima che trovasse la sua strada nelle sabbie intrise di sangue. Il metallo canta quando viene colpito."
+    },
+    "scorched_manica": {
+      "name": "Manica bruciata",
+      "description": "Scaglie di ferro sovrapposte che ricoprono il busto, annerite dal fuoco della forgia finché non resistono alla corrosione. Originariamente realizzato per i combattenti che affrontavano salamandre sputafuoco nelle fosse profonde. I segni del calore formano motivi simili a volti urlanti."
+    },
+    "centurion_remnant": {
+      "name": "I resti del centurione",
+      "description": "I resti frantumati della lorica di un centurione, riforgiati dai fabbri dell'arena nella corazza di un gladiatore. Il nome del proprietario originale è ancora inciso all'interno. Il suo fantasma presumibilmente protegge chiunque lo indossi."
+    },
+    "wolf_pelt_brigandine": {
+      "name": "Brigandina di pelle di lupo",
+      "description": "Piastre di ferro rivettate tra strati di pelle di lupo nero, realizzate dai barbari del nord ridotti in schiavitù nell'arena. La pelliccia porta ancora il muschio della bestia. I guerrieri affermano di ereditare la ferocia del lupo quando lo indossano."
+    },
+    "ashen_guard": {
+      "name": "Guardia cinerea",
+      "description": "Armatura forgiata in ferro fuso con cenere vulcanica del Vesuvio, che le conferisce una tonalità grigia spettrale. I fabbri che lo crearono divennero ciechi a causa dei fumi. È inquietantemente leggero per quanta punizione assorbe."
+    },
+    "spiked_lorica": {
+      "name": "Lorica Spiccata",
+      "description": "Una lorica hamata modificata con spuntoni di ferro saldati lungo le spalle e il petto. Gli avversari che afferrano chi lo indossa si ritrovano impalati. Le punte vengono ricavate dalle ossa dei campioni sconfitti."
+    },
+    "marshland_scale": {
+      "name": "Scala delle paludi",
+      "description": "Armatura a scaglie ricavata dalla pelle dei coccodrilli delle paludi, ciascuna scaglia increspata naturalmente per deviare i colpi taglienti. Porta l'odore umido delle paludi anche nell'arena più arida. Le ferite inflitte vicino ad esso tendono a marcire."
+    },
+    "blood_iron_plate": {
+      "name": "Piastra di ferro e sangue",
+      "description": "Il ferro spento nel sangue del toro durante il processo di forgiatura, un antico rituale che si dice lega la vitalità dell'animale al metallo. La superficie ha una tinta rossastra che non sbiadisce mai. I gladiatori giurano che questo li rende più difficili da uccidere."
+    },
+    "tomb_warden_mail": {
+      "name": "Posta del guardiano della tomba",
+      "description": "Cotta di maglia recuperata da una tomba etrusca sigillata, ancora scintillante nonostante secoli sottoterra. Gli anelli sono incredibilmente fini e fitti. Coloro che lo indossano riferiscono di aver sentito sussurri dei morti durante il combattimento."
+    },
+    "gladius_breaker": {
+      "name": "Piastra Gladius-Breaker",
+      "description": "Una spessa corazza di ferro con creste temprate progettata per afferrare e spezzare le lame della spada all'impatto. Il suo creatore era un protettore che si stancò di sostituire gli scudi. Le creste sono solcate da solchi scuri dovuti a innumerevoli armi frantumate."
+    },
+    "shadow_guard": {
+      "name": "Guardia Ombra",
+      "description": "Armatura tinta con l'inchiostro delle seppie degli abissi marini, così scura che sembra bere la luce attorno a sé. Diventa difficile rintracciare chi lo indossa negli oscuri tunnel sotto il Colosseo. Gli assassini e i combattenti notturni lo bramano sopra ogni altra cosa."
+    },
+    "crimson_lorica": {
+      "name": "Lorica cremisi",
+      "description": "Una lorica segmentata capolavoro, laccata in un profondo cremisi, il colore del sangue arterioso. È stato commissionato da un lanista che voleva che il suo campione fosse inconfondibile sulla sabbia. Il colorante è mescolato con vero sangue di gladiatore."
+    },
+    "wrath_pauldron": {
+      "name": "Spallacci dell'Ira",
+      "description": "Enormi spallacci di ferro a forma di facce di demoni ringhianti, che si estendono fino a coprire la parte superiore del torace. Furono forgiati durante un'eclissi lunare e spenti nelle lacrime dei condannati. I volti sembrano cambiare espressione alla luce delle torce."
+    },
+    "flayed_king_mail": {
+      "name": "Posta del Re Scorticato",
+      "description": "Cotta di maglia tessuta da anelli di tre metalli diversi: ferro, bronzo e argento annerito, in un motivo che ricorda la pelle scorticata. Un re barbaro deposto lo indossò durante la sua esecuzione nell'arena e ottenne invece la libertà. La folla lo ha ribattezzato immortale."
+    },
+    "catacombs_cuirass": {
+      "name": "Corazza delle catacombe",
+      "description": "Pettorale d'acciaio recuperato dalle catacombe allagate sotto l'arena, incrostato di depositi minerali che formano motivi inquietanti. Il metallo ha assorbito qualcosa dal profondo: è sempre freddo al tatto. Le lame sembrano scivolare via dalla sua superficie."
+    },
+    "minotaur_hide": {
+      "name": "Minotauro Nascondi",
+      "description": "Pelle spessa strappata da una bestia da labirinto e conciata in zolfo e cenere fino a renderla più dura del cuoio bollito. La ruvida superficie marrone porta ancora le cicatrici della creatura, frutto di una vita di rabbia. Indossarlo riempie la mente di furia cieca."
+    },
+    "obsidian_scale": {
+      "name": "Armatura di scaglie di ossidiana",
+      "description": "Centinaia di frammenti di ossidiana sottili come rasoi sovrapposti come scaglie di drago, legati a un supporto di cuoio con filo d'argento. Si frantuma in modo spettacolare se colpito con forza, ma ogni frammento rotto taglia tutto ciò che lo tocca. Il pubblico dell'arena adora i glitter mortali."
+    },
+    "iron_maiden_plate": {
+      "name": "Piastra della Vergine di Ferro",
+      "description": "Una corazza con corte punte rivolte verso l'interno che premono nella carne di chi la indossa, prelevando sangue a ogni movimento. Il dolore mantiene il gladiatore vigile e furioso, e il sangue alimenta oscuri incantesimi intrecciati nell'acciaio. L'agonia è il suo prezzo; la sopravvivenza è il suo dono."
+    },
+    "phalanx_wall": {
+      "name": "Muro della falange",
+      "description": "Un'enorme corazza toracica ricurva modellata sugli scudi di una falange greca, che copre chi la indossa dalla clavicola alla coscia. Il movimento è fortemente limitato, ma gli attacchi frontali sono quasi inutili contro di esso. I campioni di resistenza lo preferiscono nei duelli prolungati."
+    },
+    "venom_coat": {
+      "name": "Brigantina Giubba Velenosa",
+      "description": "Brigandina di cuoio imbevuta di veleno di basilisco e lasciata curare per un ciclo di luna piena. La superficie brilla di una debole lucentezza verde che brucia la pelle esposta al contatto. Coloro che afferrano chi lo indossa imparano questa lezione una volta e mai più."
+    },
+    "titan_shell": {
+      "name": "Guscio di Titano",
+      "description": "Un'enorme armatura di piastre d'acciaio stratificate così spesse che le frecce rimbalzano innocue. Forgiato nelle fucine vulcaniche delle profondità della terra dagli schiavi ciclopi. Il suo peso schiaccerebbe un guerriero inferiore, ma quelli abbastanza forti da sopportarlo diventano fortezze ambulanti."
+    },
+    "hellfire_lorica": {
+      "name": "Lorica del fuoco infernale",
+      "description": "Una lorica forgiata nelle fiamme estratte da una spaccatura negli inferi, le sue fasce di ferro brillano di deboli braci che non si raffreddano mai. Il calore cauterizza le ferite con la stessa rapidità con cui vengono inflitte. Gli avversari esitano ad accorciare la distanza, temendo l'aria rovente attorno."
+    },
+    "gorgon_aegis": {
+      "name": "L'egida della Gorgone",
+      "description": "Una corazza su cui è impressa la faccia pietrificata di una gorgone, i cui occhi di pietra trasportano ancora una frazione dello sguardo paralizzante della creatura. I nemici che incrociano gli occhi con il volto vacillano per un attimo. Nell'arena basta un battito cardiaco."
+    },
+    "reaper_carapace": {
+      "name": "Carapace del Mietitore",
+      "description": "Chitina nera raccolta da uno scarabeo colossale che si nascondeva nel pavimento dell'arena durante la luna di sangue. Il materiale è più leggero dell'acciaio ma più duro del bronzo. La sua superficie è ricoperta da sottili scanalature che convogliano il sangue lontano da chi lo indossa."
+    },
+    "warlord_mantle": {
+      "name": "Mantello del signore della guerra",
+      "description": "Un torso intero ricoperto di acciaio intrecciato e ferro scuro, drappeggiato con un mantello da guerra sbrindellato macchiato dal sangue di centinaia di vittorie. È stato strappato a un signore della guerra barbaro che ha scelto la morte invece della resa. La sua rabbia è ancora attaccata al metallo."
+    },
+    "colosseum_bulwark": {
+      "name": "Baluardo del Colosseo",
+      "description": "Armatura a piastre rinforzata costruita con pietre strappate dalle mura stesse del Colosseo, fuse con il ferro attraverso un'alchimia proibita. Porta il peso di ogni morte avvenuta tra quelle mura. La folla ruggisce più forte quando vede la sua arena diventare carne."
+    },
+    "wraith_shroud": {
+      "name": "Sindone dello Spettro",
+      "description": "Armatura tessuta con fili d'ombra, raccolti durante l'ora più buia del solstizio d'inverno. Aderisce al corpo come una seconda pelle e sembra incresparsi con volontà propria. A volte le lame lo attraversano come se tagliassero il fumo."
+    },
+    "stygian_plate": {
+      "name": "Piastra stigia",
+      "description": "Acciaio immerso nelle acque del fiume Stige da un sacerdote dei culti della morte, rendendolo di un nero impenetrabile. Il metallo ricorda l'annegamento e infligge quel ricordo a chiunque lo colpisca. Gli aggressori descrivono un'improvvisa mancanza di respiro e un terrore strisciante."
+    },
+    "molten_core_guard": {
+      "name": "Guardia del nucleo fuso",
+      "description": "Piastre di metallo stellare che circondano un nucleo di minerale perennemente fuso, tenuto in stasi da antiche rune. L'armatura irradia un calore opprimente e l'aria attorno ad essa brilla. Se le rune falliscono, chi le indossa verrà consumato in pochi secondi."
+    },
+    "leviathan_scales": {
+      "name": "Scaglie Leviatano",
+      "description": "Scaglie sollevate da un leviatano del mare spiaggiatosi sulla costa di Ostia, ciascuna grande quanto il palmo di un uomo e più dura dell'acciaio forgiato. Portano con sé il freddo degli abissi oceanici e l'antica malizia della creatura. L'acqua salata gocciola da loro all'infinito."
+    },
+    "dragonscale": {
+      "name": "Egida a scaglie di drago",
+      "description": "Forgiata dalle scaglie di un dragone ucciso sotto l'Etna, questa armatura brilla di fuoco iridescente. Ogni scaglia era temperata nel sangue di drago e cucita insieme con tendini incantati. Si dice che renda chi lo indossa immune alla paura stessa."
+    },
+    "emperor_aegis": {
+      "name": "L'egida dell'Imperatore",
+      "description": "L'armatura personale di un imperatore pazzo che combatteva nell'arena travestito da comune gladiatore. È dorato d'oro maledetto e rivestito di seta viola imbevuta di veleno. Chi lo indossa sente una fame insaziabile di adulazione e massacro."
+    },
+    "abyssal_fortress": {
+      "name": "Fortezza abissale",
+      "description": "Armatura forgiata nell'abisso più profondo del Tartaro, dove la luce non è mai arrivata. Le piastre sono fatte di un metallo che non esiste da nessuna parte sulla terra, freddo e incredibilmente denso. Non pesa nulla ai dannati ma schiaccia le anime dei giusti."
+    },
+    "mars_blessing": {
+      "name": "Benedizione di Marte",
+      "description": "Un'armatura materializzata sull'altare di Marte durante un sacrificio cruento, completamente formata e irradiante ira divina. Non porta alcun marchio del produttore e nessun fabbro può identificare la sua lega. Coloro che lo indossano entrano in una trance di battaglia benedetta dallo stesso dio della guerra."
+    },
+    "death_veil": {
+      "name": "Velo di Mortuus",
+      "description": "Non un'armatura nel senso tradizionale del termine, ma un sudario tessuto con le tele funerarie di un centinaio di campioni, animato dalla volontà necromantica. Si avvolge attorno a chi lo indossa in modo protettivo, rafforzandosi contro i colpi come se i morti stessi proteggessero i vivi. Sussurra i nomi dei caduti tra un colpo e l'altro."
+    },
+    "obsidian_juggernaut": {
+      "name": "Juggernaut di ossidiana",
+      "description": "Un'imponente armatura di lastre di vetro vulcanico legate da ferro forgiato nel magma, incantata per assorbire la forza cinetica di ogni colpo. L'energia accumulata rende chi lo indossa più forte ad ogni colpo subito. Le leggende dell'arena dicono che una volta sopravvisse senza un graffio alla carica di un elefante da guerra."
+    },
+    "pluto_embrace": {
+      "name": "L'abbraccio di Plutone",
+      "description": "Armatura a piastre nera come la mezzanotte che sembra assorbire tutta la luce circostante, lasciando chi la indossa avvolto in un'oscurità innaturale. Fu offerto come tributo dal signore degli inferi al suo campione mortale preferito. I vivi che lo toccano sentono il battito cardiaco rallentare."
+    },
+    "blood_god_mantle": {
+      "name": "Manto del Dio del Sangue",
+      "description": "Armatura a piastre cremisi che beve il sangue versato su di essa, riparando le proprie crepe e rafforzando i propri legami. Più carneficina circonda chi lo indossa, più diventa impermeabile. Dopo le grandi battaglie pulsa con un battito proprio."
+    },
+    "primordial_carapace": {
+      "name": "Carapace Primordiale",
+      "description": "Armatura scolpita dal guscio fossilizzato di una creatura antecedente agli dei, portata alla luce durante lo scavo di una nuova fossa dell'arena. Nessuno strumento può scalfirlo e nessuna fiamma può riscaldarlo. Gli studiosi ritengono che ricordi il mondo prima degli uomini e giudichi di conseguenza chi lo indossa."
+    },
+    "eternal_lorica": {
+      "name": "Lorica eterna",
+      "description": "Una lorica che esiste fin dalla fondazione di Roma, passata di campione in campione attraverso i secoli. Il nome di ogni proprietario è inciso sulla sua superficie in lettere troppo piccole per essere leggibili. Non può essere distrutto, non può essere perso e ritrova sempre la strada per tornare nell'arena."
+    }
+  },
+  "accessories": {
+    "bone_charm": {
+      "name": "Amuleto d'osso",
+      "description": "Un rozzo gingillo scolpito nel femore di un combattente caduto. Il midollo ronza ancora per l'agonia residua, conferendo a chi lo indossa un frammento della tenacia del morto."
+    },
+    "rat_skull_pendant": {
+      "name": "Ciondolo con teschio di ratto",
+      "description": "Infilato in una corda di budello sfilacciata, questo minuscolo teschio è stato prelevato dalle fogne sotto l'arena. I gladiatori che lo indossano affermano che gli spiriti dei parassiti tengono lontane le infezioni e la codardia."
+    },
+    "slave_brand_token": {
+      "name": "Gettone del marchio schiavo",
+      "description": "Disco piatto di bronzo bruciato recante il marchio di un ludus defunto. Gli ex schiavi lo premono sulle loro cicatrici prima di ogni incontro, traendo forza dal ricordo delle catene spezzate."
+    },
+    "ashen_finger_bone": {
+      "name": "Osso del dito cinereo",
+      "description": "Estratto dalla pira di un campione caduto in disgrazia, l'osso del dito è avvolto in filo di rame. Si scalda in presenza del tradimento, una cupa bussola per i paranoici."
+    },
+    "gutter_coin": {
+      "name": "Moneta per grondaia",
+      "description": "Un aureo deturpato con impresse le sembianze di un imperatore dimenticato. I mendicanti dell'arena giurano che portarne uno porta fortuna, anche se i suoi precedenti proprietari sono tutti morti nella sabbia."
+    },
+    "dried_blood_vial": {
+      "name": "Fiala di sangue essiccato",
+      "description": "Una fiala di argilla sigillata contenente scaglie di sangue annerito raccolto dal pavimento dell'arena dopo un leggendario massacro. La crosta occasionalmente si sposta da sola quando la battaglia è vicina."
+    },
+    "iron_ring": {
+      "name": "Anello di ferro",
+      "description": "Una fascia pesante forgiata da manette fuse. È stretto al dito, a ricordare costantemente che la libertà nell'arena è sempre e solo a un passo dall'essere revocata."
+    },
+    "scorpion_brooch": {
+      "name": "Spilla Scorpione",
+      "description": "Realizzata in bronzo scuro e intarsiata con una scheggia di ossidiana, questa spilla raffigura uno scorpione del deserto mentre colpisce. La sua chiusura uncinata aspira una goccia di sangue ogni volta che viene allacciata."
+    },
+    "vultures_eye_bead": {
+      "name": "Perla dell'occhio dell'avvoltoio",
+      "description": "Una sfera lucida di quarzo fumé che si dice sia stata strappata da un avvoltoio che si nutriva esclusivamente di cadaveri dell'arena. Coloro che lo guardano affermano di vedere i punti deboli in ogni posizione."
+    },
+    "gladiators_tooth": {
+      "name": "Dente del Gladiatore",
+      "description": "Un molare ricoperto di stagno, staccato dalla mascella di un campione dalla disperata testata di un perdente. Portarlo è considerato sia un trofeo che un avvertimento contro l'eccessiva sicurezza."
+    },
+    "tar_knuckle_wrap": {
+      "name": "Involucro per nocche di catrame",
+      "description": "Strisce di lino imbevute di catrame bollente e avvolte strettamente intorno al pugno. Una volta asciugato, l'involucro è duro come la pietra e puzza di fumo, trasformando le mani nude in armi brutali."
+    },
+    "centurions_clasp": {
+      "name": "Fermaglio del centurione",
+      "description": "Una spilla da mantello d'argento ossidata rubata dal cadavere di un legionario durante una scaramuccia di confine. Il motivo dell'aquila viene cancellato e sostituito con rozze rune da arena per la resistenza."
+    },
+    "blood_pendant": {
+      "name": "Ciondolo di sangue",
+      "description": "Una lacrima di sangue cristallizzato racchiusa in argento annerito. Pulsa debolmente contro il petto, sincronizzandosi con il battito cardiaco di chi lo indossa e accelerandolo prima dell'uccisione."
+    },
+    "shadow_anklet": {
+      "name": "Cavigliera Ombra",
+      "description": "Una catena di maglie di ferro scuro che non emette alcun suono quando chi la indossa si muove. Assassini e reziarii lo preferiscono per il silenzio innaturale che garantisce, come se le ombre stesse attutissero ogni passo."
+    },
+    "wrath_shard_earring": {
+      "name": "Orecchino Shard dell'Ira",
+      "description": "Una scheggia frastagliata di gemma cremisi trafisse il lobo dell'orecchio. Quando il sangue di chi lo indossa viene versato, il frammento si illumina e alimenta la rabbia direttamente nel sistema nervoso."
+    },
+    "tomb_spider_brooch": {
+      "name": "Spilla del ragno della tomba",
+      "description": "Uno spillo a otto gambe scolpito in legno pietrificato trovato in una catacomba sotto il Colosseo. Sottili fili di seta escono dal suo addome, suturando piccole ferite che si chiudono al contatto."
+    },
+    "cursed_laurel_pin": {
+      "name": "Spilla d'alloro maledetta",
+      "description": "Una corona d'alloro in miniatura fusa in piombo, assegnata a un campione che ha massacrato il proprio lanista. Corrode qualsiasi metallo che tocca, ma conferisce una resistenza innaturale a chi lo indossa."
+    },
+    "gore_stained_locket": {
+      "name": "Medaglione macchiato di sangue",
+      "description": "All'interno di questo medaglione di bronzo ammaccato si trova un ritratto dipinto, sbiancato e irriconoscibile. Il sangue che ne macchia la superficie non si asciuga mai completamente e il metallo è sempre caldo al tatto."
+    },
+    "void_amulet": {
+      "name": "Amuleto del Vuoto",
+      "description": "Un disco di assoluta oscurità incorniciato da un osso spezzato. Guardandolo non si scopre nulla, nemmeno il proprio riflesso. Chi lo indossa riferisce la sensazione di essere osservato dall'interno."
+    },
+    "infernal_knot": {
+      "name": "Nodo Infernale",
+      "description": "Una massa aggrovigliata di filo di ferro che si contorce lentamente quando viene riscaldata dal calore corporeo. Gli studiosi ritengono che sia stato estratto dalla cassa toracica di un demone durante la caduta di un'antica città."
+    },
+    "bloodsworn_choker": {
+      "name": "Girocollo giurato di sangue",
+      "description": "Un collare di vertebre intrecciate preso da un serpente marino. Si restringe leggermente durante il combattimento, limitando il respiro quanto basta per innescare l'istinto di sopravvivenza di un berserker."
+    },
+    "eye_of_malice": {
+      "name": "Occhio di malizia",
+      "description": "Un bulbo oculare pietrificato incastonato in una gabbia di spine, che piange perennemente un sottile fluido nero. I gladiatori che incontrano il suo sguardo sentono il loro odio acuirsi fino a diventare qualcosa di quasi divino."
+    },
+    "reapers_bangle": {
+      "name": "Il braccialetto del mietitore",
+      "description": "Un polsino forgiato dalla falce di un cultista della morte. Sottile come una pergamena ma impossibile da spezzare, canticchia un basso lamento udibile solo dai morenti."
+    },
+    "obsidian_heart_stud": {
+      "name": "Perno a forma di cuore di ossidiana",
+      "description": "Una perla lucida di vetro vulcanico indossata sullo sterno. Assorbe lo shock dei colpi destinati a fermare il cuore, frantumandosi e riformandosi tra un combattimento e l'altro come un oscuro miracolo."
+    },
+    "crown_of_ash": {
+      "name": "Corona di cenere",
+      "description": "Un cerchietto di cenere e ossa fuse che non si raffredda mai. Fu recuperato dall'eruzione che seppellì un'arena rivale e nelle notti tranquille si possono ancora sentire le urla dei defunti."
+    },
+    "chain_of_the_unbroken": {
+      "name": "Catena dell'Ininterrotta",
+      "description": "Quaranta maglie di ferro meteorico, ciascuna con inciso il nome di un gladiatore ritiratosi libero. La catena diventa più pesante ad ogni vittoria, come se i nomi stessi avessero un peso."
+    },
+    "dread_emperors_sigil": {
+      "name": "Sigillo dell'Imperatore Temibile",
+      "description": "Un sigillo imperiale ritenuto distrutto quando il palazzo del tiranno bruciò. La sua superficie cambia tra l'oro e il nero a seconda della fedeltà dello spettatore e comanda l'obbedienza delle bestie minori."
+    },
+    "marrow_of_the_titan": {
+      "name": "Midollo del Titano",
+      "description": "Un frammento di midollo osseo cristallizzato lungo un dito, estratto dai resti di un gigante sotto il foro. Irradia un calore opprimente e fa brillare debolmente le vene di chi lo indossa nell'oscurità."
+    },
+    "stygian_loop": {
+      "name": "Anello stigiano",
+      "description": "Un anello di acqua nera che sfida la gravità e aleggia attorno al polso di chi lo indossa. È stato estratto dal fiume che confina con la terra dei morti e gela fino alle ossa tutto ciò che tocca."
+    },
+    "sanguine_star": {
+      "name": "Stella sanguigna",
+      "description": "Una stella a sei punte forgiata dal sangue del ferro, un metallo fuso solo durante le eclissi lunari. Ogni punto rappresenta un peccato mortale e la stella beve profondamente da ogni ferita che tocca."
+    }
+  },
+  "relics": {
+    "cracked_idol": {
+      "name": "Idolo incrinato",
+      "description": "Una figura in argilla grande quanto un palmo di un dio della guerra dimenticato, divisa a metà dall'età e dall'incuria. La sabbia è ancora attaccata alla sua base dalle rovine dove è stata portata alla luce.",
+      "special_effect": "Conferisce al portatore deboli sussurri dei morti, migliorando leggermente la consapevolezza in battaglia."
+    },
+    "dusty_talisman": {
+      "name": "Talismano polveroso",
+      "description": "Una borsa di cuoio piena di polvere di cimitero e una scheggia di ferro. È stato cucito da una sacerdotessa cieca che ha pagato tre vite per il suo lavoro.",
+      "special_effect": "Assorbe una frazione dell'energia della maledizione in arrivo, riducendo leggermente la durata del debuff."
+    },
+    "worn_signet": {
+      "name": "Sigillo usurato",
+      "description": "Un anello così antico che il suo stemma è stato levigato da secoli di nervosismo. Qualunque sia la casa che un tempo rappresentava, è stata cancellata da tempo dalla storia.",
+      "special_effect": "Il primo colpo in combattimento di chi lo indossa porta con sé una traccia di furia ancestrale, che colpisce con una forza leggermente maggiore."
+    },
+    "hollow_tooth_relic": {
+      "name": "Reliquia del dente cavo",
+      "description": "Un molare di una bestia sconosciuta, scavato e pieno di veleno essiccato. Gli esploratori della spedizione lo portano come ultima risorsa, rompendolo tra i denti quando vengono messi alle strette.",
+      "special_effect": "Quando la salute del portatore scende al di sotto della metà, una debole aura tossica scoraggia i nemici dal portare avanti il ​​loro attacco."
+    },
+    "serpent_fang": {
+      "name": "Zanna del serpente",
+      "description": "Una zanna ricurva lunga quanto un pugnale, estratta da un grande serpente di sabbia che terrorizzava una rotta commerciale nel deserto. Il veleno continua a gocciolare sulla punta con tempo asciutto.",
+      "special_effect": "Gli attacchi hanno una piccola possibilità di applicare un veleno che indebolisce la forza del nemico nel tempo."
+    },
+    "stone_of_vigor": {
+      "name": "Pietra del vigore",
+      "description": "Una pietra di fiume incisa con glifi a spirale che pulsano di una luce verde opaca. Tenerlo in mano inonda il corpo di una resistenza innaturale, anche se la stanchezza colpisce due volte più forte una volta rilasciato.",
+      "special_effect": "Rigenera lentamente una piccola quantità di salute tra un combattimento e l'altro."
+    },
+    "wolf_pelt_cloak": {
+      "name": "Mantello di pelle di lupo",
+      "description": "La pelle di un lupo crudele ucciso nelle desolazioni settentrionali, che porta ancora con sé il muschio della bestia. Coloro che se lo drappeggiano sulle spalle sentono una fiducia predatoria radicarsi nelle loro ossa.",
+      "special_effect": "Intimidisce gli avversari più deboli, facendoli occasionalmente esitare all'inizio del combattimento."
+    },
+    "iron_crow_fetish": {
+      "name": "Feticcio del Corvo di Ferro",
+      "description": "Una rozza forma di uccello martellata da rottami di ferro da un fabbro di spedizione mezzo matto. I corvi si radunano ovunque venga trasportato, e i morti sembrano marcire più lentamente in sua presenza.",
+      "special_effect": "Il bottino recuperato dai nemici sconfitti è leggermente più abbondante, come se i corvi portassero offerte."
+    },
+    "eye_of_the_storm": {
+      "name": "L'occhio del ciclone",
+      "description": "Una sfera di aria compressa intrappolata nel vetro vulcanico. I fulmini tremolano all'infinito al suo interno e coloro che lo trattengono sentono l'elettricità statica strisciare sulla loro pelle come un'armatura vivente.",
+      "special_effect": "Scarica periodicamente un fulmine catturato, stordendo per un breve momento un nemico vicino."
+    },
+    "frozen_heart": {
+      "name": "Cuore congelato",
+      "description": "Un pezzo di ghiaccio grande quanto un pugno che non si scioglie mai, recuperato dalla cavità toracica del cadavere di un gigante del gelo. Irradia un freddo pungente che attenua il dolore e rallenta il sanguinamento.",
+      "special_effect": "Avvolge il portatore in un sottile strato di brina quando viene colpito, riducendo i danni del successivo colpo in arrivo."
+    },
+    "war_banner": {
+      "name": "Stendardo di guerra",
+      "description": "Una striscia di seta lacerata proveniente da uno stendardo della legione che portò alla morte diecimila uomini. Le macchie di sangue formano schemi che si spostano come una mappa di battaglie ancora a venire.",
+      "special_effect": "Gli alleati vicini ottengono un aumento del morale, aumentando leggermente il loro attacco e la loro difesa negli scontri di gruppo."
+    },
+    "plague_doctors_lens": {
+      "name": "Lente del medico della peste",
+      "description": "Un monocolo incrinato di vetro rosso scuro, indossato un tempo da un medico che catalogò un centinaio di piaghe. Attraverso di esso, il portatore può vedere la malattia e la debolezza come fili luminosi nell'aria.",
+      "special_effect": "Rivela le vulnerabilità dei nemici, garantendo una piccola possibilità di infliggere danni critici a ogni colpo."
+    },
+    "soul_lantern": {
+      "name": "Lanterna dell'Anima",
+      "description": "Una lanterna di ferro nero la cui fiamma arde senza combustibile. Ogni anima rivendicata nella sua luce aggiunge un barlume e si dice che le fiamme più antiche al suo interno urlino quando il vento cambia.",
+      "special_effect": "Raccoglie un frammento di essenza da ogni nemico caduto, convertendolo in un potenziamento temporaneo di tutte le statistiche."
+    },
+    "titans_finger": {
+      "name": "Il dito di Titano",
+      "description": "Un dito pietrificato delle dimensioni di un avambraccio, reciso da un colosso che un tempo si trovava a cavallo di un passo di montagna. Vene d'oro fuso attraversano ancora la pietra, pulsando di antico potere.",
+      "special_effect": "Conferisce a chi lo indossa la forza d'animo di un titano, riducendo drasticamente il contraccolpo e lo barcollamento dovuti ai colpi pesanti."
+    },
+    "eclipse_shard": {
+      "name": "Frammento di Eclissi",
+      "description": "Un frammento di oscurità caduto dal cielo durante un'eclissi totale. Assorbe la luce attorno a sé, lasciando chi lo indossa avvolto in un crepuscolo perpetuo che innervosisce chiunque lo guardi.",
+      "special_effect": "Avvolge il portatore nell'ombra, aumentando l'evasione e garantendo la possibilità di schivare completamente gli attacchi."
+    },
+    "wailing_skull": {
+      "name": "Teschio piangente",
+      "description": "Un teschio a misura di bambino di origine sconosciuta che emette un gemito basso e senza fine. Le sue orbite brillano di una malsana luce ambrata, e coloro che lo portano troppo a lungo iniziano a sentire le parole nel lamento.",
+      "special_effect": "Emette un lamento psichico all'inizio del combattimento, abbassando la difesa di tutti i nemici per lo scambio iniziale."
+    },
+    "heart_of_colossus": {
+      "name": "Cuore del Colosso",
+      "description": "Una gemma grande quanto un pugno che batte come un organo vivente, recuperata dal nucleo di un golem di guerra distrutto. Tenerlo in mano riempie il petto con un suono di tamburo così potente da soffocare la paura.",
+      "special_effect": "Una volta per battaglia, assorbe completamente un colpo mortale e riporta il portatore in condizioni di combattimento con un'esplosione di dura determinazione."
+    },
+    "abyssal_crown": {
+      "name": "Corona abissale",
+      "description": "Un diadema d'ombra vivente che aleggia appena sopra il teschio. È stato dragato da un abisso senza fondo e l'oscurità che irradia ingoia la luce delle torce e la speranza in egual misura.",
+      "special_effect": "Esercita un'autorità abissale sul campo di battaglia, costringendo i nemici più deboli a fuggire e quelli più forti a combattere con ridotta convinzione."
+    },
+    "ember_of_creation": {
+      "name": "Brace della creazione",
+      "description": "Un frammento di fuoco primordiale che precede il mondo stesso. Galleggia sopra il palmo del portatore, troppo caldo per essere toccato ma non brucia mai, e l'aria intorno odora di pietra appena nata.",
+      "special_effect": "Cura continuamente le ferite del portatore con la fiamma primordiale, fornendo una rigenerazione costante della salute durante il combattimento."
+    },
+    "doom_bell": {
+      "name": "Campana del destino",
+      "description": "Una campana di bronzo grande quanto un palmo, senza batacchio, ma suona da sola quando la morte è vicina. Fu estratto dall'altare di un tempio in rovina dove in una sola notte fu sacrificato un intero sacerdozio.",
+      "special_effect": "Suona una campana minacciosa quando la salute del portatore diminuisce, scatenando un'onda d'urto che danneggia e sconcerta tutti i nemici vicini."
+    }
+  },
+  "classes": {
+    "mercenary": {
+      "desc": "Uno spadaccino equilibrato che vive di versatilità. Il Mercenario guadagna più punti statistica per livello rispetto a qualsiasi specialista, consentendo l'adattamento a qualsiasi situazione di combattimento.",
+      "passive_ability": {
+        "name": "Versatile",
+        "description": "Guadagna +1 punto statistica bonus per livello."
+      },
+      "active_skill": {
+        "name": "Raduno",
+        "description": "Ispira tutti gli alleati, aumentando l'ATK del 15% per 2 turni."
+      },
+      "perks": {
+        "merc_iron_will": {
+          "name": "Volontà di ferro",
+          "description": "Riduce i danni in arrivo del 5%. Anni di contratti ingrati hanno rafforzato la determinazione di questo combattente."
+        },
+        "merc_opportunist": {
+          "name": "Opportunista",
+          "description": "Aumenta la probabilità di colpo critico del 5%. Un mercenario impara a colpire quando il nemico vacilla."
+        },
+        "merc_battle_scarred": {
+          "name": "Segnato dalla battaglia",
+          "description": "Aumenta gli HP massimi del 10%. Ogni cicatrice è una lezione pagata col sangue."
+        },
+        "merc_coin_hunter": {
+          "name": "Cacciatore di monete",
+          "description": "Guadagna il 15% in più di oro dalle vittorie. Il mercenario conosce sempre il valore di un'uccisione."
+        },
+        "merc_adaptive_combat": {
+          "name": "Combattimento adattivo",
+          "description": "Guadagna +1 difesa per ogni colpo subito durante un combattimento, accumulandosi fino a 10. Il mercenario legge gli schemi del nemico durante la battaglia."
+        },
+        "merc_dirty_fighting": {
+          "name": "Lotta sporca",
+          "description": "Infligge il 10% di danni bonus. Nessuna regola nell'arena: solo sopravvissuti."
+        },
+        "merc_sellsword_mastery": {
+          "name": "Abilità del mercenario",
+          "description": "Ruba l'8% dei danni inflitti come HP. La folla paga in oro; la lama paga nella vita."
+        },
+        "merc_jack_of_all": {
+          "name": "Tuttofare",
+          "description": "Riduce la gravità degli infortuni del 30%. Un mercenario che non può combattere domani è un mercenario morto."
+        }
+      }
+    },
+    "assassin": {
+      "desc": "Un killer nato nell'ombra che scambia la resilienza con la letalità. L'Assassino colpisce da angoli ciechi, ponendo fine ai combattimenti prima che il nemico possa reagire.",
+      "passive_ability": {
+        "name": "Colpo dell'Ombra",
+        "description": "I colpi critici infliggono il 25% di danni bonus oltre il normale moltiplicatore critico."
+      },
+      "active_skill": {
+        "name": "Passo d'ombra",
+        "description": "Svanisce nell'ombra: il prossimo attacco è un critico garantito e schiva il prossimo attacco nemico."
+      },
+      "perks": {
+        "assa_keen_edge": {
+          "name": "Bordo acuto",
+          "description": "Aumenta la probabilità di colpo critico del 5%. La lama sussurra dove mordere più a fondo."
+        },
+        "assa_fleet_foot": {
+          "name": "Piede della flotta",
+          "description": "Aumenta la possibilità di schivata del 5%. L'assassino non è mai dove cade la lama."
+        },
+        "assa_poisoned_blade": {
+          "name": "Lama Avvelenata",
+          "description": "Infligge il 7% di danni bonus. Un sottile strato di cicuta sull'acciaio fa il resto."
+        },
+        "assa_evasion": {
+          "name": "Evasione",
+          "description": "Riduce i danni in arrivo del 5%. I bersagli in movimento sono più difficili da ferire."
+        },
+        "assa_throat_cutter": {
+          "name": "Tagliagola",
+          "description": "Cura il 10% degli HP massimi all'uccisione. Lo spray arterioso è caldo e tonificante."
+        },
+        "assa_expose_weakness": {
+          "name": "Esporre le debolezze",
+          "description": "Ottiene +2 attacco per ogni uccisione in un round del torneo, accumulandosi all'infinito. Ogni cadavere rivela dove cadrà il prossimo."
+        },
+        "assa_death_mark": {
+          "name": "Marchio della morte",
+          "description": "I colpi critici ignorano il 20% della difesa del bersaglio. L'assassino conosce ogni lacuna nell'armatura."
+        },
+        "assa_vanish": {
+          "name": "Svanire",
+          "description": "Resiste al 40% degli effetti di stato. Catene, veleni, maledizioni: nessuno può contenere una vera ombra."
+        }
+      }
+    },
+    "tank": {
+      "desc": "Un muro inamovibile di carne sfregiata e ferro arrugginito. Il Tank sopravvive a ogni avversario, trasformando l'arena in una guerra di logoramento che solo il paziente può vincere.",
+      "passive_ability": {
+        "name": "Indistruttibile",
+        "description": "Subisce il 10% in meno di danni da tutte le fonti."
+      },
+      "active_skill": {
+        "name": "Muro di protezione",
+        "description": "Alza una guardia impenetrabile, riducendo tutti i danni in arrivo alla squadra del 50% per 2 turni."
+      },
+      "perks": {
+        "tank_thick_skin": {
+          "name": "Pelle spessa",
+          "description": "Aumenta gli HP massimi del 10%. Il tessuto cicatrizzato è più spesso degli scudi della maggior parte degli uomini."
+        },
+        "tank_brace": {
+          "name": "Parentesi graffa",
+          "description": "Riduce i danni in arrivo di un ulteriore 5%. Pianta i piedi. Sopportare."
+        },
+        "tank_retribution": {
+          "name": "Retribuzione",
+          "description": "Infligge il 5% di danno bonus. I colpi lenti rompono ancora le ossa."
+        },
+        "tank_fortified": {
+          "name": "Fortificato",
+          "description": "Guadagna +1 difesa per ogni colpo subito durante un combattimento, accumulandosi fino a 15. Ogni colpo tempra il ferro sotto la pelle."
+        },
+        "tank_undying": {
+          "name": "Immortale",
+          "description": "Ruba il 5% dei danni inflitti come HP. Il pavimento dell'arena beve sangue; il carro armato lo rivendica."
+        },
+        "tank_iron_body": {
+          "name": "Corpo in ferro",
+          "description": "Riduce la gravità delle lesioni del 25%. Le ossa si saldano storte ma si saldano velocemente."
+        },
+        "tank_colossus": {
+          "name": "Colosso",
+          "description": "Aumenta gli HP massimi del 20%. La folla tace quando il colosso entra nell'arena."
+        },
+        "tank_last_stand": {
+          "name": "L'ultima resistenza",
+          "description": "Resiste al 50% degli effetti di stato. Il veleno rallenta ma non si ferma. Il fuoco brucia ma non cade."
+        }
+      }
+    },
+    "berserker": {
+      "desc": "Un bruto schiumoso che incanala l'agonia nell'annientamento. Il Berserker diventa sempre più letale man mano che le ferite aumentano, trasformando l'arena in un altare della rabbia intriso di sangue.",
+      "passive_ability": {
+        "name": "Furia sanguinaria",
+        "description": "Il danno aumenta man mano che gli HP diminuiscono, fino a +50% al 10% degli HP."
+      },
+      "active_skill": {
+        "name": "Frenesia",
+        "description": "Entra in una furia sanguinaria, attaccando 3 volte in questo turno con l'80% di danno ciascuno."
+      },
+      "perks": {
+        "berserk_brute_force": {
+          "name": "Forza bruta",
+          "description": "Infligge il 5% di danno bonus. La sottigliezza è per i vivi."
+        },
+        "berserk_thick_skull": {
+          "name": "Cranio spesso",
+          "description": "Aumenta gli HP massimi dell'8%. Il cranio è ammaccato ma intatto, sempre intatto."
+        },
+        "berserk_bloodlust": {
+          "name": "Sete di sangue",
+          "description": "Cura l'8% degli HP massimi dopo l'uccisione. Il gusto della morte alimenta la frenesia."
+        },
+        "berserk_reckless_swing": {
+          "name": "Altalena spericolata",
+          "description": "Aumenta la probabilità di colpo critico dell'8%. Le oscillazioni selvagge trovano posti morbidi tra le costole."
+        },
+        "berserk_gore_stacks": {
+          "name": "Gore",
+          "description": "Ottiene +3 attacco per ogni uccisione in un round del torneo, accumulandosi all'infinito. Ogni morte alimenta quella successiva."
+        },
+        "berserk_pain_is_fuel": {
+          "name": "Il dolore è carburante",
+          "description": "Ruba il 6% dei danni inflitti come HP. Il berserker beve dalle proprie ferite."
+        },
+        "berserk_rampage": {
+          "name": "Furia",
+          "description": "Infligge il 15% di danni aggiuntivi. Quando scende la nebbia rossa, anche il ferro urla."
+        },
+        "berserk_defy_death": {
+          "name": "Sfidare la morte",
+          "description": "Riduce la gravità degli infortuni del 35%. Le ossa rotte non si riparano bene, ma il berserker continua a combattere nonostante tutto."
+        }
+      }
+    },
+    "retiarius": {
+      "desc": "Un combattente con rete e tridente che danza al limite della portata. Il Retiarius punisce l'aggressività, trasformando lo slancio del nemico in un'arma.",
+      "passive_ability": {
+        "name": "Padronanza della rete",
+        "description": "Contrattacca in caso di schivata riuscita, infliggendo il 50% del danno normale."
+      },
+      "active_skill": {
+        "name": "Lancio netto",
+        "description": "Lancia una rete appesantita, stordendo il bersaglio attuale per 2 turni."
+      },
+      "perks": {
+        "ret_nimble": {
+          "name": "Agile",
+          "description": "Aumenta la possibilità di schivata del 5%. La rete scorre come acqua attorno alla lama."
+        },
+        "ret_trident_thrust": {
+          "name": "Colpo del tridente",
+          "description": "Aumenta la probabilità di colpo critico del 5%. Tre poli, tre possibilità di trovare il divario."
+        },
+        "ret_entangle": {
+          "name": "Intrecciare",
+          "description": "Infligge il 7% di danni bonus. La rete si stringe; segue il tridente."
+        },
+        "ret_slippery": {
+          "name": "Scivoloso",
+          "description": "Riduce i danni in arrivo del 5%. Ciò che il tiratore di rete non può schivare, lo devia."
+        },
+        "ret_riposte": {
+          "name": "Risposta",
+          "description": "I contrattacchi durante la schivata infliggono il 75% dei danni invece del 50%. Il tridente punisce ogni colpo mancato."
+        },
+        "ret_crowd_favorite": {
+          "name": "Il preferito dalla folla",
+          "description": "Guadagna il 20% in più di oro dalle vittorie. La folla adora l'assassino danzante."
+        },
+        "ret_web_of_steel": {
+          "name": "Rete d'Acciaio",
+          "description": "Aumenta la possibilità di schivata del 10%. Il combattente della rete diventa intoccabile: un fantasma avvolto in una rete di ferro."
+        },
+        "ret_crippling_snare": {
+          "name": "Rullante paralizzante",
+          "description": "Resiste al 35% degli effetti di stato e riduce la schivata nemica del 10%. La rete lega più della carne."
+        }
+      }
+    },
+    "medicus": {
+      "desc": "Un chirurgo sul campo di battaglia diventato gladiatore, brandendo la conoscenza anatomica come arma. Il Medicus sopravvive ai nemici attraverso un'incessante auto-riparazione, dissanguandoli mentre ricuce le proprie ferite tra un colpo e l'altro.",
+      "passive_ability": {
+        "name": "Chirurgia sul campo",
+        "description": "Cura il 3% degli HP massimi per turno in battaglia."
+      },
+      "active_skill": {
+        "name": "Guarigione di massa",
+        "description": "Canalizza l'energia curativa, ripristinando il 20% dei PS massimi a tutti gli alleati."
+      },
+      "perks": {
+        "med_triage": {
+          "name": "Triage",
+          "description": "Aumenta gli HP massimi dell'8%. Sapere dove scorre il sangue significa sapere come trattenerlo dentro."
+        },
+        "med_anatomical_precision": {
+          "name": "Precisione anatomica",
+          "description": "Aumenta la probabilità di colpo critico del 5%. Il medicus sa esattamente dove tagliare."
+        },
+        "med_numbing_salve": {
+          "name": "Unguento anestetizzante",
+          "description": "Riduce i danni in arrivo del 5%. Un impiastro applicato durante il combattimento attenua la ferita più acuta."
+        },
+        "med_leech_craft": {
+          "name": "Mestiere della sanguisuga",
+          "description": "Ruba il 4% dei danni inflitti come HP. Il bisturi prende e il chirurgo riprende."
+        },
+        "med_bone_setter": {
+          "name": "Incastonatore di ossa",
+          "description": "Riduce la gravità degli infortuni del 30%. Le lussazioni si ripristinano a metà round, le fratture vengono steccate tra un attacco e l'altro."
+        },
+        "med_venom_knowledge": {
+          "name": "Conoscenza del veleno",
+          "description": "Resiste al 35% degli effetti di stato. Il medicus ha ingoiato ogni veleno a piccole dosi."
+        },
+        "med_resurgence": {
+          "name": "Rinascita",
+          "description": "La guarigione per turno aumenta al 5% degli HP massimi. Il corpo diventa una fornace di rinnovamento: la carne si salda prima che la folla possa restare senza fiato."
+        },
+        "med_do_no_harm": {
+          "name": "Non fare del male",
+          "description": "Infligge il 12% di danni aggiuntivi. Il giuramento è stato abbandonato molto tempo fa: ora il bisturi serve solo nell'arena."
+        }
+      }
+    }
+  }
+}
