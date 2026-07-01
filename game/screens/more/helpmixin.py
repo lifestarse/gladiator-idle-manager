@@ -93,4 +93,7 @@ class _HelpMixin:
         App.get_running_app().engine._migrate_all_items()
         App.get_running_app().engine.save()
         App.get_running_app()._init_locale_strings()
+        # Reset the cached buy diamond cards so they rebuild with the new language
+        if hasattr(self, '_bundle_cards'):
+            self._bundle_cards = None
         self.refresh_more()
