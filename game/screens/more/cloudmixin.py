@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """MoreScreen _CloudMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -86,23 +86,6 @@ class _CloudMixin:
         App.get_running_app().engine._ui_dirty = True
         self.refresh_more()
 
-    def _restart_app(self):
-        """Restart the app after first Google sign-in."""
-        try:
-            from jnius import autoclass
-            Intent = autoclass("android.content.Intent")
-            PythonActivity = autoclass("org.kivy.android.PythonActivity")
-            activity = PythonActivity.mActivity
-            pm = activity.getPackageManager()
-            intent = pm.getLaunchIntentForPackage(activity.getPackageName())
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            activity.startActivity(intent)
-            activity.finish()
-        except Exception:
-            # Desktop fallback — just stop the app
-            App.get_running_app().stop()
-
     def cloud_sign_out(self):
         def on_done():
             self.refresh_more()
@@ -137,13 +120,12 @@ class _CloudMixin:
         self.cloud_status = t("download") + "..."
         def on_done(success, result):
             if success and isinstance(result, dict):
-                engine.load(data=result)
-                # Explicit download → adopt cloud and keep this device synced.
-                engine.cloud_sync_enabled = True
-                engine.save()
-                cloud_save_manager.enable_autosync_uploads()
-                self.cloud_status = t("cloud_loaded")
-                self._restart_app()
+                # Reload in place — NO app restart. The old _restart_app()
+                # called activity.finish() but the relaunch Intent fired
+                # unreliably on Android, so the app just closed after a
+                # successful download. _adopt_cloud refreshes the UI live
+                # (same path the login flow already uses).
+                self._adopt_cloud(engine, result)
             else:
                 self.cloud_status = t("cloud_failed", reason=result)
         cloud_save_manager.download_save(on_done)
