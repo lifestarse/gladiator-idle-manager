@@ -229,6 +229,7 @@
   "cloud_failed": "Niepowodzenie: {reason}",
   "cloud_uploaded": "Zapisano w chmurze!",
   "cloud_loaded": "Ładowane z chmury!",
+  "cloud_newer_available": "Nowszy zapis w chmurze na innym urządzeniu — otwórz Chmurę, aby pobrać",
   "cloud_err_title": "Problem z logowaniem",
   "cloud_err_cancelled": "Logowanie zostało anulowane. Kliknij Spróbuj ponownie, aby spróbować ponownie.",
   "cloud_err_network": "Błąd sieci. Sprawdź swoje połączenie internetowe i spróbuj ponownie.",

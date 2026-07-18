@@ -1,4 +1,4 @@
-# Build: 9
+# Build: 10
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -279,26 +279,49 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         if scr is not None and hasattr(scr, "refresh_more"):
             scr.refresh_more()
 
+        engine = self.engine
+        synced = getattr(engine, "cloud_sync_enabled", False)
+
         def on_done(success, result):
             if success and isinstance(result, dict):
                 from game.cloud_save import resolve_auto_sync
-                # Silent path only ever ADOPTS the cloud onto a device with
-                # nothing to lose (fresh install). It never uploads and
-                # never loads over existing local progress — those need the
-                # user's explicit consent (login confirmation / buttons).
-                if resolve_auto_sync(self.engine, result) == "load":
-                    self.engine.load(data=result)
-                    self.engine.save()
-                    self.engine._ui_dirty = True
+                # Fresh install with nothing to lose → adopt the cloud and
+                # persist that this device is now synced.
+                if resolve_auto_sync(engine, result) == "load":
+                    engine.load(data=result)
+                    engine.cloud_sync_enabled = True
+                    engine.save()
+                    engine._ui_dirty = True
                     cloud_save_manager.enable_autosync_uploads()
                     _log.info("[CloudSave] First launch — adopted cloud save")
+                elif synced:
+                    # Returning device that already owns the cloud. Never
+                    # auto-load (that was the rollback bug) and never blindly
+                    # upload. Cross-device guard: if the cloud was advanced
+                    # on ANOTHER device (cloud saved_at newer than ours),
+                    # hold auto-upload so we don't clobber that newer save,
+                    # and tell the user they can pull it. Otherwise this
+                    # device holds the latest → resume auto-backup.
+                    cloud_ts = result.get("saved_at", 0) or 0
+                    local_ts = getattr(engine, "last_saved_at", 0) or 0
+                    if cloud_ts > local_ts:
+                        engine.pending_notifications.append(t("cloud_newer_available"))
+                        _log.info("[CloudSave] Cloud newer (other device) — auto-upload held")
+                    else:
+                        cloud_save_manager.enable_autosync_uploads()
+                        _log.info("[CloudSave] Resumed cloud auto-backup for this device")
                 else:
-                    _log.info("[CloudSave] Local save present — no automatic cloud action")
+                    _log.info("[CloudSave] Local save present, device not synced — no action")
             elif not success and result == "No cloud save found":
-                # No cloud yet. Do NOT auto-create from the silent path —
-                # wait for an explicit sync so we never touch the cloud
-                # without the user having chosen to.
-                _log.info("[CloudSave] No cloud save; awaiting explicit sync")
+                if synced:
+                    # This device was synced but the cloud file is gone —
+                    # re-seed it from local (creation, not overwrite).
+                    cloud_save_manager.enable_autosync_uploads()
+                    _log.info("[CloudSave] Cloud missing — will re-create from local")
+                else:
+                    # Never auto-create from the silent path for an unsynced
+                    # device; wait for an explicit sync.
+                    _log.info("[CloudSave] No cloud save; awaiting explicit sync")
         cloud_save_manager.download_save(on_done)
 
     def _idle_tick(self, dt):

@@ -229,6 +229,7 @@
   "cloud_failed": "Falha: {reason}",
   "cloud_uploaded": "Salvo na nuvem!",
   "cloud_loaded": "Carregado da nuvem!",
+  "cloud_newer_available": "Save na nuvem mais recente em outro dispositivo — abra a Nuvem para baixar",
   "cloud_err_title": "Problema de login",
   "cloud_err_cancelled": "O login foi cancelado. Toque em Tentar novamente para tentar novamente.",
   "cloud_err_network": "Erro de rede. Verifique sua conexão com a Internet e tente novamente.",

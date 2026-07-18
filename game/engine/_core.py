@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 """GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -98,6 +98,12 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Wall-clock time of the newest save this engine state descends
         # from (stamped on save, restored on load). 0.0 = never saved.
         self.last_saved_at = 0.0
+        # Persisted: this device/save has been consciously synced to the
+        # cloud at least once (adopted the cloud save, or manual up/down).
+        # When True, autosave resumes streaming to the cloud on every
+        # launch. A fresh install starts False, so it can never clobber a
+        # real cloud save with an empty one. See [[gladiator-cloud-sync-incident]].
+        self.cloud_sync_enabled = False
 
         # Dirty flags — batch achievement checks and UI refreshes.
         # Set by _mark_dirty() from state-changing methods; consumed by idle_tick.

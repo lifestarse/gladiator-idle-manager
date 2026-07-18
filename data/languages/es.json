@@ -229,6 +229,7 @@
   "cloud_failed": "Error: {reason}",
   "cloud_uploaded": "¡Guardado en la nube!",
   "cloud_loaded": "¡Cargado desde la nube!",
+  "cloud_newer_available": "Guardado en la nube más reciente en otro dispositivo — abre Nube para descargar",
   "cloud_err_title": "Problema de inicio de sesión",
   "cloud_err_cancelled": "El inicio de sesión fue cancelado. Toca Reintentar para volver a intentarlo.",
   "cloud_err_network": "Error de red. Verifique su conexión a Internet e inténtelo nuevamente.",

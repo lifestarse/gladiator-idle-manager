@@ -229,6 +229,7 @@
   "cloud_failed": "Fehlgeschlagen: {reason}",
   "cloud_uploaded": "In der Cloud gespeichert!",
   "cloud_loaded": "Aus der Cloud geladen!",
+  "cloud_newer_available": "Neuerer Cloud-Spielstand auf einem anderen Gerät — zum Laden Cloud öffnen",
   "cloud_err_title": "Anmeldeproblem",
   "cloud_err_cancelled": "Die Anmeldung wurde abgebrochen. Tippen Sie auf „Wiederholen“, um es noch einmal zu versuchen.",
   "cloud_err_network": "Netzwerkfehler. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",

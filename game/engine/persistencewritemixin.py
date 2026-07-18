@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 """GameEngine _PersistenceWriteMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -70,6 +70,7 @@ class _PersistenceWriteMixin:
             "total_injuries_healed": self.total_injuries_healed,
             "total_expeditions_completed": self.total_expeditions_completed,
             "completed_expedition_ids": self.completed_expedition_ids,
+            "cloud_sync_enabled": self.cloud_sync_enabled,
             "lore_unlocked": self.lore_unlocked,
             "scripts": self.scripts.to_dict() if hasattr(self, "scripts") else {},
             "sound_volume": self.sound_volume,

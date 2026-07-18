@@ -229,6 +229,7 @@
   "cloud_failed": "Échec : {reason}",
   "cloud_uploaded": "Enregistré dans le cloud !",
   "cloud_loaded": "Chargé depuis le cloud !",
+  "cloud_newer_available": "Sauvegarde cloud plus récente sur un autre appareil — ouvrez Cloud pour télécharger",
   "cloud_err_title": "Problème de connexion",
   "cloud_err_cancelled": "La connexion a été annulée. Appuyez sur Réessayer pour réessayer.",
   "cloud_err_network": "Erreur réseau. Vérifiez votre connexion Internet et réessayez.",

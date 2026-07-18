@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """MoreScreen _CloudMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -39,8 +39,11 @@ class _CloudMixin:
 
     def _adopt_cloud(self, engine, result):
         """Replace local state with the downloaded cloud save and, from now
-        on, allow autosave to stream this device's progress back up."""
+        on, allow autosave to stream this device's progress back up. The
+        conscious-sync flag is persisted so auto-backup resumes on every
+        future launch without asking again."""
         engine.load(data=result)
+        engine.cloud_sync_enabled = True
         engine.save()
         engine._ui_dirty = True
         cloud_save_manager.enable_autosync_uploads()
@@ -70,8 +73,9 @@ class _CloudMixin:
             elif not success and result == "No cloud save found":
                 # No cloud save yet — creating one from local is not an
                 # overwrite, so it's safe to seed it and start syncing up.
+                engine.cloud_sync_enabled = True
                 cloud_save_manager.enable_autosync_uploads()
-                save_data = engine._build_save_data()
+                save_data = engine.save()  # persist the flag + get the dict
                 cloud_save_manager.upload_save(save_data, self._on_initial_upload)
             else:
                 self.cloud_status = t("signed_in_as", email=cloud_save_manager.user_email)
@@ -112,10 +116,11 @@ class _CloudMixin:
 
     def _do_cloud_upload(self):
         engine = App.get_running_app().engine
+        # Explicit user action → this device owns the cloud from now on,
+        # so persist the decision and let autosave keep it in sync.
+        engine.cloud_sync_enabled = True
         save_data = engine.save()
         self.cloud_status = t("upload") + "..."
-        # Explicit user action → this device owns the cloud from now on,
-        # so let autosave keep it in sync.
         cloud_save_manager.enable_autosync_uploads()
         def on_done(success, msg):
             self.cloud_status = t("cloud_uploaded") if success else t("cloud_failed", reason=msg)
@@ -133,8 +138,9 @@ class _CloudMixin:
         def on_done(success, result):
             if success and isinstance(result, dict):
                 engine.load(data=result)
-                engine.save()
                 # Explicit download → adopt cloud and keep this device synced.
+                engine.cloud_sync_enabled = True
+                engine.save()
                 cloud_save_manager.enable_autosync_uploads()
                 self.cloud_status = t("cloud_loaded")
                 self._restart_app()
