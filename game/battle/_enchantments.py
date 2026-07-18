@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Enchantment trigger and status-tick logic."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -10,8 +10,26 @@ def _init_enemy_status(state, enemy):
     state.enemy_status[id(enemy)] = EnemyStatusTracker(enemy.attack, getattr(enemy, 'defense', 0))
 
 
-def _trigger_enchantment(state, target, ench_id, ench):
-    """Trigger an enchantment effect on a target. Returns list of BattleEvents."""
+def _apply_debuff(tracker, dtype, turns):
+    """Refresh an existing debuff of `dtype` or append a new one.
+
+    Duplicate entries break expiry: the first copy to reach 0 restores the
+    enemy's stat while the second copy is still nominally active, ending
+    the debuff early.
+    """
+    for eff in tracker.active_effects:
+        if eff["type"] == dtype:
+            eff["turns_left"] = max(eff["turns_left"], turns)
+            return
+    tracker.active_effects.append({"type": dtype, "turns_left": turns})
+
+
+def _trigger_enchantment(state, target, ench_id, ench, attacker=None):
+    """Trigger an enchantment effect on a target. Returns list of BattleEvents.
+
+    attacker: the Fighter whose weapon proc'd — lifesteal heals them
+    specifically (fallback: first alive fighter carrying the enchantment).
+    """
     events = []
     tracker = state.enemy_status[id(target)]
     effect = ench["effect"]
@@ -30,10 +48,7 @@ def _trigger_enchantment(state, target, ench_id, ench):
         target.hp = max(0, target.hp - dmg)
         reduction = ench.get("atk_reduction_pct", ench.get("reduction_pct", 0.2))
         target.attack = int(tracker.original_attack * (1 - reduction))
-        tracker.active_effects.append({
-            "type": "atk_debuff",
-            "turns_left": ench["debuff_turns"],
-        })
+        _apply_debuff(tracker, "atk_debuff", ench["debuff_turns"])
         events.append(BattleEvent("status", defender=target.name, damage=dmg,
             message=t("battle_frostbite", target=target.name, dmg=_fn(dmg))))
 
@@ -57,10 +72,7 @@ def _trigger_enchantment(state, target, ench_id, ench):
         # corruption
         reduction = ench.get("reduction_pct", 0.3)
         target.defense = int(tracker.original_defense * (1 - reduction))
-        tracker.active_effects.append({
-            "type": "def_debuff",
-            "turns_left": ench.get("debuff_turns", 3),
-        })
+        _apply_debuff(tracker, "def_debuff", ench.get("debuff_turns", 3))
         events.append(BattleEvent("status", defender=target.name,
             message=t("battle_corruption", target=target.name)))
 
@@ -81,17 +93,15 @@ def _trigger_enchantment(state, target, ench_id, ench):
         # weaken
         reduction = ench.get("reduction_pct", 0.25)
         target.attack = int(tracker.original_attack * (1 - reduction))
-        tracker.active_effects.append({
-            "type": "atk_debuff",
-            "turns_left": ench.get("debuff_turns", 4),
-        })
+        _apply_debuff(tracker, "atk_debuff", ench.get("debuff_turns", 4))
         events.append(BattleEvent("status", defender=target.name,
             message=t("battle_weaken", target=target.name)))
 
     elif effect == "lifesteal":
-        # drain — heal the attacker
+        # drain — heal the attacker whose weapon proc'd
         heal_pct = ench.get("heal_pct", 0.1)
-        for fighter in state.player_fighters:
+        candidates = [attacker] if attacker is not None else state.player_fighters
+        for fighter in candidates:
             if fighter.alive and fighter.hp > 0:
                 weapon = fighter.equipment.get("weapon")
                 if weapon and weapon.get("enchantment") == ench_id:

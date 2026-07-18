@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """BattleManager core — orchestrates turns and mixin phases."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -52,7 +52,12 @@ class BattleManager(_PlayerAttackPhaseMixin, _EnemyAttackPhaseMixin, _SupportPha
         self.state.player_fighters = fighters
         self.state.enemies = enemies
         self.state.phase = BattlePhase.STARTING
-        self.state.is_boss_fight = False
+        # A boss can land in the auto-battle path (revenge carry-over, or a
+        # script staging spawn_boss + start_arena_battle). The fight must
+        # count as a boss fight regardless of entry path: otherwise victory
+        # skips arena_tier+1 / bosses_killed, defeat routes the surviving
+        # boss into _revenge_common, and boss modifiers never tick.
+        self.state.is_boss_fight = boss_revenge
         for f in fighters:
             skill = getattr(f, 'get_active_skill', lambda: None)()
             if skill:

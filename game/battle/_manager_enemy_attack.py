@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """BattleManager _EnemyAttackPhaseMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -39,6 +39,7 @@ class _EnemyAttackPhaseMixin:
                 reward = int(reward * (1 + gold_bonus))
             s.gold_earned += reward
             self.engine.award_gold(reward)
+            attacker._kill_awarded = True
             defender.kills += 1
             events.append(BattleEvent(
                 "death", defender=attacker.name, is_kill=True,
