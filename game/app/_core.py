@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -281,10 +281,18 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
 
         def on_done(success, result):
             if success and isinstance(result, dict):
-                self.engine.load(data=result)
-                self.engine.save()
-                self.engine._ui_dirty = True
-                _log.info("[CloudSave] Auto-loaded cloud save on startup")
+                from game.cloud_save import resolve_auto_sync
+                decision = resolve_auto_sync(self.engine, result)
+                if decision == "load":
+                    self.engine.load(data=result)
+                    self.engine.save()
+                    self.engine._ui_dirty = True
+                    _log.info("[CloudSave] Auto-loaded cloud save on startup")
+                elif decision == "upload":
+                    cloud_save_manager.upload_save(self.engine._build_save_data())
+                    _log.info("[CloudSave] Local save newer — uploaded to cloud")
+                else:
+                    _log.info("[CloudSave] Cloud and local in sync — no action")
             elif not success and result == "No cloud save found":
                 save_data = self.engine.save()
                 cloud_save_manager.upload_save(save_data)

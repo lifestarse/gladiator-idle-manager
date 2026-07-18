@@ -1,9 +1,37 @@
-# Build: 2
+# Build: 3
 """CloudSaveManager core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
 from .cloudauthmixin import _CloudAuthMixin
 from .cloudiomixin import _CloudIOMixin
+
+
+def resolve_auto_sync(engine, cloud_data) -> str:
+    """Decide what automatic sync should do with a downloaded cloud save.
+
+    Returns "load" | "upload" | "skip".
+
+    Rules (manual download in the More screen stays unconditional — the
+    user explicitly confirmed it there):
+      - first launch on this device (no local save existed) → "load":
+        reinstall/new-device recovery, the cloud is the only progress.
+      - cloud strictly newer than local (saved_at stamp) → "load".
+      - cloud strictly older → "upload" local so the cloud heals.
+      - same age (or both saves predate the saved_at stamp) → "skip".
+
+    Before this gate, startup auto-sync loaded the cloud save
+    unconditionally — a session played offline was silently rolled back
+    to the older cloud state on the next launch with connectivity.
+    """
+    cloud_ts = cloud_data.get("saved_at", 0) or 0
+    local_ts = getattr(engine, "last_saved_at", 0) or 0
+    if getattr(engine, "_is_first_launch", False):
+        return "load"
+    if cloud_ts > local_ts:
+        return "load"
+    if cloud_ts < local_ts:
+        return "upload"
+    return "skip"
 
 
 class CloudSaveManager(_CloudAuthMixin, _CloudIOMixin):

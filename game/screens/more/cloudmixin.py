@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """MoreScreen _CloudMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -26,11 +26,19 @@ class _CloudMixin:
         self.cloud_status = t("sync") + "..."
         def on_done(success, result):
             if success and isinstance(result, dict):
-                engine.load(data=result)
-                engine.save()
-                engine._ui_dirty = True
-                self.refresh_more()
-                self.cloud_status = t("cloud_loaded")
+                from game.cloud_save import resolve_auto_sync
+                decision = resolve_auto_sync(engine, result)
+                if decision == "load":
+                    engine.load(data=result)
+                    engine.save()
+                    engine._ui_dirty = True
+                    self.refresh_more()
+                    self.cloud_status = t("cloud_loaded")
+                elif decision == "upload":
+                    save_data = engine._build_save_data()
+                    cloud_save_manager.upload_save(save_data, self._on_initial_upload)
+                else:
+                    self.cloud_status = t("signed_in_as", email=cloud_save_manager.user_email)
             elif not success and result == "No cloud save found":
                 save_data = engine.save()
                 cloud_save_manager.upload_save(save_data, self._on_initial_upload)
