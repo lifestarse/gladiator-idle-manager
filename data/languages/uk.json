@@ -642,6 +642,7 @@
   "shard_name_fallback": "Осколок ({tier})",
   "expedition_returned": "{fighter} повернувся з {exp}!",
   "expedition_returned_shard": "{fighter} повернувся з {exp}! +{n} {shard}",
+  "expedition_killed": "{fighter} загинув в експедиції {exp}!",
   "found_relic_msg": "Знайдено: {name} [{rarity}]",
   "invalid_fighter_err": "Інвалід боєць",
   "not_found_err": "Не знайдено",

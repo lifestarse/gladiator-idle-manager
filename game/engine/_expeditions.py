@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _ExpeditionsMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -49,13 +49,12 @@ class _ExpeditionsMixin:
             f.on_expedition = False
             f.expedition_id = None
             f.expedition_end = 0.0
-            self.total_expeditions_completed += 1
             if random.random() < exp["danger"]:
                 died, inj_id = f.check_permadeath()
                 if died:
                     self.total_deaths += 1
                     self.graveyard.append({"name": f.name, "level": f.level, "kills": f.kills})
-                    msg = f"{f.name} KILLED during {exp['name']}!"
+                    msg = t("expedition_killed", fighter=f.name, exp=exp['name'])
                     results.append(msg)
                     self.expedition_log.append(msg)
                     # Check all dead
@@ -67,6 +66,11 @@ class _ExpeditionsMixin:
                     msg_parts_pre = [t("suffered_injury", injury=inj_name)]
             else:
                 msg_parts_pre = []
+            # Fighter came back alive — only now the expedition counts as
+            # completed ("Expeditions Done" stat, explorer/void_walker achievements).
+            self.total_expeditions_completed += 1
+            if exp["id"] not in self.completed_expedition_ids:
+                self.completed_expedition_ids.append(exp["id"])
             shard_info = _m.SHARD_TIERS.get(exp["id"])
             if shard_info:
                 tier = shard_info["tier"]

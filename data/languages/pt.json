@@ -642,6 +642,7 @@
   "shard_name_fallback": "Fragmento ({tier})",
   "expedition_returned": "{fighter} retornou de {exp}!",
   "expedition_returned_shard": "{fighter} retornou de {exp}! +{n} {shard}",
+  "expedition_killed": "{fighter} morreu em {exp}!",
   "found_relic_msg": "Encontrado: {name} [{rarity}]",
   "invalid_fighter_err": "Lutador inválido",
   "not_found_err": "Não encontrado",

@@ -642,6 +642,7 @@
   "shard_name_fallback": "Odłamek ({tier})",
   "expedition_returned": "{fighter} wróciło z {exp}!",
   "expedition_returned_shard": "{fighter} wróciło z {exp}! +{n} {shard}",
+  "expedition_killed": "{fighter} zginął podczas {exp}!",
   "found_relic_msg": "Znaleziono: {name} [{rarity}]",
   "invalid_fighter_err": "Nieprawidłowy zawodnik",
   "not_found_err": "Nie znaleziono",

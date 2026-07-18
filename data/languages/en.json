@@ -642,6 +642,7 @@
   "shard_name_fallback": "Shard ({tier})",
   "expedition_returned": "{fighter} returned from {exp}!",
   "expedition_returned_shard": "{fighter} returned from {exp}! +{n} {shard}",
+  "expedition_killed": "{fighter} KILLED during {exp}!",
   "found_relic_msg": "Found: {name} [{rarity}]",
   "invalid_fighter_err": "Invalid fighter",
   "not_found_err": "Not found",

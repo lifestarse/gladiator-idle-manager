@@ -1,6 +1,8 @@
-# Build: 1
+# Build: 2
 """Achievement condition-checker builder (split from achievements.py)."""
 import logging
+
+_log = logging.getLogger(__name__)
 
 def _build_check(condition):
     """Convert a JSON condition dict into a callable check(engine) -> bool."""
@@ -88,9 +90,15 @@ def _build_check(condition):
         )
 
     if ctype == "expedition_completed_specific":
-        return lambda e, v=val: any(
-            v.replace("_", " ").lower() in log.lower() and "returned" in log.lower()
-            for log in e.expedition_log
+        # Primary: id list maintained by check_expeditions (locale-independent).
+        # Fallback: legacy English log match, so pre-Build-2 saves where the
+        # entry only survives in expedition_log still unlock.
+        return lambda e, v=val: (
+            v in getattr(e, "completed_expedition_ids", [])
+            or any(
+                v.replace("_", " ").lower() in log.lower() and "returned" in log.lower()
+                for log in e.expedition_log
+            )
         )
 
     _log.warning("Unknown achievement condition type: %s", ctype)

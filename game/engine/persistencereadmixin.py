@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 8
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -133,6 +133,7 @@ class _PersistenceReadMixin:
         self.total_gold_spent_equipment = data.get("total_gold_spent_equipment", 0)
         self.total_injuries_healed = data.get("total_injuries_healed", 0)
         self.total_expeditions_completed = data.get("total_expeditions_completed", 0)
+        self.completed_expedition_ids = data.get("completed_expedition_ids", [])
         self.lore_unlocked = data.get("lore_unlocked", [])
 
         saved_lang = data.get("language")

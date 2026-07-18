@@ -642,6 +642,7 @@
   "shard_name_fallback": "Scherbe ({tier})",
   "expedition_returned": "{fighter} zurückgegeben von {exp}!",
   "expedition_returned_shard": "{fighter} zurückgegeben von {exp}! +{n} {shard}",
+  "expedition_killed": "{fighter} wurde bei {exp} getötet!",
   "found_relic_msg": "Gefunden: {name} [{rarity}]",
   "invalid_fighter_err": "Ungültiger Kämpfer",
   "not_found_err": "Nicht gefunden",

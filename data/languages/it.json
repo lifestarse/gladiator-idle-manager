@@ -642,6 +642,7 @@
   "shard_name_fallback": "Frammento ({tier})",
   "expedition_returned": "{fighter} restituito da {exp}!",
   "expedition_returned_shard": "{fighter} restituito da {exp}! +{n} {shard}",
+  "expedition_killed": "{fighter} è morto durante {exp}!",
   "found_relic_msg": "Trovato: {name} [{rarity}]",
   "invalid_fighter_err": "Combattente non valido",
   "not_found_err": "Non trovato",

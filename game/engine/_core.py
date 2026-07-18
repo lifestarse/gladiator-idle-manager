@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 11
 """GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -76,6 +76,9 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         self.total_gold_spent_equipment = 0
         self.total_injuries_healed = 0
         self.total_expeditions_completed = 0
+        # Distinct expedition ids ever completed alive (for
+        # expedition_completed_specific achievements; locale-independent).
+        self.completed_expedition_ids: list[str] = []
         self.lore_unlocked: list[str] = []
         self.run_start_time = 0.0  # timestamp when current run started
 
