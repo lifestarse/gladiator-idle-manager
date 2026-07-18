@@ -9,7 +9,7 @@ class _ExpeditionsMixin:
         return [{**exp, "affordable": True, "duration_text": self._fmt_duration(exp["duration"])} for exp in _m.EXPEDITIONS]
 
     def send_on_expedition(self, fighter_idx, expedition_id):
-        if fighter_idx >= len(self.fighters):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         f = self.fighters[fighter_idx]
         if not f.alive:

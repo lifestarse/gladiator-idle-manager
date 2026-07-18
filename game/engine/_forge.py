@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _ForgeMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -27,7 +27,7 @@ class _ForgeMixin:
 
     def equip_item_on(self, fighter_idx, item_id):
         item = next((i for i in _m.ALL_FORGE_ITEMS if i["id"] == item_id), None)
-        if not item or fighter_idx >= len(self.fighters):
+        if not item or not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         if self.battle_active:
             return Result(False, t("not_in_battle"), "not_in_battle")
@@ -50,7 +50,7 @@ class _ForgeMixin:
 
     def equip_from_inventory(self, fighter_idx, inv_index):
         """Equip item from inventory onto a fighter. Old item goes to inventory."""
-        if fighter_idx >= len(self.fighters) or inv_index >= len(self.inventory):
+        if not (0 <= fighter_idx < len(self.fighters)) or not (0 <= inv_index < len(self.inventory)):
             return Result(False, "", "invalid")
         if self.battle_active:
             return Result(False, t("not_in_battle"), "not_in_battle")
@@ -69,7 +69,7 @@ class _ForgeMixin:
         """Unequip item from fighter slot → inventory. Blocked during battle."""
         if self.battle_active:
             return Result(False, t("not_in_battle"), "not_in_battle")
-        if fighter_idx >= len(self.fighters):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         f = self.fighters[fighter_idx]
         old = f.unequip_item(slot)
@@ -80,7 +80,7 @@ class _ForgeMixin:
 
     def sell_inventory_item(self, inv_index):
         """Sell an item from inventory for half its cost."""
-        if inv_index >= len(self.inventory):
+        if not (0 <= inv_index < len(self.inventory)):
             return 0
         item = self.inventory.pop(inv_index)
         sell_price = item.get("cost", 0) // 2
