@@ -1,10 +1,21 @@
-# Build: 2
+# Build: 3
 """_ItemDescMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
 
 
 class _ItemDescMixin:
+    @staticmethod
+    def _resolve_inv_idx(engine, item):
+        """Fresh inventory index of `item` by identity, or -1 if it left
+        the inventory (sold/equipped, e.g. by an on_tick script) while the
+        view that captured the original index sat open. Indexes captured
+        at view-build time must not be trusted at action time."""
+        for i, it in enumerate(engine.inventory):
+            if it is item:
+                return i
+        return -1
+
     @staticmethod
     def _build_description_card(item):
         """Return a BaseCard with item description text, or None if no description."""
@@ -80,8 +91,12 @@ class _ItemDescMixin:
             btn_color=ACCENT_GOLD, text_color=BG_DARK,
             icon_source="sprites/icons/ic_gold.png",
         )
-        def _sell(*a, idx=inv_idx):
-            engine.sell_inventory_item(idx)
+        def _sell(*a, it=item):
+            idx = self._resolve_inv_idx(engine, it)
+            if idx < 0:
+                App.get_running_app().show_toast(t("item_not_found"))
+            else:
+                engine.sell_inventory_item(idx)
             self.inv_detail_idx = -1
             self._set_view("inventory_list")
             self.refresh_forge()
