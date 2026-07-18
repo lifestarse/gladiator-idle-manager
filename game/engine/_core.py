@@ -95,6 +95,9 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # install). The App layer uses this to show a mandatory language
         # picker before the player sees anything else.
         self._is_first_launch = False
+        # Wall-clock time of the newest save this engine state descends
+        # from (stamped on save, restored on load). 0.0 = never saved.
+        self.last_saved_at = 0.0
 
         # Dirty flags — batch achievement checks and UI refreshes.
         # Set by _mark_dirty() from state-changing methods; consumed by idle_tick.

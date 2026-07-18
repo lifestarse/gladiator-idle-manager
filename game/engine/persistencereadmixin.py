@@ -81,6 +81,7 @@ class _PersistenceReadMixin:
             data = migrate(data)
             version += 1
 
+        self.last_saved_at = data.get("saved_at", 0.0)
         self.gold = data.get("gold", 100)
         self.active_fighter_idx = data.get("active_fighter_idx", 0)
         self.arena_tier = data.get("arena_tier", 1)

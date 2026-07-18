@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """Fighter _FighterSerializeMixin — to_dict / from_dict save round-trip."""
 from ._imports import *  # noqa: F401,F403
 from ._helpers import *  # noqa: F401,F403
@@ -29,8 +29,13 @@ class _FighterSerializeMixin:
             "injuries": [inj.copy() for inj in self.injuries],
             "kills": self.kills,
             "perk_points": self.perk_points,
-            "unlocked_perks": self.unlocked_perks,
-            "equipment": self.equipment,
+            # Copies, not references: save_async JSON-dumps this snapshot on
+            # a worker thread — a shared list/dict mutated by the main
+            # thread mid-dump (equip, perk unlock) kills the save with
+            # "changed size during iteration".
+            "unlocked_perks": list(self.unlocked_perks),
+            "equipment": {k: (dict(v) if isinstance(v, dict) else v)
+                          for k, v in self.equipment.items()},
             "on_expedition": self.on_expedition,
             "expedition_id": self.expedition_id,
             "expedition_end": self.expedition_end,
