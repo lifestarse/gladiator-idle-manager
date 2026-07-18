@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -282,21 +282,23 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         def on_done(success, result):
             if success and isinstance(result, dict):
                 from game.cloud_save import resolve_auto_sync
-                decision = resolve_auto_sync(self.engine, result)
-                if decision == "load":
+                # Silent path only ever ADOPTS the cloud onto a device with
+                # nothing to lose (fresh install). It never uploads and
+                # never loads over existing local progress — those need the
+                # user's explicit consent (login confirmation / buttons).
+                if resolve_auto_sync(self.engine, result) == "load":
                     self.engine.load(data=result)
                     self.engine.save()
                     self.engine._ui_dirty = True
-                    _log.info("[CloudSave] Auto-loaded cloud save on startup")
-                elif decision == "upload":
-                    cloud_save_manager.upload_save(self.engine._build_save_data())
-                    _log.info("[CloudSave] Local save newer — uploaded to cloud")
+                    cloud_save_manager.enable_autosync_uploads()
+                    _log.info("[CloudSave] First launch — adopted cloud save")
                 else:
-                    _log.info("[CloudSave] Cloud and local in sync — no action")
+                    _log.info("[CloudSave] Local save present — no automatic cloud action")
             elif not success and result == "No cloud save found":
-                save_data = self.engine.save()
-                cloud_save_manager.upload_save(save_data)
-                _log.info("[CloudSave] No cloud save — uploaded local on startup")
+                # No cloud yet. Do NOT auto-create from the silent path —
+                # wait for an explicit sync so we never touch the cloud
+                # without the user having chosen to.
+                _log.info("[CloudSave] No cloud save; awaiting explicit sync")
         cloud_save_manager.download_save(on_done)
 
     def _idle_tick(self, dt):
@@ -327,7 +329,11 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         # Main-thread stall was the ~100-300ms CPU spike every 30s once the
         # battle_log grew past a few hundred KB.
         self.engine.save_async()
-        if cloud_save_manager.is_connected:
+        # Only stream to the cloud once the user has consciously synced this
+        # device. Being signed in is NOT consent: an unconditional upload
+        # here let a fresh/lesser local save overwrite a real cloud save
+        # every 30s and permanently destroy progress.
+        if cloud_save_manager.is_connected and cloud_save_manager.autosync_uploads:
             cloud_save_manager.upload_save(self.engine._build_save_data())
 
     def on_pause(self):

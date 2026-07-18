@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """MoreScreen _CloudMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -21,26 +21,57 @@ class _CloudMixin:
             self._show_signin_error(msg)
         cloud_save_manager.sign_in(on_success, on_failure)
 
+    @staticmethod
+    def _has_local_progress(engine) -> bool:
+        """True if the local save holds progress worth confirming before a
+        cloud load would replace it. A brand-new / untouched starting save
+        returns False (nothing to lose → adopt cloud silently)."""
+        if getattr(engine, "_is_first_launch", False):
+            return False
+        return bool(
+            getattr(engine, "total_wins", 0)
+            or getattr(engine, "total_gold_earned", 0)
+            or getattr(engine, "diamonds", 0)
+            or getattr(engine, "arena_tier", 1) > 1
+            or getattr(engine, "run_number", 1) > 1
+            or len(getattr(engine, "fighters", [])) > 1
+        )
+
+    def _adopt_cloud(self, engine, result):
+        """Replace local state with the downloaded cloud save and, from now
+        on, allow autosave to stream this device's progress back up."""
+        engine.load(data=result)
+        engine.save()
+        engine._ui_dirty = True
+        cloud_save_manager.enable_autosync_uploads()
+        self.refresh_more()
+        self.cloud_status = t("cloud_loaded")
+
     def _auto_sync_on_login(self):
         engine = App.get_running_app().engine
         self.cloud_status = t("sync") + "..."
         def on_done(success, result):
             if success and isinstance(result, dict):
-                from game.cloud_save import resolve_auto_sync
-                decision = resolve_auto_sync(engine, result)
-                if decision == "load":
-                    engine.load(data=result)
-                    engine.save()
-                    engine._ui_dirty = True
-                    self.refresh_more()
-                    self.cloud_status = t("cloud_loaded")
-                elif decision == "upload":
-                    save_data = engine._build_save_data()
-                    cloud_save_manager.upload_save(save_data, self._on_initial_upload)
+                # A cloud save exists. NEVER auto-overwrite it, and never
+                # silently discard local progress. If there is nothing to
+                # lose, adopt the cloud; otherwise ask before replacing
+                # local — and if the user declines, leave BOTH copies
+                # untouched (autosync stays off, so local won't stream up
+                # over the cloud either).
+                if not self._has_local_progress(engine):
+                    self._adopt_cloud(engine, result)
                 else:
-                    self.cloud_status = t("signed_in_as", email=cloud_save_manager.user_email)
+                    self._confirm_action(
+                        t("confirm_load_from_cloud"),
+                        lambda r=result: self._adopt_cloud(engine, r),
+                    )
+                    self.cloud_status = t("signed_in_as",
+                                          email=cloud_save_manager.user_email)
             elif not success and result == "No cloud save found":
-                save_data = engine.save()
+                # No cloud save yet — creating one from local is not an
+                # overwrite, so it's safe to seed it and start syncing up.
+                cloud_save_manager.enable_autosync_uploads()
+                save_data = engine._build_save_data()
                 cloud_save_manager.upload_save(save_data, self._on_initial_upload)
             else:
                 self.cloud_status = t("signed_in_as", email=cloud_save_manager.user_email)
@@ -83,6 +114,9 @@ class _CloudMixin:
         engine = App.get_running_app().engine
         save_data = engine.save()
         self.cloud_status = t("upload") + "..."
+        # Explicit user action → this device owns the cloud from now on,
+        # so let autosave keep it in sync.
+        cloud_save_manager.enable_autosync_uploads()
         def on_done(success, msg):
             self.cloud_status = t("cloud_uploaded") if success else t("cloud_failed", reason=msg)
         cloud_save_manager.upload_save(save_data, on_done)
@@ -100,6 +134,8 @@ class _CloudMixin:
             if success and isinstance(result, dict):
                 engine.load(data=result)
                 engine.save()
+                # Explicit download → adopt cloud and keep this device synced.
+                cloud_save_manager.enable_autosync_uploads()
                 self.cloud_status = t("cloud_loaded")
                 self._restart_app()
             else:
