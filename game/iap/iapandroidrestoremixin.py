@@ -1,7 +1,10 @@
-# Build: 2
+# Build: 3
 """IAPManager _IapAndroidRestoreMixin — query existing purchases."""
 from ._shared import *  # noqa: F401,F403
-from ._shared import _log
+# _PRODUCT_ID_TO_KEY is an underscore name, so `import *` skips it — the
+# restore callback below needs it explicitly or it NameErrors on every
+# queried purchase (restore-purchases silently broken).
+from ._shared import _log, _PRODUCT_ID_TO_KEY
 
 
 class _IapAndroidRestoreMixin:
