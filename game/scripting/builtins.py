@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Registries of read-only fields and side-effect actions exposed to scripts.
 
 All callables receive the live engine for side effects. They MUST be:
@@ -82,6 +82,21 @@ def _engine_field(engine, name: str):
     if name == "inv_armor":       return _count_inventory_slot(engine, "armor")
     if name == "inv_accessories": return _count_inventory_slot(engine, "accessory")
     if name == "inv_relics":      return _count_inventory_slot(engine, "relic")
+    # Aliases: the script language's names differ from the engine's real
+    # attribute names. Plain getattr used to raise AttributeError here,
+    # which the interpreter maps to 0 — so these whitelisted fields
+    # silently always read 0 in every script.
+    if name == "victories":
+        return getattr(engine, "total_wins", 0)
+    if name == "current_tier":
+        return getattr(engine, "arena_tier", 1)
+    if name == "expedition_active":
+        return any(getattr(f, "on_expedition", False)
+                   for f in getattr(engine, "fighters", []))
+    if name == "current_floor":
+        # No floor concept in this game; kept in the whitelist so old
+        # scripts referencing it don't error. Always 0.
+        return 0
     return getattr(engine, name)
 
 
@@ -294,33 +309,40 @@ def _start_expedition(engine, tier):
     send_fn  = getattr(engine, "send_on_expedition", None)
     if not (callable(get_list) and callable(send_fn)):
         return
-    # First available fighter (alive, not exhausted, not already away)
+    try:
+        exps = get_list() or []
+    except Exception:
+        return
+    # Find a matching expedition. Expedition dicts carry "shard_tier"
+    # (1..5), not "tier" — the old `ex.get("tier") == tier` check matched
+    # nothing, making this action a permanent no-op. Accept either key so
+    # a future schema with a real "tier" also works.
+    target = None
+    for ex in exps:
+        if isinstance(ex, dict) and "id" in ex \
+                and (ex.get("tier") == tier or ex.get("shard_tier") == tier):
+            target = ex
+            break
+    if target is None:
+        return
+    # First fighter that can actually go: alive, rested, at home, and
+    # meeting the expedition's min_level (send_on_expedition rejects
+    # under-leveled fighters, which used to no-op the whole action).
+    # NB: the real Fighter attribute is `on_expedition`, not `is_away`.
+    min_level = target.get("min_level", 1)
     fighters = getattr(engine, "fighters", []) or []
     fidx = -1
     for i, f in enumerate(fighters):
         if (getattr(f, "alive", True)
                 and not getattr(f, "is_exhausted", False)
-                and not getattr(f, "is_away", False)):
+                and not getattr(f, "on_expedition", False)
+                and getattr(f, "level", 1) >= min_level):
             fidx = i
             break
     if fidx < 0:
         return
     try:
-        exps = get_list() or []
-    except Exception:
-        return
-    # Find a matching expedition. get_expeditions() returns a list of dicts
-    # with at least an "id" and "tier" key in current builds. If the schema
-    # differs we silently skip rather than blow up scripts.
-    target = None
-    for ex in exps:
-        if isinstance(ex, dict) and ex.get("tier") == tier and "id" in ex:
-            target = ex["id"]
-            break
-    if target is None:
-        return
-    try:
-        send_fn(fidx, target)
+        send_fn(fidx, target["id"])
     except Exception:
         pass
 
