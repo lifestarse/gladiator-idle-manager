@@ -227,7 +227,10 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         from game.leaderboard import leaderboard_manager
         leaderboard_manager.submit_all(
             best_tier=max(self.best_record_tier, self.arena_tier),
-            total_kills=self.wins,
+            # Lifetime kills, not self.wins — wins is the per-run counter
+            # (reset on roguelike reset), which turned the TOTAL_KILLS
+            # board into "best single run".
+            total_kills=self.total_wins,
             strongest_gladiator_kills=self.best_record_kills,
         )
 
