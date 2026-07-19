@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _HealingMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -57,6 +57,8 @@ class _HealingMixin:
         """Heal one injury from fighter. Heals cheapest non-permanent by default."""
         if 0 <= fighter_idx < len(self.fighters):
             f = self.fighters[fighter_idx]
+            if not f.alive:
+                return Result(False, t("fighter_dead", name=f.name), "fighter_dead")
             if not f.injuries:
                 return Result(False, t("no_injuries"), "no_injuries")
             if injury_idx is None:
@@ -82,7 +84,7 @@ class _HealingMixin:
 
     def heal_fighter_all_injuries_cost(self, fighter_idx):
         """Total gold cost to heal all non-permanent injuries of one fighter."""
-        if fighter_idx >= len(self.fighters):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return 0
         f = self.fighters[fighter_idx]
         total = 0
@@ -94,12 +96,16 @@ class _HealingMixin:
 
     def heal_fighter_all_injuries(self, fighter_idx):
         """Heal all non-permanent injuries of one fighter. Returns Result."""
+        if not (0 <= fighter_idx < len(self.fighters)):
+            return Result(False, t("invalid_fighter_err"), "invalid_fighter")
+        f = self.fighters[fighter_idx]
+        if not f.alive:
+            return Result(False, t("fighter_dead", name=f.name), "fighter_dead")
         cost = self.heal_fighter_all_injuries_cost(fighter_idx)
         if cost <= 0:
             return Result(False, t("no_injuries"), "no_injuries")
         if self.gold < cost:
             return Result(False, t("not_enough_gold", need=fmt_num(cost - self.gold)), "not_enough_gold")
-        f = self.fighters[fighter_idx]
         self.gold -= cost
         keep = []
         healed = 0

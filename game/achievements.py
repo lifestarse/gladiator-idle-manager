@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 """
 Achievement system — earn diamonds for milestones.
 Diamonds are premium currency for special features.
@@ -133,11 +133,10 @@ ACHIEVEMENTS = [
     # Expeditions
     {"id": "explorer", "name": "Explorer",
      "desc": "Complete 10 expeditions", "diamonds": 75,
-     "check": lambda e: len(e.expedition_log) >= 10},
+     "check": lambda e: getattr(e, "total_expeditions_completed", 0) >= 10},
     {"id": "void_walker", "name": "Void Walker",
      "desc": "Return alive from the Void Rift", "diamonds": 150,
-     "check": lambda e: any("Void Rift" in log and "returned" in log
-                            for log in e.expedition_log)},
+     "check": lambda e: "void_rift" in getattr(e, "completed_expedition_ids", [])},
 
     # Story
     {"id": "ch1_complete", "name": "Chapter I",

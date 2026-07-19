@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """BattleManager _PlayerAttackPhaseMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -64,11 +64,39 @@ class _PlayerAttackPhaseMixin:
                         tracker.status_buildup[ench_id] = tracker.status_buildup.get(ench_id, 0) + ench["buildup_per_hit"]
                         if tracker.status_buildup[ench_id] >= ench["threshold"]:
                             tracker.status_buildup[ench_id] = 0
-                            events.extend(_trigger_enchantment(s, target, ench_id, ench))
+                            events.extend(_trigger_enchantment(s, target, ench_id, ench,
+                                                               attacker=fighter))
                             self.engine.total_enchantment_procs += 1
 
-            # Boss modifiers: on hit
-            if self._mod_handler and actual > 0 and getattr(target, 'modifiers', None):
+            if target.hp <= 0:
+                # Death first: a corpse doesn't retaliate (no on_boss_hit),
+                # and the kill must be paid before any early exit below.
+                events.append(BattleEvent(
+                    "death", defender=target.name, is_kill=True,
+                    message=t("battle_destroyed", target=target.name),
+                    is_boss=s.is_boss_fight,
+                ))
+                reward = target.gold_reward
+                gold_bonus = atk_cache['bonus_gold_pct']
+                if gold_bonus > 0:
+                    reward = int(reward * (1 + gold_bonus))
+                s.gold_earned += reward
+                self.engine.award_gold(reward)
+                target._kill_awarded = True
+                fighter.kills += 1
+
+                # Perk: on_kill_heal (cached)
+                okh_pct = atk_cache['on_kill_heal_pct']
+                if okh_pct > 0:
+                    mh = atk_cache['max_hp']
+                    heal = max(1, int(mh * okh_pct))
+                    fighter.hp = min(mh, fighter.hp + heal)
+
+                if not s.any_enemies_alive():
+                    break
+                s.next_alive_enemy()
+            elif self._mod_handler and actual > 0 and getattr(target, 'modifiers', None):
+                # Boss modifiers: on hit (target survived the blow)
                 tracker = s.enemy_status.get(id(target))
                 if tracker:
                     events.extend(self._mod_handler.on_boss_hit(
@@ -90,32 +118,9 @@ class _PlayerAttackPhaseMixin:
                                 "death", defender=fighter.name,
                                 message=t("knocked_out_injury", name=fighter.name, injury=inj_name),
                             ))
-                        break
-
-            if target.hp <= 0:
-                events.append(BattleEvent(
-                    "death", defender=target.name, is_kill=True,
-                    message=t("battle_destroyed", target=target.name),
-                    is_boss=s.is_boss_fight,
-                ))
-                reward = target.gold_reward
-                gold_bonus = atk_cache['bonus_gold_pct']
-                if gold_bonus > 0:
-                    reward = int(reward * (1 + gold_bonus))
-                s.gold_earned += reward
-                self.engine.award_gold(reward)
-                fighter.kills += 1
-
-                # Perk: on_kill_heal (cached)
-                okh_pct = atk_cache['on_kill_heal_pct']
-                if okh_pct > 0:
-                    mh = atk_cache['max_hp']
-                    heal = max(1, int(mh * okh_pct))
-                    fighter.hp = min(mh, fighter.hp + heal)
-
-                if not s.any_enemies_alive():
-                    break
-                s.next_alive_enemy()
+                        # Only this fighter falls — the rest of the squad
+                        # still takes their swings this turn.
+                        continue
 
             # Frenzy: extra attacks on same or next target
             if ss and ss.extra_attacks > 0:
@@ -148,6 +153,7 @@ class _PlayerAttackPhaseMixin:
                             reward = int(reward * (1 + gold_bonus))
                         s.gold_earned += reward
                         self.engine.award_gold(reward)
+                        target._kill_awarded = True
                         fighter.kills += 1
                         if not s.any_enemies_alive():
                             break

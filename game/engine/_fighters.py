@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _FightersMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -39,7 +39,7 @@ class _FightersMixin:
         return Result(False, t("need_gold", cost=fmt_num(cost)), "not_enough_gold")
 
     def upgrade_gladiator(self, index):
-        if index >= len(self.fighters):
+        if not (0 <= index < len(self.fighters)):
             return Result(False, "", "invalid")
         f = self.fighters[index]
         if not f.alive:
@@ -57,7 +57,7 @@ class _FightersMixin:
 
     def distribute_stat(self, fighter_idx, stat_name):
         """Distribute 1 unused point to a stat."""
-        if fighter_idx >= len(self.fighters):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         f = self.fighters[fighter_idx]
         if not f.alive:
@@ -70,7 +70,7 @@ class _FightersMixin:
 
     def unlock_perk(self, fighter_idx, perk_id):
         """Unlock a perk for a fighter. Returns Result."""
-        if fighter_idx >= len(self.fighters):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         f = self.fighters[fighter_idx]
         if not f.alive:
@@ -107,7 +107,7 @@ class _FightersMixin:
         return Result(True, t("perk_unlocked_msg", name=f.name, perk=perk["name"]))
 
     def dismiss_dead(self, index):
-        if index < len(self.fighters) and not self.fighters[index].alive:
+        if 0 <= index < len(self.fighters) and not self.fighters[index].alive:
             f = self.fighters[index]
             for slot in EQUIPMENT_SLOTS:
                 item = f.equipment.get(slot)
@@ -116,12 +116,20 @@ class _FightersMixin:
             self.fighters.pop(index)
             if self.active_fighter_idx >= len(self.fighters):
                 self.active_fighter_idx = max(0, len(self.fighters) - 1)
+            self.save()
+            self._mark_dirty()
 
     def dismiss_fighter(self, index):
         """Dismiss a living fighter. Equipment returned to inventory."""
         if index < 0 or index >= len(self.fighters):
             return Result(False, "", "invalid")
         f = self.fighters[index]
+        if not f.alive:
+            # Dead fighters already got their graveyard entry at death —
+            # route through dismiss_dead to avoid a duplicate record.
+            name = f.name
+            self.dismiss_dead(index)
+            return Result(True, t("fighter_dismissed", name=name), "dismissed")
         name = f.name
         for slot in EQUIPMENT_SLOTS:
             item = f.equipment.get(slot)
@@ -141,7 +149,7 @@ class _FightersMixin:
     def rename_fighter(self, fighter_idx, new_name):
         """Rename a fighter. Costs 25 diamonds (Identity Scroll)."""
         new_name = new_name.strip()
-        if not new_name or fighter_idx >= len(self.fighters):
+        if not new_name or not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         if self.diamonds < RENAME_COST_DIAMONDS:
             return Result(False, t("not_enough_diamonds"), "not_enough_diamonds")
@@ -198,7 +206,7 @@ class _FightersMixin:
         according to the class profile (so the player sees instant effect),
         then persists the flag.
         """
-        if fighter_idx >= len(self.fighters):
+        if not (0 <= fighter_idx < len(self.fighters)):
             return Result(False, "", "invalid")
         f = self.fighters[fighter_idx]
         f.auto_distribute_enabled = bool(enabled)

@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """ScriptManager — owns the program list, persistent globals, trigger dispatch.
 
 Responsibilities:
@@ -268,6 +268,18 @@ class ScriptManager:
                 return self._run_program(engine, p, force=True)
         return f"program {name!r} not found"
 
+    def run_program_now(self, engine, p: Program) -> str | None:
+        """Force-run a specific Program instance.
+
+        Name-based lookup (run_on_demand) picks the FIRST program with a
+        matching name — under duplicate names (rename doesn't dedupe) the
+        wrong program runs. UI callsites that already hold the Program
+        object should use this instead.
+        """
+        if p not in self.programs:
+            return f"program {p.name!r} not found"
+        return self._run_program(engine, p, force=True)
+
     # ---------- internal ----------
 
     def _fire_trigger(self, engine, trigger: str) -> None:
@@ -346,6 +358,7 @@ class ScriptManager:
     def run_on_demand_async(
         self, engine, name: str,
         on_done: Callable[[str | None, RunStats | None], None] | None = None,
+        program: Program | None = None,
     ) -> str | None:
         """Force-run a program in a worker thread with optional ops/sec throttle.
 
@@ -386,7 +399,12 @@ class ScriptManager:
             _log.info("[ScriptManager] async kickoff refused: already running %r",
                       self._async_running_name)
             return "another script is already running"
-        target = next((p for p in self.programs if p.name == name), None)
+        # Prefer the explicit Program instance (index-safe under duplicate
+        # names); fall back to first-match-by-name for older callers.
+        if program is not None and program in self.programs:
+            target = program
+        else:
+            target = next((p for p in self.programs if p.name == name), None)
         if target is None:
             _log.info("[ScriptManager] async kickoff refused: program %r not found", name)
             return f"program {name!r} not found"

@@ -31,7 +31,8 @@ class GladiatorAvatar(Widget):
         self._update_sprite()
 
     def _sprite_path(self):
-        return f"sprites/fighters/{self.fighter_class}_{self.frame}.png"
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        return os.path.join(project_root, "sprites", "fighters", f"{self.fighter_class}_{self.frame}.png")
 
     def _update_sprite(self, *args):
         path = self._sprite_path()

@@ -65,3 +65,58 @@ class _AppLocaleMixin:
         self.lbl_common = t("btn_common")
         self.lbl_help = t("help_title")
         self.lbl_buy_diamonds = t("buy_diamonds_label")
+
+    def _maybe_show_language_picker(self, dt=None):
+        """On a brand-new install (no save file found by engine.load()),
+        block with a mandatory language choice before anything else is
+        shown. Later switches happen via the More tab's language picker
+        (see game.screens.more.helpmixin._HelpMixin.show_language_picker)."""
+        if not getattr(self.engine, "_is_first_launch", False):
+            return
+        from kivy.uix.scrollview import ScrollView
+        languages = [
+            ("English", "en"),
+            ("Русский", "ru"),
+            ("Українська", "uk"),
+            ("Deutsch", "de"),
+            ("Español", "es"),
+            ("Français", "fr"),
+            ("Italiano", "it"),
+            ("Português", "pt"),
+            ("Polski", "pl"),
+        ]
+        scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+        content = BoxLayout(orientation="vertical", spacing=dp(6), padding=dp(8), size_hint_y=None)
+        content.bind(minimum_height=content.setter("height"))
+        scroll.add_widget(content)
+        popup = Popup(
+            title="Language / Мова / Язык",
+            content=scroll,
+            size_hint=(0.85, 0.85),
+            background_color=popup_color(BG_CARD),
+            title_color=popup_color(ACCENT_GOLD),
+            separator_color=popup_color(ACCENT_GOLD),
+            auto_dismiss=False,
+        )
+        for name, code in languages:
+            btn = MinimalButton(
+                text=name, size_hint_y=None, height=dp(44),
+                btn_color=ACCENT_BLUE, font_size=9,
+            )
+            btn.bind(on_press=lambda inst, c=code, p=popup: self._finish_first_launch(c, p))
+            content.add_widget(btn)
+        popup.open()
+
+    def _finish_first_launch(self, lang_code, popup):
+        popup.dismiss()
+        set_language(lang_code)
+        from game.data_loader import data_loader
+        from game.engine import GameEngine
+        data_loader._loaded = False
+        data_loader.load_all()
+        data_loader.apply_translations(lang_code)
+        GameEngine._wire_data()
+        self.engine._migrate_all_items()
+        self.engine._is_first_launch = False
+        self.engine.save()
+        self._init_locale_strings()

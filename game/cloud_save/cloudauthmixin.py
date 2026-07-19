@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """CloudSaveManager _CloudAuthMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log, _mask_email, classify_signin_error
@@ -53,8 +53,11 @@ class _CloudAuthMixin:
             self._initialized = True
             email = account.getEmail() or ""
             _log.info("[CloudSave] Got auth token for %s", _mask_email(email))
+            # NB: no local `from kivy.clock import Clock` here — a conditional
+            # local import shadows the module-level Clock for the WHOLE
+            # function, so the silent sign-in path (on_success=None) crashed
+            # with UnboundLocalError below and on_auto_connected never fired.
             if on_success:
-                from kivy.clock import Clock
                 Clock.schedule_once(lambda dt: on_success(), 0)
             Clock.schedule_once(lambda dt: self._set_status("Connected"), 0)
             if self.on_auto_connected:

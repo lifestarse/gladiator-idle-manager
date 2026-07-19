@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """BattleManager _SupportPhasesMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -10,9 +10,31 @@ from ._resolve import _resolve_attack
 
 
 class _SupportPhasesMixin:
+    def _award_unpaid_kills(self, events):
+        """Pay out enemies that died without going through a direct-kill
+        award site (chain lightning splash, DOT ticks). Every direct-kill
+        path stamps `_kill_awarded` on the corpse; whatever is dead and
+        unstamped here died to a status effect."""
+        s = self.state
+        for enemy in s.enemies:
+            if enemy.hp <= 0 and not getattr(enemy, '_kill_awarded', False) \
+                    and id(enemy) in s.enemy_status:
+                enemy._kill_awarded = True
+                events.append(BattleEvent(
+                    "death", defender=enemy.name, is_kill=True,
+                    message=t("battle_killed_by_status", target=enemy.name),
+                    is_boss=s.is_boss_fight,
+                ))
+                reward = enemy.gold_reward
+                s.gold_earned += reward
+                self.engine.award_gold(reward)
+
     def _declare_victory(self, events):
         """Mark battle as won, heal fighters, emit victory event."""
         s = self.state
+        # Chain-burst / DOT kills on the battle-ending blow bypass the
+        # attack-phase award blocks — settle them before announcing gold.
+        self._award_unpaid_kills(events)
         s.phase = BattlePhase.VICTORY
         self.engine.wins += len(s.enemies)
         self.engine.total_wins += len(s.enemies)
@@ -59,20 +81,11 @@ class _SupportPhasesMixin:
                     events.extend(self._mod_handler.on_turn_start(
                         enemy, tracker, s.turn_number))
 
-        # Check if any enemy died from status effects
-        for enemy in s.enemies:
-            if enemy.hp <= 0 and hasattr(enemy, '_status_killed'):
-                continue
-            if enemy.hp <= 0 and id(enemy) in s.enemy_status:
-                enemy._status_killed = True
-                events.append(BattleEvent(
-                    "death", defender=enemy.name, is_kill=True,
-                    message=t("battle_killed_by_status", target=enemy.name),
-                    is_boss=s.is_boss_fight,
-                ))
-                reward = enemy.gold_reward
-                s.gold_earned += reward
-                self.engine.award_gold(reward)
+        # Pay out enemies that died to status effects this tick. Direct
+        # kills are stamped `_kill_awarded` at their award site — without
+        # that stamp this sweep used to pay every attack-killed enemy a
+        # second time (with a bogus "killed by status" line).
+        self._award_unpaid_kills(events)
         if not s.any_enemies_alive():
             self._declare_victory(events)
             return True

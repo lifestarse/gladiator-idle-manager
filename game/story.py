@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """
 Story campaign — narrative chapters with tutorial integrated.
 
@@ -161,7 +161,9 @@ STORY_CHAPTERS = [
         "quests": [
             {"id": "ch3_q1", "name": "Scout",
              "desc": "Complete 3 expeditions",
-             "check": lambda e: len(e.expedition_log) >= 3,
+             # Counter, not len(expedition_log): the log also records
+             # deaths and is cleared on run reset / trimmed on save.
+             "check": lambda e: e.total_expeditions_completed >= 3,
              "reward": {"diamonds": 75}},
             {"id": "ch3_q2", "name": "Rising Power",
              "desc": "Reach arena tier 12",

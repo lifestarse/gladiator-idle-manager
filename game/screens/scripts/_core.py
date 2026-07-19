@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 """ScriptsScreen + ScriptEditorScreen.
 
 Layout shell (background, TopBar, top toolbar buttons, separator,
@@ -359,7 +359,9 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
         mgr = engine.scripts
 
         def _run():
-            err = mgr.run_on_demand(engine, p.name)
+            # Index-safe: run THIS program object, not first-match-by-name
+            # (duplicate names are possible after a rename).
+            err = mgr.run_program_now(engine, p)
             self._schedule_save()
             if err:
                 _info(t("scr_error_title"), err)
@@ -976,7 +978,7 @@ class ScriptEditorScreen(BaseScreen, _SaveDebounceMixin):
             p.name, p.trigger, p.ops_per_sec,
         )
         kickoff_err = engine.scripts.run_on_demand_async(
-            engine, p.name, on_done=_on_done)
+            engine, p.name, on_done=_on_done, program=p)
         if kickoff_err:
             # Can't start (another script running, or bad name).
             _log.warning("[ScriptEditor] kickoff refused: %s", kickoff_err)

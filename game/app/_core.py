@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 10
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -175,6 +175,16 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         # Re-apply locale strings after load restores saved language
         self._init_locale_strings()
 
+        # Wire In-App Review prompt to fire on the player's first
+        # successful forge purchase. Lazy import keeps pyjnius out of
+        # desktop test paths (the play package gracefully no-ops if
+        # jnius is unavailable, but the import alone is wasted there).
+        try:
+            from game.play import maybe_show_review as _maybe_review
+            self.engine.subscribe_first_purchase(_maybe_review)
+        except Exception as _e:
+            _log.warning("[app] couldn't wire In-App Review hook: %s", _e)
+
         ad_manager.init()
         iap_manager.init()
         cloud_save_manager.on_auto_connected = self._on_cloud_auto_connected
@@ -253,6 +263,11 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         Clock.schedule_interval(self._idle_tick, 1.0)
         Clock.schedule_interval(self._auto_save, 30.0)
 
+        # First-run only: block with a mandatory language picker before the
+        # player sees the game. Scheduled for next frame so the popup opens
+        # against a fully-attached window.
+        Clock.schedule_once(self._maybe_show_language_picker, 0)
+
         return root
 
     def _on_cloud_auto_connected(self):
@@ -264,16 +279,49 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         if scr is not None and hasattr(scr, "refresh_more"):
             scr.refresh_more()
 
+        engine = self.engine
+        synced = getattr(engine, "cloud_sync_enabled", False)
+
         def on_done(success, result):
             if success and isinstance(result, dict):
-                self.engine.load(data=result)
-                self.engine.save()
-                self.engine._ui_dirty = True
-                _log.info("[CloudSave] Auto-loaded cloud save on startup")
+                from game.cloud_save import resolve_auto_sync
+                # Fresh install with nothing to lose → adopt the cloud and
+                # persist that this device is now synced.
+                if resolve_auto_sync(engine, result) == "load":
+                    engine.load(data=result)
+                    engine.cloud_sync_enabled = True
+                    engine.save()
+                    engine._ui_dirty = True
+                    cloud_save_manager.enable_autosync_uploads()
+                    _log.info("[CloudSave] First launch — adopted cloud save")
+                elif synced:
+                    # Returning device that already owns the cloud. Never
+                    # auto-load (that was the rollback bug) and never blindly
+                    # upload. Cross-device guard: if the cloud was advanced
+                    # on ANOTHER device (cloud saved_at newer than ours),
+                    # hold auto-upload so we don't clobber that newer save,
+                    # and tell the user they can pull it. Otherwise this
+                    # device holds the latest → resume auto-backup.
+                    cloud_ts = result.get("saved_at", 0) or 0
+                    local_ts = getattr(engine, "last_saved_at", 0) or 0
+                    if cloud_ts > local_ts:
+                        engine.pending_notifications.append(t("cloud_newer_available"))
+                        _log.info("[CloudSave] Cloud newer (other device) — auto-upload held")
+                    else:
+                        cloud_save_manager.enable_autosync_uploads()
+                        _log.info("[CloudSave] Resumed cloud auto-backup for this device")
+                else:
+                    _log.info("[CloudSave] Local save present, device not synced — no action")
             elif not success and result == "No cloud save found":
-                save_data = self.engine.save()
-                cloud_save_manager.upload_save(save_data)
-                _log.info("[CloudSave] No cloud save — uploaded local on startup")
+                if synced:
+                    # This device was synced but the cloud file is gone —
+                    # re-seed it from local (creation, not overwrite).
+                    cloud_save_manager.enable_autosync_uploads()
+                    _log.info("[CloudSave] Cloud missing — will re-create from local")
+                else:
+                    # Never auto-create from the silent path for an unsynced
+                    # device; wait for an explicit sync.
+                    _log.info("[CloudSave] No cloud save; awaiting explicit sync")
         cloud_save_manager.download_save(on_done)
 
     def _idle_tick(self, dt):
@@ -304,7 +352,11 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         # Main-thread stall was the ~100-300ms CPU spike every 30s once the
         # battle_log grew past a few hundred KB.
         self.engine.save_async()
-        if cloud_save_manager.is_connected:
+        # Only stream to the cloud once the user has consciously synced this
+        # device. Being signed in is NOT consent: an unconditional upload
+        # here let a fresh/lesser local save overwrite a real cloud save
+        # every 30s and permanently destroy progress.
+        if cloud_save_manager.is_connected and cloud_save_manager.autosync_uploads:
             cloud_save_manager.upload_save(self.engine._build_save_data())
 
     def on_pause(self):

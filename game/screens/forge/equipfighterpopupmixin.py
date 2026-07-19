@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """_EquipFighterPopupMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -31,6 +31,13 @@ class _EquipFighterPopupMixin:
 
         app = App.get_running_app()
         engine = app.engine
+        # The caller captured inv_idx when its view was built — re-resolve
+        # by item identity in case the inventory shifted since then.
+        inv_idx = self._resolve_inv_idx(engine, item)
+        if inv_idx < 0:
+            app.show_toast(t("item_not_found"))
+            self.refresh_forge()
+            return
         alive = [(i, f) for i, f in enumerate(engine.fighters) if f.available]
         if not alive:
             app.show_toast(t("no_fighters"))
@@ -100,7 +107,13 @@ class _EquipFighterPopupMixin:
                 app.show_toast(t("not_in_battle"))
                 return
             popup.dismiss()
-            self._equip_and_refresh(fidx, inv_idx)
+            # Popup may have sat open while a script moved the inventory.
+            idx = self._resolve_inv_idx(engine, item)
+            if idx < 0:
+                app.show_toast(t("item_not_found"))
+                self.refresh_forge()
+                return
+            self._equip_and_refresh(fidx, idx)
         _equip_choice_callbacks['pick'] = _pick
         popup.open()
 

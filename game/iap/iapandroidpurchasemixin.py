@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """IAPManager _IapAndroidPurchaseMixin — purchase flow."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log, _PRODUCT_ID_TO_KEY
@@ -172,7 +172,33 @@ class _IapAndroidPurchaseMixin:
                 on_success()
             _log.info("[IAP] Delivered: %s", key)
         else:
-            _log.error("[IAP] Delivered (no callback): %s", product_id)
+            # No session callback: the purchase completed outside the UI
+            # flow (app crashed/restarted between charge and consume, and
+            # Play re-delivered it via onPurchasesUpdated at connection).
+            # A consumable has already been consumed at this point — if we
+            # only log, the player paid and got nothing. Grant directly.
+            self._deliver_without_callback(key, product_id)
+
+    def _deliver_without_callback(self, key, product_id):
+        """Grant a purchase straight on the engine when no UI callback exists."""
+        try:
+            from kivy.app import App
+            app = App.get_running_app()
+            engine = getattr(app, "engine", None)
+            if engine is None or not key:
+                _log.error("[IAP] Delivered (no callback, no engine): %s", product_id)
+                return
+            if key == "remove_ads":
+                engine.purchase_remove_ads()
+            else:
+                result = engine.purchase_diamonds(key)
+                if not result.ok:
+                    _log.error("[IAP] Fallback delivery: unknown bundle %s", key)
+                    return
+            engine.save_async()
+            _log.info("[IAP] Delivered without session callback: %s", key)
+        except Exception as e:
+            _log.error("[IAP] Fallback delivery failed for %s: %s", product_id, e)
 
     def _fire_failure(self, reason):
         """Call failure callback for the most recent purchase attempt."""

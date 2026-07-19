@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-05-21",
+  "updated": "2026-05-21T17:12:05Z",
   "source": "https://github.com/lifestarse/gladiator-idle-manager",
   "scripts": [
     {
@@ -389,38 +389,50 @@
         ]
       }
     },
- {
-  "kind": "gladiator_script_v1",
-  "program": {
-    "name": "auto-farm to 500k",
-    "trigger": "on_demand",
-    "enabled": true,
-    "tick_interval": 1,
-    "ops_per_sec": 0,
-    "g_var_init": {},
-    "body": [
-      {
-        "_kind": "While",
-        "cond": {
-          "_kind": "BinOp",
-          "op": "<",
-          "lhs": {
-            "_kind": "EngineField",
-            "field_name": "gold"
-          },
-          "rhs": {
-            "_kind": "Const",
-            "value": 1000000
-          }
-        },
+    {
+      "id": "t9",
+      "title": "Force farm to 1M gold (on demand)",
+      "description": "Synchronous while-loop: keeps starting arena battles until gold >= 1,000,000. UI freezes for the duration because ops_per_sec=0. Tap Run, wait, get a million.",
+      "author": "lifestarse",
+      "tags": [
+        "farm",
+        "on_demand",
+        "while",
+        "ui-freeze"
+      ],
+      "stars": 0,
+      "program": {
+        "name": "auto-farm to 500k",
+        "trigger": "on_demand",
+        "enabled": true,
+        "tick_interval": 1,
+        "ops_per_sec": 0,
+        "g_var_init": {},
         "body": [
           {
-            "_kind": "Action",
-            "name": "start_arena_battle",
-            "args": []
+            "_kind": "While",
+            "cond": {
+              "_kind": "BinOp",
+              "op": "<",
+              "lhs": {
+                "_kind": "EngineField",
+                "field_name": "gold"
+              },
+              "rhs": {
+                "_kind": "Const",
+                "value": 1000000
+              }
+            },
+            "body": [
+              {
+                "_kind": "Action",
+                "name": "start_arena_battle",
+                "args": []
+              }
+            ]
           }
         ]
       }
-    ]
-  }
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Inline-editable cells for the Scratch-style script editor.
 
 The whole point of this module is to KILL the popup chain. Before, editing a
@@ -293,15 +293,18 @@ class ExpressionCell(BoxLayout):
         # or the operand (UnaryOp). One handle per compound, not the two-
         # button cluster that confused users in the previous build.
         # PNG icon (PixelFont can't render the × glyph).
-        keep = (self._expr.lhs if isinstance(self._expr, BinOp)
-                else self._expr.operand)
         unwrap = MinimalButton(
             text="", icon_source="icons/ic_close.png",
             size_hint_y=None, height=dp(28),
             size_hint_x=None, width=dp(28),
             btn_color=ACCENT_RED, text_color=TEXT_PRIMARY,
         )
-        unwrap.bind(on_release=lambda *_: self._commit(keep))
+        # Resolve the kept operand at TAP time, not render time: operand
+        # sub-cells replace self._expr without re-rendering this row, so a
+        # snapshot taken here would silently revert the user's last edit.
+        unwrap.bind(on_release=lambda *_: self._commit(
+            self._expr.lhs if isinstance(self._expr, BinOp)
+            else self._expr.operand))
         row.add_widget(unwrap)
         self.add_widget(row)
 
@@ -641,7 +644,13 @@ class ExpressionCell(BoxLayout):
                      size_hint_y=None, height=dp(36))
         def _save(*_):
             name = loc_to_int.get(sp.text, cur_name)
-            args = list(cur_args) if cur_args else [Const(0)]
+            # Current args, not the ones captured at category-open:
+            # _update_call_arg replaces self._expr, and a later function
+            # rename must not roll those arg edits back.
+            if isinstance(self._expr, Call) and self._expr.args:
+                args = list(self._expr.args)
+            else:
+                args = list(cur_args) if cur_args else [Const(0)]
             self._expr = Call(name, args)
             self._on_change(self._expr)
         sp.bind(text=_save)
@@ -1034,4 +1043,7 @@ class BlockCard(BoxLayout):
         n.name = new_name
         n.args = default_action_args(new_name)
         self._on_change(n)
+        # Rebuild the card: the name pill and per-arg editors still show
+        # the previous action otherwise (same pattern as _set_assign_kind).
+        self._build()
         self._build()

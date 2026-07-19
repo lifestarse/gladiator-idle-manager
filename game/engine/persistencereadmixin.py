@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 9
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -9,6 +9,7 @@ class _PersistenceReadMixin:
         if data is None:
             save_path = self.SAVE_PATH
             if not os.path.exists(save_path):
+                self._is_first_launch = True
                 self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
                 self._spawn_enemy()
                 return
@@ -80,6 +81,7 @@ class _PersistenceReadMixin:
             data = migrate(data)
             version += 1
 
+        self.last_saved_at = data.get("saved_at", 0.0)
         self.gold = data.get("gold", 100)
         self.active_fighter_idx = data.get("active_fighter_idx", 0)
         self.arena_tier = data.get("arena_tier", 1)
@@ -112,6 +114,11 @@ class _PersistenceReadMixin:
         self.fastest_t15_time = data.get("fastest_t15_time", 0)
         self.run_start_time = data.get("run_start_time", 0.0)
         self.ads_removed = data.get("ads_removed", False)
+        # Old saves default to False; on next purchase they'll fire the
+        # In-App Review prompt (one-time). If the player already bought
+        # things before this code shipped, they get one extra prompt.
+        self._review_shown_after_first_purchase = data.get(
+            "review_shown_after_first_purchase", False)
         self.active_mutators = data.get("active_mutators", [])
         # Clamp to [0,1] — guard against tampered/corrupt saves writing
         # arbitrary floats that would saturate audio backends.
@@ -127,6 +134,8 @@ class _PersistenceReadMixin:
         self.total_gold_spent_equipment = data.get("total_gold_spent_equipment", 0)
         self.total_injuries_healed = data.get("total_injuries_healed", 0)
         self.total_expeditions_completed = data.get("total_expeditions_completed", 0)
+        self.completed_expedition_ids = data.get("completed_expedition_ids", [])
+        self.cloud_sync_enabled = data.get("cloud_sync_enabled", False)
         self.lore_unlocked = data.get("lore_unlocked", [])
 
         saved_lang = data.get("language")

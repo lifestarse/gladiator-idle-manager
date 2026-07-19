@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 12
 """GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -76,6 +76,9 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         self.total_gold_spent_equipment = 0
         self.total_injuries_healed = 0
         self.total_expeditions_completed = 0
+        # Distinct expedition ids ever completed alive (for
+        # expedition_completed_specific achievements; locale-independent).
+        self.completed_expedition_ids: list[str] = []
         self.lore_unlocked: list[str] = []
         self.run_start_time = 0.0  # timestamp when current run started
 
@@ -87,6 +90,20 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
 
         # Notification queue — drained by UI layer each tick
         self.pending_notifications: list[str] = []
+
+        # True only when load() finds no save file at all (brand-new
+        # install). The App layer uses this to show a mandatory language
+        # picker before the player sees anything else.
+        self._is_first_launch = False
+        # Wall-clock time of the newest save this engine state descends
+        # from (stamped on save, restored on load). 0.0 = never saved.
+        self.last_saved_at = 0.0
+        # Persisted: this device/save has been consciously synced to the
+        # cloud at least once (adopted the cloud save, or manual up/down).
+        # When True, autosave resumes streaming to the cloud on every
+        # launch. A fresh install starts False, so it can never clobber a
+        # real cloud save with an empty one. See [[gladiator-cloud-sync-incident]].
+        self.cloud_sync_enabled = False
 
         # Dirty flags — batch achievement checks and UI refreshes.
         # Set by _mark_dirty() from state-changing methods; consumed by idle_tick.
@@ -111,6 +128,15 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Monetization
         self.ads_removed = False
 
+        # In-app review trigger — fires once, after the user's first
+        # successful forge purchase. Tracked here so a re-install with
+        # a restored save doesn't re-prompt (Play Core also rate-limits
+        # internally, but we want to be polite at our layer too).
+        self._review_shown_after_first_purchase = False
+        # App-level subscribers (set in game/app on startup): callables()
+        # invoked once when the flag flips False -> True.
+        self._on_first_purchase_subscribers: list = []
+
         # Audio settings — global sound volume (0.0..1.0). Read by
         # game/screens/shared.py::_play_hit_sound, set from the More tab slider.
         self.sound_volume = 1.0
@@ -126,6 +152,26 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # players who delete/edit it never see it re-appear.
         self.scripts.seed_examples_if_needed()
         self.subscribe_battle_end(self._on_battle_end_scripts)
+
+    def subscribe_first_purchase(self, cb) -> None:
+        """Register a no-arg callable to fire once on the player's first
+        successful forge purchase. Used by the App layer to trigger the
+        Play In-App Review prompt without dragging pyjnius into engine."""
+        if cb not in self._on_first_purchase_subscribers:
+            self._on_first_purchase_subscribers.append(cb)
+
+    def _maybe_emit_first_purchase(self) -> None:
+        """Forge methods call this after a successful purchase. Idempotent:
+        only the first call (when the flag is still False) fires
+        subscribers and flips the flag. Subsequent purchases are no-ops."""
+        if self._review_shown_after_first_purchase:
+            return
+        self._review_shown_after_first_purchase = True
+        for cb in list(self._on_first_purchase_subscribers):
+            try:
+                cb()
+            except Exception as exc:
+                _log.warning("[engine] first-purchase subscriber failed: %s", exc)
 
     def _on_battle_end_scripts(self, result, participants, skipped):
         # Re-entrancy guard: a script reacting to on_battle_end can call
@@ -187,7 +233,10 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         from game.leaderboard import leaderboard_manager
         leaderboard_manager.submit_all(
             best_tier=max(self.best_record_tier, self.arena_tier),
-            total_kills=self.wins,
+            # Lifetime kills, not self.wins — wins is the per-run counter
+            # (reset on roguelike reset), which turned the TOTAL_KILLS
+            # board into "best single run".
+            total_kills=self.total_wins,
             strongest_gladiator_kills=self.best_record_kills,
         )
 
