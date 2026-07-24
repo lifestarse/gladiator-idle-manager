@@ -1,5 +1,7 @@
-# Build: 12
+# Build: 13
 """GameEngine core — lifecycle, tick, data wiring. Inherits mixins."""
+import threading
+
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
 from game.scripting import ScriptManager
@@ -31,6 +33,20 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # Allow callers (tests, headless sims) to override. Default is computed
         # lazily so importing this module doesn't require Kivy.
         self.SAVE_PATH = save_path if save_path is not None else _default_save_path()
+
+        # Cross-thread state guard. ScriptManager.run_on_demand_async runs
+        # the interpreter on a daemon thread that mutates engine state; the
+        # Kivy main thread mutates it from idle_tick / battle turns / save
+        # snapshots. Both sides take this RLock around each state-touching
+        # operation (interpreter ops on the worker side; idle_tick,
+        # battle_* entry points and _build_save_data on the main side).
+        # RLock because the synchronous trigger path (idle_tick → on_tick →
+        # interpreter) re-enters on the same thread. UI button handlers
+        # stay lock-free by design: they are single short engine calls, and
+        # the automated high-frequency mutators are the race surface that
+        # matters.
+        self.state_lock = threading.RLock()
+
         # --- Load data from JSON files ---
         data_loader.load_all()
         self._wire_data()
@@ -95,6 +111,14 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         # install). The App layer uses this to show a mandatory language
         # picker before the player sees anything else.
         self._is_first_launch = False
+        # True when an existing save could not be read AND could not be
+        # quarantined aside, or when external (cloud) data failed to apply.
+        # save()/save_async() refuse to run while set, so a broken load can
+        # never overwrite the player's real save file with fresh-start data.
+        self._load_failed = False
+        # Save-issue toast keys already shown this session (anti-spam;
+        # see _PersistenceWriteMixin._notify_save_issue).
+        self._save_issues_notified = set()
         # Wall-clock time of the newest save this engine state descends
         # from (stamped on save, restored on load). 0.0 = never saved.
         self.last_saved_at = 0.0
@@ -306,17 +330,20 @@ class GameEngine(_FightersMixin, _CombatMixin, _ForgeMixin, _ExpeditionsMixin, _
         self._ui_dirty = True
 
     def idle_tick(self, dt):
-        exp_results = self.check_expeditions()
-        # Batch: evaluate achievements at most once per idle tick
-        if self._ach_dirty:
-            self._ach_dirty = False
-            self.check_achievements()
-        # Squad scripts on_tick trigger (per-program interval gates inside).
-        try:
-            self.scripts.on_tick(self, dt)
-        except Exception as e:
-            _log.exception("[ENGINE] scripts.on_tick failed: %s", e)
-        return exp_results
+        # state_lock: exclude the async script worker for the whole tick —
+        # expeditions/achievements/scripts all mutate engine state.
+        with self.state_lock:
+            exp_results = self.check_expeditions()
+            # Batch: evaluate achievements at most once per idle tick
+            if self._ach_dirty:
+                self._ach_dirty = False
+                self.check_achievements()
+            # Squad scripts on_tick trigger (per-program interval gates inside).
+            try:
+                self.scripts.on_tick(self, dt)
+            except Exception as e:
+                _log.exception("[ENGINE] scripts.on_tick failed: %s", e)
+            return exp_results
 
     _save_async_lock = None           # threading.Lock; lazy-init
 

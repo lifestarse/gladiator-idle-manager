@@ -230,6 +230,8 @@
   "cloud_uploaded": "Zapisano w chmurze!",
   "cloud_loaded": "Ładowane z chmury!",
   "cloud_newer_available": "Nowszy zapis w chmurze na innym urządzeniu — otwórz Chmurę, aby pobrać",
+  "save_failed_toast": "⚠ Nie udało się zapisać gry — postęp nie jest zapisywany!",
+  "save_blocked_toast": "⚠ Zapis wyłączony, aby chronić poprzedni zapis (nie można go odczytać)",
   "cloud_err_title": "Problem z logowaniem",
   "cloud_err_cancelled": "Logowanie zostało anulowane. Kliknij Spróbuj ponownie, aby spróbować ponownie.",
   "cloud_err_network": "Błąd sieci. Sprawdź swoje połączenie internetowe i spróbuj ponownie.",

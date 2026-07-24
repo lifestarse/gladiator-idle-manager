@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Tree-walking interpreter for the squad scripting language.
 
 Safety limits (configurable via constructor):
@@ -6,11 +6,19 @@ Safety limits (configurable via constructor):
     max_loop_iters  — single while/foreach iteration cap (default 1000).
     max_loop_depth  — nesting depth of loops (default 10).
 
+Thread safety: when the program runs on ScriptManager's async worker
+thread, every read/write of shared engine state (fighter fields, engine
+fields, actions, g_vars) is taken under engine.state_lock. The lock is
+deliberately NOT held across _tick() — the async runner's hooked tick
+sleeps there for ops/sec throttling, and sleeping while holding the lock
+would starve the Kivy main thread.
+
 Exceptions:
     ScriptError — wraps any runtime failure with the originating node kind.
     BreakSignal / ContinueSignal — internal control-flow.
 """
 from __future__ import annotations
+from contextlib import nullcontext
 from typing import Any
 
 from . import ast_nodes as ast
@@ -56,12 +64,20 @@ class Interpreter:
         self.max_steps = max_steps
         self.max_loop_iters = max_loop_iters
         self.max_loop_depth = max_loop_depth
+        # Serializes engine access against the Kivy main thread (RLock on
+        # real engines — the synchronous trigger path re-enters while
+        # idle_tick already holds it). Test stubs without state_lock get a
+        # no-op context.
+        self._state_lock = getattr(engine, "state_lock", None) or nullcontext()
 
     # ---------- public ----------
 
     def run(self) -> None:
-        for k, v in self.program.g_var_init.items():
-            self.g_vars.setdefault(k, v)
+        with self._state_lock:
+            # g_vars is shared with the main thread's save snapshot
+            # (scripts.to_dict inside _build_save_data).
+            for k, v in self.program.g_var_init.items():
+                self.g_vars.setdefault(k, v)
         try:
             self._exec_body(self.program.body)
         except BreakSignal:
@@ -157,18 +173,23 @@ class Interpreter:
                 self.locals.pop(node.var_name, None)
 
     def _exec_Assign(self, node: ast.Assign):
+        # Sub-expressions are evaluated OUTSIDE the lock (their engine
+        # touches lock individually) so the throttle sleep inside _tick
+        # never runs while the lock is held.
         value = self._eval(node.value)
         if node.target_kind == "local":
-            self.locals[node.name] = value
+            self.locals[node.name] = value  # interpreter-private, no lock
         elif node.target_kind == "global":
-            self.g_vars[node.name] = value
+            with self._state_lock:
+                self.g_vars[node.name] = value
         elif node.target_kind == "fighter_field":
             fighter = self._eval(node.fighter)
             if fighter is None:
                 return
             if node.name not in ast.WRITABLE_FIGHTER_FIELDS:
                 raise ScriptError(f"fighter field {node.name!r} is not writable")
-            setattr(fighter, node.name, value)
+            with self._state_lock:
+                setattr(fighter, node.name, value)
         else:
             raise ScriptError(f"unknown assign target: {node.target_kind!r}")
 
@@ -181,7 +202,10 @@ class Interpreter:
         if not (amin <= len(args) <= amax):
             raise ScriptError(f"action {node.name!r} expects {amin}..{amax} args, got {len(args)}")
         try:
-            spec["fn"](self.engine, *args)
+            # The one op that compound-mutates engine state (buy → gold−,
+            # inventory+; battle → …). Atomic vs main-thread ticks/saves.
+            with self._state_lock:
+                spec["fn"](self.engine, *args)
         except Exception as e:
             raise ScriptError(f"action {node.name!r} failed: {e}") from e
         self.actions_fired += 1
@@ -217,7 +241,8 @@ class Interpreter:
         if accessor is None:
             raise ScriptError(f"unknown fighter field: {node.field_name!r}")
         try:
-            return accessor(fighter)
+            with self._state_lock:
+                return accessor(fighter)
         except Exception as e:
             raise ScriptError(f"reading fighter.{node.field_name} failed: {e}") from e
 
@@ -226,7 +251,8 @@ class Interpreter:
             raise ScriptError(f"unknown engine field: {node.field_name!r}")
         try:
             from .builtins import _engine_field
-            return _engine_field(self.engine, node.field_name)
+            with self._state_lock:
+                return _engine_field(self.engine, node.field_name)
         except AttributeError:
             return 0  # field not present on this engine version
         except Exception as e:
@@ -287,7 +313,8 @@ class Interpreter:
         return bool(v)
 
     def _resolve_source(self, source: str):
-        fighters = list(getattr(self.engine, "fighters", []))
+        with self._state_lock:
+            fighters = list(getattr(self.engine, "fighters", []))
         if source == "fighters":
             return fighters
         if source == "active":
