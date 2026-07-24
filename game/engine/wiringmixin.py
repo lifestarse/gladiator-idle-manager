@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _WiringMixin — JSON→module wiring + item migration."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -59,7 +59,13 @@ class _WiringMixin:
                 for e in dl.expeditions if "shard_tier" in e
             })
         if dl.achievements_data:
-            _ach_module.ACHIEVEMENTS = build_achievements_from_json(dl.achievements_data)
+            # In-place, NOT a rebind — same contract as every collection
+            # above. game/screens/lore/_screen_imports.py captured a
+            # reference to this list at import time; the old rebind left
+            # that reference on the 29-item hardcoded fallback while
+            # unlock logic saw the 50 JSON achievements ("21/29" lore bug).
+            _replace_list(_ach_module.ACHIEVEMENTS,
+                          build_achievements_from_json(dl.achievements_data))
 
     @staticmethod
     def _find_template(item):

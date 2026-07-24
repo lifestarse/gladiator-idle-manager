@@ -1,62 +1,47 @@
-# Build: 9
+# Build: 10
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
+from game.engine.persistencerecovery import quarantine_primary, read_save_with_fallback
 
 
 class _PersistenceReadMixin:
     def load(self, data=None):
-        if data is None:
-            save_path = self.SAVE_PATH
-            if not os.path.exists(save_path):
-                self._is_first_launch = True
+        from_disk = data is None
+        if from_disk:
+            # Candidate fallback (primary → .tmp → .bak) + quarantine of an
+            # unreadable primary live in persistencerecovery. A missing
+            # primary is NOT a fresh install if .tmp/.bak still hold the
+            # player's progress — old builds' backup rotation could crash
+            # in exactly that state.
+            data, first_launch, load_failed = read_save_with_fallback(self.SAVE_PATH)
+            self._is_first_launch = first_launch
+            if load_failed:
+                # Broken primary is still in place — save() must not
+                # overwrite it (surfaced to the user as save_blocked_toast).
+                self._load_failed = True
+            if data is None:
                 self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
                 self._spawn_enemy()
                 return
-            try:
-                # encoding='utf-8' is REQUIRED on Windows: the default locale
-                # codec (cp1252 on most user setups) will raise UnicodeDecodeError
-                # on any save containing non-Latin-1 bytes — for example a
-                # program name in Russian written by an external editor. The
-                # except below catches that (UnicodeDecodeError → UnicodeError →
-                # ValueError) and the engine silently falls back to .bak, which
-                # is almost always WORSE than the file we just couldn't read.
-                # See: PR fixing the squad-scripts "activate" program vanishing
-                # after external edits.
-                with open(save_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except (json.JSONDecodeError, ValueError):
-                # Corrupted save — try backup
-                backup_path = save_path + ".bak"
-                if os.path.exists(backup_path):
-                    try:
-                        with open(backup_path, "r", encoding="utf-8") as f:
-                            data = json.load(f)
-                    except (json.JSONDecodeError, ValueError):
-                        data = None
-                if not data:
-                    self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
-                    self._spawn_enemy()
-                    return
         try:
             self._apply_save_data(data)
         except Exception as e:
             _log.exception(
-                "[ENGINE] CRITICAL: load() failed: %s. "
-                "Backing up corrupt save and starting fresh.", e,
+                "[ENGINE] CRITICAL: load() failed: %s. Starting fresh.", e,
             )
-            # Move the corrupt save aside so the next save() writes a clean file
-            # instead of leaving the user stuck in read-only mode forever.
-            try:
-                sp = self.SAVE_PATH
-                if os.path.exists(sp):
-                    corrupt_path = sp + ".corrupt"
-                    if os.path.exists(corrupt_path):
-                        os.remove(corrupt_path)
-                    os.rename(sp, corrupt_path)
-                    _log.warning("[ENGINE] Corrupt save moved to %s", corrupt_path)
-            except Exception as _bak_exc:
-                _log.warning("[ENGINE] Could not back up corrupt save: %s", _bak_exc)
+            if from_disk:
+                # Parsed but failed to apply — quarantine so the next save()
+                # writes a clean file instead of leaving the user stuck in
+                # read-only mode forever. If even the quarantine fails, the
+                # broken file is still in place: block saves over it.
+                if not quarantine_primary(self.SAVE_PATH):
+                    self._load_failed = True
+            else:
+                # External data (cloud download). The on-disk save was never
+                # touched and is very likely fine — never let the
+                # half-applied fresh state below autosave over it.
+                self._load_failed = True
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
             self._spawn_enemy()
 

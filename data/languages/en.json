@@ -230,6 +230,8 @@
   "cloud_uploaded": "Saved to cloud!",
   "cloud_loaded": "Loaded from cloud!",
   "cloud_newer_available": "Newer cloud save on another device — open Cloud to download",
+  "save_failed_toast": "⚠ Could not save the game — progress is not being written!",
+  "save_blocked_toast": "⚠ Saving is disabled to protect your previous save (it could not be read)",
   "cloud_err_title": "Sign-in problem",
   "cloud_err_cancelled": "Sign-in was cancelled. Tap Retry to try again.",
   "cloud_err_network": "Network error. Check your internet connection and try again.",

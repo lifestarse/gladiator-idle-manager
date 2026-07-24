@@ -1,114 +1,69 @@
-# Build: 9
-"""GameEngine _PersistenceWriteMixin — extracted from monolithic engine.py."""
+# Build: 10
+"""GameEngine _PersistenceWriteMixin — save-to-disk + async save worker."""
+import shutil
+import threading
+
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
 
 
 class _PersistenceWriteMixin:
-    def _build_save_data(self):
-        """Assemble the save-state dict. Main-thread-safe; no I/O.
-
-        Split out so `save` can serialize synchronously and `save_async`
-        can ship the dict off to a background thread for the expensive
-        JSON dump + disk write. Both paths must see an identical state
-        snapshot, so we eagerly flatten mutable structures here.
-        """
-        # Stamped into the snapshot AND onto the engine so cloud auto-sync
-        # can compare "how fresh is my local state" vs a downloaded save.
-        now = time.time()
-        self.last_saved_at = now
-        return {
-            "schema_version": CURRENT_SAVE_VERSION,
-            "saved_at": now,
-            "gold": self.gold,
-            "active_fighter_idx": self.active_fighter_idx,
-            "arena_tier": self.arena_tier,
-            "wins": self.wins,
-            "total_wins": self.total_wins,
-            "total_deaths": self.total_deaths,
-            # list() copies: same worker-thread-dump race as battle_log
-            # below — a main-thread append during save_async's json.dump
-            # fails the save with "changed size during iteration".
-            "graveyard": list(self.graveyard),
-            "fighters": [f.to_dict() for f in self.fighters],
-            "expedition_log": self.expedition_log[-20:],
-            # Shallow-copy each battle entry so a concurrent write to the
-            # original during a background save can't corrupt the snapshot.
-            # Also trims legacy oversize logs inline.
-            "battle_log": [
-                self._trim_battle_log_entry(entry)
-                for entry in self.battle_log[-200:]
-            ],
-            "event_log": self.event_log[-200:],
-            "surgeon_uses": self.surgeon_uses,
-            "total_gold_earned": self.total_gold_earned,
-            "run_number": self.run_number,
-            "run_kills": self.run_kills,
-            "run_max_tier": self.run_max_tier,
-            "best_record_tier": self.best_record_tier,
-            "best_record_kills": self.best_record_kills,
-            "total_runs": self.total_runs,
-            "diamonds": self.diamonds,
-            "achievements_unlocked": self.achievements_unlocked,
-            "bosses_killed": self.bosses_killed,
-            "story_chapter": self.story_chapter,
-            "quests_completed": self.quests_completed,
-            "tutorial_shown": self.tutorial_shown,
-            "extra_expedition_slots": self.extra_expedition_slots,
-            "fastest_t15_time": self.fastest_t15_time,
-            "run_start_time": self.run_start_time,
-            "ads_removed": self.ads_removed,
-            "review_shown_after_first_purchase": self._review_shown_after_first_purchase,
-            "active_mutators": list(self.active_mutators),
-            "inventory": [dict(i) if isinstance(i, dict) else i
-                          for i in self.inventory],
-            "shards": self.shards,
-            "language": get_language(),
-            "total_enchantments_applied": self.total_enchantments_applied,
-            "total_enchantment_procs": self.total_enchantment_procs,
-            "total_gold_spent_equipment": self.total_gold_spent_equipment,
-            "total_injuries_healed": self.total_injuries_healed,
-            "total_expeditions_completed": self.total_expeditions_completed,
-            "completed_expedition_ids": self.completed_expedition_ids,
-            "cloud_sync_enabled": self.cloud_sync_enabled,
-            "lore_unlocked": self.lore_unlocked,
-            "scripts": self.scripts.to_dict() if hasattr(self, "scripts") else {},
-            "sound_volume": self.sound_volume,
-        }
-
     def _write_save_to_disk(self, data):
         """Serialize `data` and atomically replace the save file. I/O only;
         may be called from a background thread via save_async().
 
-        Uses os.replace (not os.rename) for the final step so the write
-        succeeds even if backup rotation fails: on Windows os.rename
-        raises "file already exists" when the target is present. See
-        WinError 183 path we hit on concurrent save() + save_async().
+        Durability contract:
+          * The primary file NEVER disappears. The backup is a COPY of the
+            primary — earlier builds MOVED it (os.replace primary→.bak)
+            before the final publish, leaving a kill-window with no primary
+            on disk; load() then reported a fresh install and the player
+            lost everything (persistencerecovery.py now also covers saves
+            stranded by old builds).
+          * The tmp file is flushed + fsync'd before the atomic os.replace,
+            so a power cut cannot publish an empty/truncated primary.
+          * A failed .bak copy is non-fatal (Windows lock contention): we
+            lose one rotation cycle's backup, never the save itself.
+          * os.replace (not os.rename) for the final step: on Windows
+            os.rename raises WinError 183 when the target exists.
         """
         save_path = self.SAVE_PATH
         tmp_path = save_path + ".tmp"
-        # encoding='utf-8' for symmetry with the read side. json.dump's default
-        # ensure_ascii=True already produces pure ASCII output, so on a fresh
-        # save this changes nothing on disk — but if an external editor (or a
-        # future change) ever flips ensure_ascii=False, we won't lose the file
-        # the next time the engine tries to read it.
+        # encoding='utf-8' for symmetry with the read side (see
+        # persistencerecovery.try_read_save for why that side needs it).
         with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(data, f)
+            f.flush()
+            os.fsync(f.fileno())
         if os.path.exists(save_path):
             backup_path = save_path + ".bak"
             try:
-                os.replace(save_path, backup_path)
+                shutil.copyfile(save_path, backup_path)
             except OSError as exc:
-                # Non-fatal: on Windows, concurrent .bak locks fail here.
-                # The atomic tmp→save replace below still lands correctly;
-                # we just lose this rotation cycle's backup.
                 _log.debug("[ENGINE] backup rotation failed (non-fatal): %s", exc)
         os.replace(tmp_path, save_path)
+
+    def _notify_save_issue(self, key):
+        """Queue a user-visible toast for a save problem (App._idle_tick
+        drains pending_notifications into show_toast).
+
+        Once per key per session: a full disk would otherwise re-toast on
+        every 30s autosave. May be called from the save worker thread —
+        list.append is atomic under the GIL, and the worst race outcome is
+        one duplicate toast.
+        """
+        notified = getattr(self, "_save_issues_notified", None)
+        if notified is None:
+            self._save_issues_notified = notified = set()
+        if key in notified:
+            return
+        notified.add(key)
+        self.pending_notifications.append(t(key))
 
     def save(self):
         # Don't overwrite real save with fresh-start data after failed load
         if getattr(self, '_load_failed', False):
             _log.warning("[ENGINE] save() BLOCKED — load had failed")
+            self._notify_save_issue("save_blocked_toast")
             return {}
         # NOTE: _migrate_all_items is NOT called here. It replaces items in
         # inventory/equipment with fresh dicts (dict(template) + preserved
@@ -118,7 +73,15 @@ class _PersistenceWriteMixin:
         # while save() writes the new dict from inventory, losing the
         # latest change. Migration only happens on load().
         data = self._build_save_data()
-        self._write_save_to_disk(data)
+        try:
+            self._write_save_to_disk(data)
+        except (OSError, TypeError, ValueError) as e:
+            # Surface instead of crashing the caller — on_pause() runs
+            # this, and an exception there kills the app mid-backgrounding.
+            # The snapshot is still returned (cloud upload paths can use
+            # it), but the user must learn the local write did not land.
+            _log.exception("[ENGINE] save() failed: %s", e)
+            self._notify_save_issue("save_failed_toast")
         return data
 
     def save_async(self, on_done=None):
@@ -141,10 +104,10 @@ class _PersistenceWriteMixin:
         still fired with the outcome of the merged (latest) write.
         """
         if getattr(self, '_load_failed', False):
+            self._notify_save_issue("save_blocked_toast")
             return
         data = self._build_save_data()
 
-        import threading
         if self._save_async_lock is None:
             # Double-checked; instance init can race on first call in theory,
             # but the lock only protects the pending slot / worker handle so
@@ -195,6 +158,7 @@ class _PersistenceWriteMixin:
                 ok = True
             except Exception as e:
                 _log.warning("[ENGINE] save_async failed: %s", e)
+                self._notify_save_issue("save_failed_toast")
 
             if cb is not None:
                 try:

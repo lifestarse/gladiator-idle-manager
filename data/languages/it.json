@@ -230,6 +230,8 @@
   "cloud_uploaded": "Salvato nel cloud!",
   "cloud_loaded": "Caricato dal cloud!",
   "cloud_newer_available": "Salvataggio cloud più recente su un altro dispositivo — apri Cloud per scaricare",
+  "save_failed_toast": "⚠ Impossibile salvare la partita — i progressi non vengono salvati!",
+  "save_blocked_toast": "⚠ Salvataggio disattivato per proteggere il salvataggio precedente (impossibile leggerlo)",
   "cloud_err_title": "Problema di accesso",
   "cloud_err_cancelled": "L'accesso è stato annullato. Tocca Riprova per riprovare.",
   "cloud_err_network": "Errore di rete. Controlla la connessione Internet e riprova.",
