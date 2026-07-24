@@ -1,5 +1,5 @@
-# Build: 2
-"""IAPManager _IapAndroidInitMixin — Billing Client init."""
+# Build: 3
+"""IAPManager _IapAndroidInitMixin — Billing Client init (Billing Library v8)."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
 
@@ -13,6 +13,9 @@ class _IapAndroidInitMixin:
             PythonActivity = autoclass("org.kivy.android.PythonActivity")
             BillingClient = autoclass(
                 "com.android.billingclient.api.BillingClient"
+            )
+            PendingPurchasesParams = autoclass(
+                "com.android.billingclient.api.PendingPurchasesParams"
             )
             BillingClientStateListener = (
                 "com.android.billingclient.api.BillingClientStateListener"
@@ -77,7 +80,16 @@ class _IapAndroidInitMixin:
             activity = PythonActivity.mActivity
             builder = BillingClient.newBuilder(activity)
             builder.setListener(self._purchase_listener)
-            builder.enablePendingPurchases()
+            # v7+: the no-arg enablePendingPurchases() was removed — one-time
+            # products must be enabled explicitly via PendingPurchasesParams.
+            builder.enablePendingPurchases(
+                PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .build()
+            )
+            # v8: the library re-establishes dropped service connections
+            # itself; onBillingSetupFinished fires again after a reconnect.
+            builder.enableAutoServiceReconnection()
             self._billing_client = builder.build()
             self._billing_client.startConnection(self._state_listener)
             _log.info("[IAP] Android billing: connecting...")
@@ -145,19 +157,35 @@ class _IapAndroidInitMixin:
 
                 @java_method(
                     "(Lcom/android/billingclient/api/BillingResult;"
-                    "Ljava/util/List;)V"
+                    "Lcom/android/billingclient/api/"
+                    "QueryProductDetailsResult;)V"
                 )
                 def onProductDetailsResponse(
-                    self_inner, billing_result, details_list
+                    self_inner, billing_result, query_result
                 ):
+                    # v8: callback receives QueryProductDetailsResult
+                    # (fetched + unfetched product lists) instead of a bare
+                    # List<ProductDetails>.
                     # Extract data on billing thread before scheduling
                     details_snapshot = {}
                     try:
-                        if details_list is not None:
-                            for i in range(details_list.size()):
-                                detail = details_list.get(i)
-                                pid = detail.getProductId()
-                                details_snapshot[pid] = detail
+                        if query_result is not None:
+                            details_list = query_result.getProductDetailsList()
+                            if details_list is not None:
+                                for i in range(details_list.size()):
+                                    detail = details_list.get(i)
+                                    pid = detail.getProductId()
+                                    details_snapshot[pid] = detail
+                            unfetched = query_result.getUnfetchedProductList()
+                            if unfetched is not None:
+                                for i in range(unfetched.size()):
+                                    up = unfetched.get(i)
+                                    _log.warning(
+                                        "[IAP] Product not fetched: %s "
+                                        "status=%s",
+                                        up.getProductId(),
+                                        up.getStatusCode(),
+                                    )
                     except Exception as e:
                         _log.error("[IAP] Error reading product details: %s", e)
                     Clock.schedule_once(
