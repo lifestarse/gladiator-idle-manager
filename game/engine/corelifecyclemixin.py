@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _CoreLifecycleMixin — roguelike reset, idle tick, dirty flags."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -71,17 +71,20 @@ class _CoreLifecycleMixin:
         self._ui_dirty = True
 
     def idle_tick(self, dt):
-        exp_results = self.check_expeditions()
-        # Batch: evaluate achievements at most once per idle tick
-        if self._ach_dirty:
-            self._ach_dirty = False
-            self.check_achievements()
-        # Squad scripts on_tick trigger (per-program interval gates inside).
-        try:
-            self.scripts.on_tick(self, dt)
-        except Exception as e:
-            _log.exception("[ENGINE] scripts.on_tick failed: %s", e)
-        return exp_results
+        # state_lock: exclude the async script worker for the whole tick —
+        # expeditions/achievements/scripts all mutate engine state.
+        with self.state_lock:
+            exp_results = self.check_expeditions()
+            # Batch: evaluate achievements at most once per idle tick
+            if self._ach_dirty:
+                self._ach_dirty = False
+                self.check_achievements()
+            # Squad scripts on_tick trigger (per-program interval gates inside).
+            try:
+                self.scripts.on_tick(self, dt)
+            except Exception as e:
+                _log.exception("[ENGINE] scripts.on_tick failed: %s", e)
+            return exp_results
 
     _save_async_lock = None           # threading.Lock; lazy-init
 

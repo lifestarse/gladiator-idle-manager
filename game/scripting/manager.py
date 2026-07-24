@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """ScriptManager — owns the program list, persistent globals, trigger dispatch.
 
 Responsibilities:

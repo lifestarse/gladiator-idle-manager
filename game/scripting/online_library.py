@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Online community scripts library — fetch + 24-hour local cache.
 
 This is the Tier-1 implementation discussed in design notes: a single
@@ -87,6 +87,11 @@ CACHE_TTL_S = 24 * 3600
 # still resolve in this many seconds tops.
 HTTP_TIMEOUT_S = 5.0
 
+# Hard cap on the manifest body. Hundreds of scripts fit comfortably under
+# this; a hijacked/misconfigured upstream must not be able to balloon
+# device memory by streaming an arbitrarily large response.
+MAX_MANIFEST_BYTES = 2 * 1024 * 1024
+
 
 def _cache_path() -> Path:
     """Cache file lives next to the save, in the user's home directory.
@@ -174,10 +179,18 @@ def fetch_remote(
         req = urllib.request.Request(
             url, headers={"User-Agent": "gladiator-idle-manager/1.0"})
         with urllib.request.urlopen(req, timeout=timeout, context=_ssl_context()) as resp:
-            raw = resp.read()
+            # +1 so an exactly-at-limit body is distinguishable from a
+            # truncated oversize one — anything past the cap is rejected.
+            raw = resp.read(MAX_MANIFEST_BYTES + 1)
+        if len(raw) > MAX_MANIFEST_BYTES:
+            _log.warning("[online_library] manifest larger than %d bytes — rejected",
+                         MAX_MANIFEST_BYTES)
+            return None
         data = json.loads(raw.decode("utf-8"))
     except (urllib.error.URLError, urllib.error.HTTPError,
-            json.JSONDecodeError, OSError, ValueError) as exc:
+            json.JSONDecodeError, OSError, ValueError, RecursionError) as exc:
+        # RecursionError: json.loads on a maliciously deep-nested manifest
+        # (a size cap alone doesn't stop {"a":{"a":{... x50k}}}).
         _log.warning("[online_library] fetch failed (%s): %s",
                      type(exc).__name__, exc)
         return None

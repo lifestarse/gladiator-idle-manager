@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Interpreter statement executors (`_exec_*`) — one method per Statement node."""
 from __future__ import annotations
 
@@ -63,18 +63,23 @@ class _InterpreterExecMixin:
                 self.locals.pop(node.var_name, None)
 
     def _exec_Assign(self, node: ast.Assign):
+        # Sub-expressions are evaluated OUTSIDE the lock (their engine
+        # touches lock individually) so the throttle sleep inside _tick
+        # never runs while the lock is held.
         value = self._eval(node.value)
         if node.target_kind == "local":
-            self.locals[node.name] = value
+            self.locals[node.name] = value  # interpreter-private, no lock
         elif node.target_kind == "global":
-            self.g_vars[node.name] = value
+            with self._state_lock:
+                self.g_vars[node.name] = value
         elif node.target_kind == "fighter_field":
             fighter = self._eval(node.fighter)
             if fighter is None:
                 return
             if node.name not in ast.WRITABLE_FIGHTER_FIELDS:
                 raise ScriptError(f"fighter field {node.name!r} is not writable")
-            setattr(fighter, node.name, value)
+            with self._state_lock:
+                setattr(fighter, node.name, value)
         else:
             raise ScriptError(f"unknown assign target: {node.target_kind!r}")
 
@@ -87,7 +92,10 @@ class _InterpreterExecMixin:
         if not (amin <= len(args) <= amax):
             raise ScriptError(f"action {node.name!r} expects {amin}..{amax} args, got {len(args)}")
         try:
-            spec["fn"](self.engine, *args)
+            # The one op that compound-mutates engine state (buy → gold−,
+            # inventory+; battle → …). Atomic vs main-thread ticks/saves.
+            with self._state_lock:
+                spec["fn"](self.engine, *args)
         except Exception as e:
             raise ScriptError(f"action {node.name!r} failed: {e}") from e
         self.actions_fired += 1
@@ -103,7 +111,8 @@ class _InterpreterExecMixin:
         raise ContinueSignal()
 
     def _resolve_source(self, source: str):
-        fighters = list(getattr(self.engine, "fighters", []))
+        with self._state_lock:
+            fighters = list(getattr(self.engine, "fighters", []))
         if source == "fighters":
             return fighters
         if source == "active":

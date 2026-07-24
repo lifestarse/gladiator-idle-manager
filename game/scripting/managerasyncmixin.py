@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ScriptManager _ManagerAsyncMixin — background force-run (UI Run button)."""
 from __future__ import annotations
 import logging
@@ -54,7 +54,11 @@ class _ManagerAsyncMixin:
             Two interpreters racing on engine.gold / fighter HP / inventory
             list would corrupt state immediately — none of those mutations
             are atomic under GIL. One-at-a-time keeps the implementation
-            simple and lossless for the common case.
+            simple and lossless for the common case. Safety against the
+            Kivy MAIN thread (idle_tick, battle turns, save snapshots) is
+            separate: the Interpreter takes engine.state_lock around every
+            engine-touching op, and those main-thread entry points take the
+            same lock.
 
         Throttling (``ops_per_sec``):
             Worker sleeps 1/ops_per_sec seconds between interpreter steps.

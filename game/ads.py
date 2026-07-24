@@ -1,4 +1,4 @@
-# Build: 9
+# Build: 10
 """
 Ad integration module — AdMob via KivMob.
 
@@ -69,6 +69,14 @@ class AdManager:
         except ImportError:
             _log.info("[AdManager] KivMob not installed — ads disabled")
             self._initialized = False
+        except Exception as e:
+            # Broad on purpose: this is the app-startup crash boundary.
+            # KivMob can be installed while the underlying Play Services
+            # Ads classes are absent/broken (gradle dependency missing in
+            # buildozer.spec) — that surfaces as a JNI/attribute error, not
+            # ImportError. Ads must degrade to disabled, never kill launch.
+            _log.exception("[AdManager] Ads init failed — ads disabled: %s", e)
+            self._initialized = False
 
     # --- Banner ---
 
@@ -115,6 +123,18 @@ class AdManager:
             )
             return
         if not self._initialized or not self._kivmob:
+            if platform == "android":
+                # Ads SDK missing/uninitialized on a real device. This used
+                # to fall into the desktop stub below and hand out the
+                # reward with no ad shown — i.e. free 2x-gold on every tap
+                # in any production build without the ads SDK. No ad → no
+                # reward; is_rewarded_loaded() already reports False so the
+                # UI should not even offer the button.
+                _log.warning(
+                    "[AdManager] Rewarded unavailable (not initialized) — "
+                    "no reward granted"
+                )
+                return
             # Stub: just give reward on desktop for testing
             _log.info("[AdManager] Stub: rewarded ad simulated")
             if on_reward_callback:

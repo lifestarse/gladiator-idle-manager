@@ -230,6 +230,8 @@
   "cloud_uploaded": "¡Guardado en la nube!",
   "cloud_loaded": "¡Cargado desde la nube!",
   "cloud_newer_available": "Guardado en la nube más reciente en otro dispositivo — abre Nube para descargar",
+  "save_failed_toast": "⚠ No se pudo guardar la partida — ¡el progreso no se está guardando!",
+  "save_blocked_toast": "⚠ Guardado desactivado para proteger la partida anterior (no se pudo leer)",
   "cloud_err_title": "Problema de inicio de sesión",
   "cloud_err_cancelled": "El inicio de sesión fue cancelado. Toca Reintentar para volver a intentarlo.",
   "cloud_err_network": "Error de red. Verifique su conexión a Internet e inténtelo nuevamente.",

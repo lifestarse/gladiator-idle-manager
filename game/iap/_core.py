@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """IAPManager core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
@@ -40,7 +40,20 @@ class IAPManager(_IapAndroidMixin, _IapIosMixin):
             return
 
         if not self._initialized:
-            # Stub mode — auto succeed (desktop testing)
+            if platform in ("android", "ios"):
+                # Real store platform with billing NOT connected (offline at
+                # launch, signed-out Play Store, billing setup failure). The
+                # desktop stub below used to run first here and auto-granted
+                # paid products for free on production devices. Never grant —
+                # fail so the UI can tell the user to retry.
+                _log.warning(
+                    "[IAP] purchase %r refused: billing not initialized",
+                    product_key,
+                )
+                if on_failure:
+                    on_failure("Billing unavailable — try again later")
+                return
+            # Stub mode — auto succeed (desktop testing only)
             _log.info("[IAP] Stub purchase: %s", product_key)
             if on_success:
                 on_success()

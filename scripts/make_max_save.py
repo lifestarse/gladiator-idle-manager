@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from game.engine import GameEngine
 from game.models import Fighter
 from game.data_loader import data_loader
-import game.achievements as _ach_module  # read ACHIEVEMENTS after _wire_data rebinds it
+import game.achievements as _ach_module  # ACHIEVEMENTS is filled in-place from JSON by _wire_data
 from game.story import STORY_CHAPTERS
 from game.localization import set_language
 
