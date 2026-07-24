@@ -21,7 +21,6 @@
 
         TopBar:
             title_text: app.title_more
-            title_color: app.accent_blue
 
         TouchScrollView:
             bar_width: dp(8)
@@ -74,8 +73,9 @@
 
                 MinimalButton:
                     text: app.lbl_restore_purchases
-                    btn_color: app.bg_elevated
-                    text_color: app.text_secondary
+                    variant: "ghost"
+                    btn_color: theme.TEXT_SECONDARY
+                    text_color: theme.TEXT_SECONDARY
                     font_size: 11
                     size_hint_y: None
                     height: 0 if root.ads_hidden else dp(44)
@@ -123,6 +123,7 @@
 
                 MinimalButton:
                     text: app.lbl_sign_out_google
+                    variant: "secondary"
                     btn_color: app.accent_red
                     font_size: 11
                     size_hint_y: None
@@ -133,8 +134,8 @@
 
                 MinimalButton:
                     text: app.lbl_save_to_cloud
+                    variant: "secondary"
                     btn_color: app.accent_green
-                    text_color: app.bg_dark
                     font_size: 11
                     size_hint_y: None
                     height: dp(50) if root.google_signed_in else 0
@@ -144,6 +145,7 @@
 
                 MinimalButton:
                     text: app.lbl_load_from_cloud
+                    variant: "secondary"
                     btn_color: app.accent_purple
                     font_size: 11
                     size_hint_y: None
@@ -177,8 +179,8 @@
                     size_hint_y: None
                     height: dp(50)
                     text: app.lbl_view_leaderboard
+                    variant: "secondary"
                     btn_color: app.accent_gold
-                    text_color: app.bg_dark
                     font_size: 11
                     on_press: root.show_leaderboard()
 
@@ -226,8 +228,8 @@
                     size_hint_y: None
                     height: dp(50)
                     text: app.lbl_help
+                    variant: "secondary"
                     btn_color: app.accent_green
-                    text_color: app.bg_dark
                     font_size: 11
                     on_press: root.show_help()
 
@@ -291,6 +293,7 @@
                     size_hint_y: None
                     height: dp(50)
                     text: app.lbl_change_language
+                    variant: "secondary"
                     btn_color: app.accent_purple
                     font_size: 11
                     on_press: root.show_language_picker()

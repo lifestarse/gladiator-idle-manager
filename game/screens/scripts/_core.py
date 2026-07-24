@@ -1,4 +1,4 @@
-# Build: 9
+# Build: 10
 """ScriptsScreen + ScriptEditorScreen.
 
 Layout shell (background, TopBar, top toolbar buttons, separator,
@@ -30,7 +30,8 @@ from kivy.graphics import Color, Rectangle
 from game.base_screen import BaseScreen
 from game.localization import t
 from game.theme import (
-    BTN_PRIMARY, ACCENT_GOLD, ACCENT_RED, TEXT_PRIMARY, BG_DARK,
+    BTN_PRIMARY, ACCENT_GOLD, ACCENT_RED, ACCENT_PURPLE, TEXT_PRIMARY,
+    TEXT_SECONDARY, BG_DARK, BG_CARD,
 )
 from game.widgets import MinimalButton, SafeTextInput as TextInput
 from game.scripting.ast_nodes import (
@@ -267,7 +268,7 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
                           padding=dp(8), spacing=dp(2))
         wrap.bind(minimum_height=wrap.setter("height"))
         with wrap.canvas.before:
-            Color(0.13, 0.13, 0.17, 1)
+            Color(*BG_CARD)
             wrap._bg = Rectangle(pos=wrap.pos, size=wrap.size)
         wrap.bind(pos=lambda *_: setattr(wrap._bg, "pos", wrap.pos),
                   size=lambda *_: setattr(wrap._bg, "size", wrap.size))
@@ -284,8 +285,8 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             # status indicator that used to be ● / ○ in text form.
             icon_source=("icons/ic_check.png" if p.enabled
                          else "icons/ic_close.png"),
-            font_size=13,
-            btn_color=BTN_PRIMARY, text_color=TEXT_PRIMARY,
+            font_size=13, variant="secondary",
+            btn_color=ACCENT_PURPLE, text_color=TEXT_PRIMARY,
             size_hint_y=None, height=dp(30),
         )
         name_btn.bind(on_release=lambda *_, i=idx: self._edit_program(i))
@@ -295,7 +296,7 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             icon_source="icons/ic_dots.png",
             size_hint_x=None, width=dp(36),
             size_hint_y=None, height=dp(30),
-            btn_color=BTN_PRIMARY, text_color=TEXT_PRIMARY,
+            variant="ghost", btn_color=TEXT_SECONDARY,
         )
         gear.bind(on_release=lambda *_, i=idx, prog=p: self._open_menu(i, prog))
         top.add_widget(gear)
@@ -307,7 +308,7 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             trig_label = f"{trig_label} ({p.tick_interval}s)"
         wrap.add_widget(Label(
             text=trig_label, size_hint_y=None, height=dp(20),
-            font_size="11sp", color=(0.85, 0.90, 1, 1),
+            font_size="12sp", font_name="BodyFont", color=(0.85, 0.90, 1, 1),
             halign="left", valign="middle",
             text_size=(dp(360), dp(20)),
         ))
@@ -332,7 +333,7 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             status += f" · {t('scr_run_failed')}: {err[:40]}"
         wrap.add_widget(Label(
             text=status, size_hint_y=None, height=dp(20),
-            font_size="10sp", color=status_color,
+            font_size="11sp", font_name="BodyFont", color=status_color,
             halign="left", valign="middle",
             text_size=(dp(360), dp(20)),
         ))

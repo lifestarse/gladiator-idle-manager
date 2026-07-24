@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """MoreScreen _IapMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -47,7 +47,7 @@ class _IapMixin:
             row.add_widget(left_anchor)
             buy_btn = MinimalButton(
                 text=t("buy_btn"), font_size=11, size_hint_x=0.5,
-                btn_color=ACCENT_CYAN, text_color=BG_DARK,
+                variant="secondary", btn_color=ACCENT_CYAN,
             )
             def _buy(inst, bid=bundle["id"]):
                 self.buy_diamonds(bid)

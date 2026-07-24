@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """ui_helpers._lore — achievements grid + lore blog rendering."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
@@ -70,8 +70,10 @@ class AchievementCardView(RecycleDataViewBehavior, BoxLayout):
     def refresh_view_attrs(self, rv, index, data):
         unlocked = data.get('unlocked', False)
         if unlocked:
+            # Lit violet + gold frame — the old olive-khaki fill was the one
+            # surface in the game outside the indigo palette.
             self._card.border_color = list(ACCENT_GOLD)
-            self._card.card_color = (0.12, 0.12, 0.08, 1)
+            self._card.card_color = list(BG_CARD_ACTIVE)
             name_color = list(ACCENT_GOLD)
         else:
             self._card.border_color = list(DIVIDER)

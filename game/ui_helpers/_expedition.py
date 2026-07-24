@@ -1,5 +1,7 @@
-# Build: 4
+# Build: 5
 """ui_helpers._expedition — expedition cards + status rendering."""
+from game.widgets import MinimalBar
+
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid
 
@@ -10,39 +12,88 @@ from ._layouts import _batch_fill_grid
 
 # Per-row heights so layout scales cleanly across DPIs (no size_hint
 # proportions that overflow a fixed parent and clip the reward label).
-_EXP_ROW_TITLE   = dp(28)
-_EXP_ROW_DESC    = dp(36)
-_EXP_ROW_STATS   = dp(24)
-_EXP_ROW_REWARD  = dp(24)
+_EXP_ROW_TITLE   = dp(26)
+_EXP_ROW_DESC    = dp(34)
+_EXP_ROW_STATS   = dp(22)
+_EXP_ROW_REWARD  = dp(22)
 _EXP_ROW_ACTION  = dp(40)
 _EXP_PADDING_V   = dp(8)
 _EXP_SPACING     = dp(6)
+_EXP_ZONE_ICON   = dp(52)
+_EXP_DANGER_BG   = (0.22, 0.05, 0.05, 1)
 # 5 rows + 4 spacings + 2 paddings.
 _EXP_CARD_H = (_EXP_ROW_TITLE + _EXP_ROW_DESC + _EXP_ROW_STATS
                + _EXP_ROW_REWARD + _EXP_ROW_ACTION
                + _EXP_SPACING * 4 + _EXP_PADDING_V * 2)
 
 
+def _exp_label(text, font_size, color, bold=False, halign="left",
+               single_line=True, font_name='PixelFont', **kw):
+    lbl = AutoShrinkLabel(
+        text=text, font_size=font_size, bold=bold, color=list(color),
+        halign=halign, valign="middle", single_line=single_line,
+        font_name=font_name, **kw,
+    )
+    lbl.bind(size=lambda w, s: setattr(w, "text_size", s))
+    return lbl
+
+
 def build_expedition_card(exp, fighters, expedition_screen):
+    """Zone-illustrated hunt card: title+timer, prose desc, danger meter,
+    reward line, action. Replaces the old wall of wrapped monospace text."""
     from game.widgets import BaseCard
     from game.models import SHARD_TIERS
 
-    card = BaseCard(orientation="vertical", size_hint_y=None, height=_EXP_CARD_H,
-                    padding=[dp(12), _EXP_PADDING_V], spacing=_EXP_SPACING)
+    card = BaseCard(orientation="horizontal", size_hint_y=None,
+                    height=_EXP_CARD_H, padding=[dp(10), _EXP_PADDING_V],
+                    spacing=dp(10))
+    card.border_color = list(ACCENT_PURPLE)
 
-    card.add_text_row(
-        (exp["name"], sp(11), True, ACCENT_PURPLE, 0.7),
-        (exp["duration_text"], sp(10), False, TEXT_SECONDARY, 0.3),
-        height=_EXP_ROW_TITLE,
+    zone = exp.get("zone", "")
+    icon_col = BoxLayout(orientation="vertical", size_hint_x=None,
+                         width=_EXP_ZONE_ICON)
+    icon_col.add_widget(Image(
+        source=f"sprites/zones/zone_{zone}.png" if zone else "",
+        fit_mode="contain", size_hint=(1, None), height=_EXP_ZONE_ICON,
+        opacity=1 if zone else 0,
+    ))
+    icon_col.add_widget(Widget())
+    card.add_widget(icon_col)
+
+    col = BoxLayout(orientation="vertical", spacing=_EXP_SPACING)
+    card.add_widget(col)
+
+    title_row = BoxLayout(size_hint_y=None, height=_EXP_ROW_TITLE,
+                          spacing=dp(4))
+    title_row.add_widget(_exp_label(exp["name"], sp(11), ACCENT_PURPLE,
+                                    bold=True))
+    title_row.add_widget(_exp_label(exp["duration_text"], sp(10),
+                                    TEXT_SECONDARY, halign="right",
+                                    size_hint_x=None, width=dp(64)))
+    col.add_widget(title_row)
+
+    # Long prose reads far better in BodyFont than in 8-bit pixel caps
+    desc = _exp_label(exp["desc"], sp(12), TEXT_MUTED, single_line=False,
+                      font_name='BodyFont', size_hint_y=None,
+                      height=_EXP_ROW_DESC)
+    desc.valign = "top"
+    col.add_widget(desc)
+
+    stats_row = BoxLayout(size_hint_y=None, height=_EXP_ROW_STATS,
+                          spacing=dp(6))
+    stats_row.add_widget(_exp_label(f"Lv.{exp['min_level']}+", sp(10),
+                                    ACCENT_CYAN, size_hint_x=None,
+                                    width=dp(52)))
+    danger_bar = MinimalBar(
+        value=max(0.0, min(1.0, exp.get("danger", 0))),
+        bar_color=list(ACCENT_RED), bg_color=list(_EXP_DANGER_BG),
+        size_hint=(1, None), height=dp(10), pos_hint={'center_y': 0.5},
     )
-    card.add_label(exp["desc"], font_size=sp(11), color=TEXT_MUTED, halign="left",
-                   height=_EXP_ROW_DESC)
-    card.add_text_row(
-        (f"Lv.{exp['min_level']}+", sp(11), False, ACCENT_CYAN, 0.33),
-        (t("danger_label", v=f"{exp['danger']:.0%}"), sp(11), False, ACCENT_RED, 0.34),
-        (t("relic_chance", v=f"{exp['relic_chance']:.0%}"), sp(11), False, ACCENT_GOLD, 0.33),
-        height=_EXP_ROW_STATS,
-    )
+    stats_row.add_widget(danger_bar)
+    stats_row.add_widget(_exp_label(f"{exp['danger']:.0%}", sp(10),
+                                    ACCENT_RED, halign="right",
+                                    size_hint_x=None, width=dp(40)))
+    col.add_widget(stats_row)
 
     shard_info = SHARD_TIERS.get(exp["id"])
     relic_pct = int(exp.get("relic_chance", 0) * 100)
@@ -53,21 +104,34 @@ def build_expedition_card(exp, fighters, expedition_screen):
         _translated = t(_key)
         reward_parts.append(_translated if _translated != _key else shard_info["name"])
     reward_parts.append(f"{t('relic_slot')} ({relic_pct}%)")
-    card.add_label(" + ".join(reward_parts), font_size=sp(10), color=ACCENT_GOLD,
-                   height=_EXP_ROW_REWARD)
+    reward_row = BoxLayout(size_hint_y=None, height=_EXP_ROW_REWARD,
+                           spacing=dp(4))
+    reward_row.add_widget(Image(
+        source="sprites/icons/ic_trophy.png", fit_mode="contain",
+        size_hint=(None, 1), width=dp(16),
+    ))
+    reward_row.add_widget(_exp_label(" + ".join(reward_parts), sp(10),
+                                     ACCENT_GOLD))
+    col.add_widget(reward_row)
 
     eligible = [f for f in fighters if f["level"] >= exp["min_level"]]
+    action_row = BoxLayout(size_hint_y=None, height=_EXP_ROW_ACTION,
+                           spacing=dp(5))
     if eligible:
         # MinimalButton.font_size is a raw point size (sp() applied internally);
         # passing sp(11) here would double-scale and balloon the SEND label.
-        send_btn = MinimalButton(text=t("send_btn"), font_size=11, btn_color=ACCENT_PURPLE)
+        send_btn = MinimalButton(text=t("send_btn"), font_size=11,
+                                 btn_color=ACCENT_PURPLE)
         def _open_send_popup(inst, elig=eligible, eid=exp["id"], scr=expedition_screen):
             _show_send_fighter_popup(elig, eid, scr)
         send_btn.bind(on_press=_open_send_popup)
-        card.add_button_row([send_btn], height=_EXP_ROW_ACTION)
+        action_row.add_widget(send_btn)
     else:
-        card.add_label(t("no_eligible"), font_size=sp(11), color=TEXT_MUTED,
-                       height=_EXP_ROW_ACTION)
+        action_row.add_widget(MinimalButton(
+            text=t("no_eligible"), font_size=10, variant="ghost",
+            btn_color=list(TEXT_MUTED), disabled=True,
+        ))
+    col.add_widget(action_row)
     return card
 
 

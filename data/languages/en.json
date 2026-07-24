@@ -796,7 +796,7 @@
   "scr_menu_move_up": "Move up",
   "scr_menu_move_down": "Move down",
   "scr_when_label": "When",
-  "scr_blocks_n": "{n} blocks",
+  "scr_blocks_n": "blocks: {n}",
   "scr_last_run": "ran {s}s ago",
   "scr_never_ran": "not yet run",
   "scr_run_failed": "last error",

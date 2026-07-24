@@ -796,7 +796,7 @@
   "scr_menu_move_up": "Перейти вгору",
   "scr_menu_move_down": "Переміститися вниз",
   "scr_when_label": "Коли",
-  "scr_blocks_n": "{n} блоків",
+  "scr_blocks_n": "блоків: {n}",
   "scr_last_run": "запустив {s}с тому",
   "scr_never_ran": "ще не запущено",
   "scr_run_failed": "остання помилка",

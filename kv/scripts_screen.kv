@@ -21,7 +21,6 @@
 
         TopBar:
             title_text: app.title_scripts
-            title_color: app.accent_purple
 
         # Tabs: All / Running — same pattern as Lore tabs.
         TouchPanel:
@@ -32,15 +31,15 @@
             MinimalButton:
                 text: app.scr_tab_all
                 icon_source: "icons/ic_templates.png"
-                btn_color: theme.ACCENT_PURPLE if root.scripts_tab == "all" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.scripts_tab == "all" else theme.TEXT_MUTED
+                variant: "primary" if root.scripts_tab == "all" else "ghost"
+                btn_color: theme.ACCENT_PURPLE if root.scripts_tab == "all" else theme.TEXT_SECONDARY
                 font_size: 12
                 on_press: root.set_tab("all")
             MinimalButton:
                 text: app.scr_tab_running
                 icon_source: "icons/ic_play.png"
-                btn_color: theme.ACCENT_PURPLE if root.scripts_tab == "running" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.scripts_tab == "running" else theme.TEXT_MUTED
+                variant: "primary" if root.scripts_tab == "running" else "ghost"
+                btn_color: theme.ACCENT_PURPLE if root.scripts_tab == "running" else theme.TEXT_SECONDARY
                 font_size: 12
                 on_press: root.set_tab("running")
 
@@ -53,7 +52,8 @@
             MinimalButton:
                 text: app.lbl_back_btn
                 icon_source: "icons/ic_back.png"
-                btn_color: theme.BTN_PRIMARY
+                variant: "secondary"
+                btn_color: theme.ACCENT_BLUE
                 text_color: theme.TEXT_PRIMARY
                 font_size: 12
                 size_hint_x: None
@@ -81,31 +81,27 @@
             spacing: dp(6)
             MinimalButton:
                 text: app.scr_tmpl_btn or "Templates"
-                icon_source: "icons/ic_templates.png"
-                btn_color: theme.BTN_PRIMARY
-                text_color: theme.TEXT_PRIMARY
-                font_size: 12
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
+                font_size: 10
                 on_press: root._open_templates()
             MinimalButton:
                 text: app.scr_online_btn or "Online"
-                icon_source: "icons/ic_online.png"
-                btn_color: theme.BTN_PRIMARY
-                text_color: theme.TEXT_PRIMARY
-                font_size: 12
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
+                font_size: 10
                 on_press: root._open_online()
             MinimalButton:
                 text: app.scr_export_all_btn or "Export all"
-                icon_source: "icons/ic_export.png"
-                btn_color: theme.BTN_PRIMARY
-                text_color: theme.TEXT_PRIMARY
-                font_size: 12
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
+                font_size: 10
                 on_press: root._export_all()
             MinimalButton:
                 text: app.scr_import_btn or "Import"
-                icon_source: "icons/ic_import.png"
-                btn_color: theme.BTN_PRIMARY
-                text_color: theme.TEXT_PRIMARY
-                font_size: 12
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
+                font_size: 10
                 on_press: root._import_dialog()
 
         # Thin separator line
@@ -155,7 +151,6 @@
 
         TopBar:
             title_text: root.editor_title or app.title_scripts
-            title_color: app.accent_purple
 
         # Toolbar — back, run, log
         BoxLayout:
@@ -166,21 +161,20 @@
             MinimalButton:
                 text: app.lbl_back_btn
                 icon_source: "icons/ic_back.png"
-                btn_color: theme.BTN_PRIMARY
+                variant: "secondary"
+                btn_color: theme.ACCENT_BLUE
                 text_color: theme.TEXT_PRIMARY
                 font_size: 12
                 size_hint_x: None
                 width: dp(96)
                 on_press: app.go_back()
-            # Undo / Redo — greyed when stacks are empty (background flips
-            # to BTN_DISABLED + reduced opacity so the user can see at a
-            # glance whether there's anything to revert / restore).
+            # Undo / Redo — ghost buttons; the variant's disabled state
+            # dims them when the stacks are empty.
             MinimalButton:
                 text: app.scr_undo_btn
                 icon_source: "icons/ic_undo.png"
-                btn_color: theme.BTN_PRIMARY if root.can_undo else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.can_undo else theme.TEXT_MUTED
-                opacity: 1 if root.can_undo else 0.5
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
                 disabled: not root.can_undo
                 font_size: 11
                 size_hint_x: None
@@ -189,9 +183,8 @@
             MinimalButton:
                 text: app.scr_redo_btn
                 icon_source: "icons/ic_redo.png"
-                btn_color: theme.BTN_PRIMARY if root.can_redo else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.can_redo else theme.TEXT_MUTED
-                opacity: 1 if root.can_redo else 0.5
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
                 disabled: not root.can_redo
                 font_size: 11
                 size_hint_x: None
@@ -213,8 +206,8 @@
             MinimalButton:
                 text: app.scr_log_btn or "Log"
                 icon_source: "icons/ic_log.png"
-                btn_color: theme.BTN_PRIMARY
-                text_color: theme.TEXT_PRIMARY
+                variant: "ghost"
+                btn_color: theme.ACCENT_BLUE
                 font_size: 12
                 size_hint_x: None
                 width: dp(84)

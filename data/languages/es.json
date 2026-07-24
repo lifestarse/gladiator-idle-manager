@@ -796,7 +796,7 @@
   "scr_menu_move_up": "Subir",
   "scr_menu_move_down": "Bajar",
   "scr_when_label": "Cuando",
-  "scr_blocks_n": "{n} bloques",
+  "scr_blocks_n": "bloques: {n}",
   "scr_last_run": "corrió hace {s} s",
   "scr_never_ran": "aún no se ha ejecutado",
   "scr_run_failed": "último error",

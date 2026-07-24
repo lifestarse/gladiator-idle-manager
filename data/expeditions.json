@@ -7,11 +7,18 @@
       "duration": 60,
       "min_level": 11,
       "danger": 0.43,
-      "gold_range": [20, 60],
+      "gold_range": [
+        20,
+        60
+      ],
       "relic_chance": 0.15,
-      "relic_pool": ["common", "uncommon"],
+      "relic_pool": [
+        "common",
+        "uncommon"
+      ],
       "shard_tier": 1,
-      "shard_name": "Metal Shard (I)"
+      "shard_name": "Metal Shard (I)",
+      "zone": "cave"
     },
     {
       "id": "bandit_outpost",
@@ -19,12 +26,19 @@
       "desc": "Raid a bandit camp in the hills",
       "duration": 180,
       "min_level": 13,
-      "danger": 0.50,
-      "gold_range": [50, 150],
+      "danger": 0.5,
+      "gold_range": [
+        50,
+        150
+      ],
       "relic_chance": 0.25,
-      "relic_pool": ["uncommon", "rare"],
+      "relic_pool": [
+        "uncommon",
+        "rare"
+      ],
       "shard_tier": 2,
-      "shard_name": "Metal Shard (II)"
+      "shard_name": "Metal Shard (II)",
+      "zone": "forest"
     },
     {
       "id": "cursed_ruins",
@@ -33,11 +47,18 @@
       "duration": 300,
       "min_level": 15,
       "danger": 0.57,
-      "gold_range": [100, 300],
+      "gold_range": [
+        100,
+        300
+      ],
       "relic_chance": 0.35,
-      "relic_pool": ["rare", "epic"],
+      "relic_pool": [
+        "rare",
+        "epic"
+      ],
       "shard_tier": 3,
-      "shard_name": "Metal Shard (III)"
+      "shard_name": "Metal Shard (III)",
+      "zone": "ruins"
     },
     {
       "id": "dragon_wastes",
@@ -46,11 +67,18 @@
       "duration": 600,
       "min_level": 18,
       "danger": 0.65,
-      "gold_range": [200, 600],
+      "gold_range": [
+        200,
+        600
+      ],
       "relic_chance": 0.45,
-      "relic_pool": ["epic", "legendary"],
+      "relic_pool": [
+        "epic",
+        "legendary"
+      ],
       "shard_tier": 4,
-      "shard_name": "Metal Shard (IV)"
+      "shard_name": "Metal Shard (IV)",
+      "zone": "desert"
     },
     {
       "id": "void_rift",
@@ -59,11 +87,17 @@
       "duration": 900,
       "min_level": 22,
       "danger": 0.75,
-      "gold_range": [400, 1000],
+      "gold_range": [
+        400,
+        1000
+      ],
       "relic_chance": 0.55,
-      "relic_pool": ["legendary"],
+      "relic_pool": [
+        "legendary"
+      ],
       "shard_tier": 5,
-      "shard_name": "Metal Shard (V)"
+      "shard_name": "Metal Shard (V)",
+      "zone": "swamp"
     }
   ]
 }

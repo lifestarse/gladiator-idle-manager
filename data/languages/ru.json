@@ -796,7 +796,7 @@
   "scr_menu_move_up": "Выше",
   "scr_menu_move_down": "Ниже",
   "scr_when_label": "Когда",
-  "scr_blocks_n": "{n} блоков",
+  "scr_blocks_n": "блоков: {n}",
   "scr_last_run": "сработал {s}с назад",
   "scr_never_ran": "ещё не запускался",
   "scr_run_failed": "ошибка",

@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """models._enemy — Enemy & Boss: from_template + tier scaling."""
 from ._imports import *  # noqa: F401,F403
 from ._helpers import *  # noqa: F401,F403
@@ -15,6 +15,7 @@ class Enemy(CombatUnit):
 
     def __init__(self, tier=1):
         self.tier = tier
+        self.role = "soldier"
         title_idx = min(tier - 1, len(ENEMY_TITLES) - 1)
         self.name = ENEMY_TITLES[title_idx]
 
@@ -45,6 +46,7 @@ class Enemy(CombatUnit):
 
         base_atk, base_def, base_hp = DifficultyScaler.enemy_stats(tier)
         role = template.get("role", "soldier")
+        enemy.role = role
         bias = template.get("stat_bias", "balanced")
         rm = ROLE_MULT.get(role, 1.0)
         rsm = ROLE_STAT_MULT.get(role, {})

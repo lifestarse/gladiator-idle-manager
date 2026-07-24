@@ -21,7 +21,6 @@
 
         TopBar:
             title_text: app.title_hunts
-            title_color: app.accent_purple
 
         TouchPanel:
             size_hint_y: None
@@ -32,14 +31,16 @@
             spacing: dp(6)
             MinimalButton:
                 text: app.lbl_tab_missions
-                btn_color: theme.ACCENT_CYAN if root.expedition_tab == "missions" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.expedition_tab == "missions" else theme.TEXT_MUTED
+                variant: "primary" if root.expedition_tab == "missions" else "ghost"
+                btn_color: theme.ACCENT_CYAN if root.expedition_tab == "missions" else theme.TEXT_SECONDARY
+                text_color: theme.BG_DARK if root.expedition_tab == "missions" else theme.TEXT_SECONDARY
                 font_size: 11
                 on_press: root.set_expedition_tab("missions")
             MinimalButton:
                 text: app.lbl_tab_hunts
-                btn_color: theme.ACCENT_GOLD if root.expedition_tab == "hunts" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.expedition_tab == "hunts" else theme.TEXT_MUTED
+                variant: "primary" if root.expedition_tab == "hunts" else "ghost"
+                btn_color: theme.ACCENT_GOLD if root.expedition_tab == "hunts" else theme.TEXT_SECONDARY
+                text_color: theme.BG_DARK if root.expedition_tab == "hunts" else theme.TEXT_SECONDARY
                 font_size: 11
                 on_press: root.set_expedition_tab("hunts")
 

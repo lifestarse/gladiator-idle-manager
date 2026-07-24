@@ -21,7 +21,6 @@
 
         TopBar:
             title_text: root.lbl_top_title
-            title_color: app.accent_red if not root.show_inventory else app.accent_cyan
 
         TouchPanel:
             id: shop_tabs_box
@@ -33,20 +32,20 @@
             padding: [dp(8), dp(2)]
             MinimalButton:
                 text: app.lbl_tab_weapon
-                btn_color: theme.ACCENT_RED if root.forge_tab == "weapon" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.forge_tab == "weapon" else theme.TEXT_MUTED
+                variant: "primary" if root.forge_tab == "weapon" else "ghost"
+                btn_color: theme.ACCENT_RED if root.forge_tab == "weapon" else theme.TEXT_SECONDARY
                 font_size: 11
                 on_press: root.set_forge_tab("weapon")
             MinimalButton:
                 text: app.lbl_tab_armor
-                btn_color: theme.ACCENT_BLUE if root.forge_tab == "armor" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.forge_tab == "armor" else theme.TEXT_MUTED
+                variant: "primary" if root.forge_tab == "armor" else "ghost"
+                btn_color: theme.ACCENT_BLUE if root.forge_tab == "armor" else theme.TEXT_SECONDARY
                 font_size: 11
                 on_press: root.set_forge_tab("armor")
             MinimalButton:
                 text: app.lbl_tab_accessory
-                btn_color: theme.ACCENT_PURPLE if root.forge_tab == "accessory" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.forge_tab == "accessory" else theme.TEXT_MUTED
+                variant: "primary" if root.forge_tab == "accessory" else "ghost"
+                btn_color: theme.ACCENT_PURPLE if root.forge_tab == "accessory" else theme.TEXT_SECONDARY
                 font_size: 11
                 on_press: root.set_forge_tab("accessory")
 
@@ -128,7 +127,8 @@
         MinimalButton:
             id: forge_back_btn
             text: app.lbl_back_btn
-            btn_color: theme.BTN_PRIMARY
+            variant: "secondary"
+            btn_color: theme.ACCENT_BLUE
             font_size: 11
             size_hint_y: None
             height: dp(48) if (root.inv_detail_idx != -1 or root.eq_detail_fighter != -1 or not root._show_inv_tabs) else 0
@@ -138,7 +138,8 @@
 
         MinimalButton:
             text: root.inventory_btn_text
-            btn_color: theme.ACCENT_BROWN if root.show_inventory else theme.BTN_PRIMARY
+            variant: "secondary"
+            btn_color: theme.ACCENT_BROWN if root.show_inventory else theme.ACCENT_CYAN
             text_color: theme.TEXT_PRIMARY
             font_size: 11
             size_hint_y: None
