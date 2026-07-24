@@ -1,11 +1,11 @@
-# Build: 4
+# Build: 5
 """
 In-App Purchase module.
 
 Products:
 - remove_ads: Remove all ads — 100 UAH (~$2.50)
 
-On Android: uses Google Play Billing Library v6+ via pyjnius
+On Android: uses Google Play Billing Library v8 via pyjnius
 On iOS: uses StoreKit via pyobjus
 On desktop: stub mode (purchases always succeed for testing)
 """

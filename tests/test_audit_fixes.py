@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Regression tests for the 2026-07-24 audit fixes.
 
 Covers:
@@ -54,9 +54,11 @@ def test_iap_uninitialized_desktop_stub_grants(monkeypatch):
 # ---------- Ads ----------
 
 def test_rewarded_uninitialized_android_no_reward(monkeypatch):
-    import game.ads as ads
-    monkeypatch.setattr(ads, "platform", "android")
-    mgr = ads.AdManager()
+    # game/ads is a package now — patch platform where the gating code
+    # lives (game.ads._core), same as the IAP tests patch game.iap._core.
+    import game.ads._core as ads_core
+    monkeypatch.setattr(ads_core, "platform", "android")
+    mgr = ads_core.AdManager()
     assert not mgr._initialized
     calls = []
     mgr.show_rewarded(lambda: calls.append(1))
@@ -64,9 +66,9 @@ def test_rewarded_uninitialized_android_no_reward(monkeypatch):
 
 
 def test_rewarded_uninitialized_desktop_stub_rewards(monkeypatch):
-    import game.ads as ads
-    monkeypatch.setattr(ads, "platform", "win")
-    mgr = ads.AdManager()
+    import game.ads._core as ads_core
+    monkeypatch.setattr(ads_core, "platform", "win")
+    mgr = ads_core.AdManager()
     calls = []
     mgr.show_rewarded(lambda: calls.append(1))
     assert calls == [1]
