@@ -21,17 +21,16 @@
 
         TopBar:
             title_text: app.title_squad
-            title_color: app.accent_green
 
         BoxLayout:
             size_hint_y: None
-            height: dp(40)
-            padding: [dp(8), dp(4)]
+            height: dp(38)
+            padding: [dp(8), dp(3)]
             MinimalButton:
                 text: app.lbl_scripts
-                font_size: 12
+                font_size: 10
+                variant: "ghost"
                 btn_color: theme.ACCENT_BLUE
-                text_color: theme.BG_DARK
                 on_press: app.sm.current = "scripts"
 
         BoxLayout:
@@ -46,14 +45,16 @@
             MinimalButton:
                 text: root.tab_active_text
                 font_size: 11
-                btn_color: theme.ACCENT_GREEN if root.roster_tab == "active" else theme.BTN_PRIMARY
-                text_color: theme.BG_DARK if root.roster_tab == "active" else theme.TEXT_PRIMARY
+                variant: "primary" if root.roster_tab == "active" else "ghost"
+                btn_color: theme.ACCENT_GREEN if root.roster_tab == "active" else theme.TEXT_SECONDARY
+                text_color: theme.BG_DARK if root.roster_tab == "active" else theme.TEXT_SECONDARY
                 on_press: root.set_roster_tab("active")
             MinimalButton:
                 text: root.tab_bench_text
                 font_size: 11
-                btn_color: theme.ACCENT_GOLD if root.roster_tab == "bench" else theme.BTN_PRIMARY
-                text_color: theme.BG_DARK if root.roster_tab == "bench" else theme.TEXT_PRIMARY
+                variant: "primary" if root.roster_tab == "bench" else "ghost"
+                btn_color: theme.ACCENT_GOLD if root.roster_tab == "bench" else theme.TEXT_SECONDARY
+                text_color: theme.BG_DARK if root.roster_tab == "bench" else theme.TEXT_SECONDARY
                 on_press: root.set_roster_tab("bench")
 
         TouchRecycleView:
@@ -125,7 +126,8 @@
         MinimalButton:
             id: detail_back_btn
             text: app.lbl_back_btn
-            btn_color: theme.BTN_PRIMARY
+            variant: "secondary"
+            btn_color: theme.ACCENT_BLUE
             font_size: 11
             size_hint_y: None
             height: dp(48) if root.roster_view != "list" else 0

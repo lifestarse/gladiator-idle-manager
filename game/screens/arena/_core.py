@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """ArenaScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -96,7 +96,8 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
             return None
         bm = getattr(engine, 'battle_mgr', None)
         if not bm or not bm.is_active:
-            return skill["name"][:3].upper()
+            # Full name — the badge auto-shrinks; "RAL" read as clipped junk
+            return skill["name"].upper()
         ss = bm.state.skill_states.get(id(fighter))
         if not ss:
             return None

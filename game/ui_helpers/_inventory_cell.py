@@ -1,7 +1,8 @@
-# Build: 3
+# Build: 4
 """InventoryCardView — inventory grid cell (RecycleView viewclass)."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
+from ._widgets import item_icon_source
 
 class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
     """RecycleView viewclass for inventory item cards."""
@@ -19,9 +20,17 @@ class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
 
         from game.widgets import BaseCard
         self._info = BaseCard(
-            orientation="vertical", size_hint_y=1,
-            padding=[dp(12), dp(8)], spacing=dp(4),
+            orientation="horizontal", size_hint_y=1,
+            padding=[dp(10), dp(8)], spacing=dp(8),
         )
+        self._item_icon = Image(
+            fit_mode="contain", size_hint=(None, None),
+            size=(dp(40), dp(40)), pos_hint={'center_y': 0.5},
+        )
+        self._info.add_widget(self._item_icon)
+        col = BoxLayout(orientation="vertical", spacing=dp(4))
+        self._info.add_widget(col)
+        self._col = col
 
         # Row 1: name | level | enchantment
         row1 = BoxLayout(size_hint_y=0.35, spacing=dp(4))
@@ -43,7 +52,7 @@ class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
         )
         self._ench_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
         row1.add_widget(self._ench_lbl)
-        self._info.add_widget(row1)
+        col.add_widget(row1)
 
         # Row 2: slot/rarity + equipped_on
         self._row2 = BoxLayout(size_hint_y=0.25, spacing=dp(4))
@@ -59,7 +68,7 @@ class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
         )
         self._eq_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
         # eq_lbl conditionally added in refresh_view_attrs
-        self._info.add_widget(self._row2)
+        col.add_widget(self._row2)
 
         # Row 3: stats
         self._row3 = BoxLayout(size_hint_y=0.40, spacing=dp(8))
@@ -79,7 +88,7 @@ class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
         self._no_stat_lbl = AutoShrinkLabel(
             text="—", font_size=sp(10), color=list(TEXT_MUTED), halign="left",
         )
-        self._info.add_widget(self._row3)
+        col.add_widget(self._row3)
         self.add_widget(self._info)
 
         _bind_long_tap(self._info, lambda w: self._on_tap())
@@ -92,6 +101,11 @@ class InventoryCardView(RecycleDataViewBehavior, BoxLayout):
         self._forge_screen = data.get('_forge')
         rcolor = list(data.get('rarity_color', TEXT_PRIMARY))
         self._info.border_color = rcolor
+
+        src = item_icon_source(self._slot, data.get('rarity', ''))
+        self._item_icon.source = src
+        self._item_icon.opacity = 1 if src else 0
+        self._item_icon.width = dp(40) if src else 0
 
         self._name_lbl.text = data.get('name', '')
         self._name_lbl.color = rcolor

@@ -1,4 +1,4 @@
-# Build: 63
+# Build: 64
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -46,9 +46,12 @@ if platform not in ("android", "ios"):
     Window.size = (360, 640)
 Window.clearcolor = BG_DARK
 
-# Register pixel font
+# Register fonts. PixelFont carries headers/numbers; BodyFont (DroidSans)
+# carries long descriptions — PressStart2P at small sizes turns paragraph
+# text into a wall of noise.
 from kivy.core.text import LabelBase
 LabelBase.register(name='PixelFont', fn_regular='fonts/PressStart2P-Regular.ttf')
+LabelBase.register(name='BodyFont', fn_regular='fonts/DroidSans.ttf')
 
 
 class SwipeScreenManager(ScreenManager):

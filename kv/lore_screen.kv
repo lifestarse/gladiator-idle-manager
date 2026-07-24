@@ -16,37 +16,13 @@
         # Top bar
         TopBar:
             title_text: app.title_lore
-            title_color: app.accent_purple
 
+        # Tab chips built in Python (ChipRow — scrolls when labels don't fit)
         TouchPanel:
+            id: lore_tabs_box
             size_hint_y: None
-            height: dp(48)
-            spacing: dp(4)
-            padding: [dp(8), dp(2)]
-            MinimalButton:
-                text: app.lbl_achievements
-                btn_color: theme.ACCENT_GOLD if root.lore_tab == "achievements" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.lore_tab == "achievements" else theme.TEXT_MUTED
-                font_size: 11
-                on_press: root.set_lore_tab("achievements")
-            MinimalButton:
-                text: app.lbl_diamond_shop
-                btn_color: theme.ACCENT_CYAN if root.lore_tab == "shop" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.lore_tab == "shop" else theme.TEXT_MUTED
-                font_size: 11
-                on_press: root.set_lore_tab("shop")
-            MinimalButton:
-                text: app.lbl_quests
-                btn_color: theme.ACCENT_GOLD if root.lore_tab == "quests" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.lore_tab == "quests" else theme.TEXT_MUTED
-                font_size: 11
-                on_press: root.set_lore_tab("quests")
-            MinimalButton:
-                text: app.lbl_stats
-                btn_color: theme.ACCENT_GREEN if root.lore_tab == "stats" else theme.BTN_DISABLED
-                text_color: theme.TEXT_PRIMARY if root.lore_tab == "stats" else theme.TEXT_MUTED
-                font_size: 11
-                on_press: root.set_lore_tab("stats")
+            height: dp(46)
+            padding: [dp(8), dp(3)]
 
         # Battle log subview — RecycleView (up to 200 entries)
         TouchRecycleView:
@@ -164,7 +140,8 @@
         MinimalButton:
             id: lore_back_btn
             text: app.lbl_back_btn
-            btn_color: theme.BTN_PRIMARY
+            variant: "secondary"
+            btn_color: theme.ACCENT_BLUE
             font_size: 11
             size_hint_y: None
             height: dp(48) if root.lore_subview else 0
@@ -181,14 +158,14 @@
             spacing: dp(4)
             MinimalButton:
                 text: root.battle_log_count or ""
+                variant: "secondary"
                 btn_color: theme.ACCENT_CYAN
-                text_color: theme.BG_DARK
                 font_size: 11
                 on_press: root._show_battle_log()
             MinimalButton:
                 text: root.event_log_count or ""
+                variant: "secondary"
                 btn_color: theme.ACCENT_GOLD
-                text_color: theme.BG_DARK
                 font_size: 11
                 on_press: root._show_event_log()
 # ============================================================

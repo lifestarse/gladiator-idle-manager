@@ -49,60 +49,76 @@
         is_active: root.active_screen == "more"
         on_press: app.sm.current = "more"
 
+<CurrencyChip@BoxLayout>:
+    value_text: ""
+    icon_src: ""
+    value_color: app.accent_gold
+    padding: [dp(7), dp(6)]
+    spacing: dp(2)
+    canvas.before:
+        Color:
+            rgba: app.bg_elevated
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: theme.BTN_OUTLINE
+        Line:
+            rectangle: (self.x + 0.5, self.y + 0.5, self.width - 1, self.height - 1)
+            width: 1.1
+    AutoShrinkLabel:
+        text: root.value_text
+        single_line: True
+        font_size: "11sp"
+        bold: True
+        color: root.value_color
+        halign: "right"
+        text_size: self.size
+        valign: "middle"
+    Image:
+        source: root.icon_src
+        fit_mode: "contain"
+        size_hint: None, 1
+        width: dp(16)
+
 <TopBar@BoxLayout>:
     title_text: ""
     title_color: app.accent_gold
     size_hint_y: None
     height: dp(56)
-    padding: [dp(8), dp(4)]
-    spacing: dp(4)
+    padding: [dp(10), dp(10)]
+    spacing: dp(6)
     canvas.before:
         Color:
             rgba: app.nav_bg
         Rectangle:
             pos: self.pos
             size: self.size
+        Color:
+            rgba: app.divider
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, dp(1)
     AutoShrinkLabel:
         text: self.parent.title_text if self.parent else ""
-        font_size: "14sp"
+        single_line: True
+        font_size: "13sp"
         bold: True
         color: self.parent.title_color if self.parent else [1,1,1,1]
         halign: "left"
         text_size: self.size
         valign: "middle"
-        size_hint_x: 0.40
-    BoxLayout:
-        spacing: 0
-        size_hint_x: 0.30
-        AutoShrinkLabel:
-            text: app.top_gold
-            font_size: "12sp"
-            bold: True
-            color: app.accent_gold
-            halign: "right"
-            text_size: self.size
-            valign: "middle"
-        Image:
-            source: "sprites/icons/ic_gold.png"
-            fit_mode: "contain"
-            size_hint: None, 1
-            width: dp(20)
-    BoxLayout:
-        spacing: 0
-        size_hint_x: 0.30
-        AutoShrinkLabel:
-            text: app.top_diamonds
-            font_size: "12sp"
-            bold: True
-            color: app.accent_cyan
-            halign: "right"
-            text_size: self.size
-            valign: "middle"
-        Image:
-            source: "sprites/icons/ic_gem.png"
-            fit_mode: "contain"
-            size_hint: None, 1
-            width: dp(20)
+        size_hint_x: 0.42
+    CurrencyChip:
+        size_hint_x: 0.29
+        value_text: app.top_gold
+        value_color: app.accent_gold
+        icon_src: "sprites/icons/ic_gold.png"
+    CurrencyChip:
+        size_hint_x: 0.29
+        value_text: app.top_diamonds
+        value_color: app.accent_cyan
+        icon_src: "sprites/icons/ic_gem.png"
 
 # ============================================================
 #  ARENA (THE PIT) — Battle System

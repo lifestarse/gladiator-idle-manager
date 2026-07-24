@@ -1,13 +1,30 @@
-# Build: 3
-"""Widgets — MinimalButton, NavButton."""
+# Build: 4
+"""Widgets — MinimalButton (pixel-framed, variant-aware)."""
 from ._imports import *  # noqa: F401,F403
 from ._imports import _SCROLL_THRESHOLD  # noqa: F401
 from ._scroll import ScrollSafeButtonMixin
-from ._labels import AutoShrinkLabel
+
+_VARIANTS = ('primary', 'secondary', 'ghost')
+_PRESS_DARKEN = 0.82
+_SECONDARY_PRESS_LIGHTEN = 1.3
+_GHOST_BORDER_ALPHA = 0.55
+_SECONDARY_BEVEL_SCALE = 0.5
+_DISABLED_ICON_ALPHA = 0.35
+
+
+def _scaled(color, factor):
+    r, g, b, a = color
+    return (min(1, r * factor), min(1, g * factor), min(1, b * factor), a)
 
 
 class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
-    """Flat button with subtle press animation.
+    """Pixel-art button: dark contour, top highlight, bottom shadow,
+    content sinks while pressed.
+
+    variant:
+      'primary'   — filled accent slab (default, loudest)
+      'secondary' — dark fill, accent border + accent text
+      'ghost'     — transparent fill, dim border; quiet toolbar actions
 
     font_size is a raw point size: pass plain integers (e.g. 11), NOT
     sp(11). The button applies sp() internally so the rendered text scales
@@ -19,7 +36,7 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
     text_color = ListProperty(TEXT_PRIMARY)
     font_size = NumericProperty(11)
     icon_source = StringProperty("")
-    _press_alpha = NumericProperty(0)
+    variant = StringProperty("primary")
 
     def on_touch_down(self, touch):
         if self.disabled:
@@ -27,9 +44,10 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         return super().on_touch_down(touch)
 
     def __init__(self, **kwargs):
+        # Explicit text_color wins over the variant's derived text colour.
+        self._explicit_text_color = 'text_color' in kwargs
         super().__init__(**kwargs)
         self._base_fs = sp(self.font_size)
-        # Inner layout: AnchorLayout centers a BoxLayout with [label, icon]
         from kivy.uix.anchorlayout import AnchorLayout
         self._anchor = AnchorLayout(anchor_x="center", anchor_y="center")
         self._box = BoxLayout(spacing=0, size_hint=(None, None))
@@ -46,22 +64,23 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self.add_widget(self._anchor)
         self._icon = None
         with self.canvas.before:
-            r, g, b, a = self.btn_color
-            self._bg_color = Color(r, g, b, a)
+            self._bg_color = Color(*self.btn_color)
             self._bg_rect = Rectangle(pos=self.pos, size=self.size)
-            # Pixel 3D highlight (top + left, white)
-            Color(1, 1, 1, 0.12)
-            self._hi_line = Line(points=[], width=1.0)
-            # Pixel 3D shadow (bottom + right, black)
-            Color(0, 0, 0, 0.2)
-            self._sh_line = Line(points=[], width=1.0)
+            self._hi_color = Color(*BEVEL_LIGHT)
+            self._hi_rect = Rectangle(pos=self.pos, size=(0, 0))
+            self._sh_color = Color(*BEVEL_DARK)
+            self._sh_rect = Rectangle(pos=self.pos, size=(0, 0))
+            self._br_color = Color(*BTN_OUTLINE)
+            self._br_line = Line(rectangle=(0, 0, 0, 0), width=1.2)
         self.bind(pos=self._sync, size=self._on_resize,
                   text=self._update_text, font_size=self._update_font_size,
-                  btn_color=self._update_bg, _press_alpha=self._update_bg,
-                  text_color=self._update_text_color,
+                  btn_color=self._restyle, variant=self._restyle,
+                  state=self._on_state, disabled=self._restyle,
+                  text_color=self._on_text_color,
                   icon_source=self._update_icon)
         if self.icon_source:
             self._update_icon()
+        self._restyle()
 
     def _on_tex(self, *args):
         """Label texture changed — resize label to match, update box."""
@@ -85,19 +104,71 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self._sync()
 
     def _sync(self, *args):
-        self._anchor.pos = self.pos
+        sink = dp(BTN_PRESS_OFFSET_PX) if self.state == 'down' else 0
+        self._anchor.pos = (self.x, self.y - sink)
         self._anchor.size = self.size
         self._bg_rect.pos = self.pos
         self._bg_rect.size = self.size
-        x, y, w, h = self.x, self.y, self.width, self.height
-        # Highlight: left edge bottom-to-top, then top edge left-to-right
-        self._hi_line.points = [x, y, x, y + h, x + w, y + h]
-        # Shadow: right edge top-to-bottom, then bottom edge right-to-left
-        self._sh_line.points = [x + w, y + h, x + w, y, x, y]
+        edge = dp(BEVEL_EDGE_PX)
+        self._hi_rect.pos = (self.x, self.top - edge)
+        self._hi_rect.size = (self.width, edge)
+        self._sh_rect.pos = (self.x, self.y)
+        self._sh_rect.size = (self.width, edge)
+        self._br_line.rectangle = (
+            self.x + 0.5, self.y + 0.5, self.width - 1, self.height - 1)
 
-    def _update_bg(self, *args):
-        r, g, b, a = self.btn_color
-        self._bg_color.rgba = (r, g, b, a - self._press_alpha * 0.3)
+    def _on_state(self, *args):
+        self._sync()
+        self._restyle()
+
+    def _restyle(self, *args):
+        """Apply variant + state + disabled colours to the canvas."""
+        down = self.state == 'down'
+        accent = list(self.btn_color)
+        if self.disabled:
+            if self.variant == 'ghost':
+                self._bg_color.rgba = (0, 0, 0, 0)
+                self._br_color.rgba = (TEXT_MUTED[0], TEXT_MUTED[1],
+                                       TEXT_MUTED[2], 0.4)
+            else:
+                self._bg_color.rgba = list(BTN_DISABLED)
+                self._br_color.rgba = list(BTN_OUTLINE)
+            self._hi_color.rgba = (0, 0, 0, 0)
+            self._sh_color.rgba = (0, 0, 0, 0)
+            self._label.color = list(TEXT_MUTED)
+            if self._icon:
+                self._icon.color = [1, 1, 1, _DISABLED_ICON_ALPHA]
+            return
+        if self._icon:
+            self._icon.color = [1, 1, 1, 1]
+        v = self.variant if self.variant in _VARIANTS else 'primary'
+        if v == 'primary':
+            self._bg_color.rgba = _scaled(accent, _PRESS_DARKEN) if down else accent
+            self._br_color.rgba = list(BTN_OUTLINE)
+            hi_a, sh_a = BEVEL_LIGHT[3], BEVEL_DARK[3]
+            self._label.color = list(self.text_color)
+        elif v == 'secondary':
+            fill = list(BG_ELEVATED)
+            self._bg_color.rgba = _scaled(fill, _SECONDARY_PRESS_LIGHTEN) if down else fill
+            self._br_color.rgba = accent
+            hi_a = BEVEL_LIGHT[3] * _SECONDARY_BEVEL_SCALE
+            sh_a = BEVEL_DARK[3] * _SECONDARY_BEVEL_SCALE
+            self._label.color = (list(self.text_color)
+                                 if self._explicit_text_color else accent)
+        else:  # ghost
+            self._bg_color.rgba = (1, 1, 1, 0.05) if down else (0, 0, 0, 0)
+            self._br_color.rgba = (accent[0], accent[1], accent[2],
+                                   _GHOST_BORDER_ALPHA)
+            hi_a = sh_a = 0
+            self._label.color = (list(self.text_color)
+                                 if self._explicit_text_color else accent)
+        # Pressed = bevel inverts (light moves to the bottom edge)
+        if down:
+            self._hi_color.rgba = (0, 0, 0, sh_a)
+            self._sh_color.rgba = (1, 1, 1, hi_a)
+        else:
+            self._hi_color.rgba = (1, 1, 1, hi_a)
+            self._sh_color.rgba = (0, 0, 0, sh_a)
 
     def _update_text(self, *args):
         self._label.text = self.text
@@ -107,8 +178,9 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self._base_fs = sp(self.font_size)
         self._label.font_size = sp(self.font_size)
 
-    def _update_text_color(self, *args):
-        self._label.color = self.text_color
+    def _on_text_color(self, *args):
+        self._explicit_text_color = True
+        self._restyle()
 
     def _update_icon(self, *args):
         if self.icon_source:
@@ -132,74 +204,3 @@ class MinimalButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         # and render invisible. Forcing _on_tex after icon mutation picks
         # up the icon's dimensions and re-centres the layout.
         self._on_tex()
-
-    def on_press(self):
-        Animation.cancel_all(self, "_press_alpha")
-        self._press_alpha = 1
-        Animation(_press_alpha=0, duration=0.3).start(self)
-
-
-class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
-    """Bottom nav icon button with PNG icon sprite."""
-
-    text = StringProperty("")
-    icon = StringProperty("")          # kept for compat but unused now
-    icon_source = StringProperty("")   # path to PNG icon
-    is_active = BooleanProperty(False)
-
-    # ScrollSafeButtonMixin handles scroll protection
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._icon_img = Image(
-            fit_mode="contain",
-        )
-        self._text_label = Label(
-            text=self.text,
-            font_size=sp(9),
-            font_name='PixelFont',
-            halign="center",
-            valign="top",
-            bold=True,
-        )
-        self.add_widget(self._icon_img)
-        self.add_widget(self._text_label)
-        self.bind(pos=self._update, size=self._update,
-                  is_active=self._update, text=self._update,
-                  icon_source=self._update)
-        self._text_label.bind(texture_size=self._update)
-        Clock.schedule_once(self._update, 0)
-
-    def _update(self, *args):
-        color = NAV_ACTIVE if self.is_active else NAV_INACTIVE
-        if self.icon_source:
-            self._icon_img.source = self.icon_source
-            self._icon_img.color = [1, 1, 1, 1] if self.is_active else [0.5, 0.5, 0.5, 1]
-        ico_size = min(self.width * 0.7, self.height * 0.55)
-        self._icon_img.size = (ico_size, ico_size)
-        self._icon_img.pos = (
-            self.center_x - ico_size / 2,
-            self.y + self.height * 0.35,
-        )
-
-        self._text_label.text = self.text
-        self._text_label.color = color
-        self._text_label.pos = (self.x, self.y)
-        self._text_label.size = (self.width, self.height * 0.38)
-        self._text_label.text_size = (self.width, self.height * 0.38)
-        # Auto-shrink nav text to fit width
-        if self.width > 0 and self._text_label.texture_size[0] > self.width:
-            ratio = self.width / max(1, self._text_label.texture_size[0])
-            self._text_label.font_size = max(sp(5), sp(9) * ratio * 0.95)
-        elif self.width > 0 and self._text_label.font_size < sp(9):
-            self._text_label.font_size = sp(9)
-        # Sync all NavButton font sizes to smallest in parent NavBar.
-        # NavBar lives in ._nav (sibling module); lazy-import to avoid cycle.
-        from ._nav import NavBar  # noqa: PLC0415
-        if isinstance(self.parent, NavBar):
-            Clock.unschedule(self.parent._sync_font_sizes)
-            Clock.schedule_once(self.parent._sync_font_sizes, 0)
-
-
-
-

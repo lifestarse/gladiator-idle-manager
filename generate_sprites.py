@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """
 Gladiator Idle Manager - Complete Pixel Art Sprite Generator
 Generates ALL game art assets in retro SNES pixel art style using PIL/Pillow.
@@ -1836,73 +1836,112 @@ def generate_stat_icons(base_dir):
 # ========================================================================
 
 def _draw_bg_arena(w, h):
-    """Stone arena with columns, dark."""
-    img = Image.new("RGBA", (w, h), (35, 30, 40, 255))
+    """Colosseum pit: night sky, crowd stands, torch-lit columns, sand."""
+    img = Image.new("RGBA", (w, h), (24, 18, 34, 255))
     draw = ImageDraw.Draw(img)
 
-    # Stone floor gradient (bottom third)
+    crowd_top = 78
+    parapet_y = 148
     floor_y = h * 2 // 3
-    for y in range(floor_y, h):
-        brightness = 40 + int((y - floor_y) / (h - floor_y) * 20)
-        draw.line([(0, y), (w, y)], fill=(brightness, brightness - 5, brightness + 5, 255))
 
-    # Stone tile pattern on floor
-    tile_size = 24
-    for ty in range(floor_y, h, tile_size):
-        for tx in range(0, w, tile_size):
-            offset = (tile_size // 2) if ((ty - floor_y) // tile_size) % 2 else 0
-            sx = tx + offset
-            # Tile border lines
-            draw.line([(sx, ty), (sx + tile_size, ty)], fill=(55, 50, 60, 255))
-            draw.line([(sx, ty), (sx, ty + tile_size)], fill=(55, 50, 60, 255))
-            # Random highlight pixels inside tile
-            cx, cy = sx + tile_size // 2, ty + tile_size // 2
-            if (cx * 7 + cy * 13) % 17 < 3:
-                draw.rectangle([cx - 1, cy - 1, cx, cy], fill=(65, 60, 70, 255))
+    # Night sky gradient
+    for y in range(0, crowd_top):
+        b = 20 + int(y / crowd_top * 8)
+        draw.line([(0, y), (w, y)], fill=(b, b - 4, b + 8, 255))
+    # A few deterministic stars
+    for i in range(14):
+        sx = (i * 97 + 31) % w
+        sy = (i * 53 + 11) % (crowd_top - 8)
+        img.putpixel((sx, sy), (120, 115, 140, 255))
 
-    # Columns (left and right)
+    # Crowd stands: banded rows of head silhouettes behind the parapet
+    for y in range(crowd_top, parapet_y):
+        b = 30 + int((y - crowd_top) / (parapet_y - crowd_top) * 8)
+        draw.line([(0, y), (w, y)], fill=(b, b - 5, b + 6, 255))
+    for row in range(4):
+        ry = crowd_top + 12 + row * 17
+        for i in range(w // 9):
+            hx = i * 9 + (row * 5 + i * 3) % 5
+            v = 38 + ((i * 13 + row * 7) % 14)
+            # head
+            draw.rectangle([hx, ry, hx + 3, ry + 3],
+                           fill=(v, v - 6, v + 4, 255))
+            # shoulders
+            draw.rectangle([hx - 1, ry + 4, hx + 4, ry + 6],
+                           fill=(v - 6, v - 10, v - 2, 255))
+
+    # Parapet ledge separating crowd from the pit wall
+    draw.rectangle([0, parapet_y, w, parapet_y + 7],
+                   fill=(52, 44, 58, 255), outline=(64, 56, 70, 255))
+
+    # Pit wall between parapet and floor
+    for y in range(parapet_y + 8, floor_y):
+        b = 34 + int(math.sin(y * 0.11) * 3)
+        draw.line([(0, y), (w, y)], fill=(b, b - 5, b + 5, 255))
+    # Wall brick seams
+    for by in range(parapet_y + 8, floor_y, 22):
+        draw.line([(0, by), (w, by)], fill=(42, 36, 50, 255))
+        for bx in range(0, w, 34):
+            off = 17 if ((by - parapet_y) // 22) % 2 else 0
+            draw.line([(bx + off, by), (bx + off, by + 22)],
+                      fill=(42, 36, 50, 255))
+
+    # Columns (left and right) from parapet to floor
     col_w = 28
+    torch_positions = []
     for col_x in [30, w - 58]:
-        # Column base
-        draw.rectangle([col_x - 4, floor_y - 10, col_x + col_w + 4, floor_y + 8],
-                       fill=(50, 45, 55, 255), outline=(60, 55, 65, 255))
-        # Column shaft
-        for y in range(80, floor_y - 10):
-            shade = 45 + int(math.sin(y * 0.05) * 8)
+        for y in range(parapet_y - 20, floor_y - 10):
+            shade = 48 + int(math.sin(y * 0.05) * 8)
             draw.line([(col_x, y), (col_x + col_w, y)],
                       fill=(shade, shade - 3, shade + 5, 255))
-        # Column highlight stripe
-        for y in range(80, floor_y - 10):
-            img.putpixel((col_x + 6, y), (65, 60, 75, 255))
-            img.putpixel((col_x + 7, y), (70, 65, 80, 255))
-        # Column capital
-        draw.rectangle([col_x - 6, 72, col_x + col_w + 6, 80],
-                       fill=(55, 50, 60, 255), outline=(65, 60, 70, 255))
-        # Column base detail
-        draw.rectangle([col_x - 6, floor_y - 18, col_x + col_w + 6, floor_y - 10],
-                       fill=(55, 50, 60, 255), outline=(65, 60, 70, 255))
+        for y in range(parapet_y - 20, floor_y - 10):
+            img.putpixel((col_x + 6, y), (68, 62, 78, 255))
+            img.putpixel((col_x + 7, y), (74, 68, 84, 255))
+        # Capital + base blocks
+        draw.rectangle([col_x - 6, parapet_y - 28, col_x + col_w + 6, parapet_y - 20],
+                       fill=(58, 52, 64, 255), outline=(68, 62, 74, 255))
+        draw.rectangle([col_x - 4, floor_y - 18, col_x + col_w + 4, floor_y + 6],
+                       fill=(52, 46, 58, 255), outline=(62, 56, 68, 255))
+        torch_positions.append((col_x + col_w // 2, parapet_y + 52))
 
-    # Dark sky / ceiling area with subtle arch
-    for y in range(0, 72):
-        brightness = 25 + int(y / 72 * 10)
-        draw.line([(0, y), (w, y)], fill=(brightness, brightness - 3, brightness + 3, 255))
-
-    # Arch at top
-    cx = w // 2
-    for angle_deg in range(0, 181, 2):
-        angle = math.radians(angle_deg)
-        ax = int(cx + 140 * math.cos(angle))
-        ay = int(70 - 50 * math.sin(angle))
-        if 0 <= ax < w and 0 <= ay < h:
-            draw.rectangle([ax - 1, ay - 1, ax + 1, ay + 1], fill=(55, 50, 60, 255))
-
-    # Scattered sand/dirt pixels on floor
-    for i in range(200):
+    # Sand floor: warm gradient + speckle + ring marks
+    for y in range(floor_y, h):
+        t = (y - floor_y) / max(1, h - floor_y)
+        r = 78 + int(t * 22)
+        g = 62 + int(t * 16)
+        b = 40 + int(t * 8)
+        draw.line([(0, y), (w, y)], fill=(r, g, b, 255))
+    for i in range(340):
         px = (i * 137 + 43) % w
         py = floor_y + (i * 89 + 17) % (h - floor_y)
-        if 0 <= px < w and 0 <= py < h:
-            v = 55 + (i * 7) % 20
-            img.putpixel((px, py), (v + 10, v + 5, v - 5, 255))
+        v = (i * 7) % 26
+        img.putpixel((px, py), (86 + v, 66 + v, 42 + v // 2, 255))
+    # Elliptic fighting-ring marks scraped into the sand
+    ring_cy = floor_y + (h - floor_y) // 2
+    for rx, ry_r in ((150, 52), (110, 38)):
+        for deg in range(0, 360, 3):
+            a = math.radians(deg)
+            ex = int(w // 2 + rx * math.cos(a))
+            ey = int(ring_cy + ry_r * math.sin(a))
+            if 0 <= ex < w and floor_y < ey < h:
+                img.putpixel((ex, ey), (64, 50, 34, 255))
+
+    # Torch flames + warm glow (alpha-composited overlay)
+    glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    gdraw = ImageDraw.Draw(glow)
+    for tx, ty in torch_positions:
+        # bracket
+        gdraw.rectangle([tx - 2, ty + 6, tx + 2, ty + 14],
+                        fill=(70, 48, 30, 255))
+        # glow halos
+        for radius, alpha in ((44, 22), (28, 30), (14, 42)):
+            gdraw.ellipse([tx - radius, ty - radius, tx + radius, ty + radius],
+                          fill=(255, 150, 60, alpha))
+        # flame pixels
+        gdraw.rectangle([tx - 3, ty - 2, tx + 3, ty + 6], fill=(214, 96, 32, 255))
+        gdraw.rectangle([tx - 2, ty - 5, tx + 2, ty + 4], fill=(240, 160, 48, 255))
+        gdraw.rectangle([tx - 1, ty - 7, tx + 1, ty + 2], fill=(252, 214, 96, 255))
+    img = Image.alpha_composite(img, glow)
 
     return img
 

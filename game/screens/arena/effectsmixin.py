@@ -1,7 +1,13 @@
-# Build: 1
+# Build: 2
 """ArenaScreen _EffectsMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
+
+# Damage numbers cycle through these (x, y) offsets (dp) so rapid hits
+# on the same unit don't stack into one unreadable pile.
+_DMG_JITTER_DP = ((0, 0), (14, 12), (-12, 6), (24, 18), (-22, 12), (8, 22))
+_TICKER_HOLD = 1.8
+_TICKER_FADE = 0.7
 
 
 class _EffectsMixin:
@@ -48,6 +54,50 @@ class _EffectsMixin:
                 Clock.schedule_once(
                     lambda dt, c=child: setattr(c, 'frame', 'idle'), revert_delay)
                 break
+
+    def _ticker(self, text, color):
+        """Show a battle event in the divider lane between the two panels.
+
+        Replaces the old centre-screen floats for kill/skill spam that used
+        to render on top of the unit cards and made both unreadable.
+        """
+        lbl = self.ids.get("battle_ticker")
+        if lbl is None:
+            return
+        lbl.text = text
+        lbl.color = list(color)
+        Animation.cancel_all(lbl, "opacity")
+        lbl.opacity = 1
+        anim = (Animation(opacity=1, duration=_TICKER_HOLD) +
+                Animation(opacity=0, duration=_TICKER_FADE))
+        anim.start(lbl)
+
+    def _spawn_damage(self, defender_name, is_player, damage, is_crit=False):
+        """Float a damage number just above the defender's card."""
+        widget = self._find_unit_view(defender_name, is_player)
+        arena = self.ids.get("arena_zone")
+        if widget is None or arena is None:
+            return
+        self._dmg_counter = getattr(self, "_dmg_counter", 0) + 1
+        jx, jy = _DMG_JITTER_DP[self._dmg_counter % len(_DMG_JITTER_DP)]
+        wx, wy = widget.to_window(widget.center_x + widget.width * 0.18,
+                                  widget.top - dp(10))
+        ax, ay = arena.to_widget(wx, wy)
+        ax, ay = ax + dp(jx), ay + dp(jy)
+        if is_crit:
+            color = list(ACCENT_GOLD)
+        elif is_player:
+            color = list(ACCENT_RED)
+        else:
+            color = list(TEXT_PRIMARY)
+        ft = FloatingText(
+            text=f"-{fmt_num(damage)}" + ("!" if is_crit else ""),
+            font_size="13sp" if is_crit else "10sp", bold=True,
+            color=color, size_hint=(None, None), size=(dp(90), dp(18)),
+        )
+        ft.center_x = ax
+        ft.y = ay
+        arena.add_widget(ft)
 
     def _spawn_float(self, text, color):
         arena = self.ids.get("arena_zone")

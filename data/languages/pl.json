@@ -798,7 +798,7 @@
   "scr_menu_move_up": "Przejdź w górę",
   "scr_menu_move_down": "Przesuń w dół",
   "scr_when_label": "Kiedy",
-  "scr_blocks_n": "{n} bloki",
+  "scr_blocks_n": "bloki: {n}",
   "scr_last_run": "przebiegł {s} s temu",
   "scr_never_ran": "jeszcze nie uruchomiony",
   "scr_run_failed": "ostatni błąd",

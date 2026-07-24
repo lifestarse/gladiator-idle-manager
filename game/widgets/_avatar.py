@@ -1,10 +1,23 @@
-# Build: 2
-"""Widgets — GladiatorAvatar (sprite-based)."""
+# Build: 3
+"""Widgets — GladiatorAvatar (sprite-based, fighters AND enemies)."""
+from game.constants import (
+    ENEMY_ROLE_SPRITE, ENEMY_SPRITE_TIER_BUCKET, ENEMY_SPRITE_TIERS,
+)
+
 from ._imports import *  # noqa: F401,F403
 
 
 class GladiatorAvatar(Widget):
-    """Sprite-based gladiator avatar — displays a PNG from sprites/fighters/."""
+    """Sprite-based avatar.
+
+    sprite_kind:
+      'fighter' — sprites/fighters/{fighter_class}_{frame}.png (default)
+      'enemy'   — sprites/enemies/enemy_{role→archetype}_t{tier bucket}.png
+      'boss'    — sprites/enemies/enemy_boss.png
+
+    The enemy/boss art shipped with the game but was never wired up — every
+    arena opponent used to render as the mercenary gladiator sprite.
+    """
 
     fighter_class = StringProperty("mercenary")
     # Keep accent_color for backward compat (ignored when sprite exists)
@@ -12,6 +25,8 @@ class GladiatorAvatar(Widget):
     tier = NumericProperty(1)
     is_wounded = BooleanProperty(False)
     frame = StringProperty("idle")
+    sprite_kind = StringProperty("fighter")
+    enemy_role = StringProperty("soldier")
 
     _last_path = ""
     _last_wounded = None
@@ -26,13 +41,28 @@ class GladiatorAvatar(Widget):
             fighter_class=self._update_sprite,
             frame=self._update_sprite,
             is_wounded=self._update_sprite,
+            sprite_kind=self._update_sprite,
+            enemy_role=self._update_sprite,
+            tier=self._update_sprite,
         )
         # Load sprite immediately — no schedule_once delay
         self._update_sprite()
 
     def _sprite_path(self):
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        return os.path.join(project_root, "sprites", "fighters", f"{self.fighter_class}_{self.frame}.png")
+        project_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", ".."))
+        if self.sprite_kind == "boss":
+            return os.path.join(project_root, "sprites", "enemies",
+                                "enemy_boss.png")
+        if self.sprite_kind == "enemy":
+            key = ENEMY_ROLE_SPRITE.get(self.enemy_role, "common")
+            bucket = max(1, min(
+                ENEMY_SPRITE_TIERS,
+                (int(self.tier) - 1) // ENEMY_SPRITE_TIER_BUCKET + 1))
+            return os.path.join(project_root, "sprites", "enemies",
+                                f"enemy_{key}_t{bucket}.png")
+        return os.path.join(project_root, "sprites", "fighters",
+                            f"{self.fighter_class}_{self.frame}.png")
 
     def _update_sprite(self, *args):
         path = self._sprite_path()

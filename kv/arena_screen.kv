@@ -26,7 +26,6 @@
             # Top bar
             TopBar:
                 title_text: app.title_pit
-                title_color: app.accent_gold
 
             # Detail/tutorial view (hidden during battle)
             TouchScrollView:
@@ -48,7 +47,8 @@
             MinimalButton:
                 id: enemy_back_btn
                 text: app.lbl_back_btn
-                btn_color: theme.BTN_PRIMARY
+                variant: "secondary"
+                btn_color: theme.ACCENT_BLUE
                 font_size: 11
                 size_hint_y: None
                 height: dp(48) if root.arena_view != "battle" else 0
@@ -78,6 +78,7 @@
                             size: self.size
                     AutoShrinkLabel:
                         text: root.run_text
+                        single_line: True
                         font_size: "11sp"
                         bold: True
                         color: app.accent_cyan
@@ -87,6 +88,7 @@
                         size_hint_x: 0.6
                     AutoShrinkLabel:
                         text: root.tier_text
+                        single_line: True
                         font_size: "12sp"
                         bold: True
                         color: app.accent_red
@@ -123,31 +125,41 @@
                         spacing: dp(6)
                         padding: [dp(14), dp(6)]
 
-                # Swords divider
+                # Divider lane: crossed swords + battle event ticker
                 BoxLayout:
                     size_hint_y: None
                     height: dp(24)
                     padding: [dp(14), 0]
-                    Widget:
-                        canvas:
-                            Color:
-                                rgba: app.divider
-                            Rectangle:
-                                pos: self.x, self.center_y
-                                size: self.width, dp(1)
+                    spacing: dp(8)
+                    canvas.before:
+                        Color:
+                            rgba: app.divider
+                        Rectangle:
+                            pos: self.x + dp(14), self.center_y
+                            size: self.width - dp(28), dp(1)
                     Image:
                         source: "sprites/icons/ic_swords.png"
                         fit_mode: "contain"
                         size_hint: None, 1
-                        width: dp(24)
+                        width: dp(22)
                         color: app.accent_red
-                    Widget:
-                        canvas:
+                    AutoShrinkLabel:
+                        id: battle_ticker
+                        text: ""
+                        single_line: True
+                        opacity: 0
+                        font_size: "10sp"
+                        bold: True
+                        color: app.text_secondary
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+                        canvas.before:
                             Color:
-                                rgba: app.divider
+                                rgba: app.nav_bg[0], app.nav_bg[1], app.nav_bg[2], 0.85 * self.opacity
                             Rectangle:
-                                pos: self.x, self.center_y
-                                size: self.width, dp(1)
+                                pos: self.pos
+                                size: self.size
 
                 # Enemy panel (RecycleView — virtualized for large enemy waves)
                 TouchRecycleView:
@@ -178,19 +190,21 @@
                 spacing: dp(6)
                 MinimalButton:
                     text: app.lbl_auto
-                    btn_color: theme.BTN_DISABLED if root.is_fighting or not root.has_available_fighters else theme.BTN_FIGHT
-                    text_color: theme.TEXT_MUTED if root.is_fighting or not root.has_available_fighters else theme.TEXT_PRIMARY
+                    btn_color: theme.BTN_FIGHT
+                    disabled: root.is_fighting or not root.has_available_fighters
                     font_size: "11sp"
                     on_press: root.start_auto_battle()
                 MinimalButton:
                     text: app.lbl_common if root.arena_mode == "boss" else app.lbl_boss
-                    btn_color: theme.BTN_DISABLED if root.is_fighting else (theme.BTN_PRIMARY if root.arena_mode == "boss" else theme.ACCENT_PURPLE)
-                    text_color: theme.TEXT_MUTED if root.is_fighting else theme.TEXT_PRIMARY
+                    variant: "secondary"
+                    btn_color: theme.BTN_PRIMARY if root.arena_mode == "boss" else theme.ACCENT_PURPLE
+                    disabled: root.is_fighting
                     font_size: "11sp"
                     on_press: root.toggle_arena_mode()
                 MinimalButton:
                     text: app.lbl_skip
-                    btn_color: theme.ACCENT_GOLD if root.is_fighting else theme.BG_ELEVATED
+                    variant: "primary" if root.is_fighting else "ghost"
+                    btn_color: theme.ACCENT_GOLD if root.is_fighting else theme.TEXT_SECONDARY
                     text_color: theme.BG_DARK if root.is_fighting else theme.TEXT_SECONDARY
                     font_size: "11sp"
                     on_press: root.skip_battle()

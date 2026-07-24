@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -18,6 +18,7 @@ from game.ui_helpers import (
     refresh_diamond_shop_grid,
     grid_batch,
     bind_text_wrap,
+    build_tab_row,
 )
 
 

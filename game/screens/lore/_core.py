@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """LoreScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -39,7 +39,30 @@ class LoreScreen(BaseScreen, _LogsMixin, _StatsQuestsMixin, _DiamondsMixin, _Eve
             grid._ach_key = None
         self.refresh_lore()
 
+    def _rebuild_lore_tabs(self):
+        """Tabs live in a ChipRow (scrolls when labels don't fit) instead of
+        four fixed kv buttons that clipped to 'ACHIEVEMEN / DIAMOND SHO'."""
+        box = self.ids.get("lore_tabs_box")
+        if box is None:
+            return
+        tabs = [
+            ("achievements", t("achievements_label")),
+            ("shop", t("diamond_shop_label")),
+            ("quests", t("quests_label")),
+            ("stats", t("stats_label")),
+        ]
+        key = (self.lore_tab, tuple(label for _v, label in tabs))
+        if key == getattr(self, "_lore_tabs_key", None) and box.children:
+            return
+        self._lore_tabs_key = key
+        box.clear_widgets()
+        box.add_widget(build_tab_row(
+            tabs, self.lore_tab, self.set_lore_tab,
+            active_color=ACCENT_GOLD, height=dp(40), font_size=10,
+        ))
+
     def refresh_lore(self):
+        self._rebuild_lore_tabs()
         if self.lore_subview:
             return
         engine = App.get_running_app().engine

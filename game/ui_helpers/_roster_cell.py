@@ -1,8 +1,12 @@
-# Build: 4
+# Build: 5
 """ui_helpers._roster_cell — RosterCardView (list row) + callbacks."""
+from kivy.animation import Animation
+
+from game.widgets import PixelBadge
+
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _bind_long_tap
-from ._widgets import _CLASS_COLORS, _icon_label
+from ._widgets import _CLASS_COLORS
 
 
 # ============================================================
@@ -13,6 +17,11 @@ _roster_callbacks = {}
 """Callbacks registered by RosterScreen.on_enter.
 Keys: 'show_detail', 'dismiss' → callable(fighter_index: int)
 """
+
+_DEAD_CARD_BG = (0.15, 0.08, 0.08, 1)
+_HP_NUM_W = 56
+_LV_W = 44
+_AWAY_W = 54
 
 
 class RosterCardView(RecycleDataViewBehavior, CardWidget):
@@ -27,79 +36,82 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
         kwargs.setdefault('orientation', 'horizontal')
         kwargs.setdefault('size_hint_y', None)
         kwargs.setdefault('height', dp(84))
-        kwargs.setdefault('padding', [dp(8), dp(10)])
-        kwargs.setdefault('spacing', dp(6))
+        kwargs.setdefault('padding', [dp(8), dp(8)])
+        kwargs.setdefault('spacing', dp(8))
         super().__init__(**kwargs)
         self._fighter_index = 0
         self._dismiss_cb = None
-
-        ROW_H = dp(56)
 
         # Avatar
         self._avatar = GladiatorAvatar(
             fighter_class="mercenary",
             accent_color=list(ACCENT_GREEN),
             tier=1,
-            size_hint=(None, None),
-            width=dp(48), height=dp(52),
+            size_hint=(None, 1),
+            width=dp(52),
         )
 
-        # Name
+        col = BoxLayout(orientation="vertical", spacing=dp(6),
+                        padding=[0, dp(4)])
+
+        top_row = BoxLayout(size_hint_y=None, height=dp(26), spacing=dp(6))
         self._name_lbl = AutoShrinkLabel(
-            font_size="12sp", bold=True, color=list(TEXT_PRIMARY),
-            halign="left", size_hint_x=None, width=dp(130),
-            size_hint_y=None, height=ROW_H,
+            font_size="11sp", bold=True, color=list(TEXT_PRIMARY),
+            halign="left", valign="middle", single_line=True,
         )
         self._name_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
-
-        # Level
-        self._level_lbl = AutoShrinkLabel(
-            font_size="11sp", bold=True, color=list(ACCENT_GOLD),
-            halign="left", size_hint_x=None, width=dp(56),
-            size_hint_y=None, height=ROW_H,
-        )
-        self._level_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
-
-        # Third slot (dismiss btn / away label / empty)
-        self._dismiss_btn = MinimalButton(
-            text="X", btn_color=list(ACCENT_RED), font_size=11,
-            size_hint_x=None, width=dp(36),
-        )
-        self._away_lbl = AutoShrinkLabel(
-            font_size="11sp", color=list(ACCENT_CYAN), halign="center",
-            size_hint_x=None, width=dp(44), size_hint_y=None, height=ROW_H,
-        )
-        self._away_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
-        self._empty_lbl = Label(size_hint_x=None, width=0)
-        self._slot = 'empty'
-
-        # Spacer pushes stats to the right
-        self._spacer = Label(size_hint_x=1)
-
-        # Stats: HP only — compact, fixed width
-        ICON_W = dp(90)
-        self._stat_box = BoxLayout(
-            orientation="horizontal", spacing=dp(2),
-            size_hint_x=None, width=ICON_W + dp(4),
-            size_hint_y=None, height=ROW_H,
-        )
-        self._hp_row = _icon_label("sprites/icons/ic_hp.png", 0, (1, 0.3, 0.3, 1), font_size="11sp", height=ROW_H)
-        self._stat_box.add_widget(self._hp_row)
-
         # Plus indicator — available stat/perk points
         self._plus_icon = Image(
             source="icons/ic_plus.png", fit_mode="contain",
             size_hint=(None, None), width=dp(18), height=dp(18),
-            opacity=0,
+            pos_hint={'center_y': 0.5}, opacity=0,
         )
+        self._level_lbl = AutoShrinkLabel(
+            font_size="10sp", bold=True, color=list(ACCENT_GOLD),
+            halign="right", valign="middle", single_line=True,
+            size_hint_x=None, width=dp(_LV_W),
+        )
+        self._level_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        top_row.add_widget(self._name_lbl)
+        top_row.add_widget(self._plus_icon)
+        top_row.add_widget(self._level_lbl)
+
+        hp_row = BoxLayout(size_hint_y=None, height=dp(18), spacing=dp(6))
+        self._bar = MinimalBar(
+            size_hint=(1, None), height=dp(12),
+            pos_hint={'center_y': 0.5},
+        )
+        self._hp_lbl = AutoShrinkLabel(
+            font_size="10sp", bold=True, color=(1, 0.3, 0.3, 1),
+            halign="right", valign="middle", single_line=True,
+            size_hint_x=None, width=dp(_HP_NUM_W),
+        )
+        self._hp_lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        hp_row.add_widget(self._bar)
+        hp_row.add_widget(self._hp_lbl)
+
+        col.add_widget(top_row)
+        col.add_widget(hp_row)
+
+        # Third slot (dismiss btn / away badge / empty)
+        self._dismiss_btn = MinimalButton(
+            text="X", btn_color=list(ACCENT_RED), font_size=11,
+            size_hint_x=None, width=dp(36),
+        )
+        self._away_badge = PixelBadge(
+            font_size="9sp", color=list(ACCENT_CYAN),
+            badge_color=list(ACCENT_CYAN),
+            halign="center", valign="middle",
+            size_hint=(None, None), width=dp(_AWAY_W), height=dp(22),
+            pos_hint={'center_y': 0.5},
+        )
+        self._away_badge.bind(size=lambda w, s: setattr(w, 'text_size', s))
+        self._empty_lbl = Label(size_hint_x=None, width=0)
+        self._slot = 'empty'
 
         self.add_widget(self._avatar)
-        self.add_widget(self._name_lbl)
-        self.add_widget(self._level_lbl)
-        self.add_widget(self._plus_icon)
+        self.add_widget(col)
         self.add_widget(self._empty_lbl)
-        self.add_widget(self._spacer)
-        self.add_widget(self._stat_box)
 
         # Long-tap opens fighter detail popup
         _bind_long_tap(self, lambda w: self._on_tap())
@@ -116,19 +128,20 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
         if self._slot == 'dismiss':
             self.remove_widget(self._dismiss_btn)
         elif self._slot == 'away':
-            self.remove_widget(self._away_lbl)
+            self.remove_widget(self._away_badge)
         else:
             self.remove_widget(self._empty_lbl)
         if slot == 'dismiss':
             self.add_widget(self._dismiss_btn)
         elif slot == 'away':
-            self.add_widget(self._away_lbl)
+            self.add_widget(self._away_badge)
         else:
             self.add_widget(self._empty_lbl)
         self._slot = slot
 
     def refresh_view_attrs(self, rv, index, data):
         """Called by RecycleView when this instance is (re)assigned to a row."""
+        same_fighter = self._fighter_index == data['index']
         self._fighter_index = data['index']
 
         # Avatar sprite by class
@@ -140,7 +153,7 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
 
         # Card background — directly update canvas Color objects
         if not data['alive']:
-            self._bg_color.rgba = (0.15, 0.08, 0.08, 1)
+            self._bg_color.rgba = list(_DEAD_CARD_BG)
             self._br_color.rgba = list(ACCENT_RED)
         else:
             self._bg_color.rgba = list(BG_CARD)
@@ -172,7 +185,7 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
             self._dismiss_btn.bind(on_press=self._dismiss_cb)
         elif data['on_expedition']:
             self._set_slot('away')
-            self._away_lbl.text = t('away_tag')
+            self._away_badge.text = t('away_tag')
         else:
             self._set_slot('empty')
 
@@ -182,8 +195,21 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
         )
         self._plus_icon.opacity = 1 if has_upgrades else 0
 
-        # Stat label
-        self._hp_row.children[0].text = fmt_num(data['hp'])
+        # HP bar + number ("hp" key is max HP, "current_hp" is live value)
+        max_hp = max(1, data.get('hp', 1))
+        cur_hp = max(0, data.get('current_hp', max_hp))
+        hp_pct = cur_hp / max_hp if data['alive'] else 0
+        is_low = hp_pct < LOW_HP_THRESHOLD
+        self._bar.bar_color = list(
+            HP_PLAYER if hp_pct >= HP_MID_THRESHOLD
+            else HP_MID if not is_low else HP_ENEMY)
+        self._bar.bg_color = list(HP_PLAYER_BG)
+        if not same_fighter:
+            Animation.cancel_all(self._bar, '_display_value')
+            self._bar._display_value = hp_pct
+        self._bar.value = hp_pct
+        self._hp_lbl.text = fmt_num(cur_hp)
+        self._hp_lbl.color = list(ACCENT_RED) if is_low else (1, 0.3, 0.3, 1)
         # Do NOT call super().refresh_view_attrs — it would auto-setattr all data
         # keys onto this widget, overwriting CardWidget.active etc.
         # refresh_view_layout is still inherited from RecycleDataViewBehavior.

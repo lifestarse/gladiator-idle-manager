@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """
 Pixel art RPG color theme — SNES-era inspired.
 Rich saturated accents, warm indigo backgrounds, cream text.
@@ -38,6 +38,21 @@ BTN_FIGHT_GLOW = (0.85, 0.15, 0.15, 0.20)
 BTN_PRIMARY = (0.18, 0.30, 0.58, 1)     # blue
 BTN_SUCCESS = (0.15, 0.55, 0.20, 1)     # green
 BTN_DISABLED = (0.14, 0.12, 0.18, 1)    # muted indigo
+
+# Pixel-frame styling shared by MinimalButton / chips / cards.
+# The old bevel alphas (0.12 highlight / 0.2 shadow) were invisible on a
+# 360dp phone screen — buttons read as flat slabs. These are strong enough
+# to register as an SNES-style raised frame.
+BTN_OUTLINE = (0.04, 0.02, 0.07, 1)     # near-black outer contour
+BEVEL_LIGHT = (1, 1, 1, 0.30)           # top edge highlight
+BEVEL_DARK = (0, 0, 0, 0.40)            # bottom edge shadow
+BEVEL_EDGE_PX = 2                        # bevel strip thickness (dp)
+BTN_PRESS_OFFSET_PX = 1.5                # content sink when pressed (dp)
+
+# HP bar buckets — green above HP_MID_THRESHOLD, amber above the low
+# threshold (constants.LOW_HP_THRESHOLD), red below it.
+HP_MID = (0.85, 0.62, 0.15, 1)          # amber mid-health
+HP_MID_THRESHOLD = 0.5
 
 # Nav
 NAV_BG = (0.06, 0.04, 0.10, 1)

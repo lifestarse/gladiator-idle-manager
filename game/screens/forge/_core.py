@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ForgeScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from .inventorymixin import _InventoryMixin
@@ -145,11 +145,12 @@ class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _Eq
             tabs_box.add_widget(build_tab_row(
                 rarity_tabs, self.shop_rarity_filter, self.set_shop_rarity_filter,
                 active_color=ACCENT_GOLD, height=dp(30),
+                chip_colors=RARITY_COLORS,
             ))
             sort_icon = "icons/ic_down.png" if self.shop_sort == "best" else "icons/ic_up.png"
             sort_label = t("sort_best") if self.shop_sort == "best" else t("sort_worst")
             sort_btn = MinimalButton(
-                text=sort_label, font_size=11,
+                text=sort_label, font_size=11, variant="secondary",
                 btn_color=ACCENT_BROWN, text_color=TEXT_PRIMARY,
                 size_hint_y=None, height=dp(30),
                 icon_source=sort_icon,

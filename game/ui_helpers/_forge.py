@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """ui_helpers._forge — forge-grid builders + RV data adapters."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
@@ -85,6 +85,7 @@ def _inventory_item_to_rv_data(source, idx, item, fighter_name, forge_screen):
         'mode': source,  # 'inv' or 'equip'
         'idx': idx,
         'slot': slot,
+        'rarity': rarity,
         'name': item_display_name(item),
         'rarity_color': list(rcolor),
         'upgrade_level': item.get('upgrade_level', 0),
@@ -113,6 +114,8 @@ def _forge_item_to_rv_data(item, forge_screen):
     return {
         'iid': item['id'],
         '_forge': forge_screen,
+        'slot': slot,
+        'rarity': rarity,
         'name': item_display_name(item),
         'rarity_color': list(rcolor),
         'upgrade_level': item.get('upgrade_level', 0),

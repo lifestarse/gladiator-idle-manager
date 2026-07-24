@@ -1,7 +1,14 @@
-# Build: 8
+# Build: 9
 """_FighterBuildMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
+
+from game.theme import HP_MID, HP_MID_THRESHOLD
+from game.constants import LOW_HP_THRESHOLD
+
+_STA_LOW = 20
+_FAT_HIGH = 50
+_FAT_WARN_CLR = (1, 0.63, 0.25, 1)
 
 
 class _FighterBuildMixin:
@@ -52,13 +59,9 @@ class _FighterBuildMixin:
 
     def _wire_hold_to_train(self, btn, stat_key, fighter_idx, fighter,
                             engine, stat_labels, pts_label_widget):
-        """Bind tap-fires-once + press-and-hold-repeats to a stat-add button.
-
-        During hold we mutate the fighter and patch only the affected
-        labels in-place. Rebuilding the detail grid mid-hold would destroy
-        the button being touched, breaking the gesture; the canonical
-        refresh + save runs once on release.
-        """
+        """Tap fires once; press-and-hold repeats. During hold only the
+        affected labels are patched in-place (a grid rebuild would destroy
+        the held button); canonical refresh + save run on release."""
         total_attr = {
             "strength": "total_strength",
             "agility": "total_agility",
@@ -115,6 +118,67 @@ class _FighterBuildMixin:
 
         btn.bind(on_press=_on_press, on_release=_on_release)
 
+    def _stat_cell(self, caption, value, value_color=None):
+        """Muted caption over a value — one cell of the stat plate."""
+        cell = BoxLayout(orientation="vertical", spacing=dp(1))
+        cap = AutoShrinkLabel(
+            text=caption, font_size="8sp", color=TEXT_SECONDARY,
+            halign="center", valign="bottom", single_line=True,
+            size_hint_y=None, height=dp(14),
+        )
+        bind_text_wrap(cap)
+        val = AutoShrinkLabel(
+            text=str(value), font_size="11sp", bold=True,
+            color=list(value_color) if value_color else list(TEXT_PRIMARY),
+            halign="center", valign="top", single_line=True,
+        )
+        bind_text_wrap(val)
+        cell.add_widget(cap)
+        cell.add_widget(val)
+        return cell
+
+    def _build_stat_plate(self, f):
+        """Aligned 3-column stat grid. Replaces three centred markup lines
+        where every number had its own colour and long values wrapped."""
+        from kivy.uix.gridlayout import GridLayout
+        from kivy.uix.widget import Widget
+        plate = BaseCard(orientation="vertical", size_hint_y=None,
+                         height=dp(126), padding=[dp(10), dp(8)])
+        inner = GridLayout(cols=3, spacing=dp(4))
+
+        hp_pct = f.hp / max(1, f.max_hp)
+        hp_clr = (HP_PLAYER if hp_pct >= HP_MID_THRESHOLD
+                  else HP_MID if hp_pct >= LOW_HP_THRESHOLD else ACCENT_RED)
+        inner.add_widget(self._stat_cell("ATK", fmt_num(f.attack)))
+        inner.add_widget(self._stat_cell("DEF", fmt_def(f.defense)))
+        inner.add_widget(self._stat_cell(
+            "HP", f"{fmt_num(f.hp)}/{fmt_num(f.max_hp)}", hp_clr))
+
+        sta_clr = HP_MID if f.stamina <= _STA_LOW else None
+        if f.is_exhausted:
+            fat_clr = ACCENT_RED
+        elif f.fatigue >= _FAT_HIGH:
+            fat_clr = _FAT_WARN_CLR
+        else:
+            fat_clr = None
+        inner.add_widget(self._stat_cell("CRIT", f"{f.crit_chance:.0%}"))
+        inner.add_widget(self._stat_cell("DODGE", f"{f.dodge_chance:.0%}"))
+        inner.add_widget(self._stat_cell(
+            t("stamina_label"), f"{f.stamina}/100", sta_clr))
+
+        inner.add_widget(self._stat_cell(
+            t("fatigue_label"), f"{f.fatigue}/100", fat_clr))
+        if f.is_exhausted:
+            inner.add_widget(self._stat_cell("", t("exhausted_tag"),
+                                             ACCENT_RED))
+        else:
+            inner.add_widget(Widget())
+        inner.add_widget(Widget())
+
+        plate.add_widget(inner)
+        self._make_help_tappable(plate)
+        return plate
+
     def _build_fighter_header(self, grid, f, index, engine):
         """Add name/stats/attribute rows to detail grid."""
         header_lbl = AutoShrinkLabel(
@@ -124,58 +188,7 @@ class _FighterBuildMixin:
         bind_text_wrap(header_lbl)
         grid.add_widget(header_lbl)
 
-        def _c(color):
-            return ''.join(f'{int(v*255):02x}' for v in color[:3])
-        rc, gc, bc = _c(ACCENT_RED), _c(ACCENT_GREEN), _c(ACCENT_BLUE)
-        gc2, cc = _c(ACCENT_GOLD), _c(ACCENT_CYAN)
-        atk_text = (
-            f"[color=#{rc}]ATK {fmt_num(f.attack)}[/color]   "
-            f"[color=#{bc}]DEF {fmt_def(f.defense)}[/color]   "
-            f"[color=#{gc}]HP {fmt_num(f.hp)}/{fmt_num(f.max_hp)}[/color]"
-        )
-        stats_lbl = AutoShrinkLabel(
-            text=atk_text, font_size="11sp", markup=True, color=TEXT_SECONDARY,
-            size_hint_y=None, height=dp(30), halign="center",
-        )
-        bind_text_wrap(stats_lbl)
-        self._make_help_tappable(stats_lbl)
-        grid.add_widget(stats_lbl)
-
-        crit_text = (
-            f"[color=#{gc2}]Crit {f.crit_chance:.0%}[/color]   "
-            f"[color=#{cc}]Dodge {f.dodge_chance:.0%}[/color]"
-        )
-        crit_lbl = AutoShrinkLabel(
-            text=crit_text, font_size="11sp", markup=True, color=TEXT_SECONDARY,
-            size_hint_y=None, height=dp(30), halign="center",
-        )
-        bind_text_wrap(crit_lbl)
-        self._make_help_tappable(crit_lbl)
-        grid.add_widget(crit_lbl)
-
-        # Stamina / Fatigue row + lock indicator if exhausted.
-        sta_color = "ffd040" if f.stamina <= 20 else "80ff80"
-        if f.is_exhausted:
-            fat_color = "ff4040"
-            fat_suffix = f"  [color=#ff4040][b]🔒 {t('exhausted_tag')}[/b][/color]"
-        elif f.fatigue >= 50:
-            fat_color = "ffa040"
-            fat_suffix = ""
-        else:
-            fat_color = "9090a0"
-            fat_suffix = ""
-        sf_text = (
-            f"[color=#{sta_color}]{t('stamina_label')} {f.stamina}/100[/color]   "
-            f"[color=#{fat_color}]{t('fatigue_label')} {f.fatigue}/100[/color]"
-            f"{fat_suffix}"
-        )
-        sf_lbl = AutoShrinkLabel(
-            text=sf_text, font_size="11sp", markup=True, color=TEXT_SECONDARY,
-            size_hint_y=None, height=dp(28), halign="center",
-        )
-        bind_text_wrap(sf_lbl)
-        self._make_help_tappable(sf_lbl)
-        grid.add_widget(sf_lbl)
+        grid.add_widget(self._build_stat_plate(f))
 
         stat_row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(4))
         has_pts = f.unused_points > 0 and f.available
@@ -219,7 +232,8 @@ class _FighterBuildMixin:
             auto_label = t("auto_distribute_on") if auto_on else t("auto_distribute_off")
             auto_btn = MinimalButton(
                 text=auto_label, font_size=11,
-                btn_color=ACCENT_GOLD if auto_on else BTN_PRIMARY,
+                variant="primary" if auto_on else "secondary",
+                btn_color=ACCENT_GOLD if auto_on else ACCENT_BLUE,
                 text_color=BG_DARK if auto_on else TEXT_PRIMARY,
                 size_hint_y=None, height=dp(40),
             )

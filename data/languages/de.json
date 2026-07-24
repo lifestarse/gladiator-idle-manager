@@ -798,7 +798,7 @@
   "scr_menu_move_up": "Nach oben bewegen",
   "scr_menu_move_down": "Nach unten bewegen",
   "scr_when_label": "Wenn",
-  "scr_blocks_n": "{n} Blöcke",
+  "scr_blocks_n": "Blöcke: {n}",
   "scr_last_run": "lief vor {s}s",
   "scr_never_ran": "Noch nicht ausgeführt",
   "scr_run_failed": "letzter Fehler",

@@ -1,4 +1,4 @@
-# Build: 9
+# Build: 10
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -175,6 +175,21 @@ ROLE_STAT_MULT = {
     "assassin": {"str": 1.4, "agi": 1.0, "vit": 0.6},
     "guardian": {"str": 0.7, "agi": 0.8, "vit": 1.5},
 }
+
+# Enemy role → sprite sheet key (sprites/enemies/enemy_{key}_t{n}.png).
+# Sprite art ships 5 archetypes; two tanky roles share the armored look.
+ENEMY_ROLE_SPRITE = {
+    "swarm": "beast",
+    "soldier": "common",
+    "bruiser": "brute",
+    "elite": "elite",
+    "assassin": "archer",
+    "guardian": "elite",
+}
+# Arena tiers are unbounded; sprite art has 5 tint tiers. A new sprite
+# tier every ENEMY_SPRITE_TIER_BUCKET arena tiers, capped at _TIERS.
+ENEMY_SPRITE_TIER_BUCKET = 10
+ENEMY_SPRITE_TIERS = 5
 
 # Stat bias multipliers: boost primary, reduce others
 STAT_BIAS_MULT = {

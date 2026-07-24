@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """ArenaScreen _BattleFlowMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -20,13 +20,13 @@ class _BattleFlowMixin:
         self.is_fighting = True
         if self.arena_mode == "boss":
             events = engine.start_boss_fight()
-            self._spawn_float(t("boss_challenge"), ACCENT_RED)
+            self._ticker(t("boss_challenge"), ACCENT_RED)
         else:
             # Check if boss is lurking in regular battle
             has_boss = (engine.current_enemy
                         and getattr(engine.current_enemy, 'is_boss', False))
             events = engine.start_auto_battle()
-            self._spawn_float(t("auto_battle"), ACCENT_GOLD)
+            self._ticker(t("auto_battle"), ACCENT_GOLD)
             if has_boss:
                 self._show_boss_revenge_popup(engine.current_enemy.name)
         self._display_events(events)
@@ -98,11 +98,12 @@ class _BattleFlowMixin:
 
     def _display_events(self, events):
         for ev in events[-6:]:
-            # Floating text for key events
+            # Kill/skill messages go to the divider ticker — the old
+            # centre-screen floats rendered on top of the unit cards.
             if ev.event_type == "skill":
-                self._spawn_float(ev.message, ACCENT_CYAN)
+                self._ticker(ev.message, ACCENT_CYAN)
             elif ev.is_kill:
-                self._spawn_float(ev.message, ACCENT_RED)
+                self._ticker(ev.message, ACCENT_RED)
 
             # Animate attacker sprite on attack
             if ev.event_type == "attack" and ev.damage > 0 and ev.attacker:
@@ -110,7 +111,7 @@ class _BattleFlowMixin:
                 if widget is not None:
                     self._set_sprite_frame(widget, "attack", revert_delay=0.3)
 
-            # Flash HP bar of defender on hit
+            # Damage number + HP bar flash on the defender's card
             if ev.event_type == "attack" and ev.damage > 0 and ev.defender:
                 is_player = any(
                     f.name == ev.defender
@@ -120,6 +121,8 @@ class _BattleFlowMixin:
                     ).player_fighters
                     if hasattr(f, "name")
                 )
+                self._spawn_damage(ev.defender, is_player, ev.damage,
+                                   is_crit=getattr(ev, "is_crit", False))
                 self._flash_damage(ev.defender, is_player)
 
             # Play sword sound on attack
