@@ -1,4 +1,4 @@
-# Build: 32
+# Build: 33
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -53,6 +53,50 @@ def load_languages(force=False):
             _log.info("Loaded language: %s (%d keys)", lang_code, len(_LANG_DATA[lang_code]))
         except (json.JSONDecodeError, OSError) as exc:
             _log.error("Failed to load language %s: %s", lang_code, exc)
+
+
+# ---- Nested-key addressing ----
+
+# Two keys are not plain strings: ``enchant_names`` is a dict of effect names
+# and ``help_sections`` is nine [title, body] pairs — the whole help screen.
+# Addressing their leaves as "help_sections.4.1" lets translation tooling, the
+# quality gate and remote patches all speak one flat vocabulary instead of each
+# growing its own tree-walker.
+
+def flatten(mapping):
+    """Flatten a language mapping to {dotted_path: text} over string leaves."""
+    flat = {}
+
+    def walk(value, path):
+        if isinstance(value, str):
+            flat[path] = value
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                walk(item, f"{path}.{key}" if path else str(key))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, f"{path}.{index}" if path else str(index))
+
+    walk(mapping, "")
+    return flat
+
+
+def set_path(mapping, path, text):
+    """Write a string leaf addressed by a dotted path, in place.
+
+    Raises KeyError/IndexError/ValueError on a path that does not already
+    resolve — callers validate against the bundled file first, so a miss here
+    means the caller skipped that check.
+    """
+    parts = path.split(".")
+    node = mapping
+    for part in parts[:-1]:
+        node = node[int(part)] if isinstance(node, list) else node[part]
+    last = parts[-1]
+    if isinstance(node, list):
+        node[int(last)] = text
+    else:
+        node[last] = text
 
 
 # ---- Public API (unchanged signatures) ----

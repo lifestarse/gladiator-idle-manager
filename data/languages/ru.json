@@ -876,5 +876,18 @@
   "tut_discover_boss_title": "Чемпион ждёт",
   "tut_discover_boss_l0": "Массивные ворота со скрипом открываются в дальнем конце арены.",
   "tut_discover_boss_l1": "«Это Ворота Чемпиона. Войти дерзнёт лишь храбрец».",
-  "tut_discover_boss_l2": "БОИ С БОССАМИ сложнее, но приносят намного больше золота."
+  "tut_discover_boss_l2": "БОИ С БОССАМИ сложнее, но приносят намного больше золота.",
+  "lang_pack_title": "Языковой пакет",
+  "lang_status_bundled": "Встроен",
+  "lang_status_installed": "Установлен",
+  "lang_status_update": "Есть обновление",
+  "lang_status_download": "Нажми, чтобы скачать",
+  "lang_status_unavailable": "Недоступен",
+  "lang_stage_checking": "Проверка...",
+  "lang_stage_downloading": "Загрузка...",
+  "lang_stage_installing": "Установка...",
+  "lang_stage_done": "Готово",
+  "lang_stage_offline": "Нет сети",
+  "lang_stage_failed": "Не удалось скачать",
+  "btn_continue_english": "ПРОДОЛЖИТЬ НА АНГЛИЙСКОМ"
 }

@@ -1,0 +1,233 @@
+{
+  "_doc": [
+    "Authoritative terminology for UI strings (data/languages/<lang>.json).",
+    "scripts/i18n_tool.py embeds the rows for one language into every batch it",
+    "extracts, and tests/test_i18n_ui_quality.py enforces the forbidden lists.",
+    "",
+    "ru is the language the game was written in and the source of MEANING.",
+    "en was translated from ru and is only a disambiguating second opinion:",
+    "where the two disagree (nav_pit RU 'АРЕНА' vs EN 'PIT'), ru wins, because",
+    "en's flavour words are what the 2026-07-01 GoogleTranslate pass turned into",
+    "literal nonsense in seven languages.",
+    "",
+    "Adding a language: fill its column in every term and its list in 'rules'.",
+    "A language with no column simply gets no glossary block in its batches."
+  ],
+  "forbidden": {
+    "_doc": [
+      "Word stems that must not appear in a language's UI strings, checked by",
+      "tests/test_i18n_ui_quality.py as whole words, case-insensitively. Every",
+      "entry is a rendering the 2026-07-01 GoogleTranslate pass actually",
+      "produced — this list is a regression test, not a style preference.",
+      "A language with no entry here is simply not checked, so the gate stays",
+      "green for languages that have not been re-translated yet."
+    ],
+    "uk": {
+      "поїзд": "'Auto-train' прочитано як залізничний поїзд (auto_distribute_on/off)",
+      "винищувач": "'fighter' прочитано як літак-винищувач (fighters_ready)",
+      "дзвон": "'call' прочитано як телефонний дзвінок (scr_expr_call)",
+      "дзвін": "'call' прочитано як телефонний дзвінок",
+      "товар": "'item' прочитано як товар у магазині (scr_arg_item_id)",
+      "пораза": "неіснуюче слово; поразка (battle_log_defeat)",
+      "корупці": "'corruption' прочитано як політична корупція (enchant_names.corruption)",
+      "вицілит": "'heal' прочитано як «вицілити» — це прицілюватися (heal_all)",
+      "алмаз": "валюта називається «діамант»; два слова на одну сутність розходяться по екранах"
+    }
+  },
+  "rules": {
+    "uk": [
+      "Плейсхолдери {name} {n} {dmg} {target} {lvl} — копіювати дослівно, не перекладати й не змінювати імена.",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копіювати дослівно разом зі значенням кольору.",
+      "ATK / DEF / HP — латиницею, ніколи не локалізувати (не «КМ», не «ЗДОРОВ'Я»).",
+      "У виразах виду «боец.is_active :=» / «g.переменная» перекладається лише людське слово (боец → боєць), а ідентифікатор після крапки (is_active) і префікс g. лишаються як є — саме так робить російський оригінал.",
+      "Частина мови — за російським рядком, не за англійським: 'Log message' це дія «Записати в лог», а не іменник.",
+      "Рядки, що в ru/en написані ВЕЛИКИМИ — це кнопки й вкладки: лишати ВЕЛИКИМИ і не довшими за ~1.3 від російського рядка.",
+      "Після {n} — родовий відмінок множини (діамантів, бійців, перемог, травм): {n} майже завжди більше чотирьох.",
+      "Без русизмів: «увімк./вимк.» замість «вкл./выкл.», «наступний» замість «следующий», без суржику."
+    ]
+  },
+  "terms": {
+    "fighter": {
+      "en": "fighter", "ru": "боец",
+      "note": "A gladiator — a human being. NEVER an aircraft.",
+      "uk": "боєць (мн. бійці, род. мн. бійців) — НЕ «винищувач»"
+    },
+    "squad": {
+      "en": "squad / roster", "ru": "отряд",
+      "uk": "загін"
+    },
+    "arena": {
+      "en": "arena / pit", "ru": "арена",
+      "note": "en calls the screen PIT; ru calls it АРЕНА and every other string agrees. Follow ru.",
+      "uk": "арена"
+    },
+    "forge": {
+      "en": "forge / anvil", "ru": "кузня",
+      "note": "en calls the screen ANVIL; ru calls it КУЗНЯ. Follow ru — 'ковадло' is the tool, not the workshop.",
+      "uk": "кузня"
+    },
+    "hunts": {
+      "en": "hunts", "ru": "охота",
+      "uk": "полювання"
+    },
+    "expedition": {
+      "en": "expedition", "ru": "экспедиция",
+      "uk": "експедиція"
+    },
+    "tier": {
+      "en": "tier", "ru": "уровень (арены)",
+      "uk": "рівень"
+    },
+    "level": {
+      "en": "level", "ru": "уровень (бойца)",
+      "uk": "рівень"
+    },
+    "perk": {
+      "en": "perk", "ru": "перк",
+      "note": "A skill-tree node. Kept as a borrowing, not 'bonus' / 'advantage' / 'provision'.",
+      "uk": "перк (мн. перки, род. мн. перків)"
+    },
+    "relic": {
+      "en": "relic", "ru": "реликвия",
+      "uk": "реліквія"
+    },
+    "shard": {
+      "en": "shard", "ru": "осколок",
+      "uk": "осколок"
+    },
+    "enchantment": {
+      "en": "enchant / enchantment", "ru": "зачарование",
+      "note": "Tab labels are nouns; only an action button may be a verb.",
+      "uk": "зачарування (іменник); дія — «зачарувати»"
+    },
+    "injury": {
+      "en": "injury", "ru": "травма",
+      "note": "One word everywhere — do not alternate with 'поранення'.",
+      "uk": "травма"
+    },
+    "heal": {
+      "en": "heal", "ru": "лечить / вылечить",
+      "note": "'вицілити' means to take aim, not to cure.",
+      "uk": "лікувати / вилікувати"
+    },
+    "gold": {
+      "en": "gold", "ru": "золото",
+      "uk": "золото"
+    },
+    "diamond": {
+      "en": "diamond", "ru": "алмаз",
+      "note": "Premium currency. One word everywhere, and never the abbreviation for 'diameter'.",
+      "uk": "діамант (род. мн. діамантів)"
+    },
+    "item": {
+      "en": "item", "ru": "предмет",
+      "note": "Equipment, not merchandise — never 'товар' / 'артикул'.",
+      "uk": "предмет"
+    },
+    "weapon": {
+      "en": "weapon", "ru": "оружие",
+      "uk": "зброя"
+    },
+    "armor": {
+      "en": "armor", "ru": "броня",
+      "uk": "броня"
+    },
+    "accessory": {
+      "en": "accessory", "ru": "аксессуар",
+      "uk": "аксесуар"
+    },
+    "slot": {
+      "en": "slot", "ru": "слот",
+      "uk": "слот"
+    },
+    "equip": {
+      "en": "equip", "ru": "экипировать",
+      "uk": "екіпірувати"
+    },
+    "upgrade": {
+      "en": "upgrade", "ru": "улучшение",
+      "uk": "покращення"
+    },
+    "inventory": {
+      "en": "inventory", "ru": "инвентарь",
+      "uk": "інвентар"
+    },
+    "stamina": {
+      "en": "stamina", "ru": "выносливость",
+      "uk": "витривалість"
+    },
+    "fatigue": {
+      "en": "fatigue", "ru": "усталость",
+      "uk": "втома"
+    },
+    "boss": {
+      "en": "boss", "ru": "босс",
+      "uk": "бос"
+    },
+    "battle": {
+      "en": "battle", "ru": "бой",
+      "uk": "бій"
+    },
+    "victory": {
+      "en": "victory", "ru": "победа",
+      "uk": "перемога"
+    },
+    "defeat": {
+      "en": "defeat", "ru": "поражение",
+      "note": "The Ukrainian noun is 'поразка'; 'пораза' is not a word.",
+      "uk": "поразка"
+    },
+    "dismiss": {
+      "en": "dismiss", "ru": "уволить",
+      "note": "Firing a fighter from the squad, not rejecting a dialog.",
+      "uk": "звільнити"
+    },
+    "hire": {
+      "en": "hire", "ru": "нанять",
+      "uk": "найняти"
+    },
+    "bench": {
+      "en": "bench", "ru": "отправить в запас",
+      "uk": "відправити в запас"
+    },
+    "auto_train": {
+      "en": "auto-train", "ru": "авто-прокачка",
+      "note": "Automatic spending of stat points. 'Train' is the verb, not the railway vehicle.",
+      "uk": "автопрокачка — НЕ «поїзд»"
+    },
+    "script": {
+      "en": "script / program", "ru": "скрипт / программа",
+      "note": "Program code, never a film screenplay.",
+      "uk": "скрипт / програма"
+    },
+    "call": {
+      "en": "call", "ru": "вызов",
+      "note": "Calling a function. Never a telephone call.",
+      "uk": "виклик — НЕ «дзвінок», не «дзвонити»"
+    },
+    "type": {
+      "en": "type", "ru": "тип",
+      "note": "The noun (kind of value), never the verb 'to type on a keyboard'.",
+      "uk": "тип"
+    },
+    "value": {
+      "en": "value", "ru": "значение",
+      "uk": "значення"
+    },
+    "on_off": {
+      "en": "ON / OFF", "ru": "ВКЛ / ВЫКЛ",
+      "uk": "УВІМК / ВИМК (розгорнуто: увімкнено / вимкнено)"
+    },
+    "rarity": {
+      "en": "common / uncommon / rare / epic / legendary",
+      "ru": "обычное / необычное / редкое / эпическое / легендарное",
+      "note": "'Common' means ordinary, not shared or joint.",
+      "uk": "звичайна / незвичайна / рідкісна / епічна / легендарна"
+    },
+    "stats": {
+      "en": "ATK / DEF / HP", "ru": "ATK / DEF / HP",
+      "note": "Latin abbreviations, identical in every language.",
+      "uk": "ATK / DEF / HP"
+    }
+  }
+}
