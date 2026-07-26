@@ -1,7 +1,43 @@
-# Build: 1
+# Build: 2
 """_EventLogsMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
+
+# Border/label colour per event type. Single source of truth — the list
+# view, the legacy grid fallback and the detail view all read this, so a
+# newly logged event type only needs one line here.
+_EVENT_COLORS = {
+    "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
+    "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
+    "sell": TEXT_SECONDARY, "equip": ACCENT_BLUE, "upgrade": ACCENT_PURPLE,
+    "enchant": ACCENT_PURPLE, "heal": ACCENT_GREEN,
+    "expedition_send": ACCENT_CYAN, "expedition_cancel": ACCENT_RED,
+    "script": ACCENT_BLUE,
+}
+
+# Rendered in the detail view's header rows, so never repeated below them.
+_DETAIL_HEADER_KEYS = ("t", "type")
+# A detail row is one line of a fixed-width pixel font; past this the text
+# is ellipsised anyway, so cut it ourselves at a word-safe length.
+_MAX_VALUE_CHARS = 48
+
+
+def _fmt_event_value(value):
+    """Render one event field as a single compact line.
+
+    Lists of names (``skipped``, for instance) are joined rather than
+    reduced to a bare count — "<list, 0 items>" told the player nothing.
+    """
+    if isinstance(value, dict):
+        return ", ".join(f"{k}={value[k]}" for k in sorted(value)) or "-"
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return "-"
+        joined = ", ".join(str(v) for v in value)
+        if len(joined) > _MAX_VALUE_CHARS:
+            return joined[:_MAX_VALUE_CHARS - 1] + "…"
+        return joined
+    return str(value)
 
 
 class _EventLogsMixin:
@@ -10,14 +46,6 @@ class _EventLogsMixin:
         import time as _time
         engine = App.get_running_app().engine
         self.lore_subview = "event_list"
-
-        _EVENT_COLORS = {
-            "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
-            "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
-            "sell": TEXT_SECONDARY, "equip": ACCENT_BLUE, "upgrade": ACCENT_PURPLE,
-            "enchant": ACCENT_PURPLE, "heal": ACCENT_GREEN,
-            "expedition_send": ACCENT_CYAN,
-        }
 
         # Prefer RecycleView — virtualizes 200-entry list
         rv = self.ids.get("event_log_rv")
@@ -47,14 +75,6 @@ class _EventLogsMixin:
         if not grid:
             return
         from game.widgets import BaseCard
-
-        _EVENT_COLORS = {
-            "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
-            "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
-            "sell": TEXT_SECONDARY, "equip": ACCENT_BLUE, "upgrade": ACCENT_PURPLE,
-            "enchant": ACCENT_PURPLE, "heal": ACCENT_GREEN,
-            "expedition_send": ACCENT_CYAN,
-        }
 
         with grid_batch(grid):
             grid.clear_widgets()
@@ -111,13 +131,7 @@ class _EventLogsMixin:
             return
 
         etype = entry.get("type", "?")
-        type_color = {
-            "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
-            "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
-            "sell": TEXT_SECONDARY, "equip": ACCENT_BLUE, "upgrade": ACCENT_PURPLE,
-            "enchant": ACCENT_PURPLE, "heal": ACCENT_GREEN,
-            "expedition_send": ACCENT_CYAN,
-        }.get(etype, TEXT_PRIMARY)
+        type_color = _EVENT_COLORS.get(etype, TEXT_PRIMARY)
 
         ts = entry.get("t", 0)
         time_str = _time.strftime("%d.%m.%Y %H:%M:%S", _time.localtime(ts)) if ts else "?"
@@ -138,22 +152,18 @@ class _EventLogsMixin:
                 'font_size': '11sp', 'height': dp(26),
             },
             {
-                'text': "─" * 12, 'color': TEXT_MUTED,
+                # Em dash, not U+2500: PressStart2P has no box-drawing
+                # glyphs, so the old "─" rule rendered as tofu squares.
+                'text': "—" * 16, 'color': TEXT_MUTED,
                 'font_size': '10sp', 'height': dp(16),
             },
         ]
         # Dump remaining fields (skip already-rendered t/type) as key=value rows
         for k in sorted(entry.keys()):
-            if k in ("t", "type"):
+            if k in _DETAIL_HEADER_KEYS:
                 continue
-            v = entry[k]
-            if isinstance(v, (list, dict)):
-                # Keep it short — just length + type
-                v_str = f"<{type(v).__name__}, {len(v)} items>"
-            else:
-                v_str = str(v)
             data.append({
-                'text': f"{k}: {v_str}",
+                'text': f"{k}: {_fmt_event_value(entry[k])}",
                 'color': TEXT_PRIMARY,
                 'font_size': '10sp', 'height': dp(20),
             })
@@ -190,5 +200,14 @@ class _EventLogsMixin:
             return f"{entry.get('fighter', '?')}: {entry.get('injury', '?')}{gold_str}"
         if etype == "expedition_send":
             return f"{entry.get('fighter', '?')} → {entry.get('exp', '?')}"
-        return str(entry)
-
+        if etype == "expedition_cancel":
+            return f"×{entry.get('n', '?')}"
+        if etype == "script":
+            return str(entry.get("text", ""))
+        # Unknown type (older save, or an event added without a branch
+        # here): show its fields instead of str(entry), which leaked the
+        # raw "{'t': 1784943830, 'type': ...}" dict into the log row.
+        return ", ".join(
+            f"{k}={_fmt_event_value(entry[k])}"
+            for k in sorted(entry) if k not in _DETAIL_HEADER_KEYS
+        )

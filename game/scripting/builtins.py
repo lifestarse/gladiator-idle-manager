@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """Registries of read-only fields and side-effect actions exposed to scripts.
 
 All callables receive the live engine for side effects. They MUST be:
@@ -8,7 +8,15 @@ All callables receive the live engine for side effects. They MUST be:
   this module does not hard-couple to PR1/PR2 not-yet-merged code.
 """
 from __future__ import annotations
+import time
 from typing import Callable, Any
+
+from game.constants import EVENT_LOG_MAX
+
+# Event-log "type" for lines a player's own script emits. Named so the
+# log UI's label/colour tables and the i18n key gate can refer to it
+# without re-hardcoding the string.
+SCRIPT_EVENT_TYPE = "script"
 
 
 # ---------- field accessors ----------
@@ -370,19 +378,27 @@ def _spawn_boss(engine):
 
 def _log(engine, message):
     """Push a custom line into engine.event_log so the user sees their script's
-    output in the in-game event panel. The engine has no log_event/add_event
-    method — it manipulates ``event_log`` directly elsewhere, so we mirror
-    that pattern. ``event_log`` is a list[dict]; we use the same {kind, text}
-    shape the engine's own callsites use."""
+    output in the in-game event panel.
+
+    Uses the engine's canonical entry shape ``{t, type, ...}``: the event-log
+    UI keys off ``type`` to pick the row's label, colour and detail
+    formatter, so an entry shaped differently renders as a raw key with a
+    dict dump. We append directly instead of calling ``engine._log_event``
+    because scripts also run against minimal stub engines that expose
+    ``event_log`` and nothing else."""
     log_list = getattr(engine, "event_log", None)
     if not isinstance(log_list, list):
         return
     try:
-        log_list.append({"kind": "script", "text": str(message)})
-        # Engine truncates to 200 elsewhere; mirror that so scripts can't
-        # bloat the log indefinitely.
-        if len(log_list) > 200:
-            del log_list[: len(log_list) - 200]
+        log_list.append({
+            "t": int(time.time()),
+            "type": SCRIPT_EVENT_TYPE,
+            "text": str(message),
+        })
+        # Engine truncates to EVENT_LOG_MAX elsewhere; mirror that so
+        # scripts can't bloat the log indefinitely.
+        if len(log_list) > EVENT_LOG_MAX:
+            del log_list[: len(log_list) - EVENT_LOG_MAX]
     except Exception:
         pass
 

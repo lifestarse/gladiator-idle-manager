@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Regression tests for the 2026-07-24 audit fixes.
 
 Covers:
@@ -240,7 +240,7 @@ def test_interpreter_blocks_on_state_lock(engine):
 
     def script_events():
         return [e for e in engine.event_log
-                if isinstance(e, dict) and e.get("kind") == "script"]
+                if isinstance(e, dict) and e.get("type") == "script"]
 
     started = threading.Event()
 
@@ -268,7 +268,7 @@ def test_interpreter_works_without_state_lock():
 
     stub = StubEngine()
     Interpreter(stub, _log_program()).run()
-    assert stub.event_log and stub.event_log[0]["kind"] == "script"
+    assert stub.event_log and stub.event_log[0]["type"] == "script"
 
 
 # ---------- Online library ----------

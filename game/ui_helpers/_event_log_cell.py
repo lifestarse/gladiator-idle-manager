@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """EventLogCardView — event log RV cell (clickable)."""
 from ._imports import *  # noqa: F401,F403
 
@@ -50,8 +50,10 @@ class EventLogCardView(RecycleDataViewBehavior, BoxLayout):
         row1.add_widget(self._time_lbl)
         self._card.add_widget(row1)
 
-        # Row 2: detail
-        self._detail_lbl = _mk(None, sp(6))
+        # Row 2: detail. size_hint_x=1, not None — None makes Kivy fall back
+        # to Widget.width (100px), so the detail text was shorten-ellipsised
+        # to a fixed 100px sliver regardless of screen width.
+        self._detail_lbl = _mk(1, sp(6))
         self._detail_lbl.size_hint_y = 0.55
         self._card.add_widget(self._detail_lbl)
         self.add_widget(self._card)

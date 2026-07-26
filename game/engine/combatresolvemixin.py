@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _CombatResolveMixin — outcomes: rewards, permadeath, battle log."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -91,12 +91,15 @@ class _CombatResolveMixin:
         if len(self.battle_log) > 100:
             self.battle_log = self.battle_log[-100:]
         r_label = "victory" if tag == "V" else "defeat"
-        self._log_event("battle", result=r_label, tier=self.arena_tier,
-                        boss=result.is_boss, gold=result.gold_earned)
+        # Roster fighters that sat this one out (benched, on expedition,
+        # dead). Carried as a field on the "battle" event: a second
+        # "battle_end" event used to be logged just for this, which made
+        # every fight appear twice in the player-facing event log.
         skipped_names = [f.name for f in self.fighters
                          if f not in result.player_fighters]
-        self._log_event("battle_end", result=r_label, tier=self.arena_tier,
-                        boss=result.is_boss, skipped=skipped_names)
+        self._log_event("battle", result=r_label, tier=self.arena_tier,
+                        boss=result.is_boss, gold=result.gold_earned,
+                        skipped=skipped_names)
         self._emit_battle_end(result)
 
     def _truncate_battle_lines(self, messages):

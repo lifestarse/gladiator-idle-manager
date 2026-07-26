@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 11
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -25,6 +25,9 @@ EXPEDITION_SLOT_BASE_COST = 200  # doubles each purchase
 
 # --- Injury healing ---
 INJURY_HEAL_BASE_COST = 50       # base gold cost to heal an injury
+
+# --- Event log ---
+EVENT_LOG_MAX = 200              # entries kept in engine.event_log (and saved)
 
 # --- Stamina / Fatigue ---
 STAMINA_MAX = 100

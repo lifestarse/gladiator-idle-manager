@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Interpreter unit tests with a fake engine + fake fighters.
 
 We use a stub engine so these tests do not depend on the heavy GameEngine
@@ -71,7 +71,8 @@ class FakeEngine:
         self.current_floor = 1
         self.battles_started = 0
         # New-style log list (engine.event_log). ``_log`` appends
-        # {"kind": "script", "text": <msg>} entries here.
+        # {"t": ..., "type": "script", "text": <msg>} entries here — the
+        # same shape _log_event writes, which is what the log UI reads.
         self.event_log: list[dict] = []
         # Legacy mirror, kept so existing assertions like
         # `e.events == ["hello"]` still work. Populated alongside event_log.
@@ -417,10 +418,13 @@ def test_action_start_expedition():
 def test_action_log():
     e = FakeEngine()
     _run([Action("log", [Const("hello")])], engine=e)
-    # New: messages land in event_log as {"kind": "script", "text": ...}
+    # Messages land in event_log using the engine's canonical entry shape.
+    # "type" (not "kind") is what the event-log UI dispatches on to pick a
+    # label, colour and detail formatter.
     assert len(e.event_log) == 1
-    assert e.event_log[0]["kind"] == "script"
+    assert e.event_log[0]["type"] == "script"
     assert e.event_log[0]["text"] == "hello"
+    assert isinstance(e.event_log[0]["t"], int)
 
 
 def test_unknown_action():

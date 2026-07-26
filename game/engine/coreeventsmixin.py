@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _CoreEventsMixin — battle-end subscriptions, event log, leaderboards."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -77,8 +77,8 @@ class _CoreEventsMixin:
             "type": event_type,
             **data,
         })
-        if len(self.event_log) > 200:
-            self.event_log = self.event_log[-200:]
+        if len(self.event_log) > EVENT_LOG_MAX:
+            self.event_log = self.event_log[-EVENT_LOG_MAX:]
 
     def submit_scores(self):
         """Submit all leaderboard scores from current engine state."""

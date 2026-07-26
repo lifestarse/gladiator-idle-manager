@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """ScriptManager tests: trigger dispatch, persistence, error isolation."""
 import pytest
 
@@ -45,7 +45,7 @@ class FakeEngine:
         self.expedition_active = False
         # event_log is the surface ``_log`` writes into (the action used to
         # call engine.log_event/add_event but now goes through the same list
-        # the real engine uses internally).
+        # the real engine uses internally, in the same {t, type, ...} shape).
         self.event_log: list[dict] = []
 
 
@@ -136,8 +136,9 @@ def test_run_on_demand_runs_disabled():
     ]))
     err = m.run_on_demand(e, "manual")
     assert err is None
-    # The log action appends a {kind, text} dict into engine.event_log.
+    # The log action appends a canonical {t, type, text} dict into event_log.
     assert len(e.event_log) == 1
+    assert e.event_log[0]["type"] == "script"
     assert e.event_log[0]["text"] == "hi"
 
 

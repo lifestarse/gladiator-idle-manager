@@ -309,6 +309,8 @@
   "evt_enchant": "Encantar",
   "evt_heal": "Curar",
   "evt_expedition_send": "Expedição",
+  "evt_expedition_cancel": "Expedição cancelada",
+  "evt_script": "Script",
   "battle_log_title": "Registro de Batalha",
   "battle_log_empty": "Nenhuma batalha ainda",
   "battle_log_victory": "VITÓRIA",

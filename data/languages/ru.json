@@ -309,6 +309,8 @@
   "evt_enchant": "Зачарование",
   "evt_heal": "Лечение",
   "evt_expedition_send": "Экспедиция",
+  "evt_expedition_cancel": "Экспедиция прервана",
+  "evt_script": "Скрипт",
   "battle_log_title": "Журнал боёв",
   "battle_log_empty": "Нет записей",
   "battle_log_victory": "ПОБЕДА",

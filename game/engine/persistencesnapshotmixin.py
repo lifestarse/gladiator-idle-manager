@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """GameEngine _PersistenceSnapshotMixin — save-state snapshot assembly."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -47,7 +47,7 @@ class _PersistenceSnapshotMixin:
                     self._trim_battle_log_entry(entry)
                     for entry in self.battle_log[-200:]
                 ],
-                "event_log": self.event_log[-200:],
+                "event_log": self.event_log[-EVENT_LOG_MAX:],
                 "surgeon_uses": self.surgeon_uses,
                 "total_gold_earned": self.total_gold_earned,
                 "run_number": self.run_number,
