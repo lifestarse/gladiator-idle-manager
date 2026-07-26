@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Internal shared imports for game.engine submodules."""
 import json
 import logging
@@ -23,6 +23,7 @@ import game.achievements as _ach_module
 from game.constants import (
     STARTING_GOLD, RENAME_COST_DIAMONDS, EXPEDITION_SLOT_BASE_COST,
     HP_HEAL_TIER_MULT, HP_HEAL_DIVISOR, INJURY_HEAL_BASE_COST,
+    EVENT_LOG_MAX,
 )
 from game.story import TUTORIAL_STEPS, STORY_CHAPTERS, get_pending_tutorial
 from game.data_loader import data_loader
@@ -31,15 +32,14 @@ from game.mutators import mutator_registry
 _log = logging.getLogger(__name__)
 
 # --- Save schema ---
-CURRENT_SAVE_VERSION = 1
+CURRENT_SAVE_VERSION = 2
 # Migrations run sequentially: key N transforms schema version N → N+1.
 # Saves without "schema_version" are treated as version 0. Register new
 # migrations via `register_migration(from_version)` so typos and version
 # gaps are caught at import time, not in the field when a player's save
-# silently falls through the loader.
-_SAVE_MIGRATIONS = {
-    # 0: lambda d: d,   # placeholder for future schema bumps
-}
+# silently falls through the loader. The migration functions themselves
+# live in game/engine/_migrations.py, imported by the package __init__.
+_SAVE_MIGRATIONS = {}
 
 
 def register_migration(from_version):

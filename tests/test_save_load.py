@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Save / load roundtrip tests — most critical because bad migration
 destroyed a real save once (see feedback_never_touch_real_save memory).
 """
@@ -12,7 +12,8 @@ def test_empty_save_loads_clean(engine):
     assert os.path.exists(engine.SAVE_PATH)
     with open(engine.SAVE_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
-    assert data["schema_version"] == 1
+    from game.engine._shared import CURRENT_SAVE_VERSION
+    assert data["schema_version"] == CURRENT_SAVE_VERSION
 
 
 def test_roundtrip_preserves_scalars(engine, tmp_save_path):
