@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """DataLoader _TranslationMixin — overlays translated text onto loaded data."""
 import os
 
@@ -14,8 +14,17 @@ class _TranslationMixin:
         """
         if lang_code == "en":
             return
-        path = os.path.join(_data_dir(), "languages", f"data_{lang_code}.json")
-        tr = self._read_json(path)
+        # Bundled first, then downloaded packs — only English ships in the APK,
+        # so for every other language this resolves into the packs directory.
+        # A missing file is the normal state for a language the player has not
+        # downloaded: the data stays English and the UI says so.
+        try:
+            from game.remote_content.packs import resolve
+            path = resolve(f"data_{lang_code}.json")
+        except Exception as exc:  # noqa: BLE001 - fall back to the bundled path
+            _log.warning("[DataLoader] pack lookup failed (%s)", exc)
+            path = os.path.join(_data_dir(), "languages", f"data_{lang_code}.json")
+        tr = self._read_json(path) if path else None
         if not tr:
             _log.info("[DataLoader] No translation file for '%s'", lang_code)
             return

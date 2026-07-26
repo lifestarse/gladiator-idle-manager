@@ -11,3 +11,5 @@
 - [Гейт переводов 2026-07-25](memory/i18n-gate-2026-07-25.md) — tests/test_i18n_data_quality.py НЕ удалять: три подделки переводов и как их ловить; переводы делаются воркфлоу-агентами через scratch/i18n_tool.py
 - [Переводы данных 2026-07-25](memory/i18n-data-translations-2026-07-25.md) — 8 языков, конвейер scratch/i18n_tool.py, гейт test_i18n_data_quality.py против подделок (пороги не ослаблять)
 - [BlueStacks-деплой 2026-07-25](memory/bluestacks-deploy-2026-07-25.md) — v1.9.42, WSL buildozer, HD-Adb/порты инстансов; анти-детект BlueStacks прячет каталоги `input` → шим kivy_input_shim.py в main.py НЕ удалять
+- [Качество UI-переводов 2026-07-26](memory/i18n-ui-quality-2026-07-26.md) — XX.json был выводом Google Translate на 93–95%; гейт test_i18n_ui_quality.py, глоссарий, украинский перечинен, 6 языков ждут
+- [Удалённый контент 2026-07-26](memory/remote-content-overlay-2026-07-26.md) — game/remote_content/: в APK только английский, остальные языки — скачиваемые пакеты; патчи баланса, safe-mode, применение со следующего запуска

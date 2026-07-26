@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 5
 """Regression tests for the 2026-07-24 audit fixes.
 
 Covers:
@@ -273,21 +273,42 @@ def test_interpreter_works_without_state_lock():
 
 # ---------- Online library ----------
 
+class _FakeResp:
+    """A response that behaves like urlopen's: drains on read, exposes headers.
+
+    The transport reads in chunks and enforces the size cap DURING the read, so
+    a stub whose read() keeps returning the whole body forever is not a valid
+    stand-in for a real one. declared_length=False omits Content-Length, which
+    is the case the indeterminate progress bar exists for.
+    """
+
+    def __init__(self, body, declared_length=True):
+        self._rest = body
+        self.headers = {"Content-Length": str(len(body))} if declared_length else {}
+
+    def read(self, n=-1):
+        if n is None or n < 0:
+            chunk, self._rest = self._rest, b""
+            return chunk
+        chunk, self._rest = self._rest[:n], self._rest[n:]
+        return chunk
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
 def test_manifest_size_cap(monkeypatch):
     from game.scripting import online_library as ol
+    from game.remote_content import _http as _rc_http
 
-    class FakeResp:
-        def read(self, n=-1):
-            size = n if isinstance(n, int) and n > 0 else ol.MAX_MANIFEST_BYTES + 10
-            return b"x" * size
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
-    monkeypatch.setattr(ol.urllib.request, "urlopen", lambda *a, **k: FakeResp())
+    body = b"x" * (ol.MAX_MANIFEST_BYTES + 10)
+    # No Content-Length: the cap has to be enforced from the bytes actually
+    # read, not from what the server claims.
+    monkeypatch.setattr(_rc_http.urllib.request, "urlopen",
+                        lambda *a, **k: _FakeResp(body, declared_length=False))
     monkeypatch.setattr(ol, "save_cached", lambda payload: pytest.fail(
         "oversized manifest must not be cached"))
     assert ol.fetch_remote() is None
@@ -295,20 +316,12 @@ def test_manifest_size_cap(monkeypatch):
 
 def test_manifest_normal_size_accepted(monkeypatch):
     from game.scripting import online_library as ol
+    from game.remote_content import _http as _rc_http
+
     body = json.dumps({"scripts": [{"id": "a", "program": {}}]}).encode("utf-8")
-
-    class FakeResp:
-        def read(self, n=-1):
-            return body
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
     cached = {}
-    monkeypatch.setattr(ol.urllib.request, "urlopen", lambda *a, **k: FakeResp())
+    monkeypatch.setattr(_rc_http.urllib.request, "urlopen",
+                        lambda *a, **k: _FakeResp(body))
     monkeypatch.setattr(ol, "save_cached", lambda payload: cached.update(payload))
     payload = ol.fetch_remote()
     assert payload and payload["scripts"][0]["id"] == "a"

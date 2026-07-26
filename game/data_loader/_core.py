@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """DataLoader core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _data_dir, _log
@@ -37,6 +37,17 @@ class DataLoader(_LoadMethodsMixin, _TranslationMixin):
         self._fighter_classes = self._load_fighter_classes(base)
         self._enemies = self._load_list(base, "enemies.json", "enemies")
         self._boss_modifiers = self._load_keyed(base, "boss_modifiers.json", "modifiers")
+
+        # Balance overlay goes here: after every raw file is read, before the
+        # tier indexes are derived from them. Patching an enemy's tier has to
+        # be visible to _build_tier_index or the enemy stays in its old pool.
+        # Injuries are safe either way — _injuries_by_id above holds the same
+        # dict objects the overlay mutates in place.
+        try:
+            from game.remote_content import patch_gamedata
+            patch_gamedata(self)
+        except Exception as exc:  # noqa: BLE001 - bundled data must still load
+            _log.warning("[DataLoader] remote balance overlay skipped: %s", exc)
 
         self._enemies_by_tier = self._build_tier_index(self._enemies)
         self._normals_by_tier, self._bosses_by_tier = self._split_enemies(

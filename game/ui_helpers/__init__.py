@@ -1,4 +1,4 @@
-# Build: 59
+# Build: 60
 """game.ui_helpers — dynamic UI builders for all screens.
 
 Split from the original 2382-line ui_helpers.py module into a
@@ -35,3 +35,5 @@ from ._inventory_cell import *  # noqa: F401,F403
 from ._battle_log_cell import *  # noqa: F401,F403
 from ._event_log_cell import *  # noqa: F401,F403
 from ._detail_cells import *  # noqa: F401,F403
+from ._language_picker import (open_language_picker,  # noqa: F401
+                               open_language_pack_fetch)  # noqa: F401

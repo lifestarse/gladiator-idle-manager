@@ -5,7 +5,12 @@ package.domain = com.gladiator
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf
 source.exclude_dirs = bin,.buildozer,.git,.claude
-source.exclude_patterns = generate_icons.py
+# Only English ships in the APK; every other language is a downloadable pack
+# (game/remote_content/packs.py, published to docs/content/packs/). Saves
+# ~675 KB. en.json and the English base data in data/*.json are never excluded
+# — they are the terminal fallback of localization.t() and must always exist.
+# scratch/ holds translation working files and quarantined generators.
+source.exclude_patterns = generate_icons.py,data/languages/ru.json,data/languages/uk.json,data/languages/de.json,data/languages/es.json,data/languages/fr.json,data/languages/it.json,data/languages/pt.json,data/languages/pl.json,data/languages/data_*.json,scratch/*
 version = 1.9.44
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
 orientation = portrait, landscape, portrait-reverse, landscape-reverse

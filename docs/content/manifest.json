@@ -1,0 +1,45 @@
+{
+  "entries": {
+    "pack.de": {
+      "min_app": "1.9.44",
+      "path": "packs/de.v1.json",
+      "revision": 1
+    },
+    "pack.es": {
+      "min_app": "1.9.44",
+      "path": "packs/es.v1.json",
+      "revision": 1
+    },
+    "pack.fr": {
+      "min_app": "1.9.44",
+      "path": "packs/fr.v1.json",
+      "revision": 1
+    },
+    "pack.it": {
+      "min_app": "1.9.44",
+      "path": "packs/it.v1.json",
+      "revision": 1
+    },
+    "pack.pl": {
+      "min_app": "1.9.44",
+      "path": "packs/pl.v1.json",
+      "revision": 1
+    },
+    "pack.pt": {
+      "min_app": "1.9.44",
+      "path": "packs/pt.v1.json",
+      "revision": 1
+    },
+    "pack.ru": {
+      "min_app": "1.9.44",
+      "path": "packs/ru.v1.json",
+      "revision": 1
+    },
+    "pack.uk": {
+      "min_app": "1.9.44",
+      "path": "packs/uk.v1.json",
+      "revision": 1
+    }
+  },
+  "schema": 1
+}

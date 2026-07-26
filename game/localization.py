@@ -1,4 +1,4 @@
-# Build: 33
+# Build: 34
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -27,32 +27,72 @@ def _languages_dir():
     return os.path.join(os.path.dirname(here), "data", "languages")
 
 
+def _language_dirs():
+    """Where UI language files live, in resolution order.
+
+    The bundled directory holds what shipped in the APK — only en.json now
+    that the rest are downloadable packs. The packs directory holds what the
+    player chose to download. Bundled wins on a name collision so English, the
+    terminal fallback of t(), can never be shadowed by downloaded content.
+    """
+    dirs = [_languages_dir()]
+    try:
+        from game.remote_content.packs import packs_dir
+        dirs.append(str(packs_dir()))
+    except Exception as exc:  # noqa: BLE001 - bundled languages must still load
+        _log.warning("Language packs directory unavailable: %s", exc)
+    return dirs
+
+
 def load_languages(force=False):
-    """Load all JSON language files from data/languages/.
+    """Load UI language files from the bundled directory and installed packs.
 
     Idempotent by default — each lang code is loaded at most once. The
     bottom of this module auto-loads on import (for tests), and main.py
     calls init_language() again on app build; without this guard every
     startup logged each language twice. Pass force=True to re-read from
-    disk (dev hot-reload).
+    disk (dev hot-reload, and after a pack is installed at runtime).
+
+    ``data_XX.json`` files are skipped on purpose. They are the game-data
+    overlay consumed by data_loader.apply_translations(), not UI strings, and
+    t() never reads them — loading them here parsed ~2 MB of JSON into
+    _LANG_DATA on every startup for nothing. They now also sit in the packs
+    directory next to the UI files, so skipping them by name is what keeps
+    "data_uk" from being offered as a language.
     """
-    lang_dir = _languages_dir()
-    if not os.path.isdir(lang_dir):
-        _log.warning("Languages directory not found: %s", lang_dir)
-        return
-    for fname in os.listdir(lang_dir):
-        if not fname.endswith(".json"):
+    seen_dir = False
+    for lang_dir in _language_dirs():
+        if not os.path.isdir(lang_dir):
             continue
-        lang_code = fname[:-5]  # "ru.json" → "ru"
-        if lang_code in _LANG_DATA and not force:
-            continue
-        path = os.path.join(lang_dir, fname)
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                _LANG_DATA[lang_code] = json.load(f)
-            _log.info("Loaded language: %s (%d keys)", lang_code, len(_LANG_DATA[lang_code]))
-        except (json.JSONDecodeError, OSError) as exc:
-            _log.error("Failed to load language %s: %s", lang_code, exc)
+        seen_dir = True
+        for fname in sorted(os.listdir(lang_dir)):
+            if not fname.endswith(".json") or fname.startswith("data_"):
+                continue
+            lang_code = fname[:-5]  # "ru.json" → "ru"
+            if lang_code in _LANG_DATA and not force:
+                continue
+            path = os.path.join(lang_dir, fname)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    _LANG_DATA[lang_code] = json.load(f)
+                _log.info("Loaded language: %s (%d keys)", lang_code,
+                          len(_LANG_DATA[lang_code]))
+            except (json.JSONDecodeError, OSError) as exc:
+                _log.error("Failed to load language %s: %s", lang_code, exc)
+                continue
+            # Overlay any cached remote patch on top. Imported lazily because
+            # game.remote_content reads flatten()/set_path() from this module —
+            # a top-level import would close the cycle. It is a no-op (and
+            # touches no disk) when nothing is cached, which is every test run
+            # and every fresh install.
+            try:
+                from game.remote_content import patch_language
+                patch_language(lang_code, _LANG_DATA[lang_code])
+            except Exception as exc:  # noqa: BLE001 - bundled text must still load
+                _log.warning("Remote language overlay skipped for %s: %s",
+                             lang_code, exc)
+    if not seen_dir:
+        _log.warning("No language directory found (looked in %s)", _language_dirs())
 
 
 # ---- Nested-key addressing ----
@@ -118,9 +158,19 @@ def t(key, **kwargs):
 
 
 def set_language(lang_code):
-    """Set active language code."""
+    """Set active language code, falling back to what is actually loaded.
+
+    The fallback is English, not Russian: since language packs, English is the
+    only language guaranteed to be in the APK, and it is already the terminal
+    fallback of t(). Falling back to "ru" would set a code with no data behind
+    it, leaving _current_lang pointing at nothing.
+    """
     global _current_lang
-    _current_lang = lang_code if lang_code in _LANG_DATA else "ru"
+    if lang_code in _LANG_DATA:
+        _current_lang = lang_code
+    else:
+        _log.info("Language %r not loaded — falling back to en", lang_code)
+        _current_lang = "en" if "en" in _LANG_DATA else lang_code
 
 
 def get_language():

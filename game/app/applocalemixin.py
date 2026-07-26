@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """App _AppLocaleMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
@@ -67,56 +67,55 @@ class _AppLocaleMixin:
         self.lbl_buy_diamonds = t("buy_diamonds_label")
 
     def _maybe_show_language_picker(self, dt=None):
-        """On a brand-new install (no save file found by engine.load()),
-        block with a mandatory language choice before anything else is
-        shown. Later switches happen via the More tab's language picker
-        (see game.screens.more.helpmixin._HelpMixin.show_language_picker)."""
-        if not getattr(self.engine, "_is_first_launch", False):
-            return
-        from kivy.uix.scrollview import ScrollView
-        languages = [
-            ("English", "en"),
-            ("Русский", "ru"),
-            ("Українська", "uk"),
-            ("Deutsch", "de"),
-            ("Español", "es"),
-            ("Français", "fr"),
-            ("Italiano", "it"),
-            ("Português", "pt"),
-            ("Polski", "pl"),
-        ]
-        scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
-        content = BoxLayout(orientation="vertical", spacing=dp(6), padding=dp(8), size_hint_y=None)
-        content.bind(minimum_height=content.setter("height"))
-        scroll.add_widget(content)
-        popup = Popup(
-            title="Language / Мова / Язык",
-            content=scroll,
-            size_hint=(0.85, 0.85),
-            background_color=popup_color(BG_CARD),
-            title_color=popup_color(ACCENT_GOLD),
-            separator_color=popup_color(ACCENT_GOLD),
-            auto_dismiss=False,
-        )
-        for name, code in languages:
-            btn = MinimalButton(
-                text=name, size_hint_y=None, height=dp(44),
-                btn_color=ACCENT_BLUE, font_size=9,
-            )
-            btn.bind(on_press=lambda inst, c=code, p=popup: self._finish_first_launch(c, p))
-            content.add_widget(btn)
-        popup.open()
+        """On a brand-new install, block with a mandatory language choice.
 
-    def _finish_first_launch(self, lang_code, popup):
-        popup.dismiss()
-        set_language(lang_code)
+        Only English ships in the APK, so most choices download a pack first;
+        the shared picker owns that flow and calls back only once the language
+        is actually on the device. Later switches go through the More tab
+        (game.screens.more.helpmixin._HelpMixin.show_language_picker), which
+        uses the same widget.
+        """
+        if not getattr(self.engine, "_is_first_launch", False):
+            self._ensure_saved_language_present()
+            return
+        from game.ui_helpers import open_language_picker
+        open_language_picker(self._finish_first_launch, mandatory=True)
+
+    def _ensure_saved_language_present(self, dt=None):
+        """A returning player's saved language may not be in this APK.
+
+        Before packs, every language was bundled. After the change, updating
+        the app removes all of them but English, so a Russian player would open
+        the game and find it in English with no explanation. Fetch the pack
+        first, showing the same progress UI, and only then build the strings.
+        Offline, the game runs in English and retries on the next launch —
+        the alternative is refusing to start, which is worse.
+        """
+        lang = get_language()
+        from game.remote_content import packs
+        if lang in packs.BUNDLED_LANGS or packs.is_installed(lang):
+            return
+        from game.ui_helpers import open_language_pack_fetch
+        open_language_pack_fetch(lang, on_done=self._apply_language_now)
+
+    def _apply_language_now(self, lang_code):
+        """Re-read data for a language that is now present, and repaint."""
+        from game.localization import load_languages
         from game.data_loader import data_loader
         from game.engine import GameEngine
+        # Reload BEFORE selecting: the pack landed on disk after the initial
+        # load, so set_language() would not find the code yet and would fall
+        # back to English.
+        load_languages(force=True)
+        set_language(lang_code)
         data_loader._loaded = False
         data_loader.load_all()
         data_loader.apply_translations(lang_code)
         GameEngine._wire_data()
+        self._init_locale_strings()
+
+    def _finish_first_launch(self, lang_code):
+        self._apply_language_now(lang_code)
         self.engine._migrate_all_items()
         self.engine._is_first_launch = False
         self.engine.save()
-        self._init_locale_strings()

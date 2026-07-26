@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """MoreScreen _HelpMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -42,44 +42,19 @@ class _HelpMixin:
         popup.open()
 
     def show_language_picker(self):
-        languages = [
-            ("English", "en"),
-            ("Русский", "ru"),
-            ("Українська", "uk"),
-            ("Deutsch", "de"),
-            ("Español", "es"),
-            ("Français", "fr"),
-            ("Italiano", "it"),
-            ("Português", "pt"),
-            ("Polski", "pl"),
-        ]
-        current = get_language()
-        scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
-        content = BoxLayout(orientation="vertical", spacing=dp(6), padding=dp(8), size_hint_y=None)
-        content.bind(minimum_height=content.setter("height"))
-        scroll.add_widget(content)
-        popup = Popup(
-            title=t("language"),
-            content=scroll,
-            size_hint=(0.85, 0.85),
-            background_color=popup_color(BG_CARD),
-            title_color=popup_color(ACCENT_GOLD),
-            separator_color=popup_color(ACCENT_GOLD),
-        )
-        for name, code in languages:
-            is_current = code == current
-            btn = MinimalButton(
-                text=f"{'> ' if is_current else ''}{name}",
-                size_hint_y=None, height=dp(44),
-                btn_color=ACCENT_GOLD if is_current else ACCENT_BLUE,
-                font_size=9,
-            )
-            btn.bind(on_press=lambda inst, c=code, p=popup: self._set_language(c, p))
-            content.add_widget(btn)
-        popup.open()
+        """Same widget as the first-launch picker — see
+        game/ui_helpers/_language_picker.py. It shows which languages are on
+        the device, which have an update, and downloads a pack with progress
+        before calling back."""
+        from game.ui_helpers import open_language_picker
+        open_language_picker(self._set_language, title=t("language"))
 
-    def _set_language(self, lang_code, popup):
-        popup.dismiss()
+    def _set_language(self, lang_code):
+        from game.localization import load_languages
+        # A pack downloaded moments ago is on disk but not yet in the in-memory
+        # table, which was built at startup. force=True re-reads both the
+        # bundled directory and the packs directory.
+        load_languages(force=True)
         set_language(lang_code)
         from game.data_loader import data_loader
         from game.engine import GameEngine

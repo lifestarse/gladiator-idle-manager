@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Online community scripts library — fetch + 24-hour local cache.
 
 This is the Tier-1 implementation discussed in design notes: a single
@@ -29,44 +29,18 @@ so it survives across game runs but never leaves the user's device.
 from __future__ import annotations
 import json
 import logging
-import os
-import ssl
 import time
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Any
 
+from game.remote_content._http import fetch_json, ssl_context as _ssl_context
+
 _log = logging.getLogger(__name__)
 
-
-def _ssl_context() -> ssl.SSLContext:
-    """Build an SSLContext that uses ``certifi``'s CA bundle.
-
-    On Android (python-for-android) the stdlib ``ssl`` module doesn't
-    pick up the system root certificate store, so a default-context
-    HTTPS request fails with::
-
-        ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED]
-        unable to get local issuer certificate (_ssl.c:1006)
-
-    even when ``certifi`` is listed in buildozer requirements — the
-    bundle is shipped but never wired into the default context. The
-    fix is to build a context explicitly from ``certifi.where()``,
-    which works on every platform (desktop too — there it's harmless
-    since the file is the same one stdlib would have found anyway).
-
-    If certifi import fails for any reason (unlikely with it in
-    buildozer.spec requirements), we fall back to the default context.
-    The fallback path is still functional on desktop and gives a
-    clearer error than a silent ImportError in the worker thread.
-    """
-    try:
-        import certifi
-        return ssl.create_default_context(cafile=certifi.where())
-    except Exception as exc:
-        _log.warning("[online_library] certifi unavailable, using default SSL context: %s", exc)
-        return ssl.create_default_context()
+# _ssl_context is re-exported under its original name: the certifi wiring it
+# performs (python-for-android's ssl module never picks up the system root
+# store) now lives in game/remote_content/_http.py so there is exactly one
+# implementation of it, and this module's public surface is unchanged.
 
 
 # Update this when you move the manifest. The .lifestarse.github.io path
@@ -175,24 +149,10 @@ def fetch_remote(
     cap the worst case at HTTP_TIMEOUT_S to keep the loading dialog from
     sitting forever on a flaky network.
     """
-    try:
-        req = urllib.request.Request(
-            url, headers={"User-Agent": "gladiator-idle-manager/1.0"})
-        with urllib.request.urlopen(req, timeout=timeout, context=_ssl_context()) as resp:
-            # +1 so an exactly-at-limit body is distinguishable from a
-            # truncated oversize one — anything past the cap is rejected.
-            raw = resp.read(MAX_MANIFEST_BYTES + 1)
-        if len(raw) > MAX_MANIFEST_BYTES:
-            _log.warning("[online_library] manifest larger than %d bytes — rejected",
-                         MAX_MANIFEST_BYTES)
-            return None
-        data = json.loads(raw.decode("utf-8"))
-    except (urllib.error.URLError, urllib.error.HTTPError,
-            json.JSONDecodeError, OSError, ValueError, RecursionError) as exc:
-        # RecursionError: json.loads on a maliciously deep-nested manifest
-        # (a size cap alone doesn't stop {"a":{"a":{... x50k}}}).
-        _log.warning("[online_library] fetch failed (%s): %s",
-                     type(exc).__name__, exc)
+    # Transport (size cap, deep-nesting guard, certifi context, never raises)
+    # lives in remote_content._http; this module keeps the schema knowledge.
+    data = fetch_json(url, timeout=timeout, max_bytes=MAX_MANIFEST_BYTES)
+    if data is None:
         return None
     payload = _validate_manifest(data)
     if payload is None:

@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 11
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -267,6 +267,20 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         # player sees the game. Scheduled for next frame so the popup opens
         # against a fully-attached window.
         Clock.schedule_once(self._maybe_show_language_picker, 0)
+
+        # Remote content: clear the safe-mode marker only after the app has
+        # survived several seconds of real running. Doing it inline at the end
+        # of build() would certify a patch that crashes on the first frame.
+        # Then warm the cache for the NEXT launch — never for this one.
+        def _remote_content_settled(dt):
+            try:
+                from game.remote_content import confirm_healthy, sync_async
+                confirm_healthy()
+                sync_async(get_language())
+            except Exception as exc:
+                _log.info("[remote] post-startup step suppressed: %s", exc)
+
+        Clock.schedule_once(_remote_content_settled, 6.0)
 
         return root
 
