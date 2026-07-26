@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """AdManager core — public API, desktop stub, android gating.
 
 Android specifics live in _AdsAndroidMixin (consent/init chain + shim
@@ -9,6 +9,7 @@ calls). Invariants preserved from the 2026-07-24 audit fixes:
 * the desktop stub simulates rewarded success for local testing.
 """
 from ._shared import (
+    ADS_ENABLED,
     INTERSTITIAL_ID,
     REWARDED_ID,
     _is_test_id,
@@ -32,6 +33,12 @@ class AdManager(_AdsAndroidMixin):
 
     def init(self):
         """Initialize ads. Call once at app start."""
+        if not ADS_ENABLED:
+            _log.info(
+                "[AdManager] Ads disabled by config (ADS_ENABLED=False)"
+            )
+            self._initialized = False
+            return
         if platform != "android":
             _log.info("[AdManager] Not on Android — ads disabled (stub mode)")
             self._initialized = False

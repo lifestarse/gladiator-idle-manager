@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Shared ad constants + helpers for the game.ads package."""
 
 import logging
@@ -22,6 +22,15 @@ _GOOGLE_TEST_PUBLISHER = "ca-app-pub-3940256099942544"
 
 # Real ads enabled for banner
 USING_REAL_ADS = True
+
+# Master kill-switch (2026-07-25, owner decision): ads are pointless with no
+# audience, so the whole stack is dark — AdManager.init() returns before any
+# MobileAds/UMP/bridge activity and every show/load path stays a no-op.
+# Re-enable by flipping this to True; the Java shim, gradle deps and
+# APPLICATION_ID stay wired (see NOTE(ads) in buildozer.spec — do NOT strip
+# them, the coupled removal is the dangerous change). Desktop rewarded stub
+# behavior is unaffected (it never depended on init()).
+ADS_ENABLED = False
 
 # Failure-retry backoff for ad loads (seconds): doubles per consecutive
 # failure so a no-fill/no-network device doesn't hammer the ad server.

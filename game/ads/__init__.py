@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 """game.ads — AdMob via a thin pyjnius/Java bridge (split from game/ads.py).
 
 The KivMob backend died with Play Services Ads v20+ (legacy rewarded API
@@ -11,6 +11,7 @@ ADMOB_APP_ID / BANNER_ID / INTERSTITIAL_ID / REWARDED_ID, USING_REAL_ADS.
 """
 from ._shared import (  # noqa: F401
     ADMOB_APP_ID,
+    ADS_ENABLED,
     BANNER_ID,
     INTERSTITIAL_ID,
     REWARDED_ID,
