@@ -20,3 +20,7 @@ build.log
 screen*.png
 feature_graphic.png
 bundletool.jar
+
+# Working area for data pipelines (fragments, probes) — not part of the app
+scratch/
+build_*.log
