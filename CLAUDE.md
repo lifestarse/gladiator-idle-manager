@@ -40,8 +40,8 @@ UI показывает **derived** (ATK/DEF/HP), бой использует **
 
 Паттерн `import game.models as _m` — **намеренный**: `engine._wire_data()` мутирует in-place (`.clear()` + `.update()/.extend()`) module-level коллекции (`ALL_FORGE_ITEMS`, `ENCHANTMENT_TYPES`, etc.). Это требование subpackage-шардинга — сабмодули (`_fighter.py`, `_data.py`) держат ссылки через `from ._data import *`.
 
-# Ограничение размера файла
-Ни один src-файл не должен превышать 10 КБ (исключение: `generate_sprites.py` — оффлайн-тулза). `battle.py` тоже разбит на пакет `game/battle/` из 10 submodules через mixins.
+# Размер файлов
+Жёсткого лимита нет (снят 2026-07-25 по решению юзера). Разбивай файл, когда он реально мешает читать или редактировать, а не по счётчику байт. Уже разбитые пакеты (`game/battle/` — 10 submodules, `game/engine/`, `game/ui_helpers/`, `game/screens/roster|forge/`) обратно не склеивать: их mixin-раскладка и `test_cross_package_name_resolution` завязаны друг на друга.
 
 # Кросс-файловые имена
 После sub-mixin расщепления есть риск: метод в mixin_A ссылается на global-имя определённое в mixin_B, но не импортированное. `from X import *` **пропускает** underscore-имена. Защита: `tests/test_name_resolution.py::test_cross_package_name_resolution` обходит bytecode каждого split-пакета и ловит такие случаи. НЕ удалять этот тест.
