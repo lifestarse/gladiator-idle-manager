@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """ui_helpers._lore — achievements grid + lore blog rendering."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
@@ -168,10 +168,10 @@ def refresh_achievement_grid(lore_screen):
     grid = lore_screen.ids.get("lore_grid")
     if not grid:
         return
-    unlock_hash = tuple(ach.get("unlocked", False) for ach in data)
+    unlock_hash = (get_language(), tuple(ach.get("unlocked", False) for ach in data))
     if (lore_screen._achievement_widgets
             and len(lore_screen._achievement_widgets) == len(data)
-            and lore_screen._achievement_unlock_hash == unlock_hash):
+            and getattr(lore_screen, "_achievement_unlock_hash", None) == unlock_hash):
         _batch_fill_grid(grid, lore_screen._achievement_widgets)
         return
     cards = [build_achievement_card(ach) for ach in data]

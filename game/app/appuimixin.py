@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 4
 """App _AppUiMixin."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _safe_clear
@@ -86,9 +86,14 @@ class _AppUiMixin:
             return
         _safe_clear(grid)
 
+        step_id = step.get("id", "")
+        title_key = f"tut_{step_id}_title"
+        t_title = t(title_key)
+        title_text = step["title"] if t_title == title_key else t_title
+
         # Title
         title_lbl = AutoShrinkLabel(
-            text=step["title"], font_size="21sp", bold=True,
+            text=title_text, font_size="21sp", bold=True,
             color=ACCENT_GOLD, halign="center",
             size_hint_y=None, height=dp(36),
         )
@@ -96,9 +101,12 @@ class _AppUiMixin:
         grid.add_widget(title_lbl)
 
         # Lines
-        for line in step["lines"]:
+        for idx, line in enumerate(step["lines"]):
+            line_key = f"tut_{step_id}_l{idx}"
+            t_line = t(line_key)
+            line_text = line if t_line == line_key else t_line
             lbl = AutoShrinkLabel(
-                text=line, font_size="18sp", color=TEXT_PRIMARY,
+                text=line_text, font_size="18sp", color=TEXT_PRIMARY,
                 halign="left", size_hint_y=None, height=dp(40),
             )
             bind_text_wrap(lbl)

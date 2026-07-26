@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Shared imports for game.ui_helpers submodules.
 
 Every auto-split submodule pulls the same 22-line block of Kivy widgets /
@@ -24,5 +24,5 @@ from game.widgets import (  # noqa: F401
 from game.theme import *  # noqa: F401,F403
 from game.models import RARITY_COLORS, fmt_num  # noqa: F401
 from game.slots import SLOTS  # noqa: F401
-from game.localization import t  # noqa: F401
+from game.localization import t, get_language  # noqa: F401
 from game.constants import LOW_HP_THRESHOLD  # noqa: F401

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """DataLoader _TranslationMixin — overlays translated text onto loaded data."""
 import os
 
@@ -47,7 +47,7 @@ class _TranslationMixin:
         _apply_to_list(self._accessories, tr.get("accessories", {}), skip=("name",))
         _apply_to_list(self._relics,      tr.get("relics", {}),      skip=("name",))
         _apply_to_list(self._achievements, tr.get("achievements", {}))
-        _apply_to_list(self._enemies, tr.get("enemies", {}))
+        _apply_to_list(self._enemies, tr.get("enemies", {}), skip=("name",))
         _apply_to_list(self._injuries, tr.get("injuries", {}))
         _apply_to_list(self._expeditions, tr.get("expeditions", {}))
         _apply_to_list(self._lore, tr.get("lore", {}))

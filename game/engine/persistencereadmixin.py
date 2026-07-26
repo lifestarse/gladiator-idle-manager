@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 11
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -126,10 +126,12 @@ class _PersistenceReadMixin:
         saved_lang = data.get("language")
         if saved_lang:
             set_language(saved_lang)
+        lang = saved_lang or get_language()
+        if lang != "en":
             # Apply data-level translations (achievements, expeditions, etc.)
             # from data/languages/data_{lang}.json, then re-wire so models
             # see the translated names/descs.
-            data_loader.apply_translations(saved_lang)
+            data_loader.apply_translations(lang)
             self._wire_data()
 
         self.inventory = data.get("inventory", [])
