@@ -1,4 +1,4 @@
-# Build: 65
+# Build: 66
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -26,7 +26,8 @@ from game.constants import FEATURE_UNLOCKS
 from game.models import fmt_num
 from game.theme import *
 from game.theme import popup_color
-from game.localization import t, init_language, set_language, get_language
+from game.localization import (t, init_language, set_language, get_language,
+                               get_requested_language)
 from game.widgets import AutoShrinkLabel, MinimalButton
 from game.ads import ad_manager
 from game.iap import iap_manager, PRODUCTS

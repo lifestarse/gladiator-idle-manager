@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Tests for the remote content overlay.
 
 The overlay's entire value depends on one property: a bad patch must be
@@ -539,3 +539,39 @@ def test_bundled_english_is_not_shadowed_by_a_pack(isolated_home):
     resolved = packs.resolve("en.json")
     assert resolved is not None
     assert packs.PACKS_DIRNAME not in resolved
+
+
+# ------------------------------------------------- requested vs active language
+
+def test_missing_pack_fallback_keeps_the_requested_language(monkeypatch):
+    """The scenario of the packs migration: the save says "ru", this APK has
+    only English. set_language must fall back for rendering but the request
+    has to survive — it drives the startup pack-fetch popup, and the save
+    must not be overwritten with the fallback."""
+    import game.localization as loc
+    monkeypatch.setattr(loc, "_LANG_DATA", {"en": {}})
+    monkeypatch.setattr(loc, "_current_lang", "en")
+    monkeypatch.setattr(loc, "_requested_lang", None)
+
+    loc.set_language("ru")
+    assert loc.get_language() == "en", "rendering must fall back to English"
+    assert loc.get_requested_language() == "ru", "the player's choice must survive"
+
+    # Once the pack is present a normal switch resolves both views again.
+    loc._LANG_DATA["ru"] = {}
+    loc.set_language("ru")
+    assert loc.get_language() == "ru"
+    assert loc.get_requested_language() == "ru"
+
+
+def test_save_snapshot_writes_the_requested_language(tmp_path, monkeypatch):
+    """An offline launch with the pack missing must not erase the choice."""
+    import game.localization as loc
+    from game.engine import GameEngine
+    monkeypatch.setattr(loc, "_LANG_DATA", {"en": {}})
+    monkeypatch.setattr(loc, "_current_lang", "en")
+    monkeypatch.setattr(loc, "_requested_lang", None)
+
+    loc.set_language("uk")  # pack absent -> active falls back to en
+    engine = GameEngine(save_path=str(tmp_path / "save.json"))
+    assert engine._build_save_data()["language"] == "uk"

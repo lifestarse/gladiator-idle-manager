@@ -1,4 +1,4 @@
-# Build: 34
+# Build: 35
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -14,6 +14,12 @@ import os
 _log = logging.getLogger(__name__)
 
 _current_lang = "ru"
+
+# What the player asked for, even when its pack is not on the device yet.
+# set_language() falls back to "en" in that case; without this the fallback
+# would masquerade as the player's choice — the pack-fetch prompt would never
+# fire and the next save would overwrite the real preference with "en".
+_requested_lang = None
 
 # {lang_code: {key: translated_string}}
 _LANG_DATA: dict[str, dict] = {}
@@ -164,8 +170,13 @@ def set_language(lang_code):
     only language guaranteed to be in the APK, and it is already the terminal
     fallback of t(). Falling back to "ru" would set a code with no data behind
     it, leaving _current_lang pointing at nothing.
+
+    The requested code is remembered either way — get_requested_language()
+    is how the pack-fetch path and the save learn what the player actually
+    chose when the fallback kicked in.
     """
-    global _current_lang
+    global _current_lang, _requested_lang
+    _requested_lang = lang_code
     if lang_code in _LANG_DATA:
         _current_lang = lang_code
     else:
@@ -175,6 +186,18 @@ def set_language(lang_code):
 
 def get_language():
     return _current_lang
+
+
+def get_requested_language():
+    """The code last passed to set_language(), or the active one.
+
+    Differs from get_language() only while the requested language's pack is
+    absent from the device: get_language() answers "what can t() render",
+    this answers "what did the player pick". The save writes this so an
+    offline launch cannot erase the preference, and the startup pack-fetch
+    reads it to know which pack to offer.
+    """
+    return _requested_lang or _current_lang
 
 
 def get_available_languages():
