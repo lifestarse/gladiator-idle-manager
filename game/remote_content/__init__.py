@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Remote content overlay — ship text and balance fixes without a Play release.
 
 WHAT THIS IS NOT: a code updater. Nothing here downloads or executes Python.
@@ -177,10 +177,39 @@ def pack_status(lang, entries=None):
     return NOT_INSTALLED if entry else UNAVAILABLE
 
 
+def offered_languages():
+    """[(display_name, code)] the picker should show, in display order.
+
+    The APK's built-in list first, then any language the cached manifest
+    publishes beyond it (a ``pack.*`` entry carrying a display ``name``) —
+    which is how a brand-new language reaches installed clients without a
+    Play release. Languages already installed on disk are included even when
+    the manifest cache is gone (safe-mode wipe, offline first open), so the
+    player can always see and re-select the language they are running.
+
+    Codes come from _manifest.validate, which rejects anything that could
+    steer a path — they end up as filenames in the packs directory.
+    """
+    offered = list(packs.OFFERED)
+    known = {code for _name, code in offered}
+    extras = {}
+    for entry_name, entry in _cached_manifest_entries().items():
+        if not entry_name.startswith("pack."):
+            continue
+        code = entry_name[len("pack."):]
+        if code not in known:
+            extras[code] = entry.get("name", code)
+    for code in packs.installed_codes_on_disk():
+        if code not in known:
+            extras.setdefault(code, code)
+    offered.extend((extras[code], code) for code in sorted(extras))
+    return offered
+
+
 def pack_statuses():
     """{lang: status} for every offered language, computed from one manifest read."""
     entries = _cached_manifest_entries()
-    return {code: pack_status(code, entries) for _name, code in packs.OFFERED}
+    return {code: pack_status(code, entries) for _name, code in offered_languages()}
 
 
 def refresh_manifest(force=False):
@@ -252,16 +281,21 @@ def sync(lang_code, force=False):
             refreshed.append(f"lang.{lang}")
 
     # Only languages the player already downloaded. Pulling packs nobody
-    # selected would spend their data on text they will never read.
-    for lang in packs.installed_languages() - set(packs.BUNDLED_LANGS):
+    # selected would spend their data on text they will never read. The
+    # directory scan (not OFFERED) is what keeps manifest-only languages
+    # updatable — they are installed without ever being in the APK's list.
+    for lang in sorted(packs.installed_codes_on_disk() - set(packs.BUNDLED_LANGS)):
         entry = entries.get(f"pack.{lang}")
         if not entry:
             continue
         current = packs.installed_revision(lang)
-        if not force and current is not None and current >= entry["revision"]:
+        if force or current is None or current < entry["revision"]:
+            if packs.download(lang, BASE_URL, entry):
+                refreshed.append(f"pack.{lang}")
             continue
-        if packs.download(lang, BASE_URL, entry):
-            refreshed.append(f"pack.{lang}")
+        # The pack is current, but its font may have changed upstream or
+        # rotted on disk; ensure_font is a quiet no-op when all is well.
+        packs.ensure_font(lang, BASE_URL, entry)
 
     entry = entries.get("gamedata")
     if entry and (force or _cache.revision("gamedata") != entry["revision"]):

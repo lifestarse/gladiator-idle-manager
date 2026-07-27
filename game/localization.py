@@ -1,4 +1,4 @@
-# Build: 35
+# Build: 36
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -31,6 +31,68 @@ def _languages_dir():
     """Return path to data/languages/ relative to project root."""
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(os.path.dirname(here), "data", "languages")
+
+
+def _project_root():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+# The two global font aliases the whole UI renders through, and the files they
+# point at when no downloaded per-language font overrides them. Keep the file
+# names in sync with the registration in game/app/_shared.py — the literals
+# there are pinned by tests/test_font_glyph_coverage.py.
+_FONT_ALIASES = ("PixelFont", "BodyFont")
+_BUNDLED_FONT_FILES = {
+    "PixelFont": os.path.join(_project_root(), "fonts", "PressStart2P-Regular.ttf"),
+    "BodyFont": os.path.join(_project_root(), "fonts", "DroidSans.ttf"),
+}
+
+
+def _register_fonts(mapping):
+    """Point Kivy's font aliases at files. No-op headless (tests, tools).
+
+    Kivy is imported lazily and only here: importing it parses sys.argv, which
+    would break the headless CLI tools that import this module.
+    """
+    try:
+        from kivy.core.text import LabelBase
+    except ImportError:
+        return
+    for alias, path in mapping.items():
+        if not os.path.exists(path):
+            _log.warning("Font file missing, alias %s left as-is: %s", alias, path)
+            continue
+        try:
+            LabelBase.register(name=alias, fn_regular=path)
+        except Exception as exc:  # noqa: BLE001 - a bad font must not kill the app
+            # Kivy validates the file when it builds the alias; a font that
+            # freetype refuses leaves the previous registration in place.
+            _log.warning("Font %s rejected for alias %s: %s", path, alias, exc)
+
+
+def _apply_language_font(lang_code):
+    """Re-point the global font aliases for the active language.
+
+    A language whose script the bundled fonts cannot draw ships a font inside
+    its pack (game/remote_content/packs.py). When the active language has one
+    on disk it overrides BOTH aliases — a script the pixel font cannot render
+    cannot keep the pixel font anywhere. Switching back to a covered language
+    restores the bundled files. Runs before widgets are (re)built in every
+    activation flow, because all of them go through set_language().
+    """
+    override = None
+    try:
+        from game.remote_content import packs
+        override = packs.verified_font_path(lang_code)
+    except Exception as exc:  # noqa: BLE001 - never break startup over a font
+        # set_language() sits inside engine.load(); anything raising here would
+        # be caught by load()'s blanket handler and QUARANTINE a healthy save.
+        # A font problem must cost the bundled fallback, never the player's run.
+        _log.warning("Font lookup failed for %r: %s", lang_code, exc)
+    if override is not None:
+        _register_fonts({alias: str(override) for alias in _FONT_ALIASES})
+    else:
+        _register_fonts(dict(_BUNDLED_FONT_FILES))
 
 
 def _language_dirs():
@@ -182,6 +244,10 @@ def set_language(lang_code):
     else:
         _log.info("Language %r not loaded — falling back to en", lang_code)
         _current_lang = "en" if "en" in _LANG_DATA else lang_code
+    # The ACTIVE language decides the font: if the request fell back to
+    # English, English must render in the bundled fonts, not in whatever the
+    # unavailable language would have used.
+    _apply_language_font(_current_lang)
 
 
 def get_language():

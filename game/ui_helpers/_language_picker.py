@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """The language picker, shared by first launch and the More screen.
 
 Only English ships in the APK; every other language is a downloadable pack
@@ -242,7 +242,6 @@ def open_language_picker(on_chosen, title=None, mandatory=False,
     that must not be escapable.
     """
     from game import remote_content
-    from game.remote_content import packs
 
     current = get_language()
     scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
@@ -297,11 +296,17 @@ def open_language_picker(on_chosen, title=None, mandatory=False,
         threading.Thread(target=worker, name=f"lang-pack-{row.code}",
                          daemon=True).start()
 
-    for name, code in packs.OFFERED:
+    def add_row(name, code):
         row = _LanguageRow(name, code, statuses.get(code, "unavailable"),
                            pick, code == current)
         rows[code] = row
         content.add_widget(row)
+
+    # offered_languages() is the APK's built-in list plus whatever the cached
+    # manifest publishes beyond it — a new language can appear here without a
+    # Play release.
+    for name, code in remote_content.offered_languages():
+        add_row(name, code)
 
     popup.open()
 
@@ -312,6 +317,7 @@ def open_language_picker(on_chosen, title=None, mandatory=False,
         def refresh_worker():
             remote_content.refresh_manifest()
             fresh = remote_content.pack_statuses()
+            fresh_offered = remote_content.offered_languages()
 
             def repaint(_dt):
                 for code, status in fresh.items():
@@ -319,6 +325,12 @@ def open_language_picker(on_chosen, title=None, mandatory=False,
                     if row is not None and not row._busy:
                         statuses[code] = status
                         row.caption.text = _status_text(status)
+                # A language that entered the manifest since the popup opened
+                # gets its row now instead of on the next open.
+                for name, code in fresh_offered:
+                    if code not in rows:
+                        statuses[code] = fresh.get(code, "unavailable")
+                        add_row(name, code)
 
             Clock.schedule_once(repaint, 0)
 
