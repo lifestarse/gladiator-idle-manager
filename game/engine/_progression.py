@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _ProgressionMixin — extracted from monolithic engine.py.
 
 Also home to the player account level: XP, level-ups and the feature-unlock
@@ -139,27 +139,8 @@ class _ProgressionMixin:
             for ch_idx, chapter in enumerate(STORY_CHAPTERS):
                 if ch_idx > self.story_chapter:
                     break
-                for quest in chapter["quests"]:
-                    if quest["id"] in self.quests_completed:
-                        continue
-                    try:
-                        if quest["check"](self):
-                            self.quests_completed.append(quest["id"])
-                            changed = True
-                            newly_completed.append(quest)
-                            reward = quest.get("reward", {})
-                            diamonds = reward.get("diamonds", 0)
-                            if diamonds:
-                                self.pending_notifications.append(
-                                    t("quest_completed", name=quest.get("name", "Quest"), diamonds=diamonds)
-                                )
-                            if "diamonds" in reward:
-                                self.diamonds += reward["diamonds"]
-                            if "shards" in reward:
-                                for tier, count in reward["shards"].items():
-                                    self.shards[tier] = self.shards.get(tier, 0) + count
-                    except Exception as e:
-                        _log.warning("Quest check failed [%s]: %s", quest.get("id"), e)
+                if self._quests_scan_chapter(chapter, newly_completed):
+                    changed = True
                 all_done = all(q["id"] in self.quests_completed for q in chapter["quests"])
                 if all_done and ch_idx == self.story_chapter:
                     self.story_chapter += 1
@@ -168,6 +149,36 @@ class _ProgressionMixin:
         if changed:
             self.save()
         return newly_completed
+
+    def _quests_scan_chapter(self, chapter, newly_completed):
+        """Complete every satisfied quest of one chapter. True if any fired."""
+        changed = False
+        for quest in chapter["quests"]:
+            if quest["id"] in self.quests_completed:
+                continue
+            try:
+                if not quest["check"](self):
+                    continue
+                self.quests_completed.append(quest["id"])
+                changed = True
+                newly_completed.append(quest)
+                self._quests_grant_reward(quest)
+            except Exception as e:
+                _log.warning("Quest check failed [%s]: %s", quest.get("id"), e)
+        return changed
+
+    def _quests_grant_reward(self, quest):
+        reward = quest.get("reward", {})
+        diamonds = reward.get("diamonds", 0)
+        if diamonds:
+            self.pending_notifications.append(
+                t("quest_completed", name=quest.get("name", "Quest"), diamonds=diamonds)
+            )
+        if "diamonds" in reward:
+            self.diamonds += reward["diamonds"]
+        if "shards" in reward:
+            for tier, count in reward["shards"].items():
+                self.shards[tier] = self.shards.get(tier, 0) + count
 
     def get_achievements(self):
         return [

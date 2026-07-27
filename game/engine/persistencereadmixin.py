@@ -1,4 +1,4 @@
-# Build: 13
+# Build: 14
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -46,6 +46,20 @@ class _PersistenceReadMixin:
             self._spawn_enemy()
 
     def _apply_save_data(self, data):
+        data = self._applysave_migrate(data)
+        self._applysave_run_state(data)
+        self._applysave_persistent_state(data)
+        self._applysave_clamped_settings(data)
+        self._applysave_counters(data)
+        self._applysave_language(data)
+        self._applysave_roster(data)
+        self._applysave_scripts(data)
+
+        self.battle_mgr = BattleManager(self)
+        self.check_expeditions()
+        self._spawn_enemy()
+
+    def _applysave_migrate(self, data):
         # Schema migration: absent version = pre-versioning (v0).
         # Run registered migrations sequentially until we reach the current
         # schema. Keeps old saves loadable after format changes.
@@ -65,7 +79,9 @@ class _PersistenceReadMixin:
                 break  # no migration registered — trust .get() defaults below
             data = migrate(data)
             version += 1
+        return data
 
+    def _applysave_run_state(self, data):
         self.last_saved_at = data.get("saved_at", 0.0)
         self.gold = data.get("gold", 100)
         self.active_fighter_idx = data.get("active_fighter_idx", 0)
@@ -85,7 +101,7 @@ class _PersistenceReadMixin:
         self.run_kills = data.get("run_kills", 0)
         self.run_max_tier = data.get("run_max_tier", 1)
 
-        # Persistent
+    def _applysave_persistent_state(self, data):
         self.best_record_tier = data.get("best_record_tier", 0)
         self.best_record_kills = data.get("best_record_kills", 0)
         self.total_runs = data.get("total_runs", 0)
@@ -105,6 +121,8 @@ class _PersistenceReadMixin:
         self._review_shown_after_first_purchase = data.get(
             "review_shown_after_first_purchase", False)
         self.active_mutators = data.get("active_mutators", [])
+
+    def _applysave_clamped_settings(self, data):
         # Clamp to [0,1] — guard against tampered/corrupt saves writing
         # arbitrary floats that would saturate audio backends.
         try:
@@ -134,7 +152,7 @@ class _PersistenceReadMixin:
         self.player_xp = max(0, pxp)
         self.pending_level_ups = []
 
-        # Achievement counters
+    def _applysave_counters(self, data):
         self.total_enchantments_applied = data.get("total_enchantments_applied", 0)
         self.total_enchantment_procs = data.get("total_enchantment_procs", 0)
         self.total_gold_spent_equipment = data.get("total_gold_spent_equipment", 0)
@@ -144,6 +162,7 @@ class _PersistenceReadMixin:
         self.cloud_sync_enabled = data.get("cloud_sync_enabled", False)
         self.lore_unlocked = data.get("lore_unlocked", [])
 
+    def _applysave_language(self, data):
         saved_lang = data.get("language")
         if saved_lang:
             set_language(saved_lang)
@@ -155,6 +174,7 @@ class _PersistenceReadMixin:
             data_loader.apply_translations(lang)
             self._wire_data()
 
+    def _applysave_roster(self, data):
         self.inventory = data.get("inventory", [])
         shards_raw = data.get("shards", {})
         if shards_raw:
@@ -172,6 +192,7 @@ class _PersistenceReadMixin:
         if not self.fighters or not any(f.alive for f in self.fighters):
             self.fighters = [Fighter(name="Vorn", fighter_class="mercenary")]
 
+    def _applysave_scripts(self, data):
         # Squad scripting — load programs + persistent globals (missing key → empty).
         # Legacy saves without "scripts" get the built-in example seeded once.
         try:
@@ -182,7 +203,3 @@ class _PersistenceReadMixin:
             from game.scripting import ScriptManager
             self.scripts = ScriptManager()
         self.scripts.seed_examples_if_needed()
-
-        self.battle_mgr = BattleManager(self)
-        self.check_expeditions()
-        self._spawn_enemy()
