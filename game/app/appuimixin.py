@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """App _AppUiMixin."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _safe_clear
@@ -9,6 +9,20 @@ class _AppUiMixin:
         engine = self.engine
         self.top_gold = fmt_num(engine.gold)
         self.top_diamonds = fmt_num(engine.diamonds)
+        self.refresh_unlocks()
+
+    def refresh_unlocks(self):
+        """Mirror the engine's account level into kv-bindable properties.
+
+        Rebuilt wholesale from FEATURE_UNLOCKS rather than patched key by
+        key, so a feature added to the table shows up in the UI with no
+        extra wiring here.
+        """
+        engine = self.engine
+        self.player_level = engine.player_level
+        self.player_level_pct = engine.player_level_pct
+        self.unlocked = {name: engine.is_unlocked(name)
+                         for name in FEATURE_UNLOCKS}
 
     def show_toast(self, msg, duration=2.5):
         """Show a brief error/info notification at the bottom of the screen."""

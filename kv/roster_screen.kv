@@ -27,11 +27,11 @@
             height: dp(38)
             padding: [dp(8), dp(3)]
             MinimalButton:
-                text: app.lbl_scripts
+                text: app.lbl_scripts if app.unlocked.get("scripts", True) else app.lbl_locked_lv.format(n=app.unlock_level("scripts"))
                 font_size: 10
                 variant: "ghost"
-                btn_color: theme.ACCENT_BLUE
-                on_press: app.sm.current = "scripts"
+                btn_color: theme.ACCENT_BLUE if app.unlocked.get("scripts", True) else theme.TEXT_MUTED
+                on_press: app.go_gated("scripts", "scripts")
 
         BoxLayout:
             id: roster_tabs

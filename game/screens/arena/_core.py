@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """ArenaScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -37,6 +37,37 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
 
     run_text = StringProperty("Run #1 \u00b7 0 kills")
 
+    # Auto-battle speed multiplier label ("x1" / "x2" / "x4") \u2014 mirrors
+    # engine.battle_speed, cycled by the action-row speed button.
+    speed_text = StringProperty("x1")
+
+    # Record chase: run_kills / best_record_kills for the progress lane.
+    record_pct = NumericProperty(0.0)
+
+    # True once the current run has beaten the best record \u2014 flips the
+    # progress bar gold and fires a one-shot NEW RECORD ticker.
+    record_is_new = BooleanProperty(False)
+
+    # Pre-battle gold preview: summed gold_reward of preview enemies.
+    # Empty string while a battle is running (the lane shows live info).
+    reward_text = StringProperty("")
+
+    # "Next unlock" carrot: what the next player level buys. Empty once
+    # everything in FEATURE_UNLOCKS is open.
+    next_unlock_text = StringProperty("")
+
+    # run_number that already got its NEW RECORD celebration \u2014 one ticker
+    # per run, not one per refresh tick.
+    _record_run_celebrated = 0
+
+    # (tier, gold) of a boss win that landed while the player was on another
+    # screen \u2014 shown on the next arena entry instead of opening a modal over
+    # whatever they were doing. See _check_battle_end.
+    _pending_tier_up = None
+
+    # Clock time of the last battle resolution, for the FIGHT/STOP tap guard.
+    _battle_end_time = -1e9
+
     def on_enter(self):
         app = App.get_running_app()
         if not app or not app.root:
@@ -48,6 +79,10 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
         self.refresh_ui()
         self._check_tutorial()
         self._check_pending_reset()
+        if self._pending_tier_up is not None:
+            tier, gold = self._pending_tier_up
+            self._pending_tier_up = None
+            self._show_tier_up_popup(tier, gold)
 
     def refresh_ui(self):
         engine = App.get_running_app().engine
@@ -60,6 +95,32 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
         else:
             self.best_text = "Best: ---"
         self.run_text = f"Run #{engine.run_number} \u00b7 {engine.run_kills} kills"
+        self.speed_text = f"x{getattr(engine, 'battle_speed', 1)}"
+
+        # Record chase lane: how far this run is from the best kill count.
+        # First run ever (no record yet) keeps the bar empty and quiet.
+        best_kills = engine.best_record_kills
+        if best_kills > 0:
+            self.record_pct = min(1.0, engine.run_kills / best_kills)
+            self.record_is_new = engine.run_kills > best_kills
+        else:
+            self.record_pct = 0.0
+            self.record_is_new = False
+        if (self.record_is_new
+                and self._record_run_celebrated != engine.run_number):
+            self._record_run_celebrated = engine.run_number
+            self._ticker(t("new_record"), ACCENT_GOLD)
+
+        # Level-up celebration + the next-unlock carrot.
+        for lvl in engine.take_pending_level_ups():
+            self._show_level_up_banner(lvl)
+        nxt = engine.next_unlock()
+        if nxt:
+            feature, lvl = nxt
+            self.next_unlock_text = t(
+                "next_unlock", name=t(f"feature_{feature}"), n=lvl)
+        else:
+            self.next_unlock_text = ""
 
         fighters = [f for f in engine.fighters if f.available]
         self.player_summary = t("fighters_ready", n=len(fighters))
@@ -77,14 +138,20 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
             total_ehp = sum(max(0, e.hp) for e in s.enemies)
             total_emax = sum(e.max_hp for e in s.enemies) or 1
             self.enemy_hp_pct = total_ehp / total_emax
+            self.reward_text = ""
         else:
             self.player_hp_pct = 1.0
             self.enemy_hp_pct = 1.0
             enemies = engine.preview_enemies
             if enemies:
                 self.enemy_summary = f"{len(enemies)}x T{enemies[0].tier}"
+                # Loot preview: exact base payout for a full clear (perk
+                # gold bonuses can only raise it) — arena drops gold only.
+                total_reward = sum(e.gold_reward for e in enemies)
+                self.reward_text = f"+{fmt_num(total_reward)} G"
             else:
                 self.enemy_summary = ""
+                self.reward_text = ""
 
         self._refresh_battle_panels(engine)
 

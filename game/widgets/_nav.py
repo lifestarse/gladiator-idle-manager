@@ -1,7 +1,12 @@
-# Build: 3
+# Build: 4
 """Widgets — NavBar, NavButton, TouchPanel."""
 from ._imports import *  # noqa: F401,F403
 from ._scroll import ScrollSafeButtonMixin  # noqa: F401
+
+# Level-locked nav tab: dimmer than plain inactive, so "not here yet" reads
+# differently from "not selected".
+_NAV_LOCKED = (0.38, 0.34, 0.42, 1)
+_NAV_LOCKED_ICON = (0.30, 0.28, 0.34, 1)
 
 
 class NavBar(BoxLayout):
@@ -25,6 +30,11 @@ class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
     icon = StringProperty("")          # kept for compat but unused now
     icon_source = StringProperty("")   # path to PNG icon
     is_active = BooleanProperty(False)
+    # Gated by player level: icon dims further and the caption is replaced
+    # by the required level. The button stays visible on purpose — a locked
+    # tab the player can see is a progression hook; a hidden one is nothing.
+    locked = BooleanProperty(False)
+    lock_level = NumericProperty(0)
 
     # ScrollSafeButtonMixin handles scroll protection
 
@@ -45,15 +55,22 @@ class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
         self.add_widget(self._text_label)
         self.bind(pos=self._update, size=self._update,
                   is_active=self._update, text=self._update,
-                  icon_source=self._update)
+                  icon_source=self._update, locked=self._update,
+                  lock_level=self._update)
         self._text_label.bind(texture_size=self._update)
         Clock.schedule_once(self._update, 0)
 
     def _update(self, *args):
         color = NAV_ACTIVE if self.is_active else NAV_INACTIVE
+        if self.locked:
+            color = _NAV_LOCKED
         if self.icon_source:
             self._icon_img.source = self.icon_source
-            self._icon_img.color = [1, 1, 1, 1] if self.is_active else [0.5, 0.5, 0.5, 1]
+            if self.locked:
+                self._icon_img.color = _NAV_LOCKED_ICON
+            else:
+                self._icon_img.color = (
+                    [1, 1, 1, 1] if self.is_active else [0.5, 0.5, 0.5, 1])
         ico_size = min(self.width * 0.7, self.height * 0.55)
         self._icon_img.size = (ico_size, ico_size)
         self._icon_img.pos = (
@@ -61,8 +78,11 @@ class NavButton(ScrollSafeButtonMixin, ButtonBehavior, Widget):
             self.y + self.height * 0.35,
         )
 
-        self._text_label.text = self.text
-        self._text_label.color = color
+        # Locked tabs advertise the level that opens them instead of a name
+        # the player cannot use yet. ASCII-only: PixelFont has no lock glyph.
+        self._text_label.text = (f"LV {self.lock_level}" if self.locked
+                                 else self.text)
+        self._text_label.color = list(color)
         self._text_label.pos = (self.x, self.y)
         self._text_label.size = (self.width, self.height * 0.38)
         self._text_label.text_size = (self.width, self.height * 0.38)

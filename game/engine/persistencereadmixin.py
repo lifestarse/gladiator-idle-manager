@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 13
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -112,6 +112,27 @@ class _PersistenceReadMixin:
         except (TypeError, ValueError):
             vol = 1.0
         self.sound_volume = max(0.0, min(1.0, vol))
+        # Snap to the allowed multiplier set — guard against tampered saves
+        # writing arbitrary values that would race the battle Clock.
+        try:
+            speed = int(data.get("battle_speed", 1))
+        except (TypeError, ValueError):
+            speed = 1
+        self.battle_speed = speed if speed in BATTLE_SPEED_OPTIONS else 1
+        # Player account level. Saves written before the level system shipped
+        # have no key and start at level 1 — features gate back on until the
+        # player earns them (deliberate: "everyone from scratch").
+        try:
+            lvl = int(data.get("player_level", 1))
+        except (TypeError, ValueError):
+            lvl = 1
+        self.player_level = max(1, min(PLAYER_MAX_LEVEL, lvl))
+        try:
+            pxp = int(data.get("player_xp", 0))
+        except (TypeError, ValueError):
+            pxp = 0
+        self.player_xp = max(0, pxp)
+        self.pending_level_ups = []
 
         # Achievement counters
         self.total_enchantments_applied = data.get("total_enchantments_applied", 0)

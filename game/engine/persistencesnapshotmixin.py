@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 4
 """GameEngine _PersistenceSnapshotMixin — save-state snapshot assembly."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -82,4 +82,7 @@ class _PersistenceSnapshotMixin:
                 "lore_unlocked": self.lore_unlocked,
                 "scripts": self.scripts.to_dict() if hasattr(self, "scripts") else {},
                 "sound_volume": self.sound_volume,
+                "battle_speed": self.battle_speed,
+                "player_level": self.player_level,
+                "player_xp": self.player_xp,
             }

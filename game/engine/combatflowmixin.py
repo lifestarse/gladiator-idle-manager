@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _CombatFlowMixin — driving battles: start, stop, turns, skip."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -28,6 +28,16 @@ class _CombatFlowMixin:
         the cancel actually happened.
 
         Side effects on engine state:
+            - Gold banked from kills made during this battle is forfeited.
+              ``award_gold`` pays out per kill as the battle runs, so without
+              this the arena STOP button would be a risk-free exploit: clear
+              most of a wave, flee before the losing turn, keep the payout.
+              Fleeing costs you the purse — that is the price of escaping a
+              fight the roster was losing. The amount is stashed in
+              ``last_flee_forfeit`` for the UI to report. Lifetime counters
+              (``total_gold_earned``) are left alone: the gold *was* earned,
+              it was then forfeited, and rolling back a lifetime stat would
+              retroactively un-fire achievements.
             - ``_current_battle_messages`` is cleared (so the next
               ``_record_battle`` doesn't carry over the cancelled fight's
               log lines).
@@ -37,8 +47,11 @@ class _CombatFlowMixin:
               special cases that own their preview.
         """
         with self.state_lock:
+            forfeit = getattr(self.battle_mgr.state, 'gold_earned', 0)
             if not self.battle_mgr.cancel():
                 return False
+            self.last_flee_forfeit = min(forfeit, self.gold)
+            self.gold = max(0, self.gold - forfeit)
             self._current_battle_messages = []
             # Refresh preview unless something stage-owned (boss / revenge) is
             # holding it — same guard used in refresh_arena_preview.

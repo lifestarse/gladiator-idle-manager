@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """ui_helpers._arena_cell — ArenaUnitCardView for fighters + enemies."""
 from kivy.animation import Animation
 
@@ -21,6 +21,10 @@ Keys:
 """
 
 _DEAD_CARD_BG = (0.15, 0.08, 0.08, 1)
+# Fighter below LOW_HP_THRESHOLD: red border + faint red-tinted card so the
+# danger reads at a glance. Static (no pulse) — pooled RV rebinds every
+# refresh tick and a looping Animation here would restart/leak constantly.
+_LOW_HP_CARD_BG = (0.17, 0.09, 0.13, 1)
 _HP_NUM_W = 56
 _LV_W = 44
 _BADGE_W = 54
@@ -160,6 +164,10 @@ class ArenaUnitCardView(RecycleDataViewBehavior, CardWidget):
             self._bg_color.rgba = list(_DEAD_CARD_BG)
             self._br_color.rgba = list(ACCENT_RED)
             self._name_lbl.color = list(ACCENT_RED)
+        elif is_low:
+            self._bg_color.rgba = list(_LOW_HP_CARD_BG)
+            self._br_color.rgba = list(ACCENT_RED)
+            self._name_lbl.color = list(TEXT_PRIMARY)
         else:
             self._bg_color.rgba = list(BG_CARD)
             self._br_color.rgba = list(DIVIDER)

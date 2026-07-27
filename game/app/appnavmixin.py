@@ -1,9 +1,26 @@
-# Build: 1
+# Build: 2
 """App _AppNavMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
 
 class _AppNavMixin:
+    def unlock_level(self, feature):
+        """Level that opens `feature` — for kv labels on locked controls."""
+        return self.engine.unlock_level_for(feature)
+
+    def go_gated(self, screen_name, feature):
+        """Navigate to a screen, or explain the lock if the level is too low.
+
+        The locked tab stays tappable on purpose: a player who taps it gets
+        told what unlocks it and when, which is the point of showing the
+        tab at all. Silently swallowing the tap would read as a bug.
+        """
+        if self.engine.is_unlocked(feature):
+            self.sm.current = screen_name
+            return True
+        self.show_toast(t("feature_locked",
+                          n=self.engine.unlock_level_for(feature)))
+        return False
     def _navigate_to_forge(self, state):
         """Set ForgeScreen pending state and navigate (or refresh if already there)."""
         fs = self.sm.get_screen("forge")
