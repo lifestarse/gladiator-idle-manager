@@ -3400,7 +3400,7 @@
     "hollow_tooth_relic": {
       "description": "Un molare di una bestia sconosciuta, scavato e pieno di veleno essiccato. Gli esploratori della spedizione lo portano come ultima risorsa, rompendolo tra i denti quando vengono messi alle strette.",
       "name": "Reliquia del dente cavo",
-      "special_effect": "Quando la salute del portatore scende al di sotto della metà, una debole aura tossica scoraggia i nemici dal portare avanti il ​​loro attacco."
+      "special_effect": "Quando la salute del portatore scende al di sotto della metà, una debole aura tossica scoraggia i nemici dal portare avanti il loro attacco."
     },
     "iron_crow_fetish": {
       "description": "Una rozza forma di uccello martellata da rottami di ferro da un fabbro di spedizione mezzo matto. I corvi si radunano ovunque venga trasportato, e i morti sembrano marcire più lentamente in sua presenza.",

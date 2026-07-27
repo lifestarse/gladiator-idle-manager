@@ -61,11 +61,11 @@
       "name": "Piekielny Węzeł"
     },
     "iron_ring": {
-      "description": "Ciężka opaska wykuta ze stopionych kajdan. Dobrze przylega do palca i stale przypomina, że ​​wolność na arenie dzieli tylko jedna walka od odebrania.",
+      "description": "Ciężka opaska wykuta ze stopionych kajdan. Dobrze przylega do palca i stale przypomina, że wolność na arenie dzieli tylko jedna walka od odebrania.",
       "name": "Żelazny Pierścień"
     },
     "marrow_of_the_titan": {
-      "description": "Długi na palec odłamek skrystalizowanego szpiku kostnego, pobrany ze szczątków olbrzyma pod forum. Emanuje przytłaczającym ciepłem i sprawia, że ​​żyły jego posiadacza delikatnie świecą w ciemności.",
+      "description": "Długi na palec odłamek skrystalizowanego szpiku kostnego, pobrany ze szczątków olbrzyma pod forum. Emanuje przytłaczającym ciepłem i sprawia, że żyły jego posiadacza delikatnie świecą w ciemności.",
       "name": "Szpik Tytana"
     },
     "obsidian_heart_stud": {
@@ -409,7 +409,7 @@
       "name": "Przeszywanica konopna"
     },
     "iron_maiden_plate": {
-      "description": "Napierśnik z krótkimi kolcami skierowanymi do wewnątrz, które wbijają się w ciało noszącego, wysysając krew przy każdym ruchu. Ból sprawia, że ​​gladiator jest czujny i wściekły, a krew zasila ciemne zaklęcia wplecione w stal. Agonia jest jego ceną; przetrwanie jest jego darem.",
+      "description": "Napierśnik z krótkimi kolcami skierowanymi do wewnątrz, które wbijają się w ciało noszącego, wysysając krew przy każdym ruchu. Ból sprawia, że gladiator jest czujny i wściekły, a krew zasila ciemne zaklęcia wplecione w stal. Agonia jest jego ceną; przetrwanie jest jego darem.",
       "name": "Płyta Żelaznej Dziewicy"
     },
     "iron_subarmalis": {
@@ -441,7 +441,7 @@
       "name": "Osłona stopionego rdzenia"
     },
     "obsidian_juggernaut": {
-      "description": "Potężny zestaw płyt ze szkła wulkanicznego, spojonych żelazem wykutym z magmy, zaczarowanym tak, aby pochłaniać siłę kinetyczną każdego uderzenia. Zgromadzona energia sprawia, że ​​noszący staje się silniejszy z każdym otrzymanym ciosem. Legendy areny mówią, że kiedyś przeżył bez zadrapania szarżującego słonia bojowego.",
+      "description": "Potężny zestaw płyt ze szkła wulkanicznego, spojonych żelazem wykutym z magmy, zaczarowanym tak, aby pochłaniać siłę kinetyczną każdego uderzenia. Zgromadzona energia sprawia, że noszący staje się silniejszy z każdym otrzymanym ciosem. Legendy areny mówią, że kiedyś przeżył bez zadrapania szarżującego słonia bojowego.",
       "name": "Obsydianowy Juggernaut"
     },
     "obsidian_scale": {
@@ -469,7 +469,7 @@
       "name": "Pancerz Żniwiarza"
     },
     "rust_lorica": {
-      "description": "Poobijana lorica segmentata wydobyta ze zwłok legionisty, jej żelazne opaski skorodowały do ​​koloru głębokiej pomarańczy. Zawiasy jęczą przy każdym ruchu. Trzyma się razem bardziej na przekór niż kunszt.",
+      "description": "Poobijana lorica segmentata wydobyta ze zwłok legionisty, jej żelazne opaski skorodowały do koloru głębokiej pomarańczy. Zawiasy jęczą przy każdym ruchu. Trzyma się razem bardziej na przekór niż kunszt.",
       "name": "Rdza Lorica"
     },
     "scorched_manica": {
@@ -3608,7 +3608,7 @@
       "name": "Cień Sica"
     },
     "slave_cleaver": {
-      "description": "Ciężkie ostrze rzeźnicze skradzione z kuchni areny. Jego waga sprawia, że ​​jest powolny, ale niszczycielski przy uderzeniu. Mięso, które było przeznaczone do krojenia, nie różni się zbytnio od mięsa na arenie.",
+      "description": "Ciężkie ostrze rzeźnicze skradzione z kuchni areny. Jego waga sprawia, że jest powolny, ale niszczycielski przy uderzeniu. Mięso, które było przeznaczone do krojenia, nie różni się zbytnio od mięsa na arenie.",
       "name": "Tasak niewolników"
     },
     "soul_harvest": {
