@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """BattleManager _StatsMixin."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _fn
@@ -7,11 +7,11 @@ from ._types import (BattlePhase, BattleEvent, EnemyStatusTracker,
 from ._enchantments import (_init_enemy_status, _trigger_enchantment,
                              _process_status_ticks)
 from ._resolve import _resolve_attack
+from ._boss_modifiers import BossModifierHandler
 
 
 class _StatsMixin:
     def _init_mod_handler(self):
-        from game.boss_modifiers import BossModifierHandler
         from game.data_loader import data_loader
         self._mod_handler = BossModifierHandler(data_loader.boss_modifiers)
 

@@ -1,11 +1,11 @@
-# Build: 6
+# Build: 8
 """BaseScreen — unified base class for all game screens."""
 
 from kivy.uix.screenmanager import Screen
 from kivy.properties import StringProperty
 from kivy.app import App
 from game.models import fmt_num
-from game.ui_helpers import _invalidate_grid_cache
+from game.ui_helpers import _invalidate_grid_cache, _needs_rebuild as _needs_rebuild_impl
 
 
 class BaseScreen(Screen):
@@ -43,18 +43,8 @@ class BaseScreen(Screen):
     def _get_grid(self, grid_id):
         return self.ids.get(grid_id)
 
-    @staticmethod
-    def _needs_rebuild(obj, key_attr, new_key, require_children=False):
-        """Check if cached key changed. Updates key and returns True if rebuild needed.
-
-        Args:
-            obj: object holding the cache key (self, grid widget, etc.)
-            key_attr: attribute name for the cache key (e.g. '_roster_key')
-            new_key: new key value to compare
-            require_children: if True, also rebuild when obj has no children
-        """
-        old = getattr(obj, key_attr, None)
-        if old == new_key and (not require_children or getattr(obj, 'children', True)):
-            return False
-        setattr(obj, key_attr, new_key)
-        return True
+    # Implementation lives in ui_helpers._layouts next to its counterpart
+    # _invalidate_grid_cache. Moving it back onto this class would force
+    # ui_helpers to import base_screen again and reclose an import cycle.
+    # staticmethod keeps every `self._needs_rebuild(...)` call site working.
+    _needs_rebuild = staticmethod(_needs_rebuild_impl)

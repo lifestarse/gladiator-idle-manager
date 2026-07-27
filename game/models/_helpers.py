@@ -1,6 +1,7 @@
-# Build: 3
+# Build: 4
 """models._helpers — Result namedtuple, fmt_num, rarity maps, boss name gen."""
 from ._imports import *  # noqa: F401,F403
+from ._scaling import DifficultyScaler
 
 
 Result = namedtuple("Result", ["ok", "message", "code"], defaults=[True, "", ""])
@@ -159,7 +160,6 @@ def calc_item_stats(item, fighter=None):
 def get_dynamic_shop_items(arena_tier, surgeon_uses):
     """Generate shop items: consumables. Equipment is in the Forge."""
     from game.localization import t
-    from ._scaling import DifficultyScaler  # local: avoids circular at module load
     consumables = [
         {
             "id": "heal_potion", "name": t("blood_salve"),

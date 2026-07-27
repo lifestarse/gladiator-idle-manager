@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 3
 """GameEngine _CombatSpawnMixin — enemy staging: spawn, boss, arena preview."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -51,7 +51,6 @@ class _CombatSpawnMixin:
             boss = Boss.from_template(template, self.arena_tier)
         else:
             boss = Boss(self.arena_tier)
-        from game.boss_modifiers import BossModifierHandler
         BossModifierHandler(data_loader.boss_modifiers).assign_modifiers(boss, self.arena_tier)
         self.preview_enemies = [boss]
         self.current_enemy = boss

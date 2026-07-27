@@ -1,9 +1,7 @@
-# Build: 5
+# Build: 6
 """Boss modifier effects — hooks into battle phases."""
-
-import random
-from game.models import fmt_num
-from game.localization import t
+from ._shared import *  # noqa: F401,F403
+from ._types import BattleEvent
 
 IMPLEMENTED_MODIFIERS = {"regeneration", "enrage", "thorns", "shield", "berserk"}
 
@@ -42,7 +40,6 @@ class BossModifierHandler:
 
     def on_turn_start(self, boss, tracker, turn_number):
         """Called each turn. Handles regeneration, berserk, shield countdown."""
-        from game.battle import BattleEvent
         events = []
         active_hooks = _HOOK_MODIFIERS["on_turn_start"]
         for mod_id in getattr(boss, 'modifiers', []):
@@ -85,7 +82,6 @@ class BossModifierHandler:
 
     def on_boss_hit(self, boss, tracker, attacker, damage):
         """Called after fighter deals damage to boss. Handles thorns, shield."""
-        from game.battle import BattleEvent
         events = []
         active_hooks = _HOOK_MODIFIERS["on_boss_hit"]
         for mod_id in getattr(boss, 'modifiers', []):

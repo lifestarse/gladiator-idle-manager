@@ -1,4 +1,4 @@
-# Build: 60
+# Build: 61
 """game.ui_helpers — dynamic UI builders for all screens.
 
 Split from the original 2382-line ui_helpers.py module into a
@@ -23,7 +23,7 @@ from ._diamond import *  # noqa: F401,F403
 
 # Explicit re-export of private names that external code still reaches into.
 # `from x import *` skips underscore names, so we list them here.
-from ._layouts import _invalidate_grid_cache, _bind_long_tap, _batch_fill_grid  # noqa: F401
+from ._layouts import _invalidate_grid_cache, _needs_rebuild, _bind_long_tap, _batch_fill_grid  # noqa: F401
 from ._widgets import _icon_label  # noqa: F401
 from ._perks_cells import _measure_perk_card_height, _equip_choice_callbacks  # noqa: F401
 from ._forge import _inventory_item_to_rv_data, _forge_item_to_rv_data  # noqa: F401

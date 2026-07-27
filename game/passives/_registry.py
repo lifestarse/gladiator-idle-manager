@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Registry of passive-effect KINDS, and the compiled per-item lookup.
 
 A "kind" is a mechanic (`lifesteal_pct`, `thorns_reflect`, ...) declared once,
@@ -9,8 +9,8 @@ data/item_passives.json. Items name kinds; they never define mechanics.
 Dispatch style follows the one real callable registry the codebase already
 has — BUILTIN_ACTIONS in game/scripting/builtins.py — rather than the three
 flat if/elif chains (game/battle/_enchantments.py:35,
-game/battle/_manager_skills.py:98, game/boss_modifiers.py). Ten enchantment
-branches are readable; the ~35 kinds this is sized for would not be.
+game/battle/_manager_skills.py:98, game/battle/_boss_modifiers.py). Ten
+enchantment branches are readable; the ~35 kinds this is sized for would not be.
 """
 from dataclasses import dataclass
 from types import MappingProxyType

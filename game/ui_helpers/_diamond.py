@@ -1,7 +1,7 @@
-# Build: 5
+# Build: 6
 """ui_helpers._diamond — diamond shop grid rendering."""
 from ._imports import *  # noqa: F401,F403
-from ._layouts import _batch_fill_grid
+from ._layouts import _batch_fill_grid, _needs_rebuild
 from ._widgets import _auto_text_size
 
 
@@ -80,9 +80,8 @@ def refresh_diamond_shop_grid(lore_screen):
     if not grid:
         return
     items = lore_screen.diamond_shop_data
-    from game.base_screen import BaseScreen
     shop_key = tuple((it["id"], it.get("affordable", False)) for it in items)
-    if not BaseScreen._needs_rebuild(grid, '_dshop_key', shop_key, require_children=True):
+    if not _needs_rebuild(grid, '_dshop_key', shop_key, require_children=True):
         return
     cards = [build_diamond_shop_card(item, lore_screen) for item in items]
     _batch_fill_grid(grid, cards)

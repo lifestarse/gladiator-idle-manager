@@ -1,7 +1,9 @@
-# Build: 2
+# Build: 3
 """models._scaling — DifficultyScaler: enemy/econ tier curves."""
 from ._imports import *  # noqa: F401,F403
-from ._helpers import *  # noqa: F401,F403
+# NOTE: do NOT add `from ._helpers import *` here. _helpers imports
+# DifficultyScaler at module level, so that would re-create the cycle.
+# _scaling needs only game.constants values, which _imports provides.
 
 class DifficultyScaler:
     """Roguelike economy: tighter scaling, runs end around tier 10-20.

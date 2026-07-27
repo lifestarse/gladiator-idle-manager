@@ -1,5 +1,5 @@
-# Build: 1
-"""ui_helpers._layouts — grid batching and tap-binding primitives."""
+# Build: 3
+"""ui_helpers._layouts — grid batching, rebuild-cache keys, tap binding."""
 from ._imports import *  # noqa: F401,F403
 
 
@@ -11,6 +11,30 @@ def _invalidate_grid_cache(grid):
     for attr in list(vars(grid)):
         if attr.endswith('_key'):
             setattr(grid, attr, None)
+
+
+def _needs_rebuild(obj, key_attr, new_key, require_children=False):
+    """Check if cached key changed. Updates key and returns True if rebuild needed.
+
+    Counterpart of _invalidate_grid_cache: that one clears every _*_key,
+    this one writes a single _*_key and reports whether it moved.
+
+    Lives here rather than on BaseScreen so that game.ui_helpers never has
+    to import game.base_screen back (base_screen imports this package at
+    module level; the reverse edge closed an import cycle). BaseScreen
+    re-binds it as a staticmethod so `self._needs_rebuild(...)` still works.
+
+    Args:
+        obj: object holding the cache key (screen, grid widget, etc.)
+        key_attr: attribute name for the cache key (e.g. '_roster_key')
+        new_key: new key value to compare
+        require_children: if True, also rebuild when obj has no children
+    """
+    old = getattr(obj, key_attr, None)
+    if old == new_key and (not require_children or getattr(obj, 'children', True)):
+        return False
+    setattr(obj, key_attr, new_key)
+    return True
 
 
 @contextmanager
