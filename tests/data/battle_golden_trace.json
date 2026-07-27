@@ -1,0 +1,5644 @@
+{
+ "arena": {
+  "seed": 7,
+  "lang": "en",
+  "start_events": [
+   [
+    "message",
+    "",
+    "",
+    0,
+    false,
+    false,
+    false,
+    false,
+    "",
+    "BATTLE START! 5v5"
+   ]
+  ],
+  "turns": [
+   {
+    "n": 1,
+    "events": [
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 1"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      206,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      158,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      323,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      177,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      222,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 2,
+    "events": [
+     [
+      "skill",
+      "Trace-Merc",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "buff_team_atk",
+      "Trace-Merc uses <skill>! Team ATK +15%!"
+     ],
+     [
+      "skill",
+      "Trace-Assassin",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "guaranteed_crit_dodge",
+      "Trace-Assassin vanishes into shadow!"
+     ],
+     [
+      "skill",
+      "Trace-Tank",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "team_damage_reduction",
+      "Trace-Tank raises SHIELD WALL! Team takes 50% less damage!"
+     ],
+     [
+      "skill",
+      "Trace-Retiarius",
+      "Trace-Foe-1",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "stun_enemy",
+      "Trace-Retiarius throws a NET! Trace-Foe-1 stunned!"
+     ],
+     [
+      "skill",
+      "Trace-Medicus",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "heal_team",
+      "Trace-Medicus uses <skill>! Team healed!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Foe-1",
+      34,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Foe-1 for 34"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-1",
+      83,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-1 for 83"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-1",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-1 for 27"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-1",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Foe-1 DODGED Trace-Retiarius's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-1",
+      83,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Foe-1 for 83"
+     ],
+     [
+      "status",
+      "",
+      "Trace-Foe-1",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-1 is ensnared!"
+     ],
+     [
+      "attack",
+      "Trace-Foe-2",
+      "Trace-Merc",
+      28,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-2 hits Trace-Merc for 28"
+     ],
+     [
+      "attack",
+      "Trace-Foe-3",
+      "Trace-Merc",
+      25,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-3 hits Trace-Merc for 25"
+     ],
+     [
+      "attack",
+      "Trace-Foe-4",
+      "Trace-Merc",
+      20,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 hits Trace-Merc for 20"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Medicus",
+      44,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 CRIT! hits Trace-Medicus for 44"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 2"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      133,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      158,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      323,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      177,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      178,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      209,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 3,
+    "events": [
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Foe-1",
+      102,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Merc CRIT! hits Trace-Foe-1 for 102"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-1",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Foe-1 DODGED Trace-Assassin's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-1",
+      64,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Tank CRIT! hits Trace-Foe-1 for 64"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-1",
+      39,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Foe-1 for 39"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-1",
+      35,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Foe-1 for 35"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Foe-1",
+      0,
+      true,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-1 destroyed!"
+     ],
+     [
+      "attack",
+      "Trace-Foe-2",
+      "Trace-Assassin",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Assassin SHADOWSTEP dodged Trace-Foe-2!"
+     ],
+     [
+      "attack",
+      "Trace-Foe-3",
+      "Trace-Merc",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-3 hits Trace-Merc for 27"
+     ],
+     [
+      "attack",
+      "Trace-Foe-4",
+      "Trace-Retiarius",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Retiarius DODGED Trace-Foe-4's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-4",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius ripostes Trace-Foe-4 for 40!"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Retiarius",
+      47,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 CRIT! hits Trace-Retiarius for 47"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 3"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      114,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      158,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      323,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      130,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      189,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      396,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 41,
+    "wins": 0,
+    "engine_gold": 41
+   },
+   {
+    "n": 4,
+    "events": [
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Foe-2",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Foe-2 DODGED Trace-Merc's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-2",
+      117,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-2 for 117"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-2",
+      29,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-2 for 29"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-2",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Foe-2 DODGED Trace-Retiarius's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-2",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Foe-2 DODGED Trace-Medicus's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Foe-2",
+      "Trace-Tank",
+      63,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-2 hits Trace-Tank for 63"
+     ],
+     [
+      "attack",
+      "Trace-Foe-3",
+      "Trace-Tank",
+      60,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-3 hits Trace-Tank for 60"
+     ],
+     [
+      "attack",
+      "Trace-Foe-4",
+      "Trace-Retiarius",
+      61,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 hits Trace-Retiarius for 61"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Assassin",
+      44,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 hits Trace-Assassin for 44"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 4"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      114,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      114,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      200,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      69,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      200,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      290,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      396,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 41,
+    "wins": 0,
+    "engine_gold": 41
+   },
+   {
+    "n": 5,
+    "events": [
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Foe-2",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Foe-2 DODGED Trace-Merc's attack!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-2",
+      102,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-2 for 102"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-2",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-2 for 40"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-2",
+      81,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Foe-2 for 81"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-2",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Foe-2 for 27"
+     ],
+     [
+      "attack",
+      "Trace-Foe-2",
+      "Trace-Assassin",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-2 hits Trace-Assassin for 40"
+     ],
+     [
+      "attack",
+      "Trace-Foe-3",
+      "Trace-Assassin",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-3 hits Trace-Assassin for 40"
+     ],
+     [
+      "attack",
+      "Trace-Foe-4",
+      "Trace-Tank",
+      44,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 hits Trace-Tank for 44"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Medicus",
+      61,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 hits Trace-Medicus for 61"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 5"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      114,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      34,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      158,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      69,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      150,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      40,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      436,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      396,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 41,
+    "wins": 0,
+    "engine_gold": 41
+   },
+   {
+    "n": 6,
+    "events": [
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Foe-2",
+      46,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Foe-2 for 46"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Foe-2",
+      0,
+      true,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-2 destroyed!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-3",
+      39,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Assassin hits Trace-Foe-3 for 39"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-3",
+      32,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-3 for 32"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-3",
+      114,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Foe-3 for 114"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-3",
+      81,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Foe-3 for 81"
+     ],
+     [
+      "attack",
+      "Trace-Foe-3",
+      "Trace-Medicus",
+      76,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Foe-3 CRIT! hits Trace-Medicus for 76"
+     ],
+     [
+      "attack",
+      "Trace-Foe-4",
+      "Trace-Merc",
+      80,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 CRIT! hits Trace-Merc for 80"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Tank",
+      52,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 hits Trace-Tank for 52"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 6"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      37,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      34,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      107,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      69,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      85,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      170,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      396,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 88,
+    "wins": 0,
+    "engine_gold": 88
+   },
+   {
+    "n": 7,
+    "events": [
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Foe-3",
+      84,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Merc CRIT! hits Trace-Foe-3 for 84"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-3",
+      89,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-3 for 89"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Foe-3",
+      0,
+      true,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-3 destroyed!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-4",
+      37,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-4 for 37"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-4",
+      39,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Foe-4 for 39"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-4",
+      32,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Foe-4 for 32"
+     ],
+     [
+      "attack",
+      "Trace-Foe-4",
+      "Trace-Merc",
+      47,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 hits Trace-Merc for 47"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Merc",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc knocked out! <injury>"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Tank",
+      45,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 hits Trace-Tank for 45"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 7"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      49,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      63,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      69,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      96,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      288,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 129,
+    "wins": 0,
+    "engine_gold": 129
+   },
+   {
+    "n": 8,
+    "events": [
+     [
+      "skill",
+      "Trace-Assassin",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "guaranteed_crit_dodge",
+      "Trace-Assassin vanishes into shadow!"
+     ],
+     [
+      "skill",
+      "Trace-Retiarius",
+      "Trace-Foe-4",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "stun_enemy",
+      "Trace-Retiarius throws a NET! Trace-Foe-4 stunned!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-4",
+      102,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-4 for 102"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-4",
+      35,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-4 for 35"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-4",
+      32,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Foe-4 for 32"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-4",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Foe-4 for 40"
+     ],
+     [
+      "status",
+      "",
+      "Trace-Foe-4",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 is ensnared!"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Medicus",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Medicus DODGED Trace-Foe-5's attack!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 8"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      49,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      64,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      69,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      107,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      79,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      436,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 129,
+    "wins": 0,
+    "engine_gold": 129
+   },
+   {
+    "n": 9,
+    "events": [
+     [
+      "skill",
+      "Trace-Tank",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "team_damage_reduction",
+      "Trace-Tank raises SHIELD WALL! Team takes 50% less damage!"
+     ],
+     [
+      "skill",
+      "Trace-Medicus",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "heal_team",
+      "Trace-Medicus uses <skill>! Team healed!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-4",
+      85,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-4 for 85"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Foe-4",
+      0,
+      true,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-4 destroyed!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-5",
+      32,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-5 for 32"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-5",
+      49,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Foe-5 for 49"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-5",
+      64,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Foe-5 for 64"
+     ],
+     [
+      "attack",
+      "Trace-Foe-5",
+      "Trace-Tank",
+      31,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 hits Trace-Tank for 31"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 9"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      95,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      98,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      104,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      162,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      291,
+      73,
+      37
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 170,
+    "wins": 0,
+    "engine_gold": 170
+   },
+   {
+    "n": 9,
+    "events": [
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Foe-5",
+      125,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Foe-5 for 125"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Foe-5",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Foe-5 for 40"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Foe-5",
+      99,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Foe-5 for 99"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Foe-5",
+      33,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Foe-5 for 33"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Foe-5",
+      0,
+      true,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Foe-5 destroyed!"
+     ],
+     [
+      "victory",
+      "",
+      "",
+      211,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "VICTORY! +211g"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      206,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      158,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      323,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      177,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      222,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Foe-1",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-2",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-3",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-4",
+      0,
+      73,
+      37
+     ],
+     [
+      "Trace-Foe-5",
+      0,
+      73,
+      37
+     ]
+    ],
+    "outcome": "victory",
+    "gold_earned": 211,
+    "wins": 5,
+    "engine_gold": 211
+   }
+  ],
+  "final_outcome": "victory"
+ },
+ "boss": {
+  "seed": 7,
+  "lang": "en",
+  "start_events": [
+   [
+    "boss_intro",
+    "",
+    "",
+    0,
+    false,
+    false,
+    true,
+    false,
+    "",
+    "Trace-Boss appears! HP: 4.4K\n[<mod>, <mod>, <mod>]"
+   ]
+  ],
+  "turns": [
+   {
+    "n": 1,
+    "events": [
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 1"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      206,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      158,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      323,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      177,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      222,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      4360,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 2,
+    "events": [
+     [
+      "skill",
+      "Trace-Merc",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "buff_team_atk",
+      "Trace-Merc uses <skill>! Team ATK +15%!"
+     ],
+     [
+      "skill",
+      "Trace-Assassin",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "guaranteed_crit_dodge",
+      "Trace-Assassin vanishes into shadow!"
+     ],
+     [
+      "skill",
+      "Trace-Tank",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "team_damage_reduction",
+      "Trace-Tank raises SHIELD WALL! Team takes 50% less damage!"
+     ],
+     [
+      "skill",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "stun_enemy",
+      "Trace-Retiarius throws a NET! Trace-Boss stunned!"
+     ],
+     [
+      "skill",
+      "Trace-Medicus",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "heal_team",
+      "Trace-Medicus uses <skill>! Team healed!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      31,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 31"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Boss",
+      77,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Boss for 77"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Assassin",
+      11,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Assassin takes 11 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      25,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 25"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      89,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 89"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      13,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 13 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      77,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 77"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      11,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 11 damage!"
+     ],
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss is ensnared!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 2"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      202,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      147,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      320,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      164,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      211,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      4061,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 3,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      75,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Merc CRIT! hits Trace-Boss for 75"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      11,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 11 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Boss",
+      42,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Assassin hits Trace-Boss for 42"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Assassin",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Assassin takes 6 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      25,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 25"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      73,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 73"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      10,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 10 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      43,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 43"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 6 damage!"
+     ],
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss is ensnared!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 3"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      195,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      141,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      318,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      154,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      216,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3933,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 4,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      38,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 38"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Boss",
+      68,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Boss for 68"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Assassin",
+      10,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Assassin takes 10 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      33,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 33"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      85,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 85"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      12,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 12 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      84,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 84"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      12,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 12 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Assassin",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Assassin SHADOWSTEP dodged Trace-Boss!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 4"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      193,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      131,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      315,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      142,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      210,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3755,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 5,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      69,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Merc CRIT! hits Trace-Boss for 69"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      10,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 10 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Boss",
+      89,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Boss for 89"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Assassin",
+      13,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Assassin takes 13 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      65,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Tank CRIT! hits Trace-Boss for 65"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      9,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 9 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      104,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 104"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      15,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 15 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      23,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 23"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      120,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Boss CRIT! hits Trace-Tank for 120"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 5"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      188,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      118,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      189,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      127,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      218,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3535,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 6,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      26,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 26"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Boss",
+      103,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Boss for 103"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Assassin",
+      15,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Assassin takes 15 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 27"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      35,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Boss for 35"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      29,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 29"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Tank DODGED Trace-Boss's attack!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 6"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      187,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      103,
+      true,
+      0
+     ],
+     [
+      "Trace-Tank",
+      186,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      122,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      218,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3445,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 7,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 27"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Assassin",
+      "Trace-Boss",
+      112,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Assassin CRIT! hits Trace-Boss for 112"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Assassin",
+      16,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Assassin takes 16 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      31,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 31"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      43,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Boss for 43"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 6 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      29,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 29"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Assassin",
+      124,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Boss CRIT! hits Trace-Assassin for 124"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Assassin",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Assassin knocked out! <injury>"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 7"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      185,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      183,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      116,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      218,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3333,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 8,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "skill",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "stun_enemy",
+      "Trace-Retiarius throws a NET! Trace-Boss stunned!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      30,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 30"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      28,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 28"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Boss for 40"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 6 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      35,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 35"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 5 damage!"
+     ],
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss is ensnared!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 8"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      183,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      180,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      110,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      217,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3330,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 9,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "skill",
+      "Trace-Merc",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "buff_team_atk",
+      "Trace-Merc uses <skill>! Team ATK +15%!"
+     ],
+     [
+      "skill",
+      "Trace-Tank",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "team_damage_reduction",
+      "Trace-Tank raises SHIELD WALL! Team takes 50% less damage!"
+     ],
+     [
+      "skill",
+      "Trace-Medicus",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "heal_team",
+      "Trace-Medicus uses <skill>! Team healed!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      47,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 47"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      7,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 7 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      33,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 33"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      101,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 101"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      15,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 15 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      66,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 66"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      9,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 9 damage!"
+     ],
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss is ensnared!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 9"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      199,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      241,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      130,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      213,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3213,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 10,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      29,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 29"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      56,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Tank CRIT! hits Trace-Boss for 56"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      8,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 8 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      115,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 115"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      17,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 17 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      69,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 69"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      10,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 10 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      33,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Retiarius for 33"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 10"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      197,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      235,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      80,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      212,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3074,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 11,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      35,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 35"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      74,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Tank CRIT! hits Trace-Boss for 74"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      11,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 11 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Boss for 40"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 6 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      91,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 91"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      13,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 13 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Merc",
+      71,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Merc for 71"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 11"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      123,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      227,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      74,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      209,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2964,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 12,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      95,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Merc CRIT! hits Trace-Boss for 95"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      14,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 14 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      28,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 28"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      36,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius hits Trace-Boss for 36"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      37,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 37"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      87,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Tank for 87"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 12"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      116,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      137,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      69,
+      true,
+      0
+     ],
+     [
+      "Trace-Medicus",
+      215,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2898,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 13,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      79,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Merc CRIT! hits Trace-Boss for 79"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      11,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 11 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      45,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Tank CRIT! hits Trace-Boss for 45"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 6 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Retiarius",
+      "Trace-Boss",
+      91,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Retiarius CRIT! hits Trace-Boss for 91"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      13,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Retiarius takes 13 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      40,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 40"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      6,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 6 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Retiarius",
+      117,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Boss CRIT! hits Trace-Retiarius for 117"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Retiarius",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Retiarius knocked out! <injury>"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 13"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      111,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      133,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      216,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2773,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 14,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      37,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 37"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 27"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      25,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 25"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Medicus",
+      82,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Medicus for 82"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 14"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      108,
+      true,
+      0
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      130,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      137,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2814,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 15,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Merc",
+      "Trace-Boss",
+      31,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc hits Trace-Boss for 31"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Merc",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Merc takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      29,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 29"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      36,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 36"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Merc",
+      153,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Boss CRIT! hits Trace-Merc for 153"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Merc",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Merc knocked out! <injury>"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 15"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      127,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      143,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2848,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 16,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "skill",
+      "Trace-Tank",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "team_damage_reduction",
+      "Trace-Tank raises SHIELD WALL! Team takes 50% less damage!"
+     ],
+     [
+      "skill",
+      "Trace-Medicus",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "heal_team",
+      "Trace-Medicus uses <skill>! Team healed!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      30,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 30"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      73,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 73"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      10,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 10 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      46,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Tank for 46"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 16"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      142,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      188,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2875,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 17,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      37,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 37"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      63,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 63"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      9,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 9 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Medicus",
+      71,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Boss CRIT! hits Trace-Medicus for 71"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 17"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      138,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      119,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2905,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 18,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 27"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      39,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 39"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      0,
+      false,
+      false,
+      false,
+      true,
+      "",
+      "Trace-Tank DODGED Trace-Boss's attack!"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 18"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      135,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      125,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      2969,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 19,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      25,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 25"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      25,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 25"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      3,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 3 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      65,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Tank for 65"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 19"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      68,
+      true,
+      0
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      133,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3049,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 20,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Tank",
+      "Trace-Boss",
+      35,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank hits Trace-Boss for 35"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Tank",
+      5,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Tank takes 5 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      27,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 27"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Tank",
+      76,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Tank for 76"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Tank",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Tank knocked out! <injury>"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 20"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      140,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3117,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 21,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      32,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus hits Trace-Boss for 32"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      4,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 4 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Medicus",
+      100,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Medicus for 100"
+     ],
+     [
+      "message",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Turn 21"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Retiarius",
+      0,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      47,
+      true,
+      0
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3215,
+      109,
+      48
+     ]
+    ],
+    "outcome": "ongoing",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   },
+   {
+    "n": 21,
+    "events": [
+     [
+      "status",
+      "",
+      "Trace-Boss",
+      0,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Trace-Boss regenerates 130 HP!"
+     ],
+     [
+      "attack",
+      "Trace-Medicus",
+      "Trace-Boss",
+      72,
+      false,
+      true,
+      false,
+      false,
+      "",
+      "Trace-Medicus CRIT! hits Trace-Boss for 72"
+     ],
+     [
+      "status",
+      "Trace-Boss",
+      "Trace-Medicus",
+      10,
+      false,
+      false,
+      true,
+      false,
+      "",
+      "Thorns! Trace-Medicus takes 10 damage!"
+     ],
+     [
+      "attack",
+      "Trace-Boss",
+      "Trace-Medicus",
+      103,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Boss hits Trace-Medicus for 103"
+     ],
+     [
+      "death",
+      "",
+      "Trace-Medicus",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "Trace-Medicus knocked out! <injury>"
+     ],
+     [
+      "defeat",
+      "",
+      "",
+      0,
+      false,
+      false,
+      false,
+      false,
+      "",
+      "ALL FIGHTERS DOWN!"
+     ]
+    ],
+    "fighters": [
+     [
+      "Trace-Merc",
+      206,
+      true,
+      1
+     ],
+     [
+      "Trace-Assassin",
+      158,
+      true,
+      1
+     ],
+     [
+      "Trace-Tank",
+      323,
+      true,
+      1
+     ],
+     [
+      "Trace-Retiarius",
+      177,
+      true,
+      1
+     ],
+     [
+      "Trace-Medicus",
+      222,
+      true,
+      1
+     ]
+    ],
+    "enemies": [
+     [
+      "Trace-Boss",
+      3273,
+      109,
+      48
+     ]
+    ],
+    "outcome": "defeat",
+    "gold_earned": 0,
+    "wins": 0,
+    "engine_gold": 0
+   }
+  ],
+  "final_outcome": "defeat"
+ }
+}
