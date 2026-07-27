@@ -10,7 +10,12 @@ source.exclude_dirs = bin,.buildozer,.git,.claude
 # ~675 KB. en.json and the English base data in data/*.json are never excluded
 # — they are the terminal fallback of localization.t() and must always exist.
 # scratch/ holds translation working files and quarantined generators.
-source.exclude_patterns = generate_icons.py,data/languages/ru.json,data/languages/uk.json,data/languages/de.json,data/languages/es.json,data/languages/fr.json,data/languages/it.json,data/languages/pt.json,data/languages/pl.json,data/languages/data_*.json,scratch/*
+# The root asset generators (PROJECT_MAP.md "Генераторы ассетов") run offline
+# and nothing under game/ imports them, so they and their store-listing output
+# stay out of the APK too — ~215 KB, of which generate_sprites.py is ~103 KB
+# and feature_graphic.png ~105 KB (a Play listing image, also in .gitignore).
+# presplash.png is deliberately NOT excluded — presplash.filename below reads it.
+source.exclude_patterns = generate_icons.py,gen_feature_graphic.py,generate_sprites.py,icon_drawing.py,feature_graphic.png,data/languages/ru.json,data/languages/uk.json,data/languages/de.json,data/languages/es.json,data/languages/fr.json,data/languages/it.json,data/languages/pt.json,data/languages/pl.json,data/languages/data_*.json,scratch/*
 version = 1.9.44
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
 orientation = portrait, landscape, portrait-reverse, landscape-reverse

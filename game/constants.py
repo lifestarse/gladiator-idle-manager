@@ -1,4 +1,4 @@
-# Build: 12
+# Build: 15
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -11,9 +11,44 @@ HEAL_GOLD_PER_HP = 10          # 1 gold heals 10 HP (cost = missing / 10)
 UPGRADE_BONUS_PER_LEVEL = 20   # +20% per upgrade level
 
 # --- Battle ---
-BATTLE_AUTO_INTERVAL = 0.8     # seconds between auto-battle turns
+BATTLE_AUTO_INTERVAL = 0.8     # seconds between auto-battle turns at x1 speed
+BATTLE_SPEED_OPTIONS = (1, 2, 4)  # auto-battle speed multipliers (turn interval
+                                  # = BATTLE_AUTO_INTERVAL / speed); persisted
+                                  # on the engine as battle_speed
+BATTLE_END_TAP_GUARD = 0.4     # seconds after a battle resolves during which
+                               # the FIGHT/STOP toggle ignores start taps —
+                               # a tap aimed at STOP must not launch the next
+                               # fight when the battle ends on that same tick
 LOW_HP_THRESHOLD = 0.35        # HP fraction below which bars turn red
 POPUP_DISMISS_DELAY = 3.0      # seconds before auto-dismissing popups
+
+# --- Player account level ---
+# Account-wide progression, distinct from Fighter.level (bought with gold)
+# and from arena_tier (advanced by beating bosses). Drives FEATURE_UNLOCKS.
+PLAYER_MAX_LEVEL = 30
+PLAYER_XP_BASE = 100           # XP needed for level 1 -> 2
+PLAYER_XP_EXPO = 1.18          # each level costs 18% more than the last
+# XP awards. Arena wins scale with tier so farming tier 1 cannot carry a
+# player to the late unlocks; the rest are flat.
+PLAYER_XP_PER_ARENA_WIN = 8
+PLAYER_XP_PER_TIER = 2         # + this much per arena_tier on a win
+PLAYER_XP_PER_BOSS_KILL = 60
+PLAYER_XP_PER_EXPEDITION = 25
+PLAYER_XP_PER_ACHIEVEMENT = 40
+
+# --- Feature unlocks (player level gates) ---
+# Single source of truth: engine.is_unlocked(feature) reads this table.
+# Anything absent from the table is unlocked from level 1.
+FEATURE_UNLOCKS = {
+    "forge_upgrade": 2,
+    "arena_boss": 3,
+    "expeditions": 5,
+    "battle_speed_x2": 6,
+    "forge_enchant": 8,
+    "lore": 10,
+    "battle_speed_x4": 12,
+    "scripts": 15,
+}
 
 # --- Relic / Accessory multipliers ---
 RELIC_STAT_SPLIT = 3           # relic bonus is split 3 ways (ATK/DEF/HP)

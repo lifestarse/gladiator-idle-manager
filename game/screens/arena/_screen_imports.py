@@ -1,4 +1,4 @@
-# Build: 22
+# Build: 24
 import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -14,7 +14,8 @@ from game.theme import *
 from game.theme import popup_color
 from game.constants import (
     HEAL_GOLD_PER_HP, BATTLE_AUTO_INTERVAL, POPUP_DISMISS_DELAY,
-    HP_HEAL_TIER_MULT,
+    HP_HEAL_TIER_MULT, BATTLE_SPEED_OPTIONS, BATTLE_END_TAP_GUARD,
+    FEATURE_UNLOCKS,
 )
 from kivy.animation import Animation
 from game.battle import BattlePhase
@@ -25,6 +26,7 @@ from game.ui_helpers import (
     find_arena_view_by_name,
     flash_hp_bar,
     bind_text_wrap,
+    make_styled_popup,
 )
 from game.screens.shared import _safe_clear, _safe_rebind, _play_hit_sound
 

@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -87,6 +87,20 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
     lbl_vs = StringProperty("")
 
     lbl_auto = StringProperty("")
+
+    lbl_stop = StringProperty("")
+
+    # Player account level, mirrored for kv. `unlocked` maps feature name →
+    # bool for every entry of FEATURE_UNLOCKS, so kv can gate a control with
+    # `app.unlocked.get("scripts", True)` without a property per feature.
+    player_level = NumericProperty(1)
+
+    player_level_pct = NumericProperty(0.0)
+
+    unlocked = DictProperty({})
+
+    # "LV {n}" caption template for controls whose feature is still locked.
+    lbl_locked_lv = StringProperty("LV {n}")
 
     lbl_back_btn = StringProperty("")
 

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Import shim for environments that hide directories named ``input``.
 
 BlueStacks' anti-detection layer filters entries named ``input`` out of
@@ -19,8 +19,11 @@ Must be imported before anything imports ``kivy``.
 """
 import importlib.machinery
 import importlib.util
+import logging
 import os
 import sys
+
+_log = logging.getLogger(__name__)
 
 _PREFIX = "kivy.input"
 _SUFFIXES = (
@@ -83,9 +86,13 @@ def install():
         sys.meta_path.insert(0, _ExactPathFinder(base))
     if not listed:
         # Only log in the anomalous case to keep desktop startup quiet.
-        print(
-            "[kivy_input_shim] kivy dir=%s listed=%s exact=%s active=%s"
-            % (base, listed, exact, active)
+        # WARNING, not info: this runs before any logging is configured, so it
+        # reaches the console via logging.lastResort, which discards anything
+        # below WARNING. On BlueStacks this line is the only evidence of why
+        # the shim engaged.
+        _log.warning(
+            "[kivy_input_shim] kivy dir=%s listed=%s exact=%s active=%s",
+            base, listed, exact, active,
         )
     return active
 

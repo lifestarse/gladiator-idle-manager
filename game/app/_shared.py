@@ -1,4 +1,4 @@
-# Build: 64
+# Build: 65
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -14,13 +14,15 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
-from kivy.properties import NumericProperty, StringProperty, ListProperty, BooleanProperty
+from kivy.properties import (NumericProperty, StringProperty, ListProperty,
+                             BooleanProperty, DictProperty)
 from kivy.utils import platform
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
 from kivy.graphics import Color, RoundedRectangle
 
 from game.engine import GameEngine
+from game.constants import FEATURE_UNLOCKS
 from game.models import fmt_num
 from game.theme import *
 from game.theme import popup_color

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """IAPManager _IapAndroidRestoreMixin — query existing purchases."""
 from ._shared import *  # noqa: F401,F403
 # _PRODUCT_ID_TO_KEY is an underscore name, so `import *` skips it — the
@@ -29,6 +29,8 @@ class _IapAndroidRestoreMixin:
                 .build()
             )
 
+            manager = self  # closure ref
+
             class _PurchasesCb(PythonJavaClass):
                 __javainterfaces__ = [
                     "com/android/billingclient/api/PurchasesResponseListener"
@@ -42,20 +44,9 @@ class _IapAndroidRestoreMixin:
                 def onQueryPurchasesResponse(
                     self_inner, billing_result, purchases
                 ):
-                    restored = []
-                    try:
-                        if purchases is not None:
-                            for i in range(purchases.size()):
-                                p = purchases.get(i)
-                                if p.getPurchaseState() == PurchaseState.PURCHASED:
-                                    products = p.getProducts()
-                                    for j in range(products.size()):
-                                        pid = products.get(j)
-                                        key = _PRODUCT_ID_TO_KEY.get(pid)
-                                        if key:
-                                            restored.append(key)
-                    except Exception as e:
-                        _log.error("[IAP] Error reading purchases: %s", e)
+                    restored = manager._restore_collect_keys(
+                        purchases, PurchaseState
+                    )
                     Clock.schedule_once(
                         lambda dt: on_restored(restored), 0
                     )
@@ -66,3 +57,27 @@ class _IapAndroidRestoreMixin:
         except Exception as e:
             _log.error("[IAP] Restore failed: %s", e)
             on_restored([])
+
+    def _restore_collect_keys(self, purchases, purchase_state):
+        """Map a queried purchase list to our product keys."""
+        restored = []
+        try:
+            if purchases is None:
+                return restored
+            for i in range(purchases.size()):
+                self._restore_append_purchase_keys(
+                    purchases.get(i), purchase_state, restored
+                )
+        except Exception as e:
+            _log.error("[IAP] Error reading purchases: %s", e)
+        return restored
+
+    def _restore_append_purchase_keys(self, purchase, purchase_state, restored):
+        if purchase.getPurchaseState() != purchase_state.PURCHASED:
+            return
+        products = purchase.getProducts()
+        for j in range(products.size()):
+            pid = products.get(j)
+            key = _PRODUCT_ID_TO_KEY.get(pid)
+            if key:
+                restored.append(key)

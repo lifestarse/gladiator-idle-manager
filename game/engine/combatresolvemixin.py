@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _CombatResolveMixin — outcomes: rewards, permadeath, battle log."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -30,9 +30,14 @@ class _CombatResolveMixin:
         spawn next enemy.
         """
         if result.outcome == "victory":
+            # Player XP: tier-scaled so grinding tier 1 can't reach the late
+            # unlocks, plus a chunk for the boss that actually moved the tier.
+            xp = PLAYER_XP_PER_ARENA_WIN + PLAYER_XP_PER_TIER * self.arena_tier
             if result.is_boss:
                 self.bosses_killed += 1
                 self.check_t15_clear()
+                xp += PLAYER_XP_PER_BOSS_KILL
+            self.award_player_xp(xp)
             self.run_kills += result.enemies_killed
             if self.arena_tier > self.run_max_tier:
                 self.run_max_tier = self.arena_tier

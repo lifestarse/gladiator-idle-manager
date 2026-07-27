@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _ExpeditionsMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -69,6 +69,7 @@ class _ExpeditionsMixin:
             # Fighter came back alive — only now the expedition counts as
             # completed ("Expeditions Done" stat, explorer/void_walker achievements).
             self.total_expeditions_completed += 1
+            self.award_player_xp(PLAYER_XP_PER_EXPEDITION)
             if exp["id"] not in self.completed_expedition_ids:
                 self.completed_expedition_ids.append(exp["id"])
             shard_info = _m.SHARD_TIERS.get(exp["id"])

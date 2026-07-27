@@ -1,4 +1,4 @@
-# Build: 15
+# Build: 17
 """GameEngine core — construction + data wiring. Inherits mixins.
 
 Events/lifecycle methods live in coreeventsmixin.py / corelifecyclemixin.py;
@@ -176,6 +176,27 @@ class GameEngine(
         # Audio settings — global sound volume (0.0..1.0). Read by
         # game/screens/shared.py::_play_hit_sound, set from the More tab slider.
         self.sound_volume = 1.0
+
+        # Player account level — gates features via FEATURE_UNLOCKS. XP comes
+        # from arena wins, boss kills, expeditions and achievements; see
+        # _progression.py. Survives the roguelike reset on purpose: the run
+        # dies, the account does not.
+        self.player_level = 1
+        self.player_xp = 0
+        # Levels gained but not yet celebrated by the UI; drained by
+        # take_pending_level_ups() on the next screen refresh. Not persisted
+        # — a level-up banner missed because the app closed is not worth
+        # re-showing on next launch.
+        self.pending_level_ups: list[int] = []
+
+        # Gold forfeited by the last flee (stop_auto_battle). Transient —
+        # read by the arena to report the cost, not persisted.
+        self.last_flee_forfeit = 0
+
+        # Auto-battle speed multiplier — one of BATTLE_SPEED_OPTIONS.
+        # Turn cadence = BATTLE_AUTO_INTERVAL / battle_speed. Set from the
+        # arena speed button (ArenaScreen.cycle_battle_speed), persisted.
+        self.battle_speed = 1
 
         # Stamina/fatigue + injury auto-heal: drive off battle_end events.
         self.subscribe_battle_end(self._on_battle_end_stamina_fatigue)

@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """App _AppLocaleMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
@@ -32,6 +32,8 @@ class _AppLocaleMixin:
         self.scr_online_btn = t("scr_online_btn")
         self.lbl_vs = t("vs")
         self.lbl_auto = t("btn_auto")
+        self.lbl_stop = t("btn_stop")
+        self.lbl_locked_lv = t("locked_lv")
         self.lbl_back_btn = t("back_btn")
         self.lbl_boss = t("btn_boss")
         self.lbl_next = t("btn_next")

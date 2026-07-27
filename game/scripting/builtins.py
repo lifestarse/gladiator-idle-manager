@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """Registries of read-only fields and side-effect actions exposed to scripts.
 
 All callables receive the live engine for side effects. They MUST be:
@@ -6,6 +6,15 @@ All callables receive the live engine for side effects. They MUST be:
 - No-op when preconditions fail (e.g. start_arena_battle while battle_active).
 - Robust to optional engine APIs (use getattr with sensible fallbacks) so
   this module does not hard-couple to PR1/PR2 not-yet-merged code.
+
+Do NOT catch exceptions around the engine calls below. `_exec_Action` already
+wraps every action and re-raises as ScriptError naming the action; ScriptManager
+records that in `last_errors` / `RunStats.error`, which the Scripts screen shows.
+A `except Exception: pass` here lands *under* that pipeline and makes a failed
+action indistinguishable from one that legitimately no-oped — the player sees a
+program that "ran" and changed nothing, with no trace anywhere. The getattr /
+callable guards above each call are what handles a missing engine API; the call
+itself failing is a real error and must travel.
 """
 from __future__ import annotations
 import time
@@ -180,10 +189,7 @@ def _rest(engine, fighter):
         return
     fn = getattr(fighter, "apply_battle_skipped", None)
     if callable(fn):
-        try:
-            fn()
-        except Exception:
-            pass
+        fn()
 
 
 def _activate(engine, fighter):
@@ -216,10 +222,7 @@ def _unequip_all(engine, fighter):
         return
     for slot, item in list(eq.items()):
         if item is not None:
-            try:
-                fn(fidx, slot)
-            except Exception:
-                pass
+            fn(fidx, slot)
 
 
 def _unequip_slot(engine, fighter, slot):
@@ -234,10 +237,7 @@ def _unequip_slot(engine, fighter, slot):
     fn = getattr(engine, "unequip_from_fighter", None)
     if not callable(fn):
         return
-    try:
-        fn(fidx, slot)
-    except Exception:
-        pass
+    fn(fidx, slot)
 
 
 def _start_arena_battle(engine):
@@ -281,18 +281,12 @@ def _start_arena_battle(engine):
     if not is_boss_staged and not has_revenge:
         spawn = getattr(engine, "_spawn_enemy", None)
         if callable(spawn):
-            try:
-                spawn()
-            except Exception:
-                pass
+            spawn()
 
     start()
     skip = getattr(engine, "battle_skip", None)
     if callable(skip):
-        try:
-            skip()
-        except Exception:
-            pass
+        skip()
 
 
 def _stop_arena_battle(engine):
@@ -317,10 +311,7 @@ def _start_expedition(engine, tier):
     send_fn  = getattr(engine, "send_on_expedition", None)
     if not (callable(get_list) and callable(send_fn)):
         return
-    try:
-        exps = get_list() or []
-    except Exception:
-        return
+    exps = get_list() or []
     # Find a matching expedition. Expedition dicts carry "shard_tier"
     # (1..5), not "tier" — the old `ex.get("tier") == tier` check matched
     # nothing, making this action a permanent no-op. Accept either key so
@@ -349,10 +340,7 @@ def _start_expedition(engine, tier):
             break
     if fidx < 0:
         return
-    try:
-        send_fn(fidx, target["id"])
-    except Exception:
-        pass
+    send_fn(fidx, target["id"])
 
 
 def _stop_expedition(engine):
@@ -362,10 +350,7 @@ def _stop_expedition(engine):
     """
     fn = getattr(engine, "stop_expedition", None) or getattr(engine, "cancel_expedition", None)
     if callable(fn):
-        try:
-            fn()
-        except Exception:
-            pass
+        fn()
 
 
 def _spawn_boss(engine):
@@ -389,18 +374,15 @@ def _log(engine, message):
     log_list = getattr(engine, "event_log", None)
     if not isinstance(log_list, list):
         return
-    try:
-        log_list.append({
-            "t": int(time.time()),
-            "type": SCRIPT_EVENT_TYPE,
-            "text": str(message),
-        })
-        # Engine truncates to EVENT_LOG_MAX elsewhere; mirror that so
-        # scripts can't bloat the log indefinitely.
-        if len(log_list) > EVENT_LOG_MAX:
-            del log_list[: len(log_list) - EVENT_LOG_MAX]
-    except Exception:
-        pass
+    log_list.append({
+        "t": int(time.time()),
+        "type": SCRIPT_EVENT_TYPE,
+        "text": str(message),
+    })
+    # Engine truncates to EVENT_LOG_MAX elsewhere; mirror that so
+    # scripts can't bloat the log indefinitely.
+    if len(log_list) > EVENT_LOG_MAX:
+        del log_list[: len(log_list) - EVENT_LOG_MAX]
 
 
 # ---------- forge / inventory side-effects ----------
@@ -419,18 +401,16 @@ def _find_fighter_idx(engine, fighter):
 
 
 def _affordable_forge_items(engine, slot):
-    """Return all affordable forge items with matching slot, or [] on any
-    engine-API gap. Centralised so the four buy_* siblings stay in lockstep.
+    """Return all affordable forge items with matching slot, or [] when the
+    slot is invalid or the engine has no forge API. Centralised so the four
+    buy_* siblings stay in lockstep.
     """
     if slot not in _VALID_SLOTS:
         return []
     get_items = getattr(engine, "get_forge_items", None)
     if not callable(get_items):
         return []
-    try:
-        items = get_items()
-    except Exception:
-        return []
+    items = get_items()
     return [
         i for i in items
         if isinstance(i, dict)
@@ -452,10 +432,7 @@ def _buy_item(engine, slot):
     if not callable(buy_fn):
         return
     cheapest = min(affordable, key=lambda i: i.get("cost", 0))
-    try:
-        buy_fn(cheapest["id"])
-    except Exception:
-        pass
+    buy_fn(cheapest["id"])
 
 
 def _buy_best(engine, slot):
@@ -474,10 +451,7 @@ def _buy_best(engine, slot):
     if not callable(buy_fn):
         return
     priciest = max(affordable, key=lambda i: i.get("cost", 0))
-    try:
-        buy_fn(priciest["id"])
-    except Exception:
-        pass
+    buy_fn(priciest["id"])
 
 
 def _equip_best(engine, fighter, slot):
@@ -507,10 +481,7 @@ def _equip_best(engine, fighter, slot):
         return
     fn = getattr(engine, "equip_from_inventory", None)
     if callable(fn):
-        try:
-            fn(fidx, best_idx)
-        except Exception:
-            pass
+        fn(fidx, best_idx)
 
 
 # ---------- fighter management actions ----------
@@ -534,10 +505,7 @@ def _hire(engine, class_id):
     fn = getattr(engine, "hire_gladiator", None)
     if not callable(fn):
         return
-    try:
-        fn(class_id)
-    except Exception:
-        pass
+    fn(class_id)
 
 
 def _train_to(engine, fighter, target_level):
@@ -565,10 +533,7 @@ def _train_to(engine, fighter, target_level):
     while iters < _TRAIN_TO_HARD_CAP:
         if getattr(fighter, "level", 1) >= target:
             return
-        try:
-            result = fn(fidx)
-        except Exception:
-            return
+        result = fn(fidx)
         if not getattr(result, "ok", False):
             return
         iters += 1
@@ -589,10 +554,7 @@ def _give_item(engine, fighter, item_id):
     fn = getattr(engine, "equip_item_on", None)
     if not callable(fn):
         return
-    try:
-        fn(fidx, item_id)
-    except Exception:
-        pass
+    fn(fidx, item_id)
 
 
 def _forge_upgrade(engine, fighter, slot):
@@ -612,10 +574,7 @@ def _forge_upgrade(engine, fighter, slot):
         return
     fn = getattr(engine, "upgrade_item", None)
     if callable(fn):
-        try:
-            fn(item)
-        except Exception:
-            pass
+        fn(item)
 
 
 # Each entry:

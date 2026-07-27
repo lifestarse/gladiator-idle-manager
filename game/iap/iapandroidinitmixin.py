@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """IAPManager _IapAndroidInitMixin — Billing Client init (Billing Library v8)."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log
@@ -163,31 +163,10 @@ class _IapAndroidInitMixin:
                 def onProductDetailsResponse(
                     self_inner, billing_result, query_result
                 ):
-                    # v8: callback receives QueryProductDetailsResult
-                    # (fetched + unfetched product lists) instead of a bare
-                    # List<ProductDetails>.
                     # Extract data on billing thread before scheduling
-                    details_snapshot = {}
-                    try:
-                        if query_result is not None:
-                            details_list = query_result.getProductDetailsList()
-                            if details_list is not None:
-                                for i in range(details_list.size()):
-                                    detail = details_list.get(i)
-                                    pid = detail.getProductId()
-                                    details_snapshot[pid] = detail
-                            unfetched = query_result.getUnfetchedProductList()
-                            if unfetched is not None:
-                                for i in range(unfetched.size()):
-                                    up = unfetched.get(i)
-                                    _log.warning(
-                                        "[IAP] Product not fetched: %s "
-                                        "status=%s",
-                                        up.getProductId(),
-                                        up.getStatusCode(),
-                                    )
-                    except Exception as e:
-                        _log.error("[IAP] Error reading product details: %s", e)
+                    details_snapshot = manager._qpd_collect_details(
+                        query_result
+                    )
                     Clock.schedule_once(
                         lambda dt: manager._on_product_details_safe(
                             details_snapshot
@@ -202,6 +181,41 @@ class _IapAndroidInitMixin:
 
         except Exception as e:
             _log.error("[IAP] Query product details failed: %s", e)
+
+    def _qpd_collect_details(self, query_result):
+        """Read the v8 QueryProductDetailsResult into a {pid: detail} dict."""
+        # v8: callback receives QueryProductDetailsResult (fetched + unfetched
+        # product lists) instead of a bare List<ProductDetails>.
+        details_snapshot = {}
+        try:
+            if query_result is None:
+                return details_snapshot
+            self._qpd_read_fetched(query_result, details_snapshot)
+            self._qpd_log_unfetched(query_result)
+        except Exception as e:
+            _log.error("[IAP] Error reading product details: %s", e)
+        return details_snapshot
+
+    def _qpd_read_fetched(self, query_result, details_snapshot):
+        details_list = query_result.getProductDetailsList()
+        if details_list is None:
+            return
+        for i in range(details_list.size()):
+            detail = details_list.get(i)
+            pid = detail.getProductId()
+            details_snapshot[pid] = detail
+
+    def _qpd_log_unfetched(self, query_result):
+        unfetched = query_result.getUnfetchedProductList()
+        if unfetched is None:
+            return
+        for i in range(unfetched.size()):
+            up = unfetched.get(i)
+            _log.warning(
+                "[IAP] Product not fetched: %s status=%s",
+                up.getProductId(),
+                up.getStatusCode(),
+            )
 
     def _on_product_details_safe(self, details_snapshot):
         """Cache product details for later use in purchase flow."""

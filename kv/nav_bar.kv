@@ -37,12 +37,16 @@
         text: app.nav_hunts
         icon_source: "sprites/nav/nav_expedition.png"
         is_active: root.active_screen == "expedition"
-        on_press: app.sm.current = "expedition"
+        locked: not app.unlocked.get("expeditions", True)
+        lock_level: app.unlock_level("expeditions")
+        on_press: app.go_gated("expedition", "expeditions")
     NavButton:
         text: app.nav_lore
         icon_source: "sprites/nav/nav_lore.png"
         is_active: root.active_screen == "lore"
-        on_press: app.sm.current = "lore"
+        locked: not app.unlocked.get("lore", True)
+        lock_level: app.unlock_level("lore")
+        on_press: app.go_gated("lore", "lore")
     NavButton:
         text: app.nav_more
         icon_source: "sprites/nav/nav_more.png"
@@ -108,14 +112,36 @@
         halign: "left"
         text_size: self.size
         valign: "middle"
-        size_hint_x: 0.42
+        size_hint_x: 0.30
+    # Account level + progress to the next one. Bar sits under the number
+    # so the chip stays the same height as the currency chips.
+    BoxLayout:
+        orientation: "vertical"
+        size_hint_x: 0.16
+        padding: [dp(4), dp(7)]
+        spacing: dp(2)
+        AutoShrinkLabel:
+            text: "LV {}".format(app.player_level)
+            single_line: True
+            font_size: "10sp"
+            bold: True
+            color: app.accent_cyan
+            halign: "center"
+            text_size: self.size
+            valign: "middle"
+        MinimalBar:
+            size_hint_y: None
+            height: dp(3)
+            value: app.player_level_pct
+            bar_color: app.accent_cyan
+            bg_color: theme.BG_ELEVATED
     CurrencyChip:
-        size_hint_x: 0.29
+        size_hint_x: 0.27
         value_text: app.top_gold
         value_color: app.accent_gold
         icon_src: "sprites/icons/ic_gold.png"
     CurrencyChip:
-        size_hint_x: 0.29
+        size_hint_x: 0.27
         value_text: app.top_diamonds
         value_color: app.accent_cyan
         icon_src: "sprites/icons/ic_gem.png"

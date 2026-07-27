@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """Modal popups for the squad-script editor.
 
 Old build had a deep popup chain (palette -> block editor -> expr editor) that
@@ -36,6 +36,7 @@ Helpers:
     default_block(kind)        — build a fresh node for a given palette kind.
 """
 from __future__ import annotations
+import logging
 from typing import Callable
 
 from kivy.uix.boxlayout import BoxLayout
@@ -56,6 +57,8 @@ from game.scripting.ast_nodes import Program
 from game.scripting import labels as L
 from game.scripting import online_library
 from game.scripting import templates as T
+
+_log = logging.getLogger(__name__)
 
 POPUP_BG = (0.10, 0.10, 0.12, 1)
 
@@ -424,8 +427,8 @@ def open_export_text(text: str, title: str):
     def _copy():
         try:
             Clipboard.copy(text)
-        except Exception:
-            pass
+        except Exception as exc:  # noqa: BLE001 - provider-specific; must not kill the popup
+            _log.warning("[scripts] clipboard copy failed: %s", exc)
     row.add_widget(_btn(t("scr_copy"), _copy, color=ACCENT_GOLD, h=42))
     row.add_widget(_btn(t("scr_inline_close"), lambda: popup.dismiss(), h=42))
     root.add_widget(row)
@@ -600,8 +603,8 @@ def open_import_dialog(on_import: Callable[[str, bool], str | None]):
     def _paste():
         try:
             ti.text = Clipboard.paste() or ""
-        except Exception:
-            pass
+        except Exception as exc:  # noqa: BLE001 - provider-specific; must not kill the popup
+            _log.warning("[scripts] clipboard paste failed: %s", exc)
     root.add_widget(_btn(t("scr_paste"), _paste, h=36))
 
     err_label = Label(text="", size_hint_y=None, height=dp(28),

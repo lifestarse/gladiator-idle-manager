@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 7
 """Internal shared imports for game.engine submodules."""
 import json
 import logging
@@ -23,7 +23,10 @@ import game.achievements as _ach_module
 from game.constants import (
     STARTING_GOLD, RENAME_COST_DIAMONDS, EXPEDITION_SLOT_BASE_COST,
     HP_HEAL_TIER_MULT, HP_HEAL_DIVISOR, INJURY_HEAL_BASE_COST,
-    EVENT_LOG_MAX, SHARD_TIER_COUNT,
+    EVENT_LOG_MAX, SHARD_TIER_COUNT, BATTLE_SPEED_OPTIONS,
+    PLAYER_MAX_LEVEL, PLAYER_XP_BASE, PLAYER_XP_EXPO,
+    PLAYER_XP_PER_ARENA_WIN, PLAYER_XP_PER_TIER, PLAYER_XP_PER_BOSS_KILL,
+    PLAYER_XP_PER_EXPEDITION, PLAYER_XP_PER_ACHIEVEMENT, FEATURE_UNLOCKS,
 )
 from game.story import TUTORIAL_STEPS, STORY_CHAPTERS, get_pending_tutorial
 from game.data_loader import data_loader
