@@ -1,4 +1,4 @@
-# Build: 17
+# Build: 18
 """GameEngine core — construction + data wiring. Inherits mixins.
 
 Events/lifecycle methods live in coreeventsmixin.py / corelifecyclemixin.py;
@@ -24,15 +24,9 @@ from game.engine.wiringmixin import _WiringMixin
 
 
 def _default_save_path():
-    """Default save location. Kept lazy so engine.py can be imported headless."""
-    try:
-        from kivy.utils import platform
-    except ImportError:
-        return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
-    if platform == "android":
-        from android.storage import app_storage_path  # noqa
-        return os.path.join(app_storage_path(), ".gladiator_idle_save.json")
-    return os.path.join(os.path.expanduser("~"), ".gladiator_idle_save.json")
+    """Default save location. The platform branch lives in game.storage."""
+    from game.storage import user_data_dir
+    return os.path.join(str(user_data_dir()), ".gladiator_idle_save.json")
 
 
 class GameEngine(
