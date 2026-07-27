@@ -1,0 +1,19 @@
+---
+name: phone-deploy
+description: Деплой на реальный телефон (Pixel 10a) — adb, подписи, где живёт upload-keystore и его пароль
+metadata:
+  type: project
+---
+
+Первый adb-деплой на реальный телефон — 2026-07-27, v1.9.45 debug.
+
+**Телефон:** Pixel 10a, USB, serial `5B211JEA303918`. adb — из scrcpy (`Genymobile.scrcpy` в WinGet Packages, есть в PATH). Остальные adb-девайсы (`127.0.0.1:5555/5556`, `emulator-5554`, model SM_S908E) — это BlueStacks, см. [[bluestacks-deploy-2026-07-25]].
+
+**Подписи (важно, три разных ключа):**
+- До 2026-07-27 на телефоне стояла версия **из Google Play** (`installerPackageName=com.android.vending`) с подписью **Play App Signing** (SHA256 `C3:0B:CE:DC:...`, DName «CN=Android, O=Google Inc.») — её локально не воспроизвести ничем, `adb install -r` поверх невозможен. Снесена с согласия юзера (сейв потерян), теперь стоит debug-подписанная — дальнейшие `adb install -r` работают без плясок. Play-версия обратно поверх debug тоже не встанет — тоже только через uninstall.
+- **Upload-ключ** (которым подписываются AAB для Play): `~/gladiator-build/gladiator-release.keystore` **в WSL** (Mar 25, 2750 байт), alias `gladiator`, SHA256 `9A:AE:40:BC:...`. Пароли (store и key) — те, что лежали в `buildozer.spec` до чистки 2026-07-24 (`git show 2c6fc13:buildozer.spec`, поля `android.keystore_password` / `android.keyalias_password`) — проверено keytool'ом 2026-07-27, подходят. В чат/файлы пароль не копировать — доставать из истории на месте.
+- `gladiator-release.keystore` **в корне репо** (Mar 27, 2247 байт) — НЕ тот файл: исторический пароль к нему не подходит, отпечаток неизвестен, ни один известный ключ им не является. Похоже, мёртвый артефакт — не использовать, не удалять без разбирательства.
+
+**Ротация пароля из аудита ([[audit-2026-07-24]]) всё ещё НЕ сделана** — пароль из git-истории рабочий для действующего upload-ключа. При ротации: `keytool -storepasswd/-keypasswd` на WSL-keystore, и помнить что Play принимает AAB только с этим upload-ключом (сброс upload-ключа — через поддержку Play Console).
+
+**Установка:** `adb -s 5B211JEA303918 install -r bin/gladiatoridle-<ver>-arm64-v8a-debug.apk`; запуск `adb shell am start -n com.gladiator.gladiatoridle/org.kivy.android.PythonActivity`; проверка `pidof com.gladiator.gladiatoridle` + logcat на Traceback/FATAL. На старте 1.9.45 всплыл баг: remote_content пишет манифест в `/data/...` → Permission denied (не фатально, задача заведена).
