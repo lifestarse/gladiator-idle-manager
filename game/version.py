@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """The app version, readable at runtime.
 
 buildozer.spec stays the source of truth for releases — the documented workflow
@@ -12,7 +12,7 @@ build if they ever disagree. Bump both, or the test tells you which one you
 forgot.
 """
 
-APP_VERSION = "1.9.45"
+APP_VERSION = "1.9.46"
 
 
 def version_tuple(text=None):
