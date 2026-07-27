@@ -15,3 +15,4 @@
 - [Удалённый контент 2026-07-26](memory/remote-content-overlay-2026-07-26.md) — game/remote_content/: в APK только английский, остальные языки — скачиваемые пакеты; патчи баланса, safe-mode, применение со следующего запуска
 - [Скилл game-ui-patterns 2026-07-26](memory/game-ui-skill-2026-07-26.md) — .claude/skills/game-ui-patterns: жанровые паттерны боевых экранов + gap-анализ арены; сторонние скиллы не подошли (веб/Unity)
 - [Сканер aislop 2026-07-27](memory/aislop-scanner-2026-07-27.md) — установлен глобально; 7/100 в основном ложные (Build-заголовки, re-export импорты, buildozer.spec); `aislop fix` НЕ запускать
+- [Автокоммит в master 2026-07-27](memory/auto-commit-to-master-2026-07-27.md) — готовую работу коммитить и сливать в master автоматически, без подтверждений; push только по явной просьбе
