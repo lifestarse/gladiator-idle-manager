@@ -16,7 +16,7 @@ source.exclude_dirs = bin,.buildozer,.git,.claude
 # and feature_graphic.png ~105 KB (a Play listing image, also in .gitignore).
 # presplash.png is deliberately NOT excluded — presplash.filename below reads it.
 source.exclude_patterns = generate_icons.py,gen_feature_graphic.py,generate_sprites.py,icon_drawing.py,feature_graphic.png,data/languages/ru.json,data/languages/uk.json,data/languages/de.json,data/languages/es.json,data/languages/fr.json,data/languages/it.json,data/languages/pt.json,data/languages/pl.json,data/languages/data_*.json,scratch/*
-version = 1.9.44
+version = 1.9.45
 requirements = python3,kivy==2.3.1,pillow,android,pyjnius,filetype,certifi
 orientation = portrait, landscape, portrait-reverse, landscape-reverse
 # Force android:screenOrientation="fullUser" so the app respects the system
