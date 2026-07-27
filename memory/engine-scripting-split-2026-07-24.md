@@ -18,4 +18,6 @@ metadata:
 
 **How to apply:** ВЛИТО в master 2026-07-25 (merge 07e393a); `test_cross_package_name_resolution` теперь покрывает и `game.scripting` (PKGS дополнен).
 
-Осталось >10КБ (вне задачи, отдельный чип): `game/screens/scripts/cells.py` (45К), `game/screens/scripts/_core.py` (42К), `game/screens/scripts/popups.py` (26К), `game/scripting/builtins.py` (24К), `game/app/_core.py` (14.5К), `game/scripting/labels.py` (13.9К), `game/scripting/ast_nodes.py` (12.5К), `game/models/_fighter.py` (10.8К), `game/story.py` (10.3К), `game/iap/iapandroidpurchasemixin.py` (10.2К).
+~~Осталось >10КБ~~ — **неактуально: лимит 10 КБ снят юзером 2026-07-25** (см. CLAUDE.md «Размер файлов»), список ниже исторический, дробить по нему не надо: `game/screens/scripts/cells.py` (45К), `_core.py` (42К), `popups.py` (26К), `game/scripting/builtins.py` (24К), `game/app/_core.py` (14.5К), `labels.py` (13.9К), `ast_nodes.py` (12.5К), `game/models/_fighter.py` (10.8К), `game/story.py` (10.3К), `iapandroidpurchasemixin.py` (10.2К).
+
+**UPDATE 2026-07-27:** persistence после сплита дорос (schema-версионирование сейва, commit beaf000): `_migrations.py` (реестр НЕ пуст — 2 миграции, `CURRENT_SAVE_VERSION=2` в `_shared.py`), `persistencesnapshotmixin.py`, `persistencerecovery.py`. `GameEngine` сейчас собирается из 11 mixin'ов (+CoreEvents/CoreLifecycle/Wiring к исходным восьми).

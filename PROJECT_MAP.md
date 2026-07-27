@@ -3,7 +3,7 @@
 Idle-менеджер гладиаторов: Python + Kivy, релиз на Android (Google Play) через buildozer/p4a.
 Версия — в `buildozer.spec` (`version = …`), там же вся конфигурация билда. Правила работы с кодом — [CLAUDE.md](CLAUDE.md), память — [MEMORY.md](MEMORY.md) + `memory/`, витрина репозитория — [README.md](README.md).
 Пофайловый граф кода (Obsidian) — [codemap/CODEMAP.md](codemap/CODEMAP.md), регенерация: `python scripts/gen_codemap.py`.
-Составлено 2026-07-24 по коду v1.9.37. При расхождении карта уступает коду.
+Составлено 2026-07-24 по коду v1.9.37, актуализировано 2026-07-27 (v1.9.44). При расхождении карта уступает коду.
 
 ---
 
@@ -29,14 +29,14 @@ main.py (тонкий shim)
 
 **Сейв**: один JSON (`schema_version`, gold/arena_tier/diamonds/shards, `fighters[]` через `Fighter.to_dict()`, inventory, graveyard, логи с обрезкой, `scripts`, мутаторы, лор, язык…).
 Путь: Android — `{app_storage_path()}/.gladiator_idle_save.json`, desktop — `~/.gladiator_idle_save.json`.
-Запись атомарная: `*.tmp` → `os.replace`, прежний файл → `*.bak`; есть `save_async` (снапшот на main-потоке, дамп в daemon-потоке). Чтение: битый JSON → `.bak`; неприменимый сейв → `.corrupt` + новый старт. Миграции — реестр `_SAVE_MIGRATIONS` (`register_migration`, сейчас пуст, `CURRENT_SAVE_VERSION=1`). Облачная копия — тот же JSON в Google Drive appDataFolder.
+Запись атомарная: `*.tmp` → `os.replace`, прежний файл → `*.bak`; есть `save_async` (снапшот на main-потоке, дамп в daemon-потоке). Чтение: битый JSON → `.bak`; неприменимый сейв → `.corrupt` + новый старт. Миграции — реестр `_SAVE_MIGRATIONS` (`register_migration`; 2 миграции в `_migrations.py`, `CURRENT_SAVE_VERSION=2`). Облачная копия — тот же JSON в Google Drive appDataFolder.
 
 ---
 
 ## Ядро (game/)
 
-### game/engine/ — GameEngine (9 mixin'ов)
-`_core.py` — сборка, `__init__`, `_default_save_path`, создание `battle_mgr` • `_fighters.py` — найм/апгрейд/активный боец • `_combat.py` — спавн врагов/боссов, драйвер боя (`start_auto_battle`, `battle_next_turn`, `battle_skip`, `_post_battle_check`) • `_forge.py` — кузница/инвентарь/экип • `_expeditions.py` — экспедиции • `_healing.py` — лечение HP/травм • `_progression.py` — ачивки/квесты/лор • `_economy.py` — магазин расходников • `_persistence.py` = `persistencereadmixin.py` (load) + `persistencewritemixin.py` (save/save_async) • `wiringmixin.py` — `_wire_data`, миграция предметов по шаблонам • `_shared.py` — общие импорты, `CURRENT_SAVE_VERSION`, реестр миграций.
+### game/engine/ — GameEngine (11 mixin'ов)
+`_core.py` — сборка, `__init__`, `state_lock`, `_default_save_path`, создание `battle_mgr`; вынесенное из него — `coreeventsmixin.py` / `corelifecyclemixin.py` • `_fighters.py` — найм/апгрейд/активный боец • `_combat.py` — композер спавна и драйвера боя: `combatspawnmixin.py` / `combatflowmixin.py` / `combatresolvemixin.py` (`start_auto_battle`, `battle_next_turn`, `battle_skip`, `_post_battle_check`, `battle_speed`) • `_forge.py` — кузница/инвентарь/экип • `_expeditions.py` — экспедиции • `_healing.py` — лечение HP/травм • `_progression.py` — ачивки/квесты/лор + уровень игрока (`player_level`/XP, гейты фич по `FEATURE_UNLOCKS` из constants) • `_economy.py` — магазин расходников • `_persistence.py` — композер: `persistencereadmixin.py` (load) + `persistencewritemixin.py` (save/save_async) + `persistencesnapshotmixin.py` + `persistencerecovery.py` • `_migrations.py` — миграции сейва (2 зарегистрированы) • `wiringmixin.py` — `_wire_data`, миграция предметов по шаблонам • `_shared.py` — общие импорты, `CURRENT_SAVE_VERSION=2`, реестр миграций.
 
 ### game/models/ — Fighter/Enemy + скейлинг
 `_fighter.py` — `Fighter(CombatUnit + 4 mixin'а)`: **primary-статы** (`strength/agility/vitality`) хранятся здесь; уровни, травмы, стамина/усталость, permadeath • `fighterstatsmixin.py` — **derived-статы** как property (`attack/defense/max_hp/crit/dodge/…`) — формулы см. CLAUDE.md «Stat system» • `fighterequipmixin.py` — экип и сумма статов предметов • `fighterperksmixin.py` — эффекты перков (override-семантика `*_upgrade`) • `fighterserializemixin.py` — to_dict/from_dict • `_enemy.py` — `Enemy`/`Boss` (по тиру и `from_template`) • `_combat.py` — `CombatUnit` (take/deal damage) • `_scaling.py` — `DifficultyScaler` (экспоненты наград/цен/статов) • `_helpers.py` — `Result`, форматирование чисел, редкости • `_data.py` — **пустые module-level коллекции** (`ALL_FORGE_ITEMS`, `RELICS`, `EXPEDITIONS`…), наполняются `_wire_data()` строго in-place (`.clear()`+`.extend()`) — см. «Паттерны».
@@ -49,10 +49,10 @@ main.py (тонкий shim)
 `_core.py` — singleton `DataLoader.load_all()` + tier-индексы • `loadmethodsmixin.py` — чтение/нормализация ключей (`base_str`→`str`) • `translationmixin.py` — `apply_translations(lang)` накладывает name/desc из `data/languages/data_XX.json` in-place • `_shared.py` — путь к data/, валидация id.
 
 ### game/scripting/ — DSL «squad scripts»
-`ast_nodes.py` — dataclass-узлы AST (`Program/If/While/ForEach/Assign/Action/BinOp/…`), `Trigger` (on_battle_end/on_tick/on_demand), whitelist'ы, `node_to_dict/from_dict` • `interpreter.py` — tree-walking `Interpreter` с лимитами (max_steps/loop_iters/depth) • `builtins.py` — реестры доступного скриптам: поля бойца/движка, вызовы, действия • `manager.py` — `ScriptManager`: программы + персистентные глобалы, диспетчер триггеров, `RunStats`, сериализация в сейв • `labels.py` — маппинг внутренних имён на i18n/категории для UI (в сейв не пишется) • `templates.py` — встроенные шаблоны программ • `online_library.py` — библиотека сообщества: JSON-манифест с GitHub Pages (HTTPS+certifi, кеш 24ч, при ошибке — fallback на templates), импорт через тот же AST-sandbox; раздача манифеста и приём скриптов — [docs/scripts-library/README.md](docs/scripts-library/README.md).
+`ast_nodes.py` — dataclass-узлы AST (`Program/If/While/ForEach/Assign/Action/BinOp/…`), `Trigger` (on_battle_end/on_tick/on_demand), whitelist'ы, `node_to_dict/from_dict` • `interpreter.py` — tree-walking `Interpreter` с лимитами (max_steps/loop_iters/depth); композер из `interpreterexecmixin.py` + `interpreterevalmixin.py`, исключения — в `errors.py` (лист, разрывает цикл импортов) • `builtins.py` — реестры доступного скриптам: поля бойца/движка, вызовы, действия • `manager.py` — `ScriptManager`: программы + персистентные глобалы, диспетчер триггеров, `RunStats`, сериализация в сейв; композер из `managerrunmixin.py` / `managerasyncmixin.py` / `managerpersistmixin.py` • `labels.py` — маппинг внутренних имён на i18n/категории для UI (в сейв не пишется) • `templates.py` — встроенные шаблоны программ • `online_library.py` — библиотека сообщества: JSON-манифест с GitHub Pages (HTTPS+certifi, кеш 24ч, при ошибке — fallback на templates), импорт через тот же AST-sandbox; раздача манифеста и приём скриптов — [docs/scripts-library/README.md](docs/scripts-library/README.md).
 
 ### Одиночные модули ядра
-`constants.py` — все игровые константы • `slots.py` — `SLOTS`: единый реестр слотов экипировки (источник правды для формул апгрейда/зачарования) • `achievements.py` + `achievements_checks.py` — ачивки из JSON → callable-проверки • `boss_modifiers.py` — 1–3 модификатора на босса (regeneration/enrage/thorns/…) • `mutators.py` — `mutator_registry`, множители наград • `diamonds.py` — `DIAMOND_SHOP` (внутриигровое) и `DIAMOND_BUNDLES` (IAP) • `story.py` — туториал + главы кампании • `localization.py` — `t()`, 9 языков, цепочка lang→en→ключ, дефолт ru.
+`constants.py` — все игровые константы • `slots.py` — `SLOTS`: единый реестр слотов экипировки (источник правды для формул апгрейда/зачарования) • `achievements.py` + `achievements_checks.py` — ачивки из JSON → callable-проверки • `boss_modifiers.py` — 1–3 модификатора на босса (regeneration/enrage/thorns/…) • `mutators.py` — `mutator_registry`, множители наград • `diamonds.py` — `DIAMOND_SHOP` (внутриигровое) и `DIAMOND_BUNDLES` (IAP) • `story.py` — туториал + главы кампании • `localization.py` — `t()`, 9 языков, цепочка lang→en→ключ; терминальный фолбэк — **en** (в APK только `en.json`, остальные 8 языков — скачиваемые пакеты `game/remote_content/`; фолбэк `set_language` тоже en, не ru).
 
 ---
 
@@ -72,10 +72,10 @@ main.py (тонкий shim)
 - `base_screen.py` — общий предок (топбар, `on_back_pressed`, инвалидация кэшей) • `screens/shared.py` — `SCREEN_ORDER`, `_safe_clear/_safe_rebind`, звук.
 
 ### game/ui_helpers/ (21) — доменные билдеры контента
-Билдеры `build_*`/`refresh_*_grid`, RecycleView-viewclass'ы и адаптеры «игровой объект → dict для RV»: `_roster_cell`/`_roster_grid`, `_forge`/`_forge_cell`, `_inventory_cell`, `_arena_cell`, `_combat_cards`/`_combat_animations`, `_perks_cells`, `_event_log_cell`/`_battle_log_cell`, `_detail_cells`, `_expedition`, `_lore`, `_diamond`, `_shop`, `_item_card`, `_layouts` (grid_batch, long-tap), `_widgets` (фабрики), `_imports` (общий импорт-блок). `__init__.py` реэкспортит всё — внешние импорт-пути стабильны.
+Билдеры `build_*`/`refresh_*_grid`, RecycleView-viewclass'ы и адаптеры «игровой объект → dict для RV»: `_roster_cell`/`_roster_grid`, `_forge`/`_forge_cell`, `_inventory_cell`, `_arena_cell`, `_combat_cards`/`_combat_animations`, `_perks_cells`, `_event_log_cell`/`_battle_log_cell`, `_detail_cells`, `_expedition`, `_lore`, `_diamond`, `_shop`, `_item_card`, `_language_picker` (единый виджет выбора/скачивания языка — первый запуск и «Ещё»), `_layouts` (grid_batch, long-tap), `_widgets` (фабрики), `_imports` (общий импорт-блок). `__init__.py` реэкспортит всё — внешние импорт-пути стабильны.
 
-### game/widgets/ (10) — переиспользуемые Kivy-примитивы без доменной логики
-`_buttons` (MinimalButton/NavButton), `_bars` (MinimalBar, FloatingText), `_cards` (пиксель-арт контейнеры), `_labels` (AutoShrinkLabel), `_avatar` (спрайтовый аватар), `_nav` (NavBar, TouchPanel), `_scroll` (scroll-safe RV/ScrollView), `_inputs` (SafeTextInput). Регистрируются в `gladiatoridle.kv`.
+### game/widgets/ (11) — переиспользуемые Kivy-примитивы без доменной логики
+`_buttons` (MinimalButton c `variant` primary/secondary/ghost, NavButton), `_bars` (MinimalBar, FloatingText), `_cards` (пиксель-арт контейнеры), `_chips` (ChipRow — segmented/скролл-табы), `_labels` (AutoShrinkLabel, `single_line`), `_avatar` (спрайтовый аватар, `sprite_kind`), `_nav` (NavBar, TouchPanel), `_scroll` (scroll-safe RV/ScrollView), `_inputs` (SafeTextInput). Регистрируются в `gladiatoridle.kv`.
 
 ### KV и тема
 `gladiatoridle.kv` — только `#:import`-регистрации виджетов/viewclass'ов • `kv/*.kv` — по файлу на экран + `nav_bar.kv` (NavBar, TopBar) • `game/theme.py` — палитра (SNES-стиль) • `ui_config.json` — **мёртвый файл**: никакой .py его не читает (упомянут только в docs), реальные размеры — `dp()/sp()` в коде.
@@ -87,9 +87,10 @@ main.py (тонкий shim)
 | Пакет | Бэкенд | Суть |
 |---|---|---|
 | `game/cloud_save/` | **Google Drive appDataFolder** (не Play Games!) | Sign-In со scope `drive.appdata`, REST через urllib+certifi в фоновых потоках. `resolve_auto_sync`: авто-load только на свежую установку, авто-upload только по opt-in (`autosync_uploads`), никогда молча не перезаписывает. |
-| `game/iap/` | Play Billing **6.2.1** (Android), StoreKit/pyobjus (iOS) | 6 товаров (`remove_ads` + 5 бандлов гемов, см. `_shared.PRODUCTS`). acknowledge для non-consumable, consume для гемов, фолбэк-доставка без UI-колбэка. Desktop — авто-успех (stub). |
+| `game/iap/` | Play Billing **8.3.0** (Android), StoreKit/pyobjus (iOS) | 6 товаров (`remove_ads` + 5 бандлов гемов, см. `_shared.PRODUCTS`). acknowledge для non-consumable, consume для гемов, фолбэк-доставка без UI-колбэка. Desktop — авто-успех (stub). |
 | `game/leaderboard/` | Play Games Services v2 | 3 лидерборда (ID захардкожены в `_shared`). Поллинг вместо Java-колбэков, `_fix_classloader` против SIGBUS. |
-| `game/ads.py` | AdMob через **KivMob** | banner/interstitial/rewarded; production unit ID; interstitial ~каждые 5 боёв, rewarded — 2x золото. |
+| `game/ads/` | GMA SDK 24.9.0 через **свой Java-шим** `java_src/com/gladiator/ads/` (KivMob умер: колбэки GMA v20+ — абстрактные классы, PythonJavaClass умеет только интерфейсы) | banner/interstitial/rewarded; UMP-консент гейтит init; **`ADS_ENABLED=False`** в `_shared.py` (выключена юзером 2026-07-25, «нет аудитории») — включение одной константой, стек не выпиливать (NOTE(ads) в spec). |
+| `game/remote_content/` | GitHub Pages (`docs/content/`) | Языковые пакеты (в APK только en) и патчи текста/баланса без релиза; только JSON, кода не качает. Safe-mode маркер, применение со следующего запуска, выключатель `REMOTE_CONTENT_ENABLED`. |
 | `game/play/` | Play Core In-App Review | `maybe_show_review()`, fire-and-forget. |
 | `game/common/gsignin_poll.py` | — | Общий Clock-поллер результата Sign-In (для cloud и leaderboard). |
 
@@ -107,12 +108,12 @@ main.py (тонкий shim)
 
 ---
 
-## Тесты (tests/, 400+ кейсов) и дев-скрипты (scripts/)
+## Тесты (tests/, 747 кейсов на 2026-07-27) и дев-скрипты (scripts/)
 
 `conftest.py` — фикстура `engine` на tempfile-сейве (реальный сейв не трогается — см. CLAUDE.md).
 Покрытие по файлам: сейв (roundtrip, миграции), бой (детерминизм, стан, зачарования), статы (авто-распределение, стамина/усталость, перки), кузница (апгрейды, миграция предметов), bench, импорты/MRO и **`test_name_resolution.py`** (ловит NameError после сплита пакетов — не удалять), скриптинг — 9 файлов (AST, интерпретатор, менеджер, e2e против живого движка, i18n-паритет labels, шаблоны).
 
-`scripts/`: `make_max_save.py` (максимальный сейв), `fill_inventory.py`/`fill_roster.py` (стресс +1000), переводы (`translate_all.py` через deep_translator, `merge_translations.py`, `verify_placeholders.py`, `translations_data*.py`), `test_i18n.py`.
+`scripts/`: `make_max_save.py` (максимальный сейв), `fill_inventory.py`/`fill_roster.py` (стресс +1000), `i18n_tool.py` + `i18n_glossary.json` (конвейер и глоссарий переводов — единственный легитимный путь, гейты `test_i18n_data_quality`/`test_i18n_ui_quality` не ослаблять), `publish_content.py` (публикация пакетов/патчей в docs/content), `gen_codemap.py` (карта кода для Obsidian), `merge_translations.py`, `verify_placeholders.py`, `translations_data*.py`, `test_i18n.py`. Машинный `translate_all.py` — в карантине `scratch/fake_generators_do_not_run/` (затёр 7 языков гугл-переводом, не запускать).
 
 Генераторы ассетов (корень, оффлайн): `generate_sprites.py` (весь пиксель-арт, исключение из лимита 10КБ), `generate_icons.py` + `icon_drawing.py`, `gen_feature_graphic.py`.
 
@@ -121,8 +122,8 @@ main.py (тонкий shim)
 ## Билд и релиз
 
 - `buildozer android debug` / `buildozer android release` → артефакты в `bin/` (release — **AAB**, подписывается keystore из spec; сам keystore в git не попадает — `*.keystore` в .gitignore).
-- Конфиг: api 35 / minapi 21 / arm64-v8a; 16KB page alignment (Android 15); ориентация `fullUser` через `p4a.extra_args`; gradle-deps: play-services-auth/games-v2, billing, review.
-- В APK пакуется всё по `source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf` (**md не пакуется** — доки/память билд не раздувают).
+- Конфиг: api 35 / **minapi 23** (требование ads/billing SDK) / arm64-v8a; 16KB page alignment (Android 15); ориентация `fullUser` через `p4a.extra_args`; gradle-deps: play-services-auth/games-v2, billing 8.3.0, play-services-ads 24.9.0, ump 4.0.0, review; `android.add_src = java_src` (шим рекламы).
+- В APK пакуется всё по `source.include_exts = py,png,jpg,kv,atlas,json,wav,ttf` минус `source.exclude_patterns` (все языковые json кроме en, `data_*.json`, scratch) и `source.exclude_dirs` (bin, .buildozer, .git, .claude). **md не пакуется** — доки/память билд не раздувают.
 - Патч `src/patches/SDLActivity.java.patch` применяется при сборке (повторное применение даёт warning — это норма).
 - Перед билдом: бамп `version` в spec; `# Build: N` в строке 1 изменённых src-файлов инкрементится при каждом изменении.
 

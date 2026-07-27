@@ -3,8 +3,7 @@
 
 # Код
 - Пиши с расчётом что это будет расширяться. Никаких хаков и "временных решений"
-- Не упрощай существующую архитектуру без явного разрешения
-- Не дублируй логику — найди существующую и используй
+- Не дублируй логику — найди существующую и используй или переделай существующее на что-то лучшее.
 - Не ссылайся на то что не проверил в файле
 - Константы вместо magic numbers, конкретные except вместо broad
 
@@ -35,7 +34,7 @@ UI показывает **derived** (ATK/DEF/HP), бой использует **
 
 # Архитектура (после рефакторинга 2026-04-17)
 - `game/ui_helpers/` — пакет (12 submodules), `__init__.py` re-exports всё. Внешние импорты неизменны.
-- `game/engine/` — пакет из 8 mixin'ов: Fighters/Combat/Forge/Expeditions/Healing/Progression/Economy/Persistence. `GameEngine` наследует от всех.
+- `game/engine/` — пакет из 11 mixin'ов: CoreEvents/CoreLifecycle/Fighters/Combat/Forge/Expeditions/Healing/Progression/Economy/Persistence/Wiring. `GameEngine` наследует от всех.
 - `game/screens/roster/`, `game/screens/forge/` — пакеты с mixin'ами (Hire/Injuries/FighterDetail/Perks/Equipment и Inventory/Upgrade/Enchant/EquipSwap/Shop).
 
 Паттерн `import game.models as _m` — **намеренный**: `engine._wire_data()` мутирует in-place (`.clear()` + `.update()/.extend()`) module-level коллекции (`ALL_FORGE_ITEMS`, `ENCHANTMENT_TYPES`, etc.). Это требование subpackage-шардинга — сабмодули (`_fighter.py`, `_data.py`) держат ссылки через `from ._data import *`.
