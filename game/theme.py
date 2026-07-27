@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """
 Pixel art RPG color theme — SNES-era inspired.
 Rich saturated accents, warm indigo backgrounds, cream text.
@@ -20,6 +20,12 @@ ACCENT_CYAN = (0.20, 0.75, 0.80, 1)     # teal/cyan
 ACCENT_BROWN = (0.45, 0.30, 0.18, 1)    # warm saddle brown — calmer accent
                                          # for secondary buttons that shouldn't
                                          # compete with status colours
+ACCENT_AMBER = (1.00, 0.69, 0.38, 1)    # item passives. Must stay in step with
+                                         # the ffb060 in item_passive_header
+                                         # (data/languages/*.json): the popup
+                                         # header renders via BBCode and the
+                                         # grid marker via this constant, and
+                                         # they have to read as one accent.
 
 # Text — warm cream, high contrast
 TEXT_PRIMARY = (0.93, 0.90, 0.82, 1)     # cream white

@@ -1,7 +1,8 @@
-# Build: 6
+# Build: 7
 """ui_helpers._forge — forge-grid builders + RV data adapters."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
+from game.passives import passive_marker
 
 
 # ============================================================
@@ -78,6 +79,7 @@ def _inventory_item_to_rv_data(source, idx, item, fighter_name, forge_screen):
         ench_data = _m.ENCHANTMENT_TYPES.get(ench_id)
         ench_display = f"[{ench_data['name']}]" if ench_data else f"[{ench_id}]"
     slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
+    passive_mark = passive_marker(item)
     s, a, v = calc_item_stats(item, None)
     return {
         'iid': item.get('id', ''),
@@ -90,6 +92,7 @@ def _inventory_item_to_rv_data(source, idx, item, fighter_name, forge_screen):
         'rarity_color': list(rcolor),
         'upgrade_level': item.get('upgrade_level', 0),
         'ench_display': ench_display,
+        'passive_mark': passive_mark,
         'slot_rarity_text': slot_rarity,
         'equipped_on': fighter_name or '',
         's': s, 'a': a, 'v': v,
@@ -110,6 +113,7 @@ def _forge_item_to_rv_data(item, forge_screen):
         ench_data = _m.ENCHANTMENT_TYPES.get(ench_id)
         ench_display = f"[{ench_data['name']}]" if ench_data else f"[{ench_id}]"
     slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
+    passive_mark = passive_marker(item)
     s, a, v = calc_item_stats(item, None)
     return {
         'iid': item['id'],
@@ -120,6 +124,7 @@ def _forge_item_to_rv_data(item, forge_screen):
         'rarity_color': list(rcolor),
         'upgrade_level': item.get('upgrade_level', 0),
         'ench_display': ench_display,
+        'passive_mark': passive_mark,
         'slot_rarity_text': slot_rarity,
         's': s, 'a': a, 'v': v,
         'affordable': item.get('affordable', False),

@@ -639,6 +639,8 @@
   "item_no_stats": "Dieser Gegenstand gewährt keine Werte.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Upgrade +{lvl}[/color][/b]: Gewährt bei Ausrüstung zusätzliche ATK/DEF/HP (skaliert mit den Statistiken des Trägers).",
   "item_enchant_line": "[b][color=c060ff]Verzauberung:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]PASSIVER EFFEKT[/color][/b]",
+  "passive_lifesteal_pct": "Heilt um {pct}% des verursachten Schadens.",
   "shard_tier_1_name": "Metallsplitter (I)",
   "shard_tier_2_name": "Metallsplitter (II)",
   "shard_tier_3_name": "Metallsplitter (III)",

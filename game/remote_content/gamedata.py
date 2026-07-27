@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Validate and apply a remote balance patch.
 
 Text is forgiving — a bad string is ugly. Numbers are not: a mistyped cost can
@@ -8,9 +8,9 @@ have absorbed it. So this module is deliberately narrow.
 Three constraints, all enforced here:
 
 * Only the fields in PATCHABLE may be touched. Identity and behaviour fields
-  (id, slot, rarity, effect, severity, special_effect, ...) are not patchable
-  at any price — changing "effect" reroutes code paths, changing "rarity"
-  changes upgrade caps, and neither is balance.
+  (id, slot, rarity, effect, severity, special_effect, kind, ...) are not
+  patchable at any price — changing "effect" or "kind" reroutes code paths,
+  changing "rarity" changes upgrade caps, and neither is balance.
 * Only entries that already exist may be modified. A patch cannot add an item,
   an enemy or an expedition; new content needs new code paths and ships through
   Play.
@@ -68,6 +68,22 @@ PATCHABLE = {
         "heal_pct": (0.0, 10.0),
         "reduction_pct": (0.0, 1.0), "atk_reduction_pct": (0.0, 1.0),
         "debuff_turns": (0, 100), "skip_turns": (0, 100),
+    }),
+    # Item passives. Definitions are flat and dict-keyed ("<item_id>#<n>")
+    # precisely so this works: _entries_of already handles the dict shape, and
+    # every tunable is a top-level number, so a single dominant passive can be
+    # nerfed without a Play release. "item" and "kind" need no protection —
+    # they are strings and _reject_reason turns any non-number away, so a patch
+    # can never re-point a passive at a different mechanic.
+    #
+    # These ranges are only a typo rail. The authoritative per-kind range lives
+    # in PassiveKind.params and is applied AFTER this overlay, because
+    # patch_gamedata runs inside DataLoader.load_all while compilation happens
+    # later in _wire_data — so a patched number outside its kind's range costs
+    # that one passive (dropped with a warning) rather than shipping a broken
+    # mechanic.
+    "item_passives": ("item_passives.json", "passives", {
+        "value": (0.0, 100.0),
     }),
     "injuries": ("injuries.json", "injuries", {
         "chance_weight": (0, 10_000),
@@ -170,6 +186,7 @@ def apply_patch(loader, patch):
         "relics": getattr(loader, "_relics", None),
         "expeditions": getattr(loader, "_expeditions", None),
         "enchantments": getattr(loader, "_enchantments", None),
+        "item_passives": getattr(loader, "_item_passives", None),
         "injuries": getattr(loader, "_injuries", None),
         "enemies": getattr(loader, "_enemies", None),
     }

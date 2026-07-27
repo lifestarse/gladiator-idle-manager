@@ -639,6 +639,8 @@
   "item_no_stats": "Этот предмет не даёт характеристик.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Улучшение +{lvl}[/color][/b]: даёт бонус к ATK/DEF/HP при экипировке (зависит от характеристик бойца).",
   "item_enchant_line": "[b][color=c060ff]Чары:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]ПАССИВНЫЙ ЭФФЕКТ[/color][/b]",
+  "passive_lifesteal_pct": "Лечит на {pct}% от нанесённого урона.",
   "shard_tier_1_name": "Осколок (I)",
   "shard_tier_2_name": "Осколок (II)",
   "shard_tier_3_name": "Осколок (III)",

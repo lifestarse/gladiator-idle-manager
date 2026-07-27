@@ -639,6 +639,8 @@
   "item_no_stats": "Cet objet n'accorde aucune statistique.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Mise à niveau +{lvl}[/color][/b] : accorde un bonus d'ATK/DEF/HP lorsqu'il est équipé (évolue en fonction des statistiques du porteur).",
   "item_enchant_line": "[b][color=c060ff]Enchantement :[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]EFFET PASSIF[/color][/b]",
+  "passive_lifesteal_pct": "Soigne de {pct}% des dégâts infligés.",
   "shard_tier_1_name": "Éclat de métal (I)",
   "shard_tier_2_name": "Éclat de métal (II)",
   "shard_tier_3_name": "Éclat de métal (III)",

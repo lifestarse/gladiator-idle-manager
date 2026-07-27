@@ -639,6 +639,8 @@
   "item_no_stats": "Цей предмет не дає характеристик.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Покращення +{lvl}[/color][/b]: дає бонус до ATK/DEF/HP при екіпіруванні (залежить від характеристик бійця).",
   "item_enchant_line": "[b][color=c060ff]Зачарування:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]ПАСИВНИЙ ЕФЕКТ[/color][/b]",
+  "passive_lifesteal_pct": "Лікує на {pct}% від завданої шкоди.",
   "shard_tier_1_name": "Осколок (I)",
   "shard_tier_2_name": "Осколок (II)",
   "shard_tier_3_name": "Осколок (III)",

@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """ForgeCardView — forge grid cell (RecycleView viewclass)."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
@@ -51,6 +51,16 @@ class ForgeCardView(RecycleDataViewBehavior, BoxLayout):
         )
         self._ench_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
         row1.add_widget(self._ench_lbl)
+        # One star per passive. Width follows texture_size like its siblings,
+        # so an item without passives contributes nothing and the row is
+        # unchanged — the card height is a hard dp(75) duplicated across four
+        # files and kv/forge_screen.kv, and must not move.
+        self._passive_lbl = AutoShrinkLabel(
+            font_size=sp(11), bold=True, color=list(ACCENT_AMBER),
+            halign="left", size_hint_x=None, width=1,
+        )
+        self._passive_lbl.bind(texture_size=lambda w, ts: setattr(w, 'width', ts[0]))
+        row1.add_widget(self._passive_lbl)
         col.add_widget(row1)
 
         # Row 2: slot/rarity label
@@ -114,6 +124,7 @@ class ForgeCardView(RecycleDataViewBehavior, BoxLayout):
         lvl = data.get('upgrade_level', 0)
         self._level_lbl.text = f"+{lvl}" if lvl > 0 else ""
         self._ench_lbl.text = data.get('ench_display', '')
+        self._passive_lbl.text = data.get('passive_mark', '')
         self._sr_lbl.text = data.get('slot_rarity_text', '')
 
         # Stats row — clear and re-add only the stats that are > 0

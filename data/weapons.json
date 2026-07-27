@@ -4,6 +4,7 @@
       "id": "rusty_blade",
       "name": "Rusty Blade",
       "description": "A pitted and corroded short sword scavenged from a mass grave beneath the arena. Its edge is dull, but desperation sharpens the hand that wields it. Many slaves have drawn their first blood with such a wretched thing.",
+      "special_effect": "The pitted iron drinks what it spills, and something of that stolen warmth creeps back up the wielder's arm.",
       "slot": "weapon",
       "rarity": "common",
       "cost": 400,

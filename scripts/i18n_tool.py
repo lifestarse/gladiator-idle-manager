@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Extract translation source batches and merge translated fragments back.
 
 Workflow agents never edit data/languages/*.json directly — parallel writers
@@ -74,6 +74,20 @@ def _dump(path, data):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=2, sort_keys=True)
+
+
+def _dump_ui(path, data):
+    """Write a UI language file, preserving authored key order.
+
+    Deliberately NOT `_dump`: the content files (`data_XX.json`) are stored
+    sorted, but the UI files (`XX.json`) are stored in authored order, which
+    groups keys by screen and is the only thing making them reviewable by
+    hand. `sort_keys=True` here would reflow all nine files into one
+    alphabetical wall on the first merge and bury the real diff.
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, ensure_ascii=False, indent=2)
 
 
 def _by_id(node):

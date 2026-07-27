@@ -3584,7 +3584,8 @@
     },
     "rusty_blade": {
       "description": "Una espada corta picada y corroída extraída de una fosa común debajo de la arena. Su filo está desafilado, pero la desesperación afila la mano que lo empuña. Muchos esclavos han derramado su primera sangre con algo tan miserable.",
-      "name": "Hoja oxidada"
+      "name": "Hoja oxidada",
+      "special_effect": "El hierro picado bebe lo que derrama, y algo de ese calor robado trepa de vuelta por el brazo de quien lo empuña."
     },
     "sanguine_majesty": {
       "description": "Una spatha ceremonial bañada en la sangre de cien campeones invictos a lo largo de un siglo de combate en la arena. La sangre se ha fusionado con el acero a nivel molecular, creando un metal que tiene hambre. Vibra con violencia apenas contenida cuando se tira.",

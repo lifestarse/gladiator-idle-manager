@@ -3584,7 +3584,8 @@
     },
     "rusty_blade": {
       "description": "Ein narbiges und korrodiertes Kurzschwert, das aus einem Massengrab unter der Arena gefunden wurde. Seine Schneide ist stumpf, aber Verzweiflung schärft die Hand, die ihn führt. Viele Sklaven haben mit solch einem elenden Ding ihr erstes Blut abgenommen.",
-      "name": "Rostige Klinge"
+      "name": "Rostige Klinge",
+      "special_effect": "Das narbige Eisen trinkt, was es vergießt, und etwas von dieser gestohlenen Wärme kriecht den Arm des Trägers hinauf."
     },
     "sanguine_majesty": {
       "description": "Eine zeremonielle Spatha, gebadet im Blut von hundert ungeschlagenen Champions aus einem Jahrhundert Arenakampf. Das Blut ist auf molekularer Ebene mit dem Stahl verschmolzen und hat ein Metall geschaffen, das hungert. Beim Ziehen vibriert es mit kaum unterdrückter Heftigkeit.",

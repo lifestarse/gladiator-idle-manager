@@ -37,6 +37,11 @@ class DataLoader(_LoadMethodsMixin, _TranslationMixin):
         self._fighter_classes = self._load_fighter_classes(base)
         self._enemies = self._load_list(base, "enemies.json", "enemies")
         self._boss_modifiers = self._load_keyed(base, "boss_modifiers.json", "modifiers")
+        # Read here, compiled later by GameEngine._wire_data — the compiler
+        # needs the item slot of every referenced item to enforce the per-kind
+        # slot charter, and it must see numbers AFTER the balance overlay below.
+        self._item_passives = self._load_keyed(base, "item_passives.json",
+                                               "passives")
 
         # Balance overlay goes here: after every raw file is read, before the
         # tier indexes are derived from them. Patching an enemy's tier has to
@@ -87,6 +92,11 @@ class DataLoader(_LoadMethodsMixin, _TranslationMixin):
     @property
     def enchantments(self) -> dict:
         return self._enchantments
+
+    @property
+    def item_passives(self) -> dict:
+        """Raw passive definitions keyed "<item_id>#<n>". Compiled in _wire_data."""
+        return getattr(self, "_item_passives", {})
 
     @property
     def achievements_data(self) -> list:

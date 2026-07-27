@@ -639,6 +639,8 @@
   "item_no_stats": "Ten przedmiot nie zapewnia żadnych statystyk.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Ulepszenie +{lvl}[/color][/b]: zapewnia premię do ATK/DEF/HP, gdy jest wyposażona (skaluje się ze statystykami użytkownika).",
   "item_enchant_line": "[b][color=c060ff]Zaklęcie:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]EFEKT PASYWNY[/color][/b]",
+  "passive_lifesteal_pct": "Leczy {pct}% zadanych obrażeń.",
   "shard_tier_1_name": "Odłamek Metalu (I)",
   "shard_tier_2_name": "Odłamek Metalu (II)",
   "shard_tier_3_name": "Odłamek Metalu (III)",

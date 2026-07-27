@@ -639,6 +639,8 @@
   "item_no_stats": "Este item não concede estatísticas.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Atualização +{lvl}[/color][/b]: concede bônus de ATK/DEF/HP quando equipado (escala de acordo com as estatísticas do usuário).",
   "item_enchant_line": "[b][color=c060ff]Encantamento:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]EFEITO PASSIVO[/color][/b]",
+  "passive_lifesteal_pct": "Cura {pct}% do dano causado.",
   "shard_tier_1_name": "Fragmento de Metal (I)",
   "shard_tier_2_name": "Fragmento de Metal (II)",
   "shard_tier_3_name": "Fragmento de Metal (III)",

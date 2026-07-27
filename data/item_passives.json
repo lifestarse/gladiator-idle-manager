@@ -1,0 +1,10 @@
+{
+  "_comment": "Passive effects per item. Key is \"<item_id>#<n>\"; n is the order the passives are applied and shown in. Mechanics are named by \"kind\" and declared in game/passives/_kinds_*.py — an item can only name a kind, never define one. Every other field is a NUMBER at the top level, deliberately: game/remote_content/gamedata.py patches flat numeric fields only, so keeping the shape flat is what makes any single passive's numbers fixable without a Play release, while \"item\" and \"kind\" stay unpatchable because they are strings. Player-facing prose lives in the item's own special_effect field, so it ships through the language packs.",
+  "passives": {
+    "rusty_blade#0": {
+      "item": "rusty_blade",
+      "kind": "lifesteal_pct",
+      "value": 0.02
+    }
+  }
+}
