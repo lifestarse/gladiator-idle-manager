@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Downloadable language packs.
 
 Only English ships inside the APK. Every other language is a pack the player
@@ -25,7 +25,8 @@ import json
 import logging
 import os
 import shutil
-from pathlib import Path
+
+from game.storage import user_data_dir
 
 from . import _http, _net, languages
 
@@ -63,11 +64,11 @@ def bundled_dir():
 def packs_dir():
     """Writable directory holding downloaded packs.
 
-    Kivy points HOME at the app's private storage on Android, so this survives
+    Lives in user_data_dir() (app-private storage on Android), so it survives
     app updates and disappears with an uninstall — exactly the lifetime a cache
     of re-downloadable content should have.
     """
-    path = Path.home() / PACKS_DIRNAME
+    path = user_data_dir() / PACKS_DIRNAME
     try:
         path.mkdir(parents=True, exist_ok=True)
     except OSError as exc:

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Online community scripts library — fetch + 24-hour local cache.
 
 This is the Tier-1 implementation discussed in design notes: a single
@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from game.remote_content._http import fetch_json, ssl_context as _ssl_context
+from game.storage import user_data_dir
 
 _log = logging.getLogger(__name__)
 
@@ -68,13 +69,13 @@ MAX_MANIFEST_BYTES = 2 * 1024 * 1024
 
 
 def _cache_path() -> Path:
-    """Cache file lives next to the save, in the user's home directory.
+    """Cache file lives next to the save, in user_data_dir().
 
-    On Android Kivy redirects HOME to the app's private storage, so we
-    don't need a special branch for the platform — Path.home() does the
-    right thing in both desktop and APK contexts.
+    HOME on a real Android device is /data (not writable by the app), so
+    the platform branch lives in game.storage.user_data_dir — the same
+    path source the save file uses.
     """
-    return Path.home() / ".gladiator_scripts_library_cache.json"
+    return user_data_dir() / ".gladiator_scripts_library_cache.json"
 
 
 def load_cached() -> dict | None:

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Remote content overlay — ship text and balance fixes without a Play release.
 
 WHAT THIS IS NOT: a code updater. Nothing here downloads or executes Python.
@@ -33,6 +33,8 @@ from __future__ import annotations
 
 import logging
 import threading
+
+from game.storage import user_data_dir
 
 from . import _cache, _http, _manifest, _net, gamedata, languages, packs
 
@@ -93,11 +95,10 @@ def _patching_allowed():
 
 
 def _has_any_patch():
-    from pathlib import Path
     prefix = _cache.CACHE_PREFIX
     skip = f"{prefix}{MANIFEST_CACHE}.json"
     try:
-        return any(p.name != skip for p in Path.home().glob(f"{prefix}*.json"))
+        return any(p.name != skip for p in user_data_dir().glob(f"{prefix}*.json"))
     except OSError:
         return False
 

@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """On-device cache for remote content, plus the safe-mode marker.
 
 Patches fetched during a run are applied on the NEXT launch, never mid-session.
@@ -21,19 +21,17 @@ from __future__ import annotations
 import json
 import logging
 import time
-from pathlib import Path
+
+from game.storage import user_data_dir
 
 _log = logging.getLogger(__name__)
 
-# Kivy redirects HOME to the app's private storage on Android, so Path.home()
-# is correct on both desktop and device without a platform branch — the same
-# assumption the save file and the scripts-library cache already make.
 CACHE_PREFIX = ".gladiator_content_"
 MARKER_NAME = ".gladiator_content_applying"
 
 
 def _path(name):
-    return Path.home() / f"{CACHE_PREFIX}{name}.json"
+    return user_data_dir() / f"{CACHE_PREFIX}{name}.json"
 
 
 def read(name, ttl_s=None):
@@ -85,7 +83,7 @@ def discard_all():
     """Delete every cached patch. Used when the previous launch died patched."""
     dropped = 0
     try:
-        for path in Path.home().glob(f"{CACHE_PREFIX}*.json"):
+        for path in user_data_dir().glob(f"{CACHE_PREFIX}*.json"):
             try:
                 path.unlink()
                 dropped += 1
@@ -99,7 +97,7 @@ def discard_all():
 
 
 def _marker():
-    return Path.home() / MARKER_NAME
+    return user_data_dir() / MARKER_NAME
 
 
 def crashed_while_patched():
