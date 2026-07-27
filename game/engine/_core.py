@@ -1,4 +1,4 @@
-# Build: 14
+# Build: 15
 """GameEngine core — construction + data wiring. Inherits mixins.
 
 Events/lifecycle methods live in coreeventsmixin.py / corelifecyclemixin.py;
@@ -114,7 +114,7 @@ class GameEngine(
         self.inventory: list[dict] = []
 
         # Metal shards (expedition currency for weapon upgrades)
-        self.shards = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        self.shards = default_shards()
 
         # Notification queue — drained by UI layer each tick
         self.pending_notifications: list[str] = []

@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """Internal shared imports for game.engine submodules."""
 import json
 import logging
@@ -23,13 +23,19 @@ import game.achievements as _ach_module
 from game.constants import (
     STARTING_GOLD, RENAME_COST_DIAMONDS, EXPEDITION_SLOT_BASE_COST,
     HP_HEAL_TIER_MULT, HP_HEAL_DIVISOR, INJURY_HEAL_BASE_COST,
-    EVENT_LOG_MAX,
+    EVENT_LOG_MAX, SHARD_TIER_COUNT,
 )
 from game.story import TUTORIAL_STEPS, STORY_CHAPTERS, get_pending_tutorial
 from game.data_loader import data_loader
 from game.mutators import mutator_registry
 
 _log = logging.getLogger(__name__)
+
+
+def default_shards():
+    """Fresh all-zero shard wallet, one slot per tier 1..SHARD_TIER_COUNT."""
+    return {tier: 0 for tier in range(1, SHARD_TIER_COUNT + 1)}
+
 
 # --- Save schema ---
 CURRENT_SAVE_VERSION = 2

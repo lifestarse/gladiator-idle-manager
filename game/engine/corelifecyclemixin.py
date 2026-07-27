@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _CoreLifecycleMixin — roguelike reset, idle tick, dirty flags."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -17,7 +17,7 @@ class _CoreLifecycleMixin:
         # Reset run state — full wipe including inventory
         self.gold = STARTING_GOLD
         self.inventory = []
-        self.shards = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        self.shards = default_shards()
         self.fighters = []
         self.active_fighter_idx = 0
         self.arena_tier = 1

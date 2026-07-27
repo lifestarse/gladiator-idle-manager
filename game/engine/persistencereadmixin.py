@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -136,14 +136,19 @@ class _PersistenceReadMixin:
 
         self.inventory = data.get("inventory", [])
         shards_raw = data.get("shards", {})
-        if shards_raw:
+        self.shards = default_shards()
+        if isinstance(shards_raw, dict) and shards_raw:
             try:
                 self.shards = {int(k): v for k, v in shards_raw.items()}
             except (ValueError, TypeError):
                 _log.warning("[ENGINE] Corrupted shard keys, resetting to defaults")
-                self.shards = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-        else:
-            self.shards = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        elif shards_raw:
+            # Tampered saves can store anything here (list, string, …); an
+            # exception escaping _apply_save_data would make load() wipe the
+            # whole state and quarantine the save, so degrade to defaults.
+            _log.warning(
+                "[ENGINE] Corrupted shards (%s), resetting to defaults",
+                type(shards_raw).__name__)
         fighters_data = data.get("fighters", [])
         self.fighters = [Fighter.from_dict(fd) for fd in fighters_data]
         # Refresh all items from JSON templates (updates stats from data files)

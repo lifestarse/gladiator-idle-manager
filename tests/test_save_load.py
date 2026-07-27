@@ -1,9 +1,11 @@
-# Build: 2
+# Build: 3
 """Save / load roundtrip tests — most critical because bad migration
 destroyed a real save once (see feedback_never_touch_real_save memory).
 """
 import json
 import os
+
+import pytest
 
 
 def test_empty_save_loads_clean(engine):
@@ -72,6 +74,55 @@ def test_save_creates_backup(engine):
     with open(engine.SAVE_PATH + ".bak", "r", encoding="utf-8") as f:
         bak = json.load(f)
     assert bak["gold"] == 100
+
+
+def _plant_shards(tmp_save_path, shards_value):
+    """Write a real save via the engine, then plant `shards_value` into it."""
+    from game.engine import GameEngine
+    from game.models import Fighter
+
+    eng = GameEngine(save_path=tmp_save_path)
+    eng.gold = 54321
+    eng.fighters = [Fighter(name="Testus", fighter_class="mercenary")]
+    eng.save()
+    with open(tmp_save_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["shards"] = shards_value
+    with open(tmp_save_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+
+@pytest.mark.parametrize("bad_shards", [[], [1, 2, 3], "junk", None, {"abc": 5}])
+def test_corrupt_shards_degrade_to_defaults_not_full_reset(tmp_save_path, bad_shards):
+    """Regression: shards stored as a non-dict (tampered/corrupt save) raised
+    AttributeError past the (ValueError, TypeError) handler in
+    _apply_save_data — load() then wiped the whole state and quarantined the
+    save. Corrupt shards must reset ONLY shards and keep the rest.
+    """
+    from game.engine import GameEngine
+    _plant_shards(tmp_save_path, bad_shards)
+
+    eng = GameEngine(save_path=tmp_save_path)
+    eng.load()
+    assert eng.shards == {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    # Fighters are applied AFTER shards in _apply_save_data: on the old
+    # failure path the load aborted and spawned a fresh "Vorn" instead.
+    assert [f.name for f in eng.fighters] == ["Testus"]
+    assert eng.gold == 54321
+    # ...and the old failure path also quarantined the save file.
+    assert os.path.exists(tmp_save_path), "save was quarantined"
+    assert not os.path.exists(tmp_save_path + ".corrupt")
+    assert eng._load_failed is False
+
+
+def test_valid_shards_roundtrip_int_keys(tmp_save_path):
+    """JSON stringifies int keys — the loader must convert them back."""
+    from game.engine import GameEngine
+    _plant_shards(tmp_save_path, {"2": 7, "5": 1})
+
+    eng = GameEngine(save_path=tmp_save_path)
+    eng.load()
+    assert eng.shards == {2: 7, 5: 1}
 
 
 def test_load_survives_utf8_save_written_externally(tmp_save_path):
