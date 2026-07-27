@@ -14,6 +14,10 @@ bin/
 .gladiator_idle_save.json
 .vscode/
 .idea/
+# Obsidian vault config (workspace.json перезаписывается при каждом выходе)
+.obsidian/
+# Генерируемая карта кода для Obsidian (scripts/gen_codemap.py)
+codemap/
 
 *.keystore
 build.log

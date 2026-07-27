@@ -1,7 +1,8 @@
 # Карта проекта — Gladiator Idle Manager
 
 Idle-менеджер гладиаторов: Python + Kivy, релиз на Android (Google Play) через buildozer/p4a.
-Версия — в `buildozer.spec` (`version = …`), там же вся конфигурация билда. Правила работы с кодом — [CLAUDE.md](CLAUDE.md), память — [MEMORY.md](MEMORY.md) + `memory/`.
+Версия — в `buildozer.spec` (`version = …`), там же вся конфигурация билда. Правила работы с кодом — [CLAUDE.md](CLAUDE.md), память — [MEMORY.md](MEMORY.md) + `memory/`, витрина репозитория — [README.md](README.md).
+Пофайловый граф кода (Obsidian) — [codemap/CODEMAP.md](codemap/CODEMAP.md), регенерация: `python scripts/gen_codemap.py`.
 Составлено 2026-07-24 по коду v1.9.37. При расхождении карта уступает коду.
 
 ---
@@ -48,7 +49,7 @@ main.py (тонкий shim)
 `_core.py` — singleton `DataLoader.load_all()` + tier-индексы • `loadmethodsmixin.py` — чтение/нормализация ключей (`base_str`→`str`) • `translationmixin.py` — `apply_translations(lang)` накладывает name/desc из `data/languages/data_XX.json` in-place • `_shared.py` — путь к data/, валидация id.
 
 ### game/scripting/ — DSL «squad scripts»
-`ast_nodes.py` — dataclass-узлы AST (`Program/If/While/ForEach/Assign/Action/BinOp/…`), `Trigger` (on_battle_end/on_tick/on_demand), whitelist'ы, `node_to_dict/from_dict` • `interpreter.py` — tree-walking `Interpreter` с лимитами (max_steps/loop_iters/depth) • `builtins.py` — реестры доступного скриптам: поля бойца/движка, вызовы, действия • `manager.py` — `ScriptManager`: программы + персистентные глобалы, диспетчер триггеров, `RunStats`, сериализация в сейв • `labels.py` — маппинг внутренних имён на i18n/категории для UI (в сейв не пишется) • `templates.py` — встроенные шаблоны программ • `online_library.py` — библиотека сообщества: JSON-манифест с GitHub Pages (HTTPS+certifi, кеш 24ч, при ошибке — fallback на templates), импорт через тот же AST-sandbox.
+`ast_nodes.py` — dataclass-узлы AST (`Program/If/While/ForEach/Assign/Action/BinOp/…`), `Trigger` (on_battle_end/on_tick/on_demand), whitelist'ы, `node_to_dict/from_dict` • `interpreter.py` — tree-walking `Interpreter` с лимитами (max_steps/loop_iters/depth) • `builtins.py` — реестры доступного скриптам: поля бойца/движка, вызовы, действия • `manager.py` — `ScriptManager`: программы + персистентные глобалы, диспетчер триггеров, `RunStats`, сериализация в сейв • `labels.py` — маппинг внутренних имён на i18n/категории для UI (в сейв не пишется) • `templates.py` — встроенные шаблоны программ • `online_library.py` — библиотека сообщества: JSON-манифест с GitHub Pages (HTTPS+certifi, кеш 24ч, при ошибке — fallback на templates), импорт через тот же AST-sandbox; раздача манифеста и приём скриптов — [docs/scripts-library/README.md](docs/scripts-library/README.md).
 
 ### Одиночные модули ядра
 `constants.py` — все игровые константы • `slots.py` — `SLOTS`: единый реестр слотов экипировки (источник правды для формул апгрейда/зачарования) • `achievements.py` + `achievements_checks.py` — ачивки из JSON → callable-проверки • `boss_modifiers.py` — 1–3 модификатора на босса (regeneration/enrage/thorns/…) • `mutators.py` — `mutator_registry`, множители наград • `diamonds.py` — `DIAMOND_SHOP` (внутриигровое) и `DIAMOND_BUNDLES` (IAP) • `story.py` — туториал + главы кампании • `localization.py` — `t()`, 9 языков, цепочка lang→en→ключ, дефолт ru.
@@ -102,6 +103,8 @@ main.py (тонкий shim)
 - `XX.json` (9 языков, включая en) — плоские **UI-строки** (~800 ключей);
 - `data_XX.json` (8 языков, en нет — исходник и есть английский) — переводы **контента** (name/desc для 7 категорий), накладываются `apply_translations()`.
 
+Скачиваемые языковые пакеты и патчи баланса раздаются с GitHub Pages из `docs/content/` — формат и правила: [docs/content/README.md](docs/content/README.md).
+
 ---
 
 ## Тесты (tests/, 400+ кейсов) и дев-скрипты (scripts/)
@@ -137,8 +140,8 @@ main.py (тонкий shim)
 
 ## Известные несоответствия документации (на 2026-07-24)
 
-- `docs/ARCHITECTURE.md` — описывает домонолитную раскладку и **ошибается по фактам**: облако названо «Play Games Saved Games» (реально Google Drive appdata), конфликт-резолюшн «по arena_tier» (реально «никогда не перезаписывать автоматически»), «data/*.json не используются в рантайме» (используются как источник).
-- `docs/API.md`, `docs/BALANCE.md` — ссылаются на несуществующие монолиты (`game/engine.py`, `game/battle.py`, `game/models.py`); имена API в целом актуальны, пути — нет.
-- `docs/GDD.md` — версия 1.5.2 (2026-03-29), сильно отстаёт от кода.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — описывает домонолитную раскладку и **ошибается по фактам**: облако названо «Play Games Saved Games» (реально Google Drive appdata), конфликт-резолюшн «по arena_tier» (реально «никогда не перезаписывать автоматически»), «data/*.json не используются в рантайме» (используются как источник).
+- [docs/API.md](docs/API.md), [docs/BALANCE.md](docs/BALANCE.md) — ссылаются на несуществующие монолиты (`game/engine.py`, `game/battle.py`, `game/models.py`); имена API в целом актуальны, пути — нет.
+- [docs/GDD.md](docs/GDD.md) — версия 1.5.2 (2026-03-29), сильно отстаёт от кода.
 - `docs/privacy-policy.html` — не упоминает облачное хранение в Google Drive.
 - `ui_config.json` — не читается кодом (см. UI-раздел).
