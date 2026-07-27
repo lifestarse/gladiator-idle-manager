@@ -1,4 +1,4 @@
-# Build: 11
+# Build: 12
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -82,6 +82,14 @@ SEVERITY_DEATH_CHANCE = {
 DAMAGE_VARIANCE_LOW = 0.70       # min damage roll multiplier
 DAMAGE_VARIANCE_HIGH = 1.30      # max damage roll multiplier
 DEFENSE_DIVISOR = 100            # damage / (1 + def/DIVISOR)
+
+# --- Item passives (game/passives/) ---
+# Definitions live in data/item_passives.json, keyed "<item_id>#<n>". Both
+# values below are validation inputs, not balance knobs: the separator is the
+# key grammar the compiler parses and the remote patcher addresses, the cap is
+# how many passives one item may carry (top rarity carries the most).
+PASSIVE_KEY_SEPARATOR = "#"
+PASSIVE_MAX_PER_ITEM = 3
 
 # --- Rarity max upgrade levels (models.py) ---
 MAX_UPGRADE_COMMON = 5

@@ -3584,7 +3584,8 @@
     },
     "rusty_blade": {
       "description": "Uma espada curta esburacada e corroída retirada de uma vala comum sob a arena. Seu gume é cego, mas o desespero aguça a mão que o empunha. Muitos escravos arrancaram o primeiro sangue com uma coisa tão miserável.",
-      "name": "Lâmina Enferrujada"
+      "name": "Lâmina Enferrujada",
+      "special_effect": "O ferro corroído bebe o que derrama, e algo desse calor roubado sobe de volta pelo braço de quem o empunha."
     },
     "sanguine_majesty": {
       "description": "Uma spatha cerimonial banhada no sangue de cem campeões invictos em um século de combate em arena. O sangue se fundiu com o aço em nível molecular, criando um metal faminto. Vibra com violência mal contida quando puxado.",

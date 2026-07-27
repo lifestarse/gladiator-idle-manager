@@ -3584,7 +3584,8 @@
     },
     "rusty_blade": {
       "description": "Dziurawy i skorodowany krótki miecz wydobyty z masowego grobu pod areną. Jego ostrze jest tępe, ale desperacja wyostrza rękę, która go dzierży. Wielu niewolników przelało swoją pierwszą krew w tak nędzny sposób.",
-      "name": "Zardzewiałe ostrze"
+      "name": "Zardzewiałe ostrze",
+      "special_effect": "Dziobane rdzą żelazo pije to, co rozlewa, a odrobina skradzionego ciepła pełznie z powrotem w górę ramienia właściciela."
     },
     "sanguine_majesty": {
       "description": "Uroczysta spatha skąpana we krwi stu niepokonanych mistrzów na przestrzeni stulecia walk na arenie. Krew połączyła się ze stalą na poziomie molekularnym, tworząc metal, który jest głodny. Po pociągnięciu wibruje z ledwie powstrzymywaną przemocą.",

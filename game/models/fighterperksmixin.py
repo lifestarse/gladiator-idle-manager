@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """Fighter _FighterPerksMixin — perk effect aggregation + active skill lookup."""
 from ._imports import *  # noqa: F401,F403
 from ._helpers import *  # noqa: F401,F403
@@ -6,10 +6,18 @@ from ._scaling import DifficultyScaler
 from ._combat import CombatUnit
 from ._data import FIGHTER_NAMES, FIGHTER_CLASSES
 
+# Imported here rather than in _imports.py: this is the only consumer in the
+# package, so the dependency stays visible where it is used. Safe direction —
+# game.passives reaches only game.constants, game.slots and game.localization,
+# none of which import game.models. Captured by reference and mutated in place
+# by GameEngine._wire_data, so this binding never goes stale.
+from game.passives import COMPILED_PASSIVES
+
 
 class _FighterPerksMixin:
     def get_perk_effects(self, effect_type):
-        """Sum unlocked perk effect values of given type, including passive.
+        """Sum effect values of given type from every source the fighter has:
+        the class passive ability, unlocked perks, and equipped-item passives.
 
         Override semantic: if any source declares `{effect_type}_upgrade`,
         its value REPLACES the entire base sum. Used by perks that
@@ -17,6 +25,14 @@ class _FighterPerksMixin:
         Net Mastery 50% → 75%) — without this, the upgrade variant was a
         type mismatch and silently did nothing. Multiple upgrades in the
         same chain pick the largest value.
+
+        Equipment is the third source and it is intentionally routed through
+        the same `_consume`. Static item passives name an existing effect type,
+        so folding them in here makes every downstream consumer item-aware at
+        once — the derived stats in fighterstatsmixin, `reduce_injury_severity`
+        in _fighter.py, and the five perk-derived keys snapshotted by
+        BattleManager._fighter_stats — with no per-consumer wiring and no new
+        code in the battle loop.
         """
         base = 0.0
         upgrade = None
@@ -41,6 +57,22 @@ class _FighterPerksMixin:
             perk = all_perks.get(pid)
             if perk:
                 _consume(perk.get("effect", {}))
+
+        # Equipped-item passives. Guarded by the emptiness check because this
+        # method is called from every stat property, and stat properties are
+        # read at UI rate across the whole roster: with no passives compiled
+        # (a data file that failed to load) the cost stays a single dict test.
+        # Slot order is EQUIPMENT_SLOTS, which is list(SLOTS.keys()) and so
+        # deterministic — required, since a sum of floats is order-sensitive.
+        if COMPILED_PASSIVES:
+            for slot in EQUIPMENT_SLOTS:
+                item = self.equipment.get(slot)
+                if not item:
+                    continue
+                for spec in COMPILED_PASSIVES.get(item.get("id", ""), ()):
+                    if spec.static_effect is not None:
+                        _consume(spec.static_effect)
+
         return upgrade if upgrade is not None else base
 
     def get_active_skill(self):

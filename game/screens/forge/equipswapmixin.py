@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """ForgeScreen _EquipSwapMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 
@@ -27,6 +27,9 @@ class _EquipSwapMixin:
             item, fighter=f, equipped_on=f.name,
             on_tap=lambda *_a, it=item: show_item_stats_popup(it),
         ))
+        passive_card = self._build_item_passive_card(item)
+        if passive_card:
+            grid.add_widget(passive_card)
         desc_card = self._build_description_card(item)
         if desc_card:
             grid.add_widget(desc_card)

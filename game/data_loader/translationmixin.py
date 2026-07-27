@@ -33,7 +33,12 @@ class _TranslationMixin:
             for item in items:
                 item_tr = section_tr.get(item.get("id", ""))
                 if item_tr:
-                    for field in ("name", "desc", "description", "title", "text"):
+                    # "special_effect" is the per-item passive flavour line.
+                    # It was already present on all 20 relics and already
+                    # translated in every pack, but absent from this tuple —
+                    # so those strings were loaded and then never used.
+                    for field in ("name", "desc", "description", "title",
+                                  "text", "special_effect"):
                         if field in skip:
                             continue
                         if field in item_tr:

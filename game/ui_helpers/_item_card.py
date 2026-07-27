@@ -1,9 +1,10 @@
-# Build: 4
+# Build: 5
 """ui_helpers._item_card — item info card builder."""
 from ._imports import *  # noqa: F401,F403
 from ._widgets import _auto_text_size
 from kivy.uix.scrollview import ScrollView
 from game.constants import FIGHTER_ATK_PER_STR, FIGHTER_HP_PER_VIT
+from game.passives import passive_count, render_item
 
 
 # ============================================================
@@ -154,6 +155,17 @@ def show_item_stats_popup(item):
         ench_data = _m.ENCHANTMENT_TYPES.get(ench)
         ench_name = ench_data["name"] if ench_data else ench
         lines.append(t("item_enchant_line", name=ench_name))
+
+    # Passives sit between the enchantment (also a granted power, but bought)
+    # and the flavour text. Rule lines first, then the item's own prose, so a
+    # player reading top-down gets the mechanic before the story about it.
+    passive_lines = render_item(item)
+    if passive_lines:
+        lines.append(t("item_passive_header"))
+        lines.extend(f"  • {line}" for line in passive_lines)
+        special = item.get("special_effect", "")
+        if special:
+            lines.append(special)
 
     desc = item.get("description", "")
     if desc:

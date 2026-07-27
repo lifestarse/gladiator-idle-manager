@@ -119,7 +119,7 @@ def test_cross_package_name_resolution():
         "game.widgets", "game.models", "game.iap", "game.app",
         "game.engine", "game.cloud_save", "game.leaderboard",
         "game.data_loader", "game.ui_helpers", "game.scripting",
-        "game.battle",
+        "game.battle", "game.passives",
         "game.screens.roster", "game.screens.forge", "game.screens.arena",
         "game.screens.lore", "game.screens.more",
     ]

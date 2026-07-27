@@ -47,6 +47,16 @@ class _WiringMixin:
             _replace_dict(m.RELICS, rebuilt)
         if dl.enchantments:
             _replace_dict(m.ENCHANTMENT_TYPES, dl.enchantments)
+        # Item passives. Compiled here rather than in load_all because the
+        # compiler needs each referenced item's slot to enforce the per-kind
+        # slot charter, and the item lists only exist once the block above ran.
+        # Unconditional: an empty definitions file must CLEAR the previous
+        # compilation, not leave stale specs behind. install() mutates
+        # COMPILED_PASSIVES in place, per the same contract as everything else
+        # in this method.
+        from game import passives as _passives
+        _passives.install(dl.item_passives, _passives.slot_index(
+            (dl.weapons, dl.armor, dl.accessories, dl.relics)))
         if dl.fighter_classes:
             _replace_dict(m.FIGHTER_CLASSES, dl.fighter_classes)
             m.Fighter.invalidate_perks_map_cache()

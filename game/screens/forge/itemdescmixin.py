@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """_ItemDescMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -15,6 +15,66 @@ class _ItemDescMixin:
             if it is item:
                 return i
         return -1
+
+    @staticmethod
+    def _build_item_passive_card(item):
+        """BaseCard listing the item's passive effects, or None if it has none.
+
+        Sits above the description card in every item detail view, so a passive
+        is visible without tapping through to the stats popup — it is the
+        reason to pick one item over another, and burying it behind a tap made
+        it invisible.
+
+        Header in PixelFont (it is a heading, and carries the amber BBCode from
+        item_passive_header), rules and flavour in BodyFont — the split
+        game/app/_shared.py:51 documents: PressStart2P at 11sp turns a sentence
+        into a wall of noise.
+        """
+        from kivy.uix.label import Label
+
+        # Gated on a compiled mechanic, not on the prose. An item can carry
+        # special_effect while its passive has not been authored yet — the 20
+        # relics are exactly that case — and showing a "PASSIVE EFFECT" heading
+        # over text that describes nothing the game does is the lie this
+        # feature exists to end.
+        lines = render_item(item)
+        if not lines:
+            return None
+
+        pad = dp(12)
+        card = BC(orientation="vertical", size_hint_y=None, height=dp(50),
+                  padding=[pad, dp(8)], spacing=dp(4))
+
+        header = Label(
+            text=t("item_passive_header"), font_size="10sp",
+            font_name="PixelFont", markup=True,
+            halign="left", valign="top", size_hint_y=None,
+        )
+        body_text = "\n".join(f"• {line}" for line in lines)
+        special = item.get("special_effect", "")
+        if special:
+            body_text = f"{body_text}\n\n{special}"
+        body = Label(
+            text=body_text, font_size="11sp", font_name="BodyFont",
+            color=TEXT_SECONDARY, halign="left", valign="top",
+            size_hint_y=None,
+        )
+
+        def _fit(lbl):
+            lbl.bind(width=lambda inst, w: setattr(inst, "text_size", (w, None)))
+            lbl.bind(texture_size=lambda inst, ts: setattr(inst, "height", ts[1]))
+
+        for lbl in (header, body):
+            _fit(lbl)
+            card.add_widget(lbl)
+
+        # Card height follows its children. Both labels are size_hint_y=None,
+        # so BoxLayout will not do it for us.
+        def _resize(*_a):
+            card.height = header.height + body.height + dp(16) + dp(4)
+        header.bind(height=_resize)
+        body.bind(height=_resize)
+        return card
 
     @staticmethod
     def _build_description_card(item):
@@ -78,6 +138,9 @@ class _ItemDescMixin:
             item, subtitle=sub,
             on_tap=lambda *_a, it=item: show_item_stats_popup(it),
         ))
+        passive_card = self._build_item_passive_card(item)
+        if passive_card:
+            grid.add_widget(passive_card)
         desc_card = self._build_description_card(item)
         if desc_card:
             grid.add_widget(desc_card)

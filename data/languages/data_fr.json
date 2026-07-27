@@ -3584,7 +3584,8 @@
     },
     "rusty_blade": {
       "description": "Une épée courte piquée et corrodée récupérée dans une fosse commune sous l'arène. Son tranchant est émoussé, mais le désespoir aiguise la main qui le manie. De nombreux esclaves ont versé leur premier sang avec une chose aussi misérable.",
-      "name": "Lame rouillée"
+      "name": "Lame rouillée",
+      "special_effect": "Le fer piqué boit ce qu'il répand, et un peu de cette chaleur volée remonte le long du bras de celui qui le tient."
     },
     "sanguine_majesty": {
       "description": "Une spatha de cérémonie baignée dans le sang de cent champions invaincus au cours d'un siècle de combat en arène. Le sang a fusionné avec l'acier au niveau moléculaire, créant un métal affamé. Il vibre avec une violence à peine contenue lorsqu'il est tiré.",

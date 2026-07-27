@@ -639,6 +639,8 @@
   "item_no_stats": "Questo oggetto non fornisce statistiche.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Potenziamento +{lvl}[/color][/b]: garantisce ATK/DEF/HP bonus quando equipaggiato (si adatta alle statistiche di chi lo indossa).",
   "item_enchant_line": "[b][color=c060ff]Incantesimo:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]EFFETTO PASSIVO[/color][/b]",
+  "passive_lifesteal_pct": "Cura il {pct}% dei danni inflitti.",
   "shard_tier_1_name": "Frammento di metallo (I)",
   "shard_tier_2_name": "Frammento di metallo (II)",
   "shard_tier_3_name": "Frammento di metallo (III)",

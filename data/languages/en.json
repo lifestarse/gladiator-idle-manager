@@ -639,6 +639,8 @@
   "item_no_stats": "This item grants no stats.",
   "item_upgrade_bonus_note": "[b][color=ffd040]Upgrade +{lvl}[/color][/b]: grants bonus ATK/DEF/HP when equipped (scales with the wearer's stats).",
   "item_enchant_line": "[b][color=c060ff]Enchantment:[/color][/b] {name}",
+  "item_passive_header": "[b][color=ffb060]PASSIVE EFFECT[/color][/b]",
+  "passive_lifesteal_pct": "Heals for {pct}% of the damage dealt.",
   "shard_tier_1_name": "Shard (I)",
   "shard_tier_2_name": "Shard (II)",
   "shard_tier_3_name": "Shard (III)",

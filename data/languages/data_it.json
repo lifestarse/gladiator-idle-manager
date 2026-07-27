@@ -3584,7 +3584,8 @@
     },
     "rusty_blade": {
       "description": "Una spada corta bucherellata e corrosa rinvenuta in una fossa comune sotto l'arena. Il suo filo è smussato, ma la disperazione affila la mano che lo brandisce. Molti schiavi hanno versato il loro primo sangue con una cosa così atroce.",
-      "name": "Lama arrugginita"
+      "name": "Lama arrugginita",
+      "special_effect": "Il ferro butterato beve ciò che versa, e un poco di quel calore rubato risale il braccio di chi lo impugna."
     },
     "sanguine_majesty": {
       "description": "Una spatha cerimoniale bagnata nel sangue di cento campioni imbattuti in un secolo di combattimenti nell'arena. Il sangue si è fuso con l'acciaio a livello molecolare, creando un metallo affamato. Vibra con violenza appena contenuta quando viene disegnato.",
