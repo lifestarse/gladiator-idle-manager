@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """App _AppLocaleMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
@@ -93,7 +93,10 @@ class _AppLocaleMixin:
         Offline, the game runs in English and retries on the next launch —
         the alternative is refusing to start, which is worse.
         """
-        lang = get_language()
+        # Requested, not active: when the pack is missing, set_language()
+        # already fell back to "en" during engine.load(), so get_language()
+        # would report the fallback and this check would never fire.
+        lang = get_requested_language()
         from game.remote_content import packs
         if lang in packs.BUNDLED_LANGS or packs.is_installed(lang):
             return

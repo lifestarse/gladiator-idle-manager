@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """Internal shared imports for game.engine submodules."""
 import json
 import logging
@@ -15,7 +15,8 @@ from game.models import (
     get_dynamic_shop_items, fmt_num, get_boss_name, Result,
 )
 from game.slots import SLOTS
-from game.localization import t, get_language, set_language
+from game.localization import (t, get_language, set_language,
+                               get_requested_language)
 from game.battle import BattleManager, BattlePhase, BattleResult
 from game.achievements import ACHIEVEMENTS, build_achievements_from_json
 from game.diamonds import DIAMOND_SHOP, DIAMOND_BUNDLES

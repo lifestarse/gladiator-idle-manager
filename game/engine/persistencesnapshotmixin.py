@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """GameEngine _PersistenceSnapshotMixin — save-state snapshot assembly."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
@@ -71,7 +71,11 @@ class _PersistenceSnapshotMixin:
                 "inventory": [dict(i) if isinstance(i, dict) else i
                               for i in self.inventory],
                 "shards": self.shards,
-                "language": get_language(),
+                # Requested, not active: while the chosen language's pack is
+                # still missing (offline first launch after an update), the
+                # active language is the "en" fallback and saving that would
+                # erase the player's real choice.
+                "language": get_requested_language(),
                 "total_enchantments_applied": self.total_enchantments_applied,
                 "total_enchantment_procs": self.total_enchantment_procs,
                 "total_gold_spent_equipment": self.total_gold_spent_equipment,
