@@ -1,7 +1,7 @@
 # Память проекта
 
 Вся память Claude хранится здесь: записи — файлы в тематических подпапках, этот файл — индекс (одна строка на запись).
-Имя файла = слаг записи (`name:` в frontmatter), дата — `metadata.created`. Карта кодовой базы — [PROJECT_MAP.md](../PROJECT_MAP.md).
+Имя файла = слаг записи (`name:` в frontmatter), дата — `metadata.created`. Карта кодовой базы — [PROJECT_MAP.md](../docs/PROJECT_MAP.md).
 
 ## Процесс
 - [Память в папке проекта](process/memory-location.md) — где хранить память и почему не в ~/.claude

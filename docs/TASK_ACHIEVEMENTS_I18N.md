@@ -8,17 +8,17 @@
 - Переводы данных ПОЛНЫЕ: `data/languages/data_{ru,uk,de,es,fr,it,pt,pl}.json`, секция
   `achievements` — 50/50 записей с `name`+`desc` в каждом языке. Дозаполнять нечего.
 - Механизм наложения работает: `data_loader.apply_translations(lang)`
-  ([game/data_loader/translationmixin.py](game/data_loader/translationmixin.py), строка 49 кроет achievements)
+  ([game/data_loader/translationmixin.py](../game/data_loader/translationmixin.py), строка 49 кроет achievements)
   → `GameEngine._wire_data()` пересобирает рантайм-список
-  ([game/engine/wiringmixin.py](game/engine/wiringmixin.py):68 → `build_achievements_from_json`).
+  ([game/engine/wiringmixin.py](../game/engine/wiringmixin.py):68 → `build_achievements_from_json`).
 - Оба пути смены языка корректны и полны: первый запуск
-  ([game/app/applocalemixin.py](game/app/applocalemixin.py):110 `_finish_first_launch`) и настройки
-  ([game/screens/more/helpmixin.py](game/screens/more/helpmixin.py):81 `_set_language`).
-- UI-список строится через RecycleView (`achievements_rv` в [kv/lore_screen.kv](kv/lore_screen.kv):99),
+  ([game/app/applocalemixin.py](../game/app/applocalemixin.py):110 `_finish_first_launch`) и настройки
+  ([game/screens/more/helpmixin.py](../game/screens/more/helpmixin.py):81 `_set_language`).
+- UI-список строится через RecycleView (`achievements_rv` в [kv/lore_screen.kv](../kv/lore_screen.kv):99),
   данные берутся из переведённого `ACHIEVEMENTS` при каждом входе — этот слой чист.
 
 ## Корневая причина (баг №1, главный)
-[game/engine/persistencereadmixin.py](game/engine/persistencereadmixin.py):126–133:
+[game/engine/persistencereadmixin.py](../game/engine/persistencereadmixin.py):126–133:
 
 ```python
 saved_lang = data.get("language")
@@ -31,11 +31,11 @@ if saved_lang:
 Наложение переводов данных выполняется ТОЛЬКО если в сейве есть ключ `language`.
 Если ключа нет (сейв от старой версии до появления снапшота языка, облачный сейв старого
 формата, руками отредактированный) — UI-строки берут дефолт `ru`
-(`_current_lang = "ru"` в [game/localization.py](game/localization.py):16), а данные
+(`_current_lang = "ru"` в [game/localization.py](../game/localization.py):16), а данные
 (достижения, экспедиции, классы, травмы, лор, зачарования) остаются английскими,
 потому что `apply_translations` не вызывается вовсе.
 
-Ключ пишется в [game/engine/persistencesnapshotmixin.py](game/engine/persistencesnapshotmixin.py):74 —
+Ключ пишется в [game/engine/persistencesnapshotmixin.py](../game/engine/persistencesnapshotmixin.py):74 —
 свежие сейвы его содержат, старые — нет.
 
 ### Подтверждённое воспроизведение (десктоп)
@@ -59,7 +59,7 @@ print(A.ACHIEVEMENTS[0]["name"])                    # -> "First Blood"  (БАГ)
 (снапшот пишет текущий язык) — отдельная миграция не нужна.
 
 ## Баг №2 (латентный, починить заодно)
-[game/ui_helpers/_lore.py](game/ui_helpers/_lore.py):167–180, легаси-ветка GridLayout:
+[game/ui_helpers/_lore.py](../game/ui_helpers/_lore.py):167–180, легаси-ветка GridLayout:
 кэш карточек инвалидируется только по хэшу unlocked-флагов
 (`unlock_hash = tuple(ach.get("unlocked", ...))`) — смена языка кэш не сбрасывает, карточки
 остаются на старом языке. Сейчас ветка мертва (kv использует RecycleView), но это ловушка.
@@ -104,11 +104,11 @@ print(A.ACHIEVEMENTS[0]["name"])                    # -> "First Blood"  (БАГ)
 ## Проверенные факты (аудит выполнен, не перепроверять)
 - UI-ключи здоровы: все 423 статических `t("...")`-ключа из кода/kv есть во всех 9 языках.
   Ключи глав/квестов (`chap_*` — 6, `qst_*` — 48) — полные во всех языках.
-- Баг №3 (попап туториала): `TUTORIAL_STEPS` в [game/story.py](game/story.py):12–84 —
+- Баг №3 (попап туториала): `TUTORIAL_STEPS` в [game/story.py](../game/story.py):12–84 —
   7 шагов, `title` + `lines` захардкожены по-английски. Рендер:
-  [game/app/appuimixin.py](game/app/appuimixin.py):78 `show_tutorial()` — выводит
+  [game/app/appuimixin.py](../game/app/appuimixin.py):78 `show_tutorial()` — выводит
   `step["title"]`/`step["lines"]` как есть, без `t()`. Ключей `tut_*` нет НИ в одном языке (0 шт).
-- Баг №4 (данные): `apply_translations` ([game/data_loader/translationmixin.py](game/data_loader/translationmixin.py):50–56)
+- Баг №4 (данные): `apply_translations` ([game/data_loader/translationmixin.py](../game/data_loader/translationmixin.py):50–56)
   ПОДДЕРЖИВАЕТ секции `enemies, injuries, lore, enchantments, boss_modifiers, mutators`,
   но ни один `data/languages/data_XX.json` их НЕ СОДЕРЖИТ (проверено по всем 8 файлам) —
   код готов, переводов нет. Объём английского контента:
@@ -117,7 +117,7 @@ print(A.ACHIEVEMENTS[0]["name"])                    # -> "First Blood"  (БАГ)
 
 ## Требуемый фикс №3 — туториал-попапы
 По образцу уже существующей схемы `chap_`/`qst_`:
-1. В [game/app/appuimixin.py](game/app/appuimixin.py) `show_tutorial()` брать текст через ключи:
+1. В [game/app/appuimixin.py](../game/app/appuimixin.py) `show_tutorial()` брать текст через ключи:
    `t("tut_<id>_title")` и `t("tut_<id>_l<N>")` (N — индекс строки с 0), с фолбэком на
    `step["title"]`/`step["lines"][N]`, если ключа нет (t() возвращает сам ключ при отсутствии —
    проверять через сравнение или добавить хелпер; НЕ показывать сырой ключ юзеру).
@@ -208,7 +208,7 @@ boss_modifiers, mutators` переименовать ключ `desc` → `descri
 После трёх подделок работа переведена на воркфлоу-агентов (решение владельца). Итог:
 **ru, uk, de, es, fr, it, pt — 13/13 правил гейта зелёные** (по 960 полей на язык);
 pl дорабатывается (первый заход упёрся в лимит сессии). Конвейер и подробности —
-в [memory/i18n/i18n-data-translations.md](memory/i18n/i18n-data-translations.md).
+в [memory/i18n/i18n-data-translations.md](../memory/i18n/i18n-data-translations.md).
 Разделы ниже — история проблемы, оставлены как объяснение, зачем нужен гейт.
 
 ## Итог третьего захода (2026-07-25, ночь): снова подделка, гейт ужесточён
@@ -225,7 +225,7 @@ Flash прогнал `scratch/build_perfect_translations.py` / `generate_all_gua
 Гейт дополнен правилами (id-leak, template-prose, latin-in-cyrillic, ru/uk-орфография) и ловит
 это: **27 failed / 57 passed**.
 
-## ГЕЙТ ПРИЁМКИ — [tests/test_i18n_data_quality.py](tests/test_i18n_data_quality.py)
+## ГЕЙТ ПРИЁМКИ — [tests/test_i18n_data_quality.py](../tests/test_i18n_data_quality.py)
 Правила ниже уже РЕАЛИЗОВАНЫ в этом файле (написан ревьюером, 8 правил × 8 языков = 64 теста).
 Единственный критерий приёмки: `python -m pytest tests -q` полностью зелёный.
 Править, ослаблять, удалять его или ставить skip/xfail — провал задачи, а не решение.
@@ -246,7 +246,7 @@ numbers (числа из оригинала сохранены).
 языка за проход), после каждого пакета — самопроверка анти-подстрокой.
 
 ## Ограничения (дополнительно к части 1)
-- [game/story.py](game/story.py) сейчас 10.3 КБ — уже в списке нарушителей лимита 10 КБ.
+- [game/story.py](../game/story.py) сейчас 10.3 КБ — уже в списке нарушителей лимита 10 КБ.
   Правки не должны его раздувать; выносить текст в language-файлы — можно и желательно.
 - Переводы генерировать аккуратно: тон игры — мрачная гладиаторская яма; сохранять
   игровые термины единообразно с существующими ключами (АРЕНА, КУЗНЯ, ОХОТА и т.д. —

@@ -10,7 +10,7 @@ source.exclude_dirs = bin,.buildozer,.git,.claude
 # ~675 KB. en.json and the English base data in data/*.json are never excluded
 # — they are the terminal fallback of localization.t() and must always exist.
 # scratch/ holds translation working files and quarantined generators.
-# The root asset generators (PROJECT_MAP.md "Генераторы ассетов") run offline
+# The root asset generators (docs/PROJECT_MAP.md "Генераторы ассетов") run offline
 # and nothing under game/ imports them, so they and their store-listing output
 # stay out of the APK too — ~215 KB, of which generate_sprites.py is ~103 KB
 # and feature_graphic.png ~105 KB (a Play listing image, also in .gitignore).
