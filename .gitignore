@@ -18,6 +18,9 @@ bin/
 .obsidian/
 # Генерируемая карта кода для Obsidian (scripts/gen_codemap.py)
 codemap/
+# Случайно созданные в vault'е Obsidian Bases/Canvas
+*.base
+*.canvas
 
 *.keystore
 build.log
