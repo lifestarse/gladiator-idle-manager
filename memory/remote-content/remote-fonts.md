@@ -3,9 +3,10 @@ name: remote-fonts
 description: Шрифт едет вместе с языковым паком, а список языков в пикере берётся из манифеста — новый язык без релиза в Play
 metadata:
   type: project
+  created: 2026-07-27
 ---
 
-Сделано 2026-07-27 (v1.9.46+, ветка влита в master). Расширение [[remote-content-overlay-2026-07-26]].
+Сделано 2026-07-27 (v1.9.46+, ветка влита в master). Расширение [[remote-content-overlay]].
 
 **Что теперь можно без релиза:** опубликовать новый язык (`scripts/publish_content.py --packs tr --name "tr=Türkçe" --font tr=<path.ttf>` + git push в `docs/content/`) — он появится в пикере у уже установленных клиентов. Раньше мешали две захардкоженные вещи: `packs.OFFERED` (список пикера) и шрифт в APK.
 

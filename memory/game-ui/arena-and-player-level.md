@@ -1,8 +1,9 @@
 ---
-name: arena-and-player-level-2026-07-27
+name: arena-and-player-level
 description: Редизайн арены + система уровня игрока с гейтами функций; принятые геймдизайн-решения и что идёт следующим
 metadata:
   type: project
+  created: 2026-07-27
 ---
 
 # Арена + уровень игрока (2026-07-27)
@@ -54,5 +55,5 @@ XP из четырёх точек: победа на арене (масштаб 
   `fighters.append(Fighter(...))` + `_spawn_enemy()`, см. `fighting_engine`
   в `tests/test_battle_speed.py`.
 
-Связано: [[game-ui-skill-2026-07-26]], [[design-system-2026-07-25]],
-[[i18n-data-translations-2026-07-25]].
+Связано: [[game-ui-skill]], [[design-system]],
+[[i18n-data-translations]].

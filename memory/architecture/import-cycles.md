@@ -3,6 +3,7 @@ name: import-cycles
 description: Циклы импортов: 3 из 4 разорваны 2026-07-27, оставшийся намеренный; главная ловушка — импорт сабмодуля НЕ развязывает с пакетом
 metadata:
   type: project
+  created: 2026-07-27
 ---
 
 Было 4 цикла импортов, каждый держался только на ленивых импортах внутри функций.
@@ -31,7 +32,7 @@ metadata:
 `game.base_screen` из `game/ui_helpers/*`, плюс проверка в свежем субпроцессе, что
 `import game.ui_helpers` не подтягивает `game.base_screen` транзитивно (AST ловит только
 прямое ребро). Проба чувствительна: `game.screens.arena` даёт True, `game.ui_helpers` —
-False. Не ослаблять — см. также [[engine-scripting-split-2026-07-24]].
+False. Не ослаблять — см. также [[engine-scripting-split]].
 
 `_needs_rebuild` живёт в `game/ui_helpers/_layouts.py` рядом со своей парой
 `_invalidate_grid_cache`; `BaseScreen` привязывает его как `staticmethod`. Обычная

@@ -3,6 +3,7 @@ name: remote-content-overlay-2026-07-26
 description: game/remote_content/ — языковые пакеты и патчи баланса с GitHub Pages; в APK только английский, safe-mode, применение со следующего запуска
 metadata:
   type: project
+  created: 2026-07-26
 ---
 
 `game/remote_content/` — доставка языков и исправлений баланса **без релиза в Play**.
@@ -94,4 +95,4 @@ tier/role/stat_bias.
 Выключатель `REMOTE_CONTENT_ENABLED = False` гасит сеть, но уже установленные пакеты
 продолжают читаться с диска.
 
-Связано: [[i18n-ui-quality-2026-07-26]] (что именно доставляем), `docs/content/README.md`.
+Связано: [[i18n-ui-quality]] (что именно доставляем), `docs/content/README.md`.

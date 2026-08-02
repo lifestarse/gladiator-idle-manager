@@ -3,11 +3,12 @@ name: phone-deploy
 description: Деплой на реальный телефон (Pixel 10a) — adb, подписи, где живёт upload-keystore и его пароль
 metadata:
   type: project
+  created: 2026-07-27
 ---
 
 Первый adb-деплой на реальный телефон — 2026-07-27, v1.9.45 debug.
 
-**Телефон:** Pixel 10a, USB, serial `5B211JEA303918`. adb — из scrcpy (`Genymobile.scrcpy` в WinGet Packages, есть в PATH). Остальные adb-девайсы (`127.0.0.1:5555/5556`, `emulator-5554`, model SM_S908E) — это BlueStacks, см. [[bluestacks-deploy-2026-07-25]].
+**Телефон:** Pixel 10a, USB, serial `5B211JEA303918`. adb — из scrcpy (`Genymobile.scrcpy` в WinGet Packages, есть в PATH). Остальные adb-девайсы (`127.0.0.1:5555/5556`, `emulator-5554`, model SM_S908E) — это BlueStacks, см. [[bluestacks-deploy]].
 
 **Подписи (важно, три разных ключа):**
 - До 2026-07-27 на телефоне стояла версия **из Google Play** (`installerPackageName=com.android.vending`) с подписью **Play App Signing** (SHA256 `C3:0B:CE:DC:...`, DName «CN=Android, O=Google Inc.») — её локально не воспроизвести ничем, `adb install -r` поверх невозможен. Снесена с согласия юзера (сейв потерян), теперь стоит debug-подписанная — дальнейшие `adb install -r` работают без плясок. Play-версия обратно поверх debug тоже не встанет — тоже только через uninstall.

@@ -1,8 +1,9 @@
 ---
-name: i18n-ui-quality-2026-07-26
+name: i18n-ui-quality
 description: UI-строки XX.json были машинным переводом Google Translate; гейт test_i18n_ui_quality.py, глоссарий, украинский перечинен
 metadata:
   type: project
+  created: 2026-07-26
 ---
 
 **Причина, которую искали месяц.** `scripts/translate_all.py` (коммит `4db9012`, 2026-07-01)
@@ -84,5 +85,5 @@ fr «Vidanger»: русский использует существительн�
 (`t(f"qst_{id}_name")`, `t("rarity_"+r+"_upper")` учтены). 49 из них `scr_*`. Отдельная задача
 на чистку; для остальных языков это минус 10% объёма перевода.
 
-Связано: [[i18n-data-translations-2026-07-25]] (данные + их гейт `test_i18n_data_quality.py`),
-[[remote-content-overlay-2026-07-26]] (как патчи доезжают без релиза).
+Связано: [[i18n-data-translations]] (данные + их гейт `test_i18n_data_quality.py`),
+[[remote-content-overlay]] (как патчи доезжают без релиза).

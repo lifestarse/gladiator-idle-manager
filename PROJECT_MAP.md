@@ -1,7 +1,7 @@
 # Карта проекта — Gladiator Idle Manager
 
 Idle-менеджер гладиаторов: Python + Kivy, релиз на Android (Google Play) через buildozer/p4a.
-Версия — в `buildozer.spec` (`version = …`), там же вся конфигурация билда. Правила работы с кодом — [CLAUDE.md](CLAUDE.md), память — [MEMORY.md](MEMORY.md) + `memory/`, витрина репозитория — [README.md](README.md).
+Версия — в `buildozer.spec` (`version = …`), там же вся конфигурация билда. Правила работы с кодом — [CLAUDE.md](CLAUDE.md), память — [memory/MEMORY.md](memory/MEMORY.md) (индекс + записи в тематических подпапках), витрина репозитория — [README.md](README.md).
 Пофайловый граф всего проекта (Obsidian) — [codemap/CODEMAP.md](codemap/CODEMAP.md), регенерация: `python scripts/gen_codemap.py` (py+kv+data+java+конфиги, тесты включены по умолчанию).
 Составлено 2026-07-24 по коду v1.9.37, актуализировано 2026-07-27 (v1.9.44). При расхождении карта уступает коду.
 

@@ -3,6 +3,7 @@ name: design-system-2026-07-25
 description: UI-редизайн (ветка project-design-improvements): варианты кнопок, ChipRow, single_line, спрайты врагов подключены
 metadata:
   type: project
+  created: 2026-07-25
 ---
 
 Редизайн всех экранов (2026-07-25, влит в master, merge 318e624). Новые механизмы, которые надо ИСПОЛЬЗОВАТЬ, а не дублировать:

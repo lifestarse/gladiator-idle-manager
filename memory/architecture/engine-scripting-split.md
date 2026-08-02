@@ -3,6 +3,7 @@ name: engine-scripting-split-2026-07-24
 description: Ветка claude/funny-lamport-92e942 — сплит 4 файлов >10КБ + уже влитые аудит-фиксы; порядок merge в master
 metadata:
   type: project
+  created: 2026-07-24
 ---
 
 Рефакторинг 2026-07-24 (ветка `claude/funny-lamport-92e942`, worktree funny-lamport-92e942): 4 файла-нарушителя правила «10 КБ» разбиты по паттерну плоских суб-mixin'ов (как persistencereadmixin/persistencewritemixin):

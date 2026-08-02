@@ -3,6 +3,7 @@ name: billing8-ads-2026-07-25
 description: Billing 6→8.3.0 и замена KivMob на Java-шим (v1.9.39, ветка inspiring-hopper) — что сделано и что проверять на девайсе
 metadata:
   type: project
+  created: 2026-07-25
 ---
 
 Ветка `claude/inspiring-hopper-2bd998` (2026-07-25, v1.9.39) закрыла два блокера из [[audit-2026-07-24]]:

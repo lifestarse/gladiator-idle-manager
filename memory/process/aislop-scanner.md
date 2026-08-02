@@ -3,6 +3,7 @@ name: aislop-scanner
 description: Сканер aislop установлен глобально (npm); счёт 7/100 — большинство ошибок ложные из-за конвенций проекта; aislop fix НЕ запускать
 metadata:
   type: project
+  created: 2026-07-27
 ---
 
 2026-07-27 юзер попросил поставить https://github.com/scanaislop/aislop (v0.14.0, `npm install -g aislop`, пакет проверен: без install-хуков). Запуск: `aislop scan . --exclude .buildozer,bin,__pycache__,.pytest_cache,.obsidian,.claude,codemap,scratch,memory,Screenshoots,docs` (exclude для scratch/ не сработал — вложенные пути он всё равно сканирует).
@@ -19,7 +20,7 @@ metadata:
 
 **Broad except закрыт 2026-07-27.** Все 16 сидели в `game/scripting/builtins.py` (14) и `game/screens/scripts/popups.py` (2). Диагноз: в `interpreterexecmixin._exec_Action` уже есть обёртка, которая превращает любое исключение экшена в `ScriptError` с именем экшена, а `managerrunmixin._run_program` кладёт его в `last_errors`/`RunStats.error` для экрана скриптов. Семнадцать `except Exception: pass|return` в builtins.py глушили ошибку **под** этим конвейером — упавший экшен был неотличим от законного no-op. Убраны все 17 (guard'ы `getattr`+`callable` остались — они и обрабатывают «нет API»); в popups.py два clipboard-catch'а получили `_log.warning` + `# noqa: BLE001`. Защита от возврата: `tests/test_scripting_error_surfacing.py` (16 тестов, включая AST-скан builtins.py на broad-handler'ы). После: правило `python-broad-except` — 0, счёт 7→9.
 
-**print() закрыт 2026-07-27.** Из 11 в пакете `game/` был ровно **один** — `kivy_input_shim.py:86`, и это не забытый дебаг, а единственная диагностика BlueStacks-ветки (см. [[bluestacks-deploy-2026-07-25]]). Переведён на `_log.warning`; уровень именно WARNING, потому что шим отрабатывает до всякой настройки логирования и запись уходит через `logging.lastResort`, который режет всё ниже WARNING. Проверено обе ветки: на десктопе тихо и `SHIM_ACTIVE=False`, при спрятанном из listdir `input` — finder ставится, `kivy.input.provider` резолвится, сообщение доходит до stderr.
+**print() закрыт 2026-07-27.** Из 11 в пакете `game/` был ровно **один** — `kivy_input_shim.py:86`, и это не забытый дебаг, а единственная диагностика BlueStacks-ветки (см. [[bluestacks-deploy]]). Переведён на `_log.warning`; уровень именно WARNING, потому что шим отрабатывает до всякой настройки логирования и запись уходит через `logging.lastResort`, который режет всё ниже WARNING. Проверено обе ветки: на десктопе тихо и `SHIM_ACTIVE=False`, при спрятанном из listdir `input` — finder ставится, `kivy.input.provider` резолвится, сообщение доходит до stderr.
 
 Оставшиеся 10 print() — ложные: корневые генераторы ассетов `generate_icons.py` и `gen_feature_graphic.py`, где print это вывод CLI-инструмента. Для сравнения: в `scripts/` 90 print(), aislop не пометил ни одного — правило пропускает по каталогу `scripts/`, а корневые скрипты ловит. Не трогать.
 

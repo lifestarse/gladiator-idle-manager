@@ -3,6 +3,7 @@ name: codemap-signals
 description: Что codemap показывает честно, а что врёт: Build ≠ счётчик правок, фантомные циклы на `from . import X`, «неупомянутые» артефакты
 metadata:
   type: reference
+  created: 2026-07-27
 ---
 
 Аудит структуры по `codemap/` 2026-07-27. Три сигнала из семи оказались ложными — все три

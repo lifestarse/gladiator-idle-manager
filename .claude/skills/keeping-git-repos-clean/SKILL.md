@@ -8,7 +8,7 @@ description: Prevents, detects, and remediates files that should never be commit
 > Взято из [wdm0006/python-skills](https://github.com/wdm0006/python-skills)
 > (`skills/common/git-hygiene`), MIT — текст лицензии рядом в `LICENSE`.
 > Установлено 2026-07-28. Проектная привязка: открытый пункт аудита —
-> ротация пароля keystore, утёкшего в git-историю (см. `memory/audit-2026-07-24.md`).
+> ротация пароля keystore, утёкшего в git-историю (см. `memory/architecture/audit-2026-07-24.md`).
 > В этом репозитории `git ls-files` на 2026-07-28 чист: ни логов, ни `bundletool.jar`,
 > ни `*.keystore` не отслеживаются.
 
