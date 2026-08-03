@@ -37,8 +37,8 @@
     },
     "pack.uk": {
       "min_app": "1.9.44",
-      "path": "packs/uk.v3.json",
-      "revision": 3
+      "path": "packs/uk.v4.json",
+      "revision": 4
     }
   },
   "schema": 1
