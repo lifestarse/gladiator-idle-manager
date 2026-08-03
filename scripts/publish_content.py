@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """Build remote content patches from the diff against a released build.
 
 A patch is not "the current file" — it is "what changed since the APK players
@@ -174,7 +174,8 @@ def check_live():
 
     'Pushed' is not 'deployed': Pages builds lag, and a log line saying
     published proves nothing. This recomputes the answer from the two ends
-    that matter — local bytes and live bytes. Exit 0 only on a full match.
+    that matter — local bytes and live bytes. Returns (mismatched, total)
+    so scripts/release_check.py can fold it into the release gate.
     """
     manifest = _load(MANIFEST_PATH) if os.path.exists(MANIFEST_PATH) else {}
     targets = [os.path.relpath(MANIFEST_PATH, OUT_DIR).replace(os.sep, "/")]
@@ -205,12 +206,14 @@ def check_live():
         else:
             print(f"DIFFERS  {rel} — live {len(body)} B, local {len(local_body)} B")
             mismatched += 1
+    total = len(dict.fromkeys(targets))
     if mismatched:
-        print(f"\n{mismatched} of {len(dict.fromkeys(targets))} files are not "
-              f"what Pages serves — push not done, deploy lagging, or checkout stale")
-        sys.exit(1)
-    print(f"\nlive site serves all {len(dict.fromkeys(targets))} files "
-          f"byte-for-byte — deploy confirmed")
+        print(f"\n{mismatched} of {total} files are not what Pages serves — "
+              f"push not done, deploy lagging, or checkout stale")
+    else:
+        print(f"\nlive site serves all {total} files byte-for-byte — "
+              f"deploy confirmed")
+    return mismatched, total
 
 
 def build_language_patch(lang, since):
@@ -390,8 +393,8 @@ def main():
                              "byte-for-byte, then exit")
     args = parser.parse_args()
     if args.check_live:
-        check_live()
-        return
+        mismatched, _total = check_live()
+        sys.exit(1 if mismatched else 0)
     if not args.since:
         parser.error("--since is required (git ref of the released build)")
     names = _parse_pairs(args.name, "--name")

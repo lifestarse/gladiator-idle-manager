@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """Extract translation source batches and merge translated fragments back.
 
 Workflow agents never edit data/languages/*.json directly — parallel writers
@@ -22,6 +22,14 @@ whole point: translating "call" or "Type" or "Auto-train" out of context is
 exactly how the GoogleTranslate pass produced "phone call", "to type" and
 "railway train".
 
+The wave order is fixed: ``prewave`` BEFORE dispatching translators. Eight
+parallel languages cannot see each other, so a term nobody canonized gets
+coined eight independent ways; the sister project measured the cost of one
+skipped prewave at 13 spellings of a single term. Merge judges results by the
+artifact, not the agent's report: dirty fragments are quarantined, every
+outcome lands in scratch/i18n_ledger.jsonl, and a batch quarantined three
+times stops being retried and demands a human look.
+
 Usage:
     python scripts/i18n_tool.py extract           # -> scratch/i18n_src/*.json
     python scripts/i18n_tool.py merge <lang>      # fragments -> data_<lang>.json
@@ -29,13 +37,19 @@ Usage:
     python scripts/i18n_tool.py extract-ui <lang> # -> scratch/i18n_src/ui_*.json
     python scripts/i18n_tool.py merge-ui <lang>   # fragments -> <lang>.json
     python scripts/i18n_tool.py status-ui         # what is still missing
+    python scripts/i18n_tool.py prewave <ref>     # gate: new terms since <ref>
+    python scripts/i18n_tool.py qa-sample <lang> [size]  # blind sample for i18n-qa
+    python scripts/i18n_tool.py qa-report <lang>  # verdicts -> gate calibration
 """
 import importlib.util
 import json
 import os
+import random
 import re
 import subprocess
 import sys
+import time
+from collections import Counter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, "scratch", "i18n_src")
@@ -87,6 +101,35 @@ def _fragment_scaffolding(fragment):
     return hits
 
 
+LEDGER_PATH = os.path.join(ROOT, "scratch", "i18n_ledger.jsonl")
+# A batch failing the same way this many times is not a retry candidate any
+# more: the defect is in the batch, the rule or the prompt, and a fourth run
+# of the same prompt inspects nothing.
+ESCALATE_AFTER = 3
+
+
+def _ledger(event):
+    """Append-only journal of wave outcomes (scratch/i18n_ledger.jsonl).
+
+    A batch is judged by its artifacts and this journal, never by what an
+    agent said about itself — the sister project lost a 3464-chapter run to a
+    self-reported success with no file behind it.
+    """
+    os.makedirs(os.path.dirname(LEDGER_PATH), exist_ok=True)
+    entry = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"), **event}
+    with open(LEDGER_PATH, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def _reject_attempts(name):
+    """How many quarantined copies of this fragment name already exist."""
+    if not os.path.isdir(REJECT_DIR):
+        return 0
+    stem, ext = os.path.splitext(name)
+    pattern = re.compile(rf"^{re.escape(stem)}(?:\.\d+)?{re.escape(ext)}$")
+    return sum(1 for fname in os.listdir(REJECT_DIR) if pattern.match(fname))
+
+
 def _quarantine(fragment_path, hits):
     """Move a dirty fragment out of the merge inputs, keeping it for autopsy.
 
@@ -94,15 +137,27 @@ def _quarantine(fragment_path, hits):
     means the writer was not returning clean JSON, so its neighbours are not
     trusted either. With the file out of scratch/i18n_out/, status() honestly
     reports the batch as missing instead of counting rejected work as done.
+    Copies are numbered, never overwritten — the pile of attempts IS the retry
+    counter, recomputed from disk, and at ESCALATE_AFTER the answer stops
+    being "run it again".
     """
     os.makedirs(REJECT_DIR, exist_ok=True)
     name = os.path.basename(fragment_path)
-    os.replace(fragment_path, os.path.join(REJECT_DIR, name))
+    stem, ext = os.path.splitext(name)
+    attempt = _reject_attempts(name) + 1
+    target = name if attempt == 1 else f"{stem}.{attempt}{ext}"
+    os.replace(fragment_path, os.path.join(REJECT_DIR, target))
     for key, reason in hits[:5]:
         print(f"    REJECTED {name} {key}: {reason}")
     if len(hits) > 5:
         print(f"    ... and {len(hits) - 5} more")
-    print(f"    {name} -> scratch/i18n_rejected/ — re-translate the batch")
+    print(f"    {name} -> scratch/i18n_rejected/{target} — re-translate the batch")
+    _ledger({"event": "quarantine", "fragment": name, "attempt": attempt,
+             "hits": [f"{key}: {reason}" for key, reason in hits[:10]]})
+    if attempt >= ESCALATE_AFTER:
+        print(f"    ESCALATE {name}: карантин №{attempt} — ещё один запуск "
+              f"того же промпта не поможет; разбирать причину (батч, правило "
+              f"или промпт) вручную")
 
 # section -> (base file, top-level key, fields)
 SECTIONS = {
@@ -231,10 +286,26 @@ def merge(lang):
                     missing += 1
     _dump(target, data)
     print(f"{lang}: applied {applied} fields, still missing {missing}")
+    _ledger({"event": "merge", "lang": lang, "applied": applied,
+             "missing": missing, "quarantined": quarantined})
     if quarantined:
         print(f"{lang}: {quarantined} fragments QUARANTINED — nothing from "
               f"them reached data_{lang}.json")
         sys.exit(1)
+
+
+def _gap_marks(lang, names):
+    """Missing batch names, annotated with their quarantine history."""
+    marks = []
+    for name in sorted(names):
+        attempts = _reject_attempts(f"{lang}__{name}.json")
+        if attempts >= ESCALATE_AFTER:
+            marks.append(f"{name}(карантин ×{attempts}, ЭСКАЛАЦИЯ)")
+        elif attempts:
+            marks.append(f"{name}(карантин ×{attempts})")
+        else:
+            marks.append(name)
+    return marks
 
 
 def status():
@@ -242,7 +313,8 @@ def status():
     for lang in LANGS:
         done = [n for n in names
                 if os.path.exists(os.path.join(OUT_DIR, f"{lang}__{n}.json"))]
-        print(f"{lang}: {len(done)}/{len(names)} fragments {sorted(set(names) - set(done))}")
+        print(f"{lang}: {len(done)}/{len(names)} fragments "
+              f"{_gap_marks(lang, set(names) - set(done))}")
 
 
 # ---------------------------------------------------------------- UI strings
@@ -539,6 +611,8 @@ def merge_ui(lang):
                 missing += 1
     _dump_ui(target, data)
     print(f"{lang}: applied {applied} keys, still missing {missing}")
+    _ledger({"event": "merge-ui", "lang": lang, "applied": applied,
+             "missing": missing, "quarantined": quarantined})
     if quarantined:
         print(f"{lang}: {quarantined} fragments QUARANTINED — nothing from "
               f"them reached {lang}.json")
@@ -550,8 +624,247 @@ def status_ui():
         names = [name for name, _rows in _ui_batches(lang)]
         done = [n for n in names
                 if os.path.exists(os.path.join(OUT_DIR, f"ui_{lang}__{n}.json"))]
-        gap = sorted(set(names) - set(done))
+        gap = _gap_marks(f"ui_{lang}", set(names) - set(done))
         print(f"{lang}: {len(done)}/{len(names)} fragments {gap}")
+
+
+# ------------------------------------------------------------------- prewave
+
+PREWAVE_TOKEN = re.compile(r"[^\W\d_]{4,}")
+# A word must recur across this many NEW keys to be a term candidate...
+PREWAVE_MIN_KEYS = 2
+# ...while being effectively absent from the old corpus: frequent old words
+# are established vocabulary, which also filters stopwords out for free.
+PREWAVE_OLD_MAX = 1
+
+
+def _glossary_words():
+    """Every token the glossary already legislates or told prewave to ignore."""
+    if not os.path.exists(GLOSSARY_PATH):
+        return set()
+    glossary = _load(GLOSSARY_PATH)
+    words = set()
+    for spec in glossary.get("terms", {}).values():
+        if isinstance(spec, dict):
+            for value in spec.values():
+                if isinstance(value, str):
+                    words.update(PREWAVE_TOKEN.findall(value.casefold()))
+    words.update(word.casefold()
+                 for word in glossary.get("prewave_ignore", {})
+                 if not word.startswith("_"))
+    return words
+
+
+def _prewave_candidates(new_texts, old_corpus, known_words):
+    """Recurring vocabulary of the new material that nothing has canonized.
+
+    {word: [keys]} for words recurring across >= PREWAVE_MIN_KEYS new keys,
+    effectively absent from the baseline corpus, and covered by neither the
+    glossary nor its prewave_ignore list.
+    """
+    old_counts = Counter(token for text in old_corpus
+                         for token in PREWAVE_TOKEN.findall(text.casefold()))
+    by_word = {}
+    for key, text in new_texts.items():
+        for token in set(PREWAVE_TOKEN.findall(text.casefold())):
+            by_word.setdefault(token, []).append(key)
+    return {word: sorted(keys) for word, keys in sorted(by_word.items())
+            if len(keys) >= PREWAVE_MIN_KEYS
+            and old_counts.get(word, 0) <= PREWAVE_OLD_MAX
+            and word not in known_words}
+
+
+def _git_json(ref, rel):
+    """A JSON file as it was at ref, {} when it did not exist there."""
+    result = subprocess.run(["git", "show", f"{ref}:{rel}"], cwd=ROOT,
+                            capture_output=True, text=True, encoding="utf-8")
+    if result.returncode != 0:
+        return {}
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return {}
+
+
+def prewave(ref):
+    """Terms the coming wave would coin 8 ways independently — canonize FIRST.
+
+    Parallel translators cannot see each other; the only moment terminology
+    is cheap is before dispatch. The sister project ran this by default and
+    measured one skipped run at 13 spellings of a single term, with the
+    after-the-fact harmonization costing more than the wave itself.
+
+    Exit 1 while candidates exist. The judge pass resolves every word into
+    either a glossary term (columns for the languages) or an entry in the
+    glossary's prewave_ignore block with a reason — both are replayable data,
+    so the decision survives and the gate goes green.
+    """
+    ru_now = _ui_flat(_load(_ui_path(UI_MASTER)))
+    ru_then = _ui_flat(_git_json(ref, f"data/languages/{UI_MASTER}.json"))
+    new_material = {f"ui:{path}": text for path, text in ru_now.items()
+                    if path not in ru_then and isinstance(text, str)}
+    old_corpus = [text for text in ru_then.values() if isinstance(text, str)]
+
+    for section, (fname, top_key, fields) in SECTIONS.items():
+        now = _by_id(_load(os.path.join(ROOT, "data", fname))[top_key])
+        then = _by_id(_git_json(ref, f"data/{fname}").get(top_key) or {})
+        wanted = fields + ("name",)
+        for entry_id, entry in now.items():
+            texts = [entry.get(field) for field in wanted
+                     if isinstance(entry.get(field), str)]
+            if entry_id not in then:
+                new_material[f"{section}:{entry_id}"] = " ".join(texts)
+        for entry in then.values():
+            old_corpus += [entry.get(field) for field in wanted
+                           if isinstance(entry.get(field), str)]
+
+    candidates = _prewave_candidates(new_material, old_corpus,
+                                     _glossary_words())
+    if not candidates:
+        print(f"prewave clean: нового словаря с {ref} нет — волну можно "
+              f"раздавать")
+        return
+    print(f"prewave: {len(candidates)} слов волна начеканит сама, если их не "
+          f"канонизировать до раздачи:")
+    for word, keys in candidates.items():
+        tail = "..." if len(keys) > 4 else ""
+        print(f"    {word}  <- {', '.join(keys[:4])}{tail}")
+    print("Судейский проход: каждое слово — либо термин (колонки в "
+          "scripts/i18n_glossary.json), либо запись в prewave_ignore с "
+          "причиной. Потом prewave зелёный.")
+    sys.exit(1)
+
+
+# ------------------------------------------------- blind QA and calibration
+
+QA_DIR = os.path.join(ROOT, "scratch", "i18n_qa")
+CALIBRATION_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "i18n_calibration.json")
+QA_SIZE_DEFAULT = 40
+QA_CONTROL_SHARE = 0.25
+QA_LONG_PROSE = 120
+
+
+def _calibration():
+    return _load(CALIBRATION_PATH) if os.path.exists(CALIBRATION_PATH) else {}
+
+
+def _qa_selectors(lang):
+    """key -> selector: the hypothesis for WHY this key may hide a defect.
+
+    machine (still raw GoogleTranslate), glossary-term (carries legislated
+    vocabulary), long-prose (room for meaning drift). Selectors are
+    hypotheses; scripts/i18n_calibration.json keeps score of how often each
+    one is right, and that score — not anyone's taste — is what may promote
+    a heuristic into a blocking rule.
+    """
+    master = _ui_flat(_load(_ui_path(UI_MASTER)))
+    machine = _ui_machine_flags(lang)
+    known_words = _glossary_words()
+    selectors = {}
+    for path in _ui_flat(_load(_ui_path(lang))):
+        source = str(master.get(path, ""))
+        if machine.get(path):
+            selectors[path] = "machine"
+        elif any(token in known_words
+                 for token in PREWAVE_TOKEN.findall(source.casefold())):
+            selectors[path] = "glossary-term"
+        elif len(source) >= QA_LONG_PROSE:
+            selectors[path] = "long-prose"
+    return selectors
+
+
+def qa_sample(lang, size=QA_SIZE_DEFAULT, seed=None):
+    """Blind sample for the i18n-qa agent: task file + selection-meta sidecar.
+
+    The task file carries keys and texts, nothing else. WHY a key was chosen
+    — a risk selector or control — lives in the .meta.json sidecar the agent
+    never reads: the sister project watched a single hinted expectation
+    («чистый вердикт ожидаем») zero out its control group. Controls are keys
+    previous rounds accepted; one flagged today is a past miss or present
+    noise, and either way a person looks.
+    """
+    rng = random.Random(seed)
+    master = _ui_flat(_load(_ui_path(UI_MASTER)))
+    pivot = _ui_flat(_load(_ui_path(UI_PIVOT)))
+    current = _ui_flat(_load(_ui_path(lang)))
+    selectors = _qa_selectors(lang)
+    accepted = _calibration().get("accepted", {}).get(lang, [])
+    control_pool = ([key for key in accepted if key in current]
+                    or [key for key in current if key not in selectors])
+    control_count = min(len(control_pool), max(1, int(size * QA_CONTROL_SHARE)))
+    chosen = {key: "control" for key in rng.sample(control_pool, control_count)}
+    risk_pool = [key for key in selectors if key not in chosen]
+    for key in rng.sample(risk_pool, min(len(risk_pool), size - len(chosen))):
+        chosen[key] = selectors[key]
+
+    task = {"_lang": lang,
+            "keys": {key: {"ru": master.get(key, ""),
+                           "en": pivot.get(key, ""),
+                           "current": current.get(key, "")}
+                     for key in chosen}}
+    task_path = os.path.join(QA_DIR, f"qa_{lang}.json")
+    meta_path = os.path.join(QA_DIR, f"qa_{lang}.meta.json")
+    _dump(task_path, task)
+    _dump(meta_path, {"lang": lang, "selectors": chosen})
+    counts = dict(Counter(chosen.values()))
+    print(f"{lang}: выборка {len(chosen)} ключей -> "
+          f"{os.path.relpath(task_path, ROOT)} ({counts})")
+    print(f"мета с причинами отбора (агенту НЕ давать): "
+          f"{os.path.relpath(meta_path, ROOT)}")
+    print(f'вердикты сохранить в scratch/i18n_qa/qa_{lang}.verdicts.json: '
+          f'{{"<key>": "ok" | "<класс>: <что не так>"}}')
+
+
+def qa_report(lang):
+    """Join verdicts with the hidden selectors -> calibration ledger.
+
+    Two numbers come out. Per-selector precision: does the heuristic predict
+    real defects — a rule becomes blocking only after this says it earns it.
+    And the control verdicts: a flagged control is a defect the previous
+    round accepted or noise the current round produced — both need a person.
+    Accepted keys feed the next round's control pool.
+    """
+    verdicts_path = os.path.join(QA_DIR, f"qa_{lang}.verdicts.json")
+    meta_path = os.path.join(QA_DIR, f"qa_{lang}.meta.json")
+    for path in (verdicts_path, meta_path):
+        if not os.path.exists(path):
+            raise SystemExit(f"{os.path.relpath(path, ROOT)} не найден — "
+                             f"сначала qa-sample и прогон i18n-qa")
+    verdicts = _load(verdicts_path)
+    selectors = _load(meta_path).get("selectors", {})
+    unanswered = sorted(set(selectors) - set(verdicts))
+    if unanswered:
+        raise SystemExit(f"нет вердикта для {len(unanswered)} ключей выборки "
+                         f"(например {unanswered[:3]}) — приёмка покрывает "
+                         f"каждый ключ, иначе выборка не измерена")
+
+    calibration = _calibration()
+    tallies = calibration.setdefault("selectors", {})
+    accepted = calibration.setdefault("accepted", {}).setdefault(lang, [])
+    broken_controls = []
+    for key, selector in selectors.items():
+        verdict = str(verdicts.get(key, "")).strip()
+        clean = verdict.casefold() == "ok"
+        tally = tallies.setdefault(selector, {"defects": 0, "clean": 0})
+        tally["clean" if clean else "defects"] += 1
+        if clean and key not in accepted:
+            accepted.append(key)
+        if not clean:
+            if key in accepted:
+                accepted.remove(key)
+            if selector == "control":
+                broken_controls.append((key, verdict))
+    _dump(CALIBRATION_PATH, calibration)
+
+    for selector, tally in sorted(tallies.items()):
+        total = tally["defects"] + tally["clean"]
+        print(f"{selector}: дефектов {tally['defects']}/{total} "
+              f"({tally['defects'] / total:.0%})")
+    for key, verdict in broken_controls:
+        print(f"КОНТРОЛЬ ПРОБИТ {key}: {verdict!r} — пропуск прошлой приёмки "
+              f"или шум текущей; разобрать")
+    print(f"калибровка -> {os.path.relpath(CALIBRATION_PATH, ROOT)}")
 
 
 if __name__ == "__main__":
@@ -566,5 +879,12 @@ if __name__ == "__main__":
         merge_ui(sys.argv[2])
     elif command == "status-ui":
         status_ui()
+    elif command == "prewave":
+        prewave(sys.argv[2])
+    elif command == "qa-sample":
+        qa_sample(sys.argv[2],
+                  int(sys.argv[3]) if len(sys.argv) > 3 else QA_SIZE_DEFAULT)
+    elif command == "qa-report":
+        qa_report(sys.argv[2])
     else:
         status()

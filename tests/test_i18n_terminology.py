@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Bidirectional terminology consistency — collisions one-way rules cannot see.
 
 test_i18n_ui_quality.py enforces the glossary one way: the chosen rendering is
@@ -137,7 +137,11 @@ def test_one_source_name_renders_one_way(lang):
 
 
 def test_whitelist_entries_carry_reasons():
-    """An exception without a reason is not a decision — it is a suppression."""
+    """An exception without a reason is not a decision — it is a suppression.
+
+    Applies to every exception list the glossary carries: collision
+    whitelists and the prewave_ignore verdicts alike.
+    """
     bad = []
     for block, per_lang in COLLISIONS_OK.items():
         if block == "_doc" or not isinstance(per_lang, dict):
@@ -149,4 +153,10 @@ def test_whitelist_entries_carry_reasons():
             for word, reason in entries.items():
                 if not isinstance(reason, str) or len(reason.strip()) < 10:
                     bad.append(f"{block}.{lang}.{word!r}: reason is missing")
-    assert not bad, "collisions_ok entries without reasons:\n  " + "\n  ".join(bad)
+    for word, reason in GLOSSARY.get("prewave_ignore", {}).items():
+        if word.startswith("_"):
+            continue
+        if not isinstance(reason, str) or len(reason.strip()) < 10:
+            bad.append(f"prewave_ignore.{word!r}: reason is missing")
+    assert not bad, ("glossary exceptions without reasons:\n  "
+                     + "\n  ".join(bad))
