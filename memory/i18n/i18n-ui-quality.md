@@ -1,10 +1,12 @@
 ---
 name: i18n-ui-quality
-description: UI-строки XX.json были машинным переводом Google Translate; гейт test_i18n_ui_quality.py, глоссарий, украинский перечинен
+description: UI-строки XX.json были машинным переводом Google Translate; гейт test_i18n_ui_quality.py, глоссарий; ВСЕ 7 языков перечинены (uk 2026-07-26, остальные 6 — волной 2026-08-03)
 metadata:
   type: project
   created: 2026-07-26
 ---
+
+**ЗАКРЫТО 2026-08-03: перечинены все шесть оставшихся языков** (de/es/fr/it/pt/pl) одной волной по конвейеру «Симфонии»: колонки глоссария судьями → 114 батчей × i18n-translate → merge с карантином (0 карантинов) → гейты (реальные дефекты: 71 CAPS-строка длиннее 1.5×ru, потерянный STR, непереведённый по ru флейвор ds_golden_armor_desc; ложные: когнаты типа fr «actions» — заведён блок `english_ok` в глоссарии с причинами, и слишком широкая основа «Zug», ловившая Zugriff — сужена) → фикс-волна (короткие CAPS-формы записаны в колонки глоссария) → слепая приёмка 240 ключей: 4 дефекта (Médicus, Campo motore, Legenda/Leggenda, homem/gladiador), все починены; контроль 60/60 чист, калибровка в scripts/i18n_calibration.json. Попутно: `_ui_roles` перестал грузить labels.py по пути (сломался об relative import) — теперь package-импорт, kivy-свободность подтверждает тест.
 
 **Причина, которую искали месяц.** `scripts/translate_all.py` (коммит `4db9012`, 2026-07-01)
 прогнал `en.json` через `deep_translator.GoogleTranslator` построчно, без контекста и глоссария,

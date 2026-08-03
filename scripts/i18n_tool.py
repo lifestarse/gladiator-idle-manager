@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """Extract translation source batches and merge translated fragments back.
 
 Workflow agents never edit data/languages/*.json directly — parallel writers
@@ -41,7 +41,7 @@ Usage:
     python scripts/i18n_tool.py qa-sample <lang> [size]  # blind sample for i18n-qa
     python scripts/i18n_tool.py qa-report <lang>  # verdicts -> gate calibration
 """
-import importlib.util
+import importlib
 import json
 import os
 import random
@@ -357,26 +357,22 @@ sys.path.insert(0, ROOT)
 from game.localization import flatten as _ui_flat, set_path as _ui_set  # noqa: E402
 
 
-def _load_module(path, name):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
 def _ui_roles():
     """Map i18n key -> what the UI does with it, from the label registries.
 
-    game/scripting/labels.py and game/scripting/templates.py are pure data
-    modules, so they load by path without dragging in kivy. 300 of the 830 keys
-    are scripting-editor labels whose part of speech is invisible from the
-    English text alone — "call" is a function call, "Type" is a noun, "log" is
-    an imperative.
+    labels.py imports its package siblings (.builtins -> ast_nodes), so it
+    must be imported as a real package module — loading it by file path
+    breaks the relative imports. The game.scripting subtree stays kivy-free
+    on purpose (tests/test_i18n_process.py pins it): a kivy import here would
+    kill every headless run, because kivy parses sys.argv at import time.
+    300 of the 830 keys are scripting-editor labels whose part of speech is
+    invisible from the English text alone — "call" is a function call,
+    "Type" is a noun, "log" is an imperative.
     """
-    labels_path = os.path.join(ROOT, "game", "scripting", "labels.py")
-    if not os.path.exists(labels_path):
+    try:
+        L = importlib.import_module("game.scripting.labels")
+    except ImportError:
         return {}
-    L = _load_module(labels_path, "_i18n_labels")
     roles = {}
 
     def mark(keys, role):
@@ -411,17 +407,15 @@ def _ui_roles():
         mark(meta.get("arg_labels") or [],
              "label of an argument slot of a script action (short noun)")
 
-    templates_path = os.path.join(ROOT, "game", "scripting", "templates.py")
-    if os.path.exists(templates_path):
-        try:
-            T = _load_module(templates_path, "_i18n_templates")
-        except Exception:  # noqa: BLE001 - templates may import AST nodes
-            return roles
-        for template in getattr(T, "TEMPLATES", ()):
-            mark([getattr(template, "name_key", None)],
-                 "ready-made script template name (short noun phrase)")
-            mark([getattr(template, "desc_key", None)],
-                 "description of a ready-made script template (sentence)")
+    try:
+        T = importlib.import_module("game.scripting.templates")
+    except ImportError:
+        return roles
+    for template in getattr(T, "TEMPLATES", ()):
+        mark([getattr(template, "name_key", None)],
+             "ready-made script template name (short noun phrase)")
+        mark([getattr(template, "desc_key", None)],
+             "description of a ready-made script template (sentence)")
     return roles
 
 

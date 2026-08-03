@@ -32,6 +32,91 @@
       "корупці": "'corruption' прочитано як політична корупція (enchant_names.corruption)",
       "вицілит": "'heal' прочитано як «вицілити» — це прицілюватися (heal_all)",
       "алмаз": "валюта називається «діамант»; два слова на одну сутність розходяться по екранах"
+    },
+    "de": {
+      "Durchm.": "'dia.' (diamonds) прочитано как сокращение Durchmesser — диаметр вместо алмазов (achievement_unlocked, quest_completed «+{diamonds} Durchm.»); валюта — Diamanten, не сокращать",
+      "gemeinsam": "'COMMON' прочитано как «совместный» вместо редкости (btn_common, rarity_common_upper «GEMEINSAM»); редкость — gewöhnlich. Наречие «вместе» во flavor-тексте формулировать иначе (Seite an Seite), чтобы не попадать под запрет (tut_hire_fighter_l1)",
+      "Korruption": "'corruption' прочитано как политическая коррупция вместо порчи (enchant_names.corruption, enchant_corruption, battle_corruption); зачарование — Verderbnis",
+      "Anruf": "'call' прочитано как телефонный звонок (scr_expr_call «Anruf»); вызов функции — Aufruf",
+      "Chef": "'boss' прочитано как начальник по работе (btn_boss, battle_log_boss «CHEF»); босс арены — Boss",
+      "Fragen": "'quests' прочитано как «вопросы» (quests_label «FRAGEN», ru КВЕСТЫ); квесты — Quests / Aufträge",
+      "Artikel": "'item' прочитано как товар/артикул магазина (item_not_found «Artikel nicht gefunden», scr_arg_item_id «Artikel-ID», item_stats_popup_title, scr_act_forge_upgrade); предмет — Gegenstand",
+      "Jäger": "'fighter' прочитано как охотник (scr_act_unequip_all_d «vom Jäger», ru «с бойца»); боец — Kämpfer",
+      "Dienstplan": "'roster' прочитано как график дежурств (scr_cat_roster «Dienstplan», scr_src_active «aktiver Dienstplan», ru «Отряд»); отряд/состав — Trupp / Kader",
+      "Abtropfen": "'drain' прочитано как «дать стечь» — кулинария (enchant_drain, enchant_names.drain «Abtropfen lassen», ru «Вытягивание»); зачарование — Lebensentzug. Родственное battle_drain «ABFLUSS!» (канализационный сток) тоже заменить",
+      "Drehen": "'turn' прочитано как «вращать» (battle_turn «Drehen Sie {n}», ru «Ход {n}»); ход боя — Runde {n}",
+      "automatischer zug": "'train' / 'auto-train' прочитано как поезд (train_btn «ZUG {cost}», auto_distribute_on/off «Automatischer Zug»); тренировка — Training / Auto-Training. Ход боя тоже не «Zug», а Runde",
+      "zug {": "'ZUG {cost}' — кнопка тренировки прочитана как поезд (train_btn); тренировка — TRAIN. Основа сужена: голый \bzug ловил легитимный Zugriff/Zugang"
+    },
+    "es": {
+      "paralizar": "глагол «парализовать» вместо имени эффекта; имя зачарования — существительное «Parálisis» (enchant_names.paralyze, enchant_paralyze, battle_paralyze)",
+      "tren": "'train/ТРЕН.' прочитано как железнодорожный поезд; тренировка — entrenamiento/entrenar (train_btn 'TREN {cost}', auto_distribute_on/off 'Tren automático')",
+      "diámetro": "'алм./diamond' прочитано как «диаметр»; валюта — diamante (achievement_unlocked '+{diamonds} diámetro.')",
+      "diám": "сокращение от «диаметра»; сокращение diamante — «diam.» без ударения (quest_completed '+{diamonds} diám.')",
+      "fracaso": "'поражение' переведено как «провал»; поражение в бою — derrota, причём battle_log_defeat уже использует DERROTA — два слова на одну сущность (defeat '¡FRACASO!')",
+      "pozo": "'pit' переведено как «колодец»; экран по ru — ARENA, лор-имя Ямы — el Foso (nav_pit 'POZO', title_pit, chap_ch1 'El Pozo')",
+      "yunque": "экран кузни назван наковальней вслед за en ANVIL; по ru — forja (nav_anvil 'YUNQUE', title_anvil, tut_discover_forge_title 'El Yunque')",
+      "banco": "'запас/скамейка' прочитано как банк; спортивный запас — banquillo (bench_btn 'Banco', tab_bench 'Banco / Muerto', scr_act_bench)",
+      "artículo": "'предмет' прочитан как товар/артикул в магазине; предмет экипировки — objeto (item_not_found 'Artículo no encontrado', scr_arg_item_id 'ID del artículo', scr_act_give_item 'Dar artículo')",
+      "actualizar": "'улучшить' в кузне прочитано как обновление ПО; улучшение — mejorar/mejora (upgrade_btn 'ACTUALIZAR', evt_upgrade, scr_act_forge_upgrade 'Actualizar elemento'); «actualización» про языковые пакеты (lang_status_update) легитимна, поэтому запрещена только глагольная форма",
+      "ventaja": "'перк' заменён родовым «преимущество»; перк — заимствование perk, как в ru/uk (perks_btn 'VENTAJAS', evt_perk, class_perks_label 'ÁRBOL DE VENTAJAS')",
+      "pv": "HP переведено как «PV» (puntos de vida); ATK/DEF/HP — латиницей как есть (battle_burst '-{dmg}¡PV!', battle_drain '+{heal}PV!', battle_lightning)"
+    },
+    "fr": {
+      "taper": "'Type' прочитан как глагол «печатать на клавиатуре» вместо существительного «тип» (scr_expr_type: «Taper»); нужно «Type»",
+      "vidang": "'Drain' прочитан как слив масла/канализацию — «Vidanger», «VIDANGE !» — вместо вытягивания жизни (enchant_drain, enchant_names.drain, battle_drain); нужно «Drain de vie»",
+      "train": "'Auto-train' прочитан как железнодорожный поезд — «Train automatique» (auto_distribute_on/off), плюс сырое английское «TRAIN {cost}» (train_btn); нужно «Répartition auto» / «ENTRAÎNER». Ловушка \\btrain: не использовать оборот «en train de» — писать «en cours»",
+      "patron": "'boss' прочитан как работодатель — «Le patron a retrouvé votre groupe» (boss_revenge; также btn_boss, battle_log_boss, stat_row_bosses_killed, scr_act_spawn_boss); босс арены — «boss»",
+      "réservoir": "класс Tank прочитан как топливный бак/резервуар (scr_class_tank: «Réservoir»); класс называется «Tank»",
+      "enclume": "экран кузни назван по en «ANVIL» — «enclume» это наковальня-инструмент, а не мастерская (nav_anvil, title_anvil, tut_discover_forge_title/l2); по ru — «FORGE»",
+      "avantage": "'perk' размыт в «advantage» (perks_btn «AVANTAGES», evt_perk, perk_points_label, class_perks_label, invalid_perk); термин — «atout»",
+      "article": "'item' прочитан как товар/артикул магазина (item_not_found «Article introuvable», scr_arg_item_id «Identifiant de l'article», scr_act_give_item «Donner l'article»); предмет — «objet»",
+      "réalisation": "'achievements' прочитаны как «свершения/постановка фильма» (achievements_label «RÉALISATIONS», stat_row_achievements); устоявшийся термин — «succès»",
+      "meurtre": "'kills' прочитаны как уголовные убийства — «Meilleurs meurtres» (stat_row_best_kills); писать «ennemis tués» / «victimes»",
+      "postuler": "'Apply' (применить шаблон) прочитан как «подать заявку на вакансию» (scr_tmpl_apply: «Postuler»); нужно «Appliquer»",
+      "atq": "ATK локализован в «ATQ» вопреки правилу латинских аббревиатур (total_atk «ATQ totale»; в боевых строках при этом ATK — вразнобой); всегда ATK"
+    },
+    "it": {
+      "treno": "'auto-train' / 'train' прочитан как железнодорожный поезд (train_btn «TRENO {cost}», scr_act_train_to «Treno fino al livello»); тренировка — allenamento / allenare",
+      "serbatoio": "класс Tank прочитан как топливный бак (scr_class_tank «Serbatoio»); класс называется Tank",
+      "lezione": "'class' прочитан как школьный урок (choose_class «Scegli una lezione iniziale»); класс бойца — classe",
+      "birra": "'brew' прочитан как пиво (stone_brew «Birra di pietra»); это зелье — pozione / decotto",
+      "scorrimento": "'scroll' (свиток) прочитан как прокрутка экрана (ds_name_change_name «Scorrimento identità»); свиток — pergamena",
+      "frenzia": "несуществующее слово (skill_frenzy, skill_frenzy_many «FRENZIA»); бешенство — frenesia",
+      "capo": "'boss' прочитан как начальник/главарь (btn_boss, battle_log_boss «CAPO»); игровой термин — boss",
+      "scolare": "'drain' прочитан как «слить воду / откинуть на дуршлаг» (enchant_drain и enchant_names.drain «Scolare»); вытягивание жизни — Drenaggio",
+      "incudine": "en «ANVIL» калькирован в наковальню-инструмент (nav_anvil, title_anvil, tut_discover_forge_title «INCUDINE»); по ru экран — кузня, т.е. fucina",
+      "panca": "'bench' прочитан как скамья-мебель (bench_btn, scr_act_bench «Panca»); запас в спортивном смысле — panchina",
+      "articolo": "'item' прочитан как товар/артикул (item_not_found «Articolo non trovato», scr_arg_item_id «Codice articolo», item_stats_popup_title «Statistiche articolo»); предмет — oggetto",
+      "vantaggio": "'perk' переведён описательным «преимущество» (perks_btn «VANTAGGI», evt_perk, perk_points_label, class_perks_label и др.); глоссарий держит заимствование perk"
+    },
+    "pt": {
+      "queimar": "глагол «жечь» вместо существительного «Queimadura» (enchant_burn, enchant_names.burn)",
+      "trem": "'auto-train' и «ТРЕН.» прочитаны как железнодорожный поезд (auto_distribute_on/off «Trem automático», train_btn «TREM {cost}»)",
+      "caças": "'fighters' прочитано как самолёты-истребители (scr_src_available «caças disponíveis»); охоты — caçadas",
+      "ligar": "'call' прочитано как телефонный звонок (scr_expr_call «ligar»); вызов функции — chamada, переключатель — ativar/desativar",
+      "aula": "'class' прочитано как школьный урок (choose_class «Escolha uma aula inicial»); класс бойца — classe",
+      "mata": "'kills' прочитано как глагол «убивает» (омоним «лес») вместо счётчика «abates» (stat_row_kills, reached_tier_kills, arena_best_record)",
+      "camada": "'tier' прочитано как физический слой (tier_up_title «NOVA CAMADA!», tier_up_body, perk_tier_label, arena_tier_enemy); уровень арены — nível",
+      "correndo": "'Running' — вкладка активных скриптов — прочитано как бег (scr_tab_running «Correndo»); выполняется — «em execução»",
+      "banco": "'bench' прочитано как банк (bench_btn «Banco», tab_bench, scr_act_bench); запас — reserva",
+      "roteiro": "'script' прочитано как киносценарий (scr_export_title «Roteiro de exportação»); скрипт — script/programa",
+      "exaustado": "несуществующая форма; правильно exausto (exhausted_tag «EXAUSTADO»)",
+      "ralo": "'Drain' прочитано как сливное отверстие раковины (battle_drain «RALO!»); вытягивание — dreno/drenagem"
+    },
+    "pl": {
+      "km": "'HP' превращено в «KM» — конские силы (battle_burst, battle_lightning, battle_chain, battle_holy_fire)",
+      "myśliw": "'fighter' прочитан как самолёт-истребитель (fighters_ready, scr_btn_assign_field, scr_expr_fighter_var, scr_block_fighter_field, scr_e_fighter_count, revived_all_msg)",
+      "pociąg": "'train' прочитан как железнодорожный поезд (train_btn, auto_distribute_on/off, scr_act_train_to)",
+      "szef": "'boss' прочитан как начальник на работе (btn_boss, battle_log_boss, boss_challenge, boss_revenge, scr_act_spawn_boss)",
+      "zadzwo": "'call' прочитан как телефонный звонок — «zadzwoń» (scr_expr_call)",
+      "zbiornik": "класс Танк прочитан как ёмкость/резервуар (scr_class_tank)",
+      "korupcj": "'corruption' (Порча) прочитан как политическая коррупция (enchant_corruption, enchant_names.corruption, battle_corruption)",
+      "odłap": "несуществующее слово; осколки — odłamki (tab_shard, shard_label)",
+      "urazieni": "несуществующее слово; травмы — kontuzje (heal_all_injuries_cost)",
+      "inwentaryzacj": "'inventory' прочитан как бухгалтерская инвентаризация; правильно — ekwipunek (inventory_label, inventory_count)",
+      "wspóln": "'common' (обычное качество) прочитан как «общее/совместное» (btn_common, filter_common, rarity_common_upper)",
+      "śr.": "'алм.' (сокр. алмазы) превращено в «śr.» = średnica/диаметр — глоссарий diamond прямо это запрещает (achievement_unlocked, quest_completed)"
     }
   },
   "rules": {
@@ -44,6 +129,72 @@
       "Рядки, що в ru/en написані ВЕЛИКИМИ — це кнопки й вкладки: лишати ВЕЛИКИМИ і не довшими за ~1.3 від російського рядка.",
       "Після {n} — родовий відмінок множини (діамантів, бійців, перемог, травм): {n} майже завжди більше чотирьох.",
       "Без русизмів: «увімк./вимк.» замість «вкл./выкл.», «наступний» замість «следующий», без суржику."
+    ],
+    "de": [
+      "Плейсхолдеры {name} {n} {dmg} {target} {tier} {cost} — копировать дословно, имена внутри фигурных скобок не переводить и не менять.",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копировать дословно вместе со значением цвета.",
+      "ATK / DEF / HP и STR / AGI / VIT — латиницей как есть, не переводить и не сокращать по-немецки: не «STÄR» (реальная ошибка fury_tonic_desc «+2 Basis-STÄR»), не «KM». Расшифровка в скобках — по-немецки: «Stärke (STR)».",
+      "В выражениях вида «боец.is_active :=» / «g.переменная» переводится только человеческое слово (боец → Kämpfer); идентификатор после точки (is_active) и префикс g. остаются как есть — так делает русский оригинал. «Поле бойца» → Kämpferfeld (НЕ «Kampffeld» — это поле боя), «Поле движка» → Engine-Feld (НЕ «Motorfeld» — мотор автомобиля).",
+      "Часть речи — по русской строке, не по английской: названия зачарований и вкладок — существительные (Blutung, Verderbnis, Lebensentzug), «Log message» — действие «Nachricht loggen». «прервать» (break цикла) — «Abbrechen», НЕ «Pause» (сейчас scr_btn_break/scr_kw_break «Pause»).",
+      "Строки ЗАГЛАВНЫМИ в ru/en — кнопки и вкладки: оставлять ЗАГЛАВНЫМИ и не длиннее ~1.3 русской строки; немецкие композиты разрастаются — использовать краткие формы, как ru ОБЫЧН → GEWÖHNL.",
+      "Кнопки и пункты меню — инфинитив без «Sie»: «Löschen», не «Löschen Sie». Вежливый императив Google-прохода порвал соседние ключи (scr_menu_rename «deaktivieren», scr_menu_duplicate «umbenennen Duplizieren», scr_log_empty «aus Noch nicht ausgeführt.») — каждая строка JSON самостоятельна, обломков соседних строк быть не должно.",
+      "Обращение к игроку — единообразно «du» (туториал уже на du: «Du wachst in Ketten auf»); системные и облачные сообщения — безлично, без «Sie»-форм.",
+      "После {n} — обычное множественное число ({n} Kämpfer, {n} Diamanten, {n} Verletzungen, {n} Siege); существительные с заглавной буквы по немецкой орфографии даже в середине строки. «осталось {pts}» → «{pts} übrig», НЕ «{pts} links» (сейчас stat_distributed, boss_shield_absorb)."
+    ],
+    "es": [
+      "Плейсхолдеры {name} {n} {dmg} {cost} {tier} {target} — копировать дословно; имена внутри скобок не переводить ({name}, не {nombre}).",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копировать дословно вместе со значением цвета.",
+      "ATK / DEF / HP — латиницей как в ru; никогда «PV», «PS», «ATQ» и никакие испанские развёртки вместо аббревиатур.",
+      "В выражениях вида «боец.is_active :=» / «g.переменная» / «engine.поле» переводится только человеческое слово (боец → luchador, поле → campo), а идентификатор после точки (is_active) и префиксы g. / engine. остаются как есть: «engine.campo», НЕ «campo.motor» (так сломан scr_expr_engine в текущем es.json).",
+      "Часть речи — по русской строке, не по английской: scr_act_log 'Записать в лог' — действие «Registrar en el log», а не существительное; имена эффектов и вкладок — существительные (Parálisis, не Paralizar).",
+      "Строки ЗАГЛАВНЫМИ в ru/en — кнопки и вкладки: оставлять ЗАГЛАВНЫМИ, не длиннее ~1.3 русской строки; в верхнем регистре ударения сохраняются (MÁS, ENCANTAMIENTO, ÉPICO).",
+      "После {n} — существительное во множественном числе ({n} diamantes, {n} luchadores, {n} lesiones): {n} почти всегда больше одного, конструкции под единственное число не строить.",
+      "Восклицания оформлять парой ¡...! вокруг всей фразы, не втискивая знак вплотную к плейсхолдеру: «¡{target} -{dmg} HP!», а не «{target} -{dmg}¡PV!» (так сломаны battle_burst и battle_lightning в текущем es.json).",
+      "Обращение к игроку — единое «tú» (Toca, Verifica, Envía), не чередовать с «usted» (Verifique, Pegue); 'Log' в кнопках журналов — «Registro/Log», НИКОГДА «Iniciar sesión» (вход в аккаунт — так сломан scr_log_btn; фраза легитимна только в sign_in_google и cloud_err_*)."
+    ],
+    "fr": [
+      "Плейсхолдеры {name} {n} {dmg} {target} {lvl} — копировать дословно, имена внутри фигурных скобок не переводить и не менять.",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копировать дословно вместе со значением цвета.",
+      "ATK / DEF / HP / STR / AGI / VIT — латиницей, никогда не локализовать: не «ATQ», не «DÉF», не «PV», не «FOR/VIV».",
+      "В выражениях вида «боец.is_active :=» / «g.переменная» / «engine.поле» переводится только человеческое слово (боец → combattant, поле → champ), а идентификатор после точки (is_active), префикс g. и слово engine остаются как есть — так делает русский оригинал («engine.поле» → «engine.champ», не «moteur.champ»).",
+      "Часть речи — по русской строке, не по английской: 'Log message' это действие «Записать в лог» → «Écrire dans le journal»; ru «вызов» — существительное «Appel», не «Appeler».",
+      "Строки, что в ru/en написаны ЗАГЛАВНЫМИ — это кнопки и вкладки: оставлять ЗАГЛАВНЫМИ и не длиннее ~1.3 русской строки; французский многословен — выбирать короткий вариант («RENVOYER», а не «LICENCIER DÉFINITIVEMENT»).",
+      "После {n} — множественное число ({n} combattants, {n} diamants, {n} blessures): {n} почти всегда больше единицы; французское согласование по числу обязательно и для прилагательных ({n} combattants prêts).",
+      "Французская пунктуация: перед : ; ? ! ставится пробел (обычный U+0020, не узкий U+202F — его может не быть в шрифте); в коротких капс-выкриках допустимо опускать («VICTOIRE!»), в связном тексте — ставить («Erreur : {e}»).",
+      "Апостроф — единый прямой ' (U+0027) во всём файле; не смешивать с типографским ’ (в текущем fr.json оба). Обращение к игроку — по русской строке: где ru на «ты» (туториал, скрипты) — tu, где на «вы» (облако, ошибки) — vous."
+    ],
+    "it": [
+      "Плейсхолдеры {name} {n} {dmg} {target} {lvl} — копировать дословно, не переводить и не менять имена.",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копировать дословно вместе со значением цвета.",
+      "ATK / DEF / HP — латиницей, никогда не локализовать (не «ATT», не «DIF», не «PS/PV»). Сейчас в it.json есть «DIF abbassato» (battle_corruption) и «ATT ridotto» (battle_weaken) — это ошибка.",
+      "В выражениях вида «боец.is_active :=» / «g.переменная» / «engine.поле» переводится только человеческое слово (боец → combattente, поле → campo); идентификаторы (is_active, on_tick, on_battle_end), префикс g. и слово engine остаются как есть: «combattente.is_active :=», «engine.campo» — не «combattente.is_attivo» и не «campo.motore», как сейчас.",
+      "Часть речи — по русской строке, не по английской: 'Log message' это действие «Записать в лог» → «Scrivi nel log», а не существительное; имена эффектов и вкладок — существительные (Sanguinamento, Drenaggio), не инфинитивы («Paralizzare», «Scolare», «Indebolire» — ошибка; нужно Paralisi, Drenaggio, Indebolimento).",
+      "Строки, написанные в ru/en ВЕЛИКИМИ — кнопки и вкладки: оставлять ВЕЛИКИМИ и не длиннее ~1.3 русской строки; итальянский многословен — сокращай («CURA TUTTI», а не «GUARIRE TUTTE LE FERITE»).",
+      "После {n} — существительное во множественном числе без артикля ({n} combattenti, {n} diamanti, {n} vittorie): {n} почти всегда больше единицы; там, где возможно n=1, выбирай формулировку без согласования по числу.",
+      "Итальянская орфография обязательна: элизия с апострофом (dell'arena, un'arma), настоящие акцентированные буквы (È, più, così) — не «E'» и не голые e/u.",
+      "Обращение к игроку — единообразно на «tu» (Tocca, Controlla, Riprova); без безличного «Si prega di…» и без формы вежливости «Lei»."
+    ],
+    "pt": [
+      "Плейсхолдеры {name} {n} {dmg} {cost} {tier} {lvl} — копировать дословно, имена внутри фигурных скобок не переводить и не менять.",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копировать дословно вместе со значением цвета.",
+      "ATK / DEF / HP — латиницей, никогда не локализовать: не «ATQ», не «PV». HP остаётся HP.",
+      "В выражениях вида «боец.is_active :=» / «g.переменная» / «engine.поле» переводится только человеческое слово (боец → lutador, поле → campo); идентификатор после точки (is_active), префиксы g. и f. и слово engine остаются как есть — так делает русский оригинал (текущее «motor.campo» — ошибка).",
+      "Часть речи — по русской строке, а не по английской: 'Log message' — действие «Registrar no log», имена эффектов и вкладок — существительные (Queimadura, а не Queimar).",
+      "Строки, написанные в ru/en ЗАГЛАВНЫМИ — кнопки и вкладки: оставлять ЗАГЛАВНЫМИ и не длиннее ~1.3 русской строки; артикли и предлоги в кнопках по возможности опускать.",
+      "После {n} — существительное во множественном числе ({n} diamantes, {n} lutadores, {n} lesões): {n} почти всегда больше 1; следить за неправильными множественными — item → itens, lesão → lesões.",
+      "Единый бразильский вариант (pt-BR): salvar (не guardar), обращение к игроку на «você»; одно слово на сущность на всех экранах — травма всегда lesão, stamina всегда vigor, наём всегда contratar.",
+      "«Осталось N» — «{n} restantes» / «faltam {n}», НЕ «esquerda» (в stat_distributed и boss_shield_absorb 'left' переведено как сторона «слева»); забег рогалика — «tentativa», запуск скрипта — «executar / execução», ни то ни другое не «correr» (бежать)."
+    ],
+    "pl": [
+      "Плейсхолдеры {name} {n} {dmg} {target} {lvl} — копировать дословно, не переводить и не менять имена.",
+      "BBCode-теги [b] [/b] [color=ffd040] [/color] — копировать дословно вместе со значением цвета.",
+      "ATK / DEF / HP и STR / AGI / VIT — латиницей, никогда не локализовать (не «KM», не «WIT»).",
+      "В выражениях вида «боец.is_active :=» / «g.переменная» переводится только человеческое слово (боец → wojownik), а идентификатор после точки (is_active) и префикс g. остаются как есть — так делает русский оригинал.",
+      "Часть речи — по русской строке, не по английской: 'Log message' — это действие «Zapisz do dziennika», ПОРАЖЕНИЕ — существительное «PORAŻKA» (не «POKONAĆ»), имена эффектов и вкладок — существительные.",
+      "Строки, которые в ru/en написаны ЗАГЛАВНЫМИ — кнопки и вкладки: оставлять ЗАГЛАВНЫМИ и не длиннее ~1.3 от русской строки.",
+      "После {n} — родительный падеж множественного числа (diamentów, wojowników, zwycięstw, kontuzji): польские формы на 2–4 (diamenty) работают только для чисел, оканчивающихся на 2–4 кроме 12–14, а {n} почти всегда больше.",
+      "Польская диакритика (ą ć ę ł ń ó ś ź ż) обязательна везде, включая CAPS-строки (ZAŁÓŻ, WYŁ); ASCII-суррогаты (zolto, WYL) — брак.",
+      "Одна сущность — одно слово: не чередовать wyprawa/ekspedycja, zbroja/pancerz, kontuzja/uraz/obrażenia, relikwia/relikt — выбирать словарный вариант."
     ]
   },
   "collisions_ok": {
@@ -62,6 +213,21 @@
       },
       "uk": {
         "рівень": "вслед за ru: одно слово для tier и level, различает контекст"
+      },
+      "es": {
+        "nivel": "вслед за ru: одно слово для tier и level, различает контекст (арены / бойца)"
+      },
+      "fr": {
+        "niveau": "вслед за ru: одно слово для tier и level, различает контекст (арены / бойца)"
+      },
+      "it": {
+        "livello": "вслед за ru: одно слово для tier и level, различает контекст (арены / бойца)"
+      },
+      "pt": {
+        "nível": "вслед за ru: одно слово для tier и level, различает контекст (арены / бойца)"
+      },
+      "pl": {
+        "poziom": "вслед за ru: одно слово для tier и level, различает контекст (арены / бойца)"
       }
     },
     "shared_name": {},
@@ -77,188 +243,498 @@
       "ложных кандидатов."
     ]
   },
+  "english_ok": {
+    "_doc": [
+      "Ключи, где перевод ЗАКОННО совпадает с английским: когнаты и",
+      "заимствования (fr «actions», de «Filter»/«GOLD», латинская",
+      "разрядка S C R I P T S при ru-транслитерации «скрипты»).",
+      "Ключ -> причина; tests/test_i18n_terminology.py требует",
+      "причину, гейт english-leak пропускает только перечисленное."
+    ],
+    "de": {
+      "scr_block_filter": "«Filter» — немецкое слово, «where» — идентификатор поля скрипта; строка совпадает с en побуквенно",
+      "2x_gold_active": "«GOLD» — немецкое слово; «2x GOLD: {t}s» — корректный немецкий, совпадающий с en"
+    },
+    "es": {
+      "title_scripts": "заимствование «scripts» (как ru «СКРИПТЫ» кириллицей); латинская разрядка совпадает с en"
+    },
+    "fr": {
+      "title_scripts": "французское «scripts» пишется как английское; ru сам транслитерирует «СКРИПТЫ»",
+      "quest_completed": "«dia.» — сокращение fr diamant, совпадает с en dia.; плейсхолдеры без прозы",
+      "scr_log_ok": "«actions» — французское слово; «OK — {n} actions» — корректный французский"
+    },
+    "pt": {
+      "title_scripts": "заимствование «scripts» в pt пишется как английское; ru сам транслитерирует «СКРИПТЫ»"
+    }
+  },
   "terms": {
     "fighter": {
-      "en": "fighter", "ru": "боец",
+      "en": "fighter",
+      "ru": "боец",
       "note": "A gladiator — a human being. NEVER an aircraft.",
-      "uk": "боєць (мн. бійці, род. мн. бійців) — НЕ «винищувач»"
+      "uk": "боєць (мн. бійці, род. мн. бійців) — НЕ «винищувач»",
+      "de": "Kämpfer (мн. Kämpfer, «{n} Kämpfer» работает для любого числа) — НЕ «Jäger» (охотник)",
+      "es": "luchador (мн. luchadores) — одно слово везде, НЕ чередовать с «combatiente» (в текущем es.json оба: fighters_ready vs no_fighters)",
+      "fr": "combattant (мн. combattants) — НЕ «chasseur» (это истребитель/охотник); «gladiateur» только во flavour-строках, где ru пишет «гладиатор»",
+      "it": "combattente (мн. combattenti) — НЕ «caccia» (это истребитель, и слово занято вкладкой ОХОТА) — в CAPS при нехватке места: COMBATT.",
+      "pt": "lutador (мн. lutadores) — НЕ «caça» (самолёт-истребитель)",
+      "pl": "wojownik (мн. wojownicy, род. мн. wojowników) — НЕ «myśliwiec»"
     },
     "squad": {
-      "en": "squad / roster", "ru": "отряд",
-      "uk": "загін"
+      "en": "squad / roster",
+      "ru": "отряд",
+      "uk": "загін",
+      "de": "Trupp — одно слово везде; сейчас файл мечется между Trupp/TRUPPE/Squad/Kader",
+      "es": "escuadra — НЕ «equipo» (equipo в этой игре занято под снаряжение/equipment: gold_equip_lost, dismiss_confirm_msg) — в CAPS-кнопках: TROPA",
+      "fr": "escouade — НЕ «équipe» как имя вкладки/отряда; «équipe» допустимо только в боевых сообщениях («ATK d'équipe» для ru «АТК команды») — в CAPS-кнопках: TROUPE",
+      "it": "squadra",
+      "pt": "esquadrão — в CAPS-кнопках: ESQD.",
+      "pl": "oddział"
     },
     "arena": {
-      "en": "arena / pit", "ru": "арена",
+      "en": "arena / pit",
+      "ru": "арена",
       "note": "en calls the screen PIT; ru calls it АРЕНА and every other string agrees. Follow ru.",
-      "uk": "арена"
+      "uk": "арена",
+      "de": "Arena — экран по ru называется АРЕНА → ARENA; НЕ «Pit» латиницей (nav_pit/title_pit сейчас не переведены). «Grube» допустима только во flavor-тексте туториала, не как имя экрана",
+      "es": "arena (вкладка ARENA — следовать ru, не en PIT); лор-имя «Яма» (гл. I, туториал) — el Foso, НЕ «pozo» (колодец)",
+      "fr": "arène — экран/вкладка ARÈNE (по ru, не по en PIT); «la Fosse» остаётся только в lore и туториале (как ru «Яма»)",
+      "it": "arena (вкладка ARENA — по ru, а не по en «PIT»)",
+      "pt": "arena — экран и вкладка называются ARENA вслед за ru; «Poço» (Яма) остаётся только в лоре (tut_welcome_title, chap_ch1), НЕ как имя экрана",
+      "pl": "arena"
     },
     "forge": {
-      "en": "forge / anvil", "ru": "кузня",
+      "en": "forge / anvil",
+      "ru": "кузня",
       "note": "en calls the screen ANVIL; ru calls it КУЗНЯ. Follow ru — 'ковадло' is the tool, not the workshop.",
-      "uk": "кузня"
+      "uk": "кузня",
+      "de": "Schmiede — мастерская; НЕ «Amboss» (инструмент-наковальня, калька с en ANVIL; сейчас в nav_anvil/title_anvil). Следовать ru КУЗНЯ — в CAPS-кнопках: SCHMIED",
+      "es": "forja — НЕ «yunque» (наковальня — инструмент, не мастерская; следовать ru КУЗНЯ, не en ANVIL)",
+      "fr": "forge — вкладка FORGE — НЕ «enclume» (наковальня — инструмент кузнеца, не мастерская)",
+      "it": "fucina — НЕ «incudine» (наковальня — инструмент, а не мастерская; en ANVIL не калькировать)",
+      "pt": "forja — НЕ «bigorna» (наковальня — инструмент, а не мастерская); экран КУЗНЯ следует ru",
+      "pl": "kuźnia — НЕ «kowadło» (это наковальня-инструмент; экран следует за ru КУЗНЯ)"
     },
     "hunts": {
-      "en": "hunts", "ru": "охота",
-      "uk": "полювання"
+      "en": "hunts",
+      "ru": "охота",
+      "uk": "полювання",
+      "de": "Jagd (вкладка JAGD)",
+      "es": "caza (вкладка CAZA) — одно слово, не чередовать с «cacería»",
+      "fr": "chasses (вкладка CHASSES; ед. chasse)",
+      "it": "caccia",
+      "pt": "caçadas (ед. caçada) — НЕ «caças» (истребители)",
+      "pl": "polowanie (вкладка: POLOWANIA) — в CAPS-кнопках: ŁOWY (короткий синоним)"
     },
     "expedition": {
-      "en": "expedition", "ru": "экспедиция",
-      "uk": "експедиція"
+      "en": "expedition",
+      "ru": "экспедиция",
+      "uk": "експедиція",
+      "de": "Expedition",
+      "es": "expedición (мн. expediciones)",
+      "fr": "expédition",
+      "it": "spedizione",
+      "pt": "expedição (мн. expedições)",
+      "pl": "wyprawa — не чередовать с «ekspedycja»"
     },
     "tier": {
-      "en": "tier", "ru": "уровень (арены)",
-      "uk": "рівень"
+      "en": "tier",
+      "ru": "уровень (арены)",
+      "uk": "рівень",
+      "de": "Stufe (арены) — «Stufe {n}», T15 как есть",
+      "es": "nivel (арены) — вслед за ru одно слово с level, различает контекст («de la arena»)",
+      "fr": "niveau (арены) — вслед за ru одно слово с level; контекст различает: «niveau d'arène», сокращение T{n}",
+      "it": "livello (арены) — вслед за ru одно слово с level, контекст («dell'arena» / «del combattente») различает",
+      "pt": "nível (da arena) — НЕ «camada» (физический слой); одно слово с level, контекст («da arena» / «do lutador») различает, как в ru",
+      "pl": "poziom (areny)"
     },
     "level": {
-      "en": "level", "ru": "уровень (бойца)",
-      "uk": "рівень"
+      "en": "level",
+      "ru": "уровень (бойца)",
+      "uk": "рівень",
+      "de": "Level (бойца; сокр. Lv.{n}) — НЕ «Ebene» (плоскость/этаж, сейчас в level_label и scr_f_level). В отличие от ru, tier и level разведены разными словами — не смешивать",
+      "es": "nivel (бойца)",
+      "fr": "niveau (бойца) — сокращение Niv.{n}; одно слово с tier, контекст различает",
+      "it": "livello (бойца)",
+      "pt": "nível (do lutador) — одно слово с tier вслед за ru, различает контекст",
+      "pl": "poziom (wojownika)"
     },
     "perk": {
-      "en": "perk", "ru": "перк",
+      "en": "perk",
+      "ru": "перк",
       "note": "A skill-tree node. Kept as a borrowing, not 'bonus' / 'advantage' / 'provision'.",
-      "uk": "перк (мн. перки, род. мн. перків)"
+      "uk": "перк (мн. перки, род. мн. перків)",
+      "de": "Perk (мн. Perks) — заимствование, как в ru «перк»; не «Vorteil», не «Bonus» (сейчас perks_btn «VORTEILE»)",
+      "es": "perk (мн. perks) — заимствование, как в ru/uk; НЕ «ventaja», НЕ «beneficio»",
+      "fr": "atout (мн. atouts) — устоявшийся термин французских локализаций (Call of Duty и др.); НЕ «avantage» (размытое «преимущество»), НЕ сырое «perk»",
+      "it": "perk (заимствование, м.р., неизменяемое: il perk, i perk) — НЕ «vantaggio»",
+      "pt": "perk (заимствование, мн. perks) — по правилу глоссария не размывать в «vantagem» (преимущество)",
+      "pl": "perk (мн. perki, род. мн. perków) — заимствование; НЕ «atut», не «premia»"
     },
     "relic": {
-      "en": "relic", "ru": "реликвия",
-      "uk": "реліквія"
+      "en": "relic",
+      "ru": "реликвия",
+      "uk": "реліквія",
+      "de": "Relikt (мн. Relikte)",
+      "es": "reliquia",
+      "fr": "relique",
+      "it": "reliquia",
+      "pt": "relíquia (мн. relíquias)",
+      "pl": "relikwia (мн. relikwie) — НЕ «relikt» (пережиток; сейчас два слова на одну сущность расходятся по экранам)"
     },
     "shard": {
-      "en": "shard", "ru": "осколок",
-      "uk": "осколок"
+      "en": "shard",
+      "ru": "осколок",
+      "uk": "осколок",
+      "de": "Splitter (мн. Splitter; Metallsplitter (I)…(V)) — одно слово везде; НЕ «Scherbe» (сейчас файл делит одну сущность: Scherbe I–III против Splitter IV–V)",
+      "es": "fragmento (полное имя — Fragmento de metal)",
+      "fr": "éclat (мн. éclats) — одно слово везде: НЕ чередовать с «fragment» и не оставлять английское «Shard» (в текущем fr.json встречаются все три)",
+      "it": "frammento",
+      "pt": "fragmento (мн. fragmentos)",
+      "pl": "odłamek (мн. odłamki, род. мн. odłamków) — НЕ «odłap» (несуществующее слово)"
     },
     "enchantment": {
-      "en": "enchant / enchantment", "ru": "зачарование",
+      "en": "enchant / enchantment",
+      "ru": "зачарование",
       "note": "Tab labels are nouns; only an action button may be a verb.",
-      "uk": "зачарування (іменник); дія — «зачарувати»"
+      "uk": "зачарування (іменник); дія — «зачарувати»",
+      "de": "Verzauberung (существительное для вкладок); действие-кнопка — «verzaubern»",
+      "es": "encantamiento (существительное; вкладка ENCANTAMIENTO) — НЕ «encanto» (это обаяние/шарм); кнопка-действие — «encantar»",
+      "fr": "enchantement — вкладки и имена эффектов существительными; глагол «Enchanter» только на кнопке-действии",
+      "it": "incantamento (существительное, одно слово везде — не чередовать с «incanto» / «incantesimo»); действие-кнопка — «incantare»",
+      "pt": "encantamento (существительное — вкладки и имена); действие-кнопка — «encantar»",
+      "pl": "zaklęcie (существительное — вкладки и ярлыки); действие-кнопка — «zaczaruj»"
     },
     "injury": {
-      "en": "injury", "ru": "травма",
+      "en": "injury",
+      "ru": "травма",
       "note": "One word everywhere — do not alternate with 'поранення'.",
-      "uk": "травма"
+      "uk": "травма",
+      "de": "Verletzung — одно слово везде, не чередовать с «Wunde»",
+      "es": "lesión (мн. lesiones) — одно слово везде; НЕ чередовать с «herida» (herida = рана, допустима только во flavour-тексте зачарований)",
+      "fr": "blessure — одно слово везде, НЕ чередовать с «traumatisme»",
+      "it": "infortunio (мн. infortuni) — спортивный термин травмы атлета; одно слово везде, не чередовать с «ferita» / «lesione»",
+      "pt": "lesão (мн. lesões) — одно слово везде, не чередовать с «ferimento» (сейчас файл делает именно это: all_injuries_healed vs battle_log_injuries)",
+      "pl": "kontuzja — одно слово везде; НЕ «obrażenia» (это урон), не чередовать с «uraz»"
     },
     "heal": {
-      "en": "heal", "ru": "лечить / вылечить",
+      "en": "heal",
+      "ru": "лечить / вылечить",
       "note": "'вицілити' means to take aim, not to cure.",
-      "uk": "лікувати / вилікувати"
+      "uk": "лікувати / вилікувати",
+      "de": "heilen — вкладки/заголовки существительным «Heilung»",
+      "es": "curar — одно слово, НЕ чередовать с «sanar» (в текущем es.json оба: healed_all vs heal_btn)",
+      "fr": "soigner (лечить, восстановление HP) / guérir (вылечить травму до конца) — пара как ru «лечить / вылечить»",
+      "it": "curare (вылечен — guarito); полностью вылечить — guarire",
+      "pt": "curar (сущ. cura) — и травмы, и HP",
+      "pl": "leczyć / wyleczyć"
     },
     "gold": {
-      "en": "gold", "ru": "золото",
-      "uk": "золото"
+      "en": "gold",
+      "ru": "золото",
+      "uk": "золото",
+      "de": "Gold",
+      "es": "oro",
+      "fr": "or",
+      "it": "oro",
+      "pt": "ouro",
+      "pl": "złoto"
     },
     "diamond": {
-      "en": "diamond", "ru": "алмаз",
+      "en": "diamond",
+      "ru": "алмаз",
       "note": "Premium currency. One word everywhere, and never the abbreviation for 'diameter'.",
-      "uk": "діамант (род. мн. діамантів)"
+      "uk": "діамант (род. мн. діамантів)",
+      "de": "Diamant (мн. Diamanten) — не сокращать; НЕ «Durchm.» (диаметр)",
+      "es": "diamante (мн. diamantes; сокр. «diam.») — НЕ «diámetro»/«diám.» (диаметр)",
+      "fr": "diamant — премиум-валюта, одно слово везде",
+      "it": "diamante (мн. diamanti)",
+      "pt": "diamante (мн. diamantes) — сокращение «diam.», НЕ «dia.» (это «день»; сейчас в quest_completed); одно слово на всех экранах",
+      "pl": "diament (род. мн. diamentów) — НЕ «śr.» (średnica = диаметр)"
     },
     "item": {
-      "en": "item", "ru": "предмет",
+      "en": "item",
+      "ru": "предмет",
       "note": "Equipment, not merchandise — never 'товар' / 'артикул'.",
-      "uk": "предмет"
+      "uk": "предмет",
+      "de": "Gegenstand (мн. Gegenstände) — снаряжение, не товар; НЕ «Artikel»",
+      "es": "objeto — НЕ «artículo» (товар в магазине), НЕ «elemento» (в текущем es.json все три: bought_msg / item_not_found / scr_act_forge_upgrade_d)",
+      "fr": "objet — НЕ «article» (это товар/артикул магазина)",
+      "it": "oggetto — НЕ «articolo» (товар в каталоге)",
+      "pt": "item (мн. itens — НЕ «items») — предмет экипировки, не товар",
+      "pl": "przedmiot — НЕ «towar», не «artykuł», не «element»"
     },
     "weapon": {
-      "en": "weapon", "ru": "оружие",
-      "uk": "зброя"
+      "en": "weapon",
+      "ru": "оружие",
+      "uk": "зброя",
+      "de": "Waffe",
+      "es": "arma (мн. armas; ж.р., но с артиклем el: el arma)",
+      "fr": "arme",
+      "it": "arma (мн. armi)",
+      "pt": "arma",
+      "pl": "broń"
     },
     "armor": {
-      "en": "armor", "ru": "броня",
-      "uk": "броня"
+      "en": "armor",
+      "ru": "броня",
+      "uk": "броня",
+      "de": "Rüstung",
+      "es": "armadura — в CAPS при нехватке места: ARMAD.",
+      "fr": "armure — НЕ «blindage» / «blindé» (это бронетехника)",
+      "it": "armatura — в CAPS при нехватке места: ARMAT.",
+      "pt": "armadura — в CAPS при нехватке места: ARMAD.",
+      "pl": "zbroja — не чередовать с «pancerz»"
     },
     "accessory": {
-      "en": "accessory", "ru": "аксессуар",
-      "uk": "аксесуар"
+      "en": "accessory",
+      "ru": "аксессуар",
+      "uk": "аксесуар",
+      "de": "Accessoire — НЕ «Zubehör» (запчасти/комплектующие; сейчас в tab_accessory и др.)",
+      "es": "accesorio (существительное; не прилагательное «accesoria» как в accessory_base_hp)",
+      "fr": "accessoire",
+      "it": "accessorio",
+      "pt": "acessório",
+      "pl": "akcesorium (мн. akcesoria)"
     },
     "slot": {
-      "en": "slot", "ru": "слот",
-      "uk": "слот"
+      "en": "slot",
+      "ru": "слот",
+      "uk": "слот",
+      "de": "Slot (мн. Slots)",
+      "es": "ranura — одно слово, НЕ чередовать с «espacio» (в текущем es.json оба: scr_arg_slot vs expedition_slots)",
+      "fr": "emplacement",
+      "it": "slot (м.р., неизменяемое)",
+      "pt": "slot (заимствование, мн. slots)",
+      "pl": "slot (мн. sloty) — НЕ «gniazdo» (это розетка/гнездо)"
     },
     "equip": {
-      "en": "equip", "ru": "экипировать",
-      "uk": "екіпірувати"
+      "en": "equip",
+      "ru": "экипировать",
+      "uk": "екіпірувати",
+      "de": "ausrüsten; снять — «ablegen» (сейчас unequip_btn «UNGERÜSTET» и scr_act_unequip_all «Alle ausrüsten» — противоположный смысл)",
+      "es": "equipar; снаряжение в целом — equipo (поэтому squad ≠ equipo)",
+      "fr": "équiper",
+      "it": "equipaggiare — в CAPS при нехватке места: EQUIP.",
+      "pt": "equipar",
+      "pl": "wyposażyć (założyć przedmiot); снять (unequip) — «zdejmij», НЕ то же слово «wyposaż»"
     },
     "upgrade": {
-      "en": "upgrade", "ru": "улучшение",
-      "uk": "покращення"
+      "en": "upgrade",
+      "ru": "улучшение",
+      "uk": "покращення",
+      "de": "Verbesserung (сущ.) / verbessern — НЕ «aktualisieren» (обновление ПО; сейчас weapon_upgraded «aktualisiert»)",
+      "es": "mejora (сущ.) / mejorar (глагол) — НЕ «actualizar» (обновление ПО); пара кнопок ru УЛУЧШИТЬ/УСИЛИТЬ — MEJORAR / POTENCIAR",
+      "fr": "amélioration (сущ.) / améliorer — НЕ «mise à niveau» (это обновление ПО); для пары кнопок ru «УЛУЧШИТЬ / УСИЛИТЬ» — «AMÉLIORER / RENFORCER»",
+      "it": "potenziamento (действие — potenziare) — НЕ «aggiornamento» / «aggiornare» (это обновление ПО; aggiornamento допустим только про языковые пакеты, lang_status_update)",
+      "pt": "melhoria (действие — melhorar; вторая кнопка upgrade_btn ru «УСИЛИТЬ» — APRIMORAR) — НЕ «atualização/atualizar» (обновление ПО; уместно только про языковые пакеты в lang_status_update)",
+      "pl": "ulepszenie (действие — «ulepsz») — НЕ «aktualizacja» (это апдейт софта)"
     },
     "inventory": {
-      "en": "inventory", "ru": "инвентарь",
-      "uk": "інвентар"
+      "en": "inventory",
+      "ru": "инвентарь",
+      "uk": "інвентар",
+      "de": "Inventar",
+      "es": "inventario",
+      "fr": "inventaire",
+      "it": "inventario",
+      "pt": "inventário",
+      "pl": "ekwipunek — НЕ «inwentaryzacja» (бухгалтерская опись), не «zapasy»"
     },
     "stamina": {
-      "en": "stamina", "ru": "выносливость",
-      "uk": "витривалість"
+      "en": "stamina",
+      "ru": "выносливость",
+      "uk": "витривалість",
+      "de": "Ausdauer",
+      "es": "resistencia (стамина бойца, 0–100; защита от урона — это DEF/defensa, не resistencia)",
+      "fr": "endurance — не путать с «vitalité» (стат VIT)",
+      "it": "resistenza (выносливость атлета, спортивный регистр; с DEF не путается — DEF всегда латиницей)",
+      "pt": "vigor — НЕ «resistência» (сейчас две передачи одной шкалы: Resistência в stamina_label и Vigor в fighter_help_body)",
+      "pl": "wytrzymałość"
     },
     "fatigue": {
-      "en": "fatigue", "ru": "усталость",
-      "uk": "втома"
+      "en": "fatigue",
+      "ru": "усталость",
+      "uk": "втома",
+      "de": "Müdigkeit — отдельно от состояния exhausted = «erschöpft/ERSCHÖPFT»; три сущности (Ausdauer / Müdigkeit / erschöpft) не смешивать",
+      "es": "fatiga",
+      "fr": "fatigue",
+      "it": "fatica",
+      "pt": "fadiga",
+      "pl": "zmęczenie"
     },
     "boss": {
-      "en": "boss", "ru": "босс",
-      "uk": "бос"
+      "en": "boss",
+      "ru": "босс",
+      "uk": "бос",
+      "de": "Boss (мн. Bosse) — НЕ «Chef» (начальник)",
+      "es": "jefe",
+      "fr": "boss (заимствование, как в ru) — НЕ «patron» (работодатель), НЕ «chef»",
+      "it": "boss (заимствование, неизменяемое) — НЕ «capo»",
+      "pt": "chefe",
+      "pl": "boss (мн. bossowie, род. мн. bossów) — НЕ «szef» (начальник на работе)"
     },
     "battle": {
-      "en": "battle", "ru": "бой",
-      "uk": "бій"
+      "en": "battle",
+      "ru": "бой",
+      "uk": "бій",
+      "de": "Kampf (мн. Kämpfe)",
+      "es": "combate — одно слово, не чередовать с «batalla» (в текущем es.json оба: battle_log_title vs auto_battle)",
+      "fr": "combat — одно слово везде, НЕ чередовать с «bataille»; журнал боёв — «journal de combat»",
+      "it": "battaglia — в CAPS при нехватке места: BATT.",
+      "pt": "batalha (кнопка «БОЙ» — LUTAR)",
+      "pl": "bitwa (глагол на кнопке — «walcz»)"
     },
     "victory": {
-      "en": "victory", "ru": "победа",
-      "uk": "перемога"
+      "en": "victory",
+      "ru": "победа",
+      "uk": "перемога",
+      "de": "Sieg (мн. Siege)",
+      "es": "victoria",
+      "fr": "victoire",
+      "it": "vittoria",
+      "pt": "vitória",
+      "pl": "zwycięstwo — в CAPS-кнопках: WYGRANA"
     },
     "defeat": {
-      "en": "defeat", "ru": "поражение",
+      "en": "defeat",
+      "ru": "поражение",
       "note": "The Ukrainian noun is 'поразка'; 'пораза' is not a word.",
-      "uk": "поразка"
+      "uk": "поразка",
+      "de": "Niederlage — НЕ «Verlust» (убыток; сейчас defeat «VERLUST!» при правильном battle_log_defeat «NIEDERLAGE»)",
+      "es": "derrota — НЕ «fracaso» (провал/неудача)",
+      "fr": "défaite",
+      "it": "sconfitta",
+      "pt": "derrota",
+      "pl": "porażka — существительное; НЕ «POKONAĆ» (это глагол)"
     },
     "dismiss": {
-      "en": "dismiss", "ru": "уволить",
+      "en": "dismiss",
+      "ru": "уволить",
       "note": "Firing a fighter from the squad, not rejecting a dialog.",
-      "uk": "звільнити"
+      "uk": "звільнити",
+      "de": "entlassen — увольнение бойца из отряда, не закрытие диалога",
+      "es": "despedir (уволить бойца из отряда) — не «descartar» (закрыть диалог)",
+      "fr": "renvoyer — выгнать бойца из отряда; НЕ «licencier» (корпоративное сокращение штата), НЕ «rejeter» (отклонить диалог)",
+      "it": "licenziare (увольнение бойца из отряда, не закрытие диалога)",
+      "pt": "dispensar — увольнение бойца из отряда (футбольный термин), не закрытие диалога",
+      "pl": "zwolnić (выгнать бойца из отряда, не закрыть диалог)"
     },
     "hire": {
-      "en": "hire", "ru": "нанять",
-      "uk": "найняти"
+      "en": "hire",
+      "ru": "нанять",
+      "uk": "найняти",
+      "de": "anheuern",
+      "es": "reclutar — одно слово, не чередовать с «contratar» (в текущем es.json оба: recruit_btn vs evt_hire)",
+      "fr": "recruter — НЕ «embaucher» (наём офисного сотрудника)",
+      "it": "reclutare",
+      "pt": "contratar — одно слово везде, не чередовать с «recrutar» (сейчас recruit_btn vs evt_hire расходятся)",
+      "pl": "nająć / najmij"
     },
     "bench": {
-      "en": "bench", "ru": "отправить в запас",
-      "uk": "відправити в запас"
+      "en": "bench",
+      "ru": "отправить в запас",
+      "uk": "відправити в запас",
+      "de": "auf die Bank setzen (скамья запасных — спортивное «Bank», это корректно)",
+      "es": "enviar al banquillo (запас — el banquillo, как в спорте) — НЕ «banco» (банк/лавка), НЕ «banca» (банковское дело)",
+      "fr": "envoyer en réserve / mettre sur le banc; вкладка — «Banc»",
+      "it": "mandare in panchina (запас — panchina) — НЕ «panca» (это мебель / жим лёжа)",
+      "pt": "reserva / mandar para a reserva — НЕ «banco» (читается как банк)",
+      "pl": "odesłać na ławkę (rezerwowych); вкладка — «Ławka»"
     },
     "auto_train": {
-      "en": "auto-train", "ru": "авто-прокачка",
+      "en": "auto-train",
+      "ru": "авто-прокачка",
       "note": "Automatic spending of stat points. 'Train' is the verb, not the railway vehicle.",
-      "uk": "автопрокачка — НЕ «поїзд»"
+      "uk": "автопрокачка — НЕ «поїзд»",
+      "de": "Auto-Training — «train» это тренировка, НЕ «Zug» (поезд; сейчас train_btn «ZUG {cost}», auto_distribute_on/off «Automatischer Zug»)",
+      "es": "auto-entrenamiento — НЕ «tren» (железнодорожный поезд); тренировать — entrenar, кнопка train_btn — ENTRENAR",
+      "fr": "répartition auto (авто-трата очков статов) — НЕ «train automatique» (поезд), НЕ сырое «TRAIN»",
+      "it": "auto-allenamento (тренировка — allenamento, глагол allenare) — НЕ «treno» (поезд)",
+      "pt": "treino automático — НЕ «trem» (поезд)",
+      "pl": "auto-trening — НЕ «pociąg» (поезд)"
     },
     "script": {
-      "en": "script / program", "ru": "скрипт / программа",
+      "en": "script / program",
+      "ru": "скрипт / программа",
       "note": "Program code, never a film screenplay.",
-      "uk": "скрипт / програма"
+      "uk": "скрипт / програма",
+      "de": "Skript / Programm — код, не сценарий фильма (не «Drehbuch»)",
+      "es": "script (мн. scripts) / programa — НЕ «guion» (киносценарий, ср. feature_scripts «Guiones de escuadra»)",
+      "fr": "script / programme — код, никогда не киносценарий (не «scénario»)",
+      "it": "script (заимствование, м.р.) / programma",
+      "pt": "script / programa (заимствование) — НЕ «roteiro» (киносценарий)",
+      "pl": "skrypt / program — никогда не «scenariusz» (киносценарий)"
     },
     "call": {
-      "en": "call", "ru": "вызов",
+      "en": "call",
+      "ru": "вызов",
       "note": "Calling a function. Never a telephone call.",
-      "uk": "виклик — НЕ «дзвінок», не «дзвонити»"
+      "uk": "виклик — НЕ «дзвінок», не «дзвонити»",
+      "de": "Aufruf — вызов функции; НЕ «Anruf» (телефонный звонок)",
+      "es": "llamada (вызов функции) — не телефонный звонок; глагол в чипах — llamar",
+      "fr": "appel — вызов функции, существительное как ru «вызов» (не глагол «Appeler»); НИКОГДА не телефонный звонок",
+      "it": "chiamata (вызов функции; существительное) — НЕ «telefonata», не императив «chiama»",
+      "pt": "chamada (de função) — НЕ «ligar» / «ligação» (телефонный звонок)",
+      "pl": "wywołanie (funkcji) — НЕ «zadzwoń», не «dzwonić» (телефон)"
     },
     "type": {
-      "en": "type", "ru": "тип",
+      "en": "type",
+      "ru": "тип",
       "note": "The noun (kind of value), never the verb 'to type on a keyboard'.",
-      "uk": "тип"
+      "uk": "тип",
+      "de": "Typ — существительное (вид значения), не глагол «tippen»",
+      "es": "tipo (существительное «тип значения») — не глагол печатать («escribir»)",
+      "fr": "type — существительное «тип» (вид значения); НЕ «taper» (печатать на клавиатуре)",
+      "it": "tipo (род значения; существительное, не глагол «печатать»)",
+      "pt": "tipo — существительное (вид значения), не глагол «печатать»",
+      "pl": "typ (существительное — вид значения, не печатать на клавиатуре)"
     },
     "value": {
-      "en": "value", "ru": "значение",
-      "uk": "значення"
+      "en": "value",
+      "ru": "значение",
+      "uk": "значення",
+      "de": "Wert",
+      "es": "valor",
+      "fr": "valeur",
+      "it": "valore",
+      "pt": "valor",
+      "pl": "wartość"
     },
     "on_off": {
-      "en": "ON / OFF", "ru": "ВКЛ / ВЫКЛ",
-      "uk": "УВІМК / ВИМК (розгорнуто: увімкнено / вимкнено)"
+      "en": "ON / OFF",
+      "ru": "ВКЛ / ВЫКЛ",
+      "uk": "УВІМК / ВИМК (розгорнуто: увімкнено / вимкнено)",
+      "de": "EIN / AUS (развёрнуто: eingeschaltet / ausgeschaltet)",
+      "es": "ACTIVADO / DESACTIVADO (коротко: act. / desact.) — НЕ «encendido/apagado» (это про бытовые приборы, ср. scr_on «encendido»)",
+      "fr": "activé / désactivé; в коротких тумблерах допустимо ON / OFF как есть",
+      "it": "ON / OFF (развёрнуто: attivato / disattivato)",
+      "pt": "LIGADO / DESLIGADO; глагольная пара переключателя — ativar/desativar (НЕ «ligar»: слово в чёрном списке за телефонную кальку)",
+      "pl": "WŁ / WYŁ (развёрнуто: włączone / wyłączone)"
     },
     "rarity": {
       "en": "common / uncommon / rare / epic / legendary",
       "ru": "обычное / необычное / редкое / эпическое / легендарное",
       "note": "'Common' means ordinary, not shared or joint.",
-      "uk": "звичайна / незвичайна / рідкісна / епічна / легендарна"
+      "uk": "звичайна / незвичайна / рідкісна / епічна / легендарна",
+      "de": "gewöhnlich / ungewöhnlich / selten / episch / legendär — НЕ «gemeinsam» (совместный), НЕ «gelegentlich» (изредка; сейчас filter_uncommon); краткие формы кнопок: GEWÖHNL., UNGEW. — по образцу ru ОБЫЧН/НЕОБ. — в CAPS при нехватке места: GEWÖHN.",
+      "es": "común / poco común / raro / épico / legendario — род по «objeto» (м.р.); сокр. для фильтра «Legend.», НЕ «Leyenda» (существительное «легенда» занято именем квеста qst_ch6_q2_name)",
+      "fr": "commun / peu commun / rare / épique / légendaire — м.р., согласование с «objet»; «commun» = обычный, не «общий»",
+      "it": "comune / non comune / raro / epico / leggendario",
+      "pt": "comum / incomum / raro / épico / lendário — род согласуется с предметом; «comum» = обычный, не «общий»",
+      "pl": "zwykły / niezwykły / rzadki / epicki / legendarny (род прилагательного — по существительному) — НЕ «wspólny» (общий/совместный)"
     },
     "stats": {
-      "en": "ATK / DEF / HP", "ru": "ATK / DEF / HP",
+      "en": "ATK / DEF / HP",
+      "ru": "ATK / DEF / HP",
       "note": "Latin abbreviations, identical in every language.",
-      "uk": "ATK / DEF / HP"
+      "uk": "ATK / DEF / HP",
+      "de": "ATK / DEF / HP — латиницей, как во всех языках",
+      "es": "ATK / DEF / HP — латиницей как есть; НЕ «ATQ», НЕ «PV», НЕ «PS»",
+      "fr": "ATK / DEF / HP — латиницей как есть; НЕ «ATQ», НЕ «DÉF», НЕ «PV»",
+      "it": "ATK / DEF / HP — латиницей как есть; НЕ «ATT / DIF / PS / PV»",
+      "pt": "ATK / DEF / HP — латиницей как есть; НЕ «ATQ», НЕ «PV» (сейчас total_atk и battle_burst локализуют аббревиатуры)",
+      "pl": "ATK / DEF / HP — латиницей; НЕ «KM» (лошадиные силы)"
     }
   }
 }

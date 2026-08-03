@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Acceptance gate for the CONTENT of data/languages/<lang>.json — the UI strings.
 
 test_i18n_data_quality.py guards data_XX.json (enemies, lore, injuries). This
@@ -207,17 +207,25 @@ def test_no_agent_scaffolding_residue(lang):
 
 
 def test_no_english_leak(lang):
-    """A long string identical to English was never translated at all."""
+    """A long string identical to English was never translated at all.
+
+    Two exemptions, both data, never silence: strings the master language
+    also leaves in English (item names) are deliberate; and cognate
+    coincidences — French "actions", German "Filter"/"GOLD", Latin
+    letter-spacing of a loanword ru transliterates («скрипты» ->
+    S C R I P T S) — are reviewed one by one into the glossary's english_ok
+    block with reasons the terminology gate enforces.
+    """
     _require_reviewed(lang)
     target = _lang(lang)
+    allowed = GLOSSARY.get("english_ok", {}).get(lang, {})
     bad = [
         (key, repr(source[:60]))
         for key, source in SRC.items()
         if len(source) >= MIN_LEAK_LEN
         and target.get(key, "") == source
-        # Strings the master language also leaves in English (item names,
-        # "2x GOLD: {t}s") are deliberate, not a gap.
         and MST.get(key) != source
+        and key not in allowed
     ]
     assert not bad, _report(bad, "english-leak", lang)
 

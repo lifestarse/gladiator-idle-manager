@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Bidirectional terminology consistency — collisions one-way rules cannot see.
 
 test_i18n_ui_quality.py enforces the glossary one way: the chosen rendering is
@@ -158,5 +158,11 @@ def test_whitelist_entries_carry_reasons():
             continue
         if not isinstance(reason, str) or len(reason.strip()) < 10:
             bad.append(f"prewave_ignore.{word!r}: reason is missing")
+    for lang, entries in GLOSSARY.get("english_ok", {}).items():
+        if lang.startswith("_") or not isinstance(entries, dict):
+            continue
+        for key, reason in entries.items():
+            if not isinstance(reason, str) or len(reason.strip()) < 10:
+                bad.append(f"english_ok.{lang}.{key}: reason is missing")
     assert not bad, ("glossary exceptions without reasons:\n  "
                      + "\n  ".join(bad))

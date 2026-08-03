@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """The wave-process machinery: prewave, blind QA sampling, gate calibration,
 and the release check's own checks.
 
@@ -9,11 +9,32 @@ land under the right selector, and the release gate recognizes both a healthy
 docs/content and a torn one.
 """
 import json
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
 from scripts import i18n_tool, release_check
 from scripts.i18n_tool import _prewave_candidates
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_ui_roles_import_stays_kivy_free():
+    """extract-ui must run headless: kivy parses sys.argv at import and dies
+    on foreign CLI flags (see memory/remote-content/remote-fonts.md), so the
+    game.scripting modules the tool imports for key roles must never pull it.
+    A path-loading workaround used to dodge this and broke the moment
+    labels.py grew a relative import — the package import is the honest fix,
+    and this test is what keeps it honest.
+    """
+    probe = ("import sys, game.scripting.labels, game.scripting.templates; "
+             "sys.exit(2 if any(m == 'kivy' or m.startswith('kivy.') "
+             "for m in sys.modules) else 0)")
+    result = subprocess.run([sys.executable, "-c", probe], cwd=ROOT,
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
 
 # ------------------------------------------------------------------- prewave
 
