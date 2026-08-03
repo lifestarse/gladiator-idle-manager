@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 3
 """Per-item passive effects — registry, compiler, wiring and remote patching.
 
 The vertical slice this covers: a definition in data/item_passives.json becomes
@@ -6,6 +6,12 @@ a PassiveSpec, reaches Fighter.get_perk_effects through the equipped item, is
 snapshotted by the battle stat cache, renders in every language, survives a
 save round-trip without a migration, and can be renumbered by a remote patch
 but never re-pointed at a different mechanic.
+
+Slot unlocking (the "passive slots" section): an item's slot count equals its
+rarity rank, slot #n activates at upgrade level (n + 1) *
+PASSIVE_SLOT_UNLOCK_STEP, and a locked slot must be inert everywhere — the
+validator refuses indexes the rarity can never unlock, the fighter gate skips
+locked specs, and the renderer shows them as locked rows.
 """
 import json
 import os
@@ -33,6 +39,21 @@ def _weapon(engine, item_id):
         if item["id"] == item_id:
             return dict(item)
     raise AssertionError(f"{item_id} missing from FORGE_WEAPONS")
+
+
+def _bare_item():
+    """A synthetic item guaranteed to carry no authored passives.
+
+    Every shipped FORGE_WEAPONS entry has gained a passive since this suite
+    was written, so "the item without any" can no longer be found by
+    filtering real content — searching FORGE_WEAPONS for one now raises
+    StopIteration. The control case this covers (an id absent from
+    COMPILED_PASSIVES) does not depend on the content team ever leaving one
+    weapon bare, so it is synthesized instead. Only `id` is populated: it is
+    the only field get_perk_effects, passive_marker and render_slots read
+    before short-circuiting on the empty COMPILED_PASSIVES lookup.
+    """
+    return {"id": "test_bare_item_no_passives"}
 
 
 # --------------------------------------------------------------- registry
@@ -115,11 +136,42 @@ def test_passives_package_imports_no_heavy_siblings():
 # --------------------------------------------------------------- compiler
 
 def _slots():
-    return {"w1": "weapon", "a1": "armor", "r1": "relic"}
+    """{item id: (slot, rarity)} — the shape slot_index() feeds compile_all.
+
+    w1 is legendary so single-item tests have all five slot indexes legal;
+    the wc/wu/wr/we ladder exists for the rarity-cap tests."""
+    return {"w1": ("weapon", "legendary"), "a1": ("armor", "common"),
+            "r1": ("relic", "rare"),
+            "wc": ("weapon", "common"), "wu": ("weapon", "uncommon"),
+            "wr": ("weapon", "rare"), "we": ("weapon", "epic")}
 
 
 def _compile(defs):
     return passives.compile_all(defs, _slots())
+
+
+@pytest.fixture
+def extra_kinds(monkeypatch):
+    """Six throwaway static weapon kinds, reverted after the test.
+
+    Needed because one item may not carry the same kind twice, and the
+    shipped registry has a limited kind set — multi-slot fixtures want one
+    kind per slot. monkeypatch.setitem mutates the real PASSIVE_KINDS dict
+    (the object _validate reads) and restores it on teardown, so nothing
+    leaks into the language-coverage tests that iterate the registry."""
+    from game.passives._registry import PASSIVE_KINDS
+
+    names = []
+    for i in range(6):
+        name = f"__slot_test_{i}__"
+        monkeypatch.setitem(PASSIVE_KINDS, name, PassiveKind(
+            kind=name, category=CATEGORY_STATIC,
+            effect_type="lifesteal_pct", slots=frozenset({"weapon"}),
+            params={"value": (0.0, 1.0)}, l10n="passive_lifesteal_pct",
+            l10n_args=(("pct", "value", 100),),
+        ))
+        names.append(name)
+    return names
 
 
 def test_compiles_a_well_formed_definition():
@@ -132,12 +184,12 @@ def test_compiles_a_well_formed_definition():
     assert dict(spec.static_effect) == {"type": "lifesteal_pct", "value": 0.05}
 
 
-def test_specs_are_ordered_by_index_not_by_file_order():
+def test_specs_are_ordered_by_index_not_by_file_order(extra_kinds):
     """The JSON is hand-authored; reordering it must not reorder dispatch."""
     out = _compile({
-        "w1#2": {"item": "w1", "kind": "lifesteal_pct", "value": 0.03},
-        "w1#0": {"item": "w1", "kind": "lifesteal_pct", "value": 0.01},
-        "w1#1": {"item": "w1", "kind": "lifesteal_pct", "value": 0.02},
+        "w1#2": {"item": "w1", "kind": extra_kinds[2], "value": 0.03},
+        "w1#0": {"item": "w1", "kind": extra_kinds[0], "value": 0.01},
+        "w1#1": {"item": "w1", "kind": extra_kinds[1], "value": 0.02},
     })
     assert [s.index for s in out["w1"]] == [0, 1, 2]
     assert [s.params["value"] for s in out["w1"]] == [0.01, 0.02, 0.03]
@@ -183,12 +235,18 @@ def test_definitions_must_be_a_mapping():
     assert passives.compile_all(None, _slots()) == {}
 
 
-def test_per_item_cap_is_enforced():
+def test_the_global_cap_matches_the_top_rarity_slot_count(extra_kinds):
+    """PASSIVE_MAX_PER_ITEM stays as a backstop; the real per-item limit is
+    slot_count(rarity). For a legendary the two coincide, so one spec past
+    the cap loses exactly the surplus index to the dead-slot check."""
     from game.constants import PASSIVE_MAX_PER_ITEM
+    from game.models._helpers import RARITY_LEGENDARY
 
-    defs = {f"w1#{i}": {"item": "w1", "kind": "lifesteal_pct",
-                        "value": 0.01 * (i + 1)}
-            for i in range(PASSIVE_MAX_PER_ITEM + 2)}
+    assert PASSIVE_MAX_PER_ITEM == passives.slot_count(
+        {"rarity": RARITY_LEGENDARY})
+
+    defs = {f"w1#{i}": {"item": "w1", "kind": extra_kinds[i], "value": 0.01}
+            for i in range(PASSIVE_MAX_PER_ITEM + 1)}
     out = _compile(defs)
     assert len(out["w1"]) == PASSIVE_MAX_PER_ITEM
 
@@ -212,6 +270,121 @@ def test_install_replaces_in_place(engine):
     finally:
         engine._wire_data()
     assert SLICE_ITEM in passives.COMPILED_PASSIVES, "restore path is broken"
+
+
+# ----------------------------------------------------------- passive slots
+
+def test_rarity_max_upgrade_is_step_times_rarity_rank():
+    """The invariant the whole unlock formula rides on: every rarity's upgrade
+    cap is PASSIVE_SLOT_UNLOCK_STEP times its rank, so slot_count(r) == rank
+    and each rarity's LAST slot unlocks exactly at its own upgrade cap."""
+    from game.constants import PASSIVE_SLOT_UNLOCK_STEP
+    from game.models._helpers import RARITY_MAX_UPGRADE
+
+    for rank, (rarity, cap) in enumerate(RARITY_MAX_UPGRADE.items(), start=1):
+        assert cap == PASSIVE_SLOT_UNLOCK_STEP * rank, rarity
+        assert passives.slot_count({"rarity": rarity}) == rank
+
+
+def test_unlock_threshold_is_derived_from_the_slot_index():
+    """The threshold is a formula over the `#n` suffix, never stored in data —
+    a remote patch cannot desync what does not exist."""
+    from game.constants import PASSIVE_MAX_PER_ITEM, PASSIVE_SLOT_UNLOCK_STEP
+
+    for index in range(PASSIVE_MAX_PER_ITEM):
+        assert (passives.unlock_threshold(index)
+                == (index + 1) * PASSIVE_SLOT_UNLOCK_STEP)
+
+
+@pytest.mark.parametrize("item_id, rank", [
+    ("wc", 1), ("wu", 2), ("wr", 3), ("we", 4), ("w1", 5),
+])
+def test_rarity_limits_the_slot_count(extra_kinds, item_id, rank):
+    """Author one spec more than the rarity's rank allows: the surplus index
+    can never unlock, and the validator drops exactly it."""
+    defs = {f"{item_id}#{i}": {"item": item_id, "kind": extra_kinds[i],
+                               "value": 0.01}
+            for i in range(rank + 1)}
+    out = _compile(defs)
+    assert [s.index for s in out[item_id]] == list(range(rank))
+
+
+def test_a_dead_slot_is_rejected_by_the_validator(extra_kinds):
+    """"#1" on a common item can never activate — its threshold exceeds the
+    rarity's upgrade cap — so the validator refuses it while keeping "#0"."""
+    out = _compile({
+        "wc#0": {"item": "wc", "kind": extra_kinds[0], "value": 0.02},
+        "wc#1": {"item": "wc", "kind": extra_kinds[1], "value": 0.03},
+    })
+    assert [s.index for s in out["wc"]] == [0]
+
+
+def test_a_duplicate_kind_on_one_item_is_dropped():
+    """Stacked copies of one effect on one item would defeat the balance
+    rails; the lower-indexed copy — the one that unlocks first — wins."""
+    out = _compile({
+        "w1#0": {"item": "w1", "kind": "lifesteal_pct", "value": 0.02},
+        "w1#1": {"item": "w1", "kind": "lifesteal_pct", "value": 0.05},
+    })
+    assert [(s.index, s.kind) for s in out["w1"]] == [(0, "lifesteal_pct")]
+    assert out["w1"][0].params["value"] == 0.02
+
+
+def test_a_locked_slot_gives_no_effect_until_its_threshold(engine):
+    """Static item passives are not always-on: slot #0 contributes only once
+    THIS item instance reaches its unlock threshold. Below it, the fighter
+    reads exactly the baseline."""
+    from game.models import Fighter
+
+    fighter = Fighter(name="Gated", fighter_class="mercenary")
+    baseline = fighter.get_perk_effects("lifesteal_pct")
+    threshold = passives.unlock_threshold(0)
+    value = passives.COMPILED_PASSIVES[SLICE_ITEM][0].params["value"]
+
+    item = _weapon(engine, SLICE_ITEM)
+    fighter.equipment["weapon"] = item
+    for level, expected in ((0, baseline), (threshold - 1, baseline),
+                            (threshold, baseline + value)):
+        item["upgrade_level"] = level
+        assert fighter.get_perk_effects("lifesteal_pct") == pytest.approx(
+            expected), f"at +{level}"
+
+
+def test_the_battle_stat_cache_respects_the_gate(engine):
+    """The snapshot in BattleManager._fighter_stats goes through the same
+    get_perk_effects gate — a locked slot must not reach combat either."""
+    from game.models import Fighter
+
+    fighter = Fighter(name="GatedCache", fighter_class="mercenary")
+    item = _weapon(engine, SLICE_ITEM)
+    fighter.equipment["weapon"] = item
+
+    assert engine.battle_mgr._fighter_stats(fighter)["lifesteal_pct"] == 0
+
+    # The snapshot is cached per battle; upgrading between battles reaches
+    # combat through a fresh snapshot, which the invalidation stands in for.
+    engine.battle_mgr._invalidate_fighter_stats(fighter)
+    item["upgrade_level"] = passives.unlock_threshold(0)
+    expected = passives.COMPILED_PASSIVES[SLICE_ITEM][0].params["value"]
+    assert engine.battle_mgr._fighter_stats(fighter)[
+        "lifesteal_pct"] == pytest.approx(expected)
+
+
+def test_rusty_blade_stays_valid_and_unlocks_at_the_common_cap(engine):
+    """The one shipped passive compiles under the slot rules and — common
+    having exactly one slot — activates precisely at the rarity's max
+    upgrade level."""
+    from game.constants import MAX_UPGRADE_COMMON
+
+    specs = passives.COMPILED_PASSIVES[SLICE_ITEM]
+    assert [s.index for s in specs] == [0]
+    assert passives.unlock_threshold(specs[0].index) == MAX_UPGRADE_COMMON
+
+    item = _weapon(engine, SLICE_ITEM)
+    item["upgrade_level"] = MAX_UPGRADE_COMMON - 1
+    assert not passives.is_unlocked(specs[0], item)
+    item["upgrade_level"] = MAX_UPGRADE_COMMON
+    assert passives.is_unlocked(specs[0], item)
 
 
 # --------------------------------------------------- shipped data + wiring
@@ -259,7 +432,9 @@ def test_equipping_grants_the_effect_and_unequipping_removes_it(engine):
     fighter = Fighter(name="Passive Test", fighter_class="mercenary")
     baseline = fighter.get_perk_effects("lifesteal_pct")
 
-    fighter.equipment["weapon"] = _weapon(engine, SLICE_ITEM)
+    item = _weapon(engine, SLICE_ITEM)
+    item["upgrade_level"] = passives.unlock_threshold(0)   # slot #0 active
+    fighter.equipment["weapon"] = item
     equipped = fighter.get_perk_effects("lifesteal_pct")
     expected = passives.COMPILED_PASSIVES[SLICE_ITEM][0].params["value"]
     assert equipped == pytest.approx(baseline + expected)
@@ -278,30 +453,18 @@ def test_item_passive_stacks_with_the_perk_of_the_same_type(engine):
     perk_only = fighter.get_perk_effects("lifesteal_pct")
     assert perk_only > 0, "fixture perk no longer grants lifesteal"
 
-    fighter.equipment["weapon"] = _weapon(engine, SLICE_ITEM)
+    item = _weapon(engine, SLICE_ITEM)
+    item["upgrade_level"] = passives.unlock_threshold(0)   # slot #0 active
+    fighter.equipment["weapon"] = item
     expected = passives.COMPILED_PASSIVES[SLICE_ITEM][0].params["value"]
     assert fighter.get_perk_effects("lifesteal_pct") == pytest.approx(
         perk_only + expected)
 
 
-def test_battle_stat_cache_sees_the_item_passive(engine):
-    """The snapshot in BattleManager._fighter_stats is what the on-hit heal
-    actually reads — reaching get_perk_effects is not enough on its own."""
-    from game.models import Fighter
-
-    fighter = Fighter(name="Cached", fighter_class="mercenary")
-    fighter.equipment["weapon"] = _weapon(engine, SLICE_ITEM)
-    stats = engine.battle_mgr._fighter_stats(fighter)
-    expected = passives.COMPILED_PASSIVES[SLICE_ITEM][0].params["value"]
-    assert stats["lifesteal_pct"] == pytest.approx(expected)
-
-
 def test_an_item_without_passives_changes_nothing(engine):
     from game.models import Fighter
-    import game.models as models
 
-    plain = next(item for item in models.FORGE_WEAPONS
-                 if item["id"] not in passives.COMPILED_PASSIVES)
+    plain = _bare_item()
     fighter = Fighter(name="Plain", fighter_class="mercenary")
     before = fighter.get_perk_effects("lifesteal_pct")
     fighter.equipment["weapon"] = dict(plain)
@@ -325,6 +488,9 @@ def test_an_item_saved_before_this_feature_gains_it_on_load(engine,
     assert restored["upgrade_level"] == 2, "player progress must survive"
     assert restored.get("special_effect"), "flavour text did not reach the item"
     assert passives.passive_count(restored) == 1
+    # +2 is below the slot #0 threshold: the passive is authored but not yet
+    # active — legacy items come back locked, not retroactively empowered.
+    assert passives.unlocked_count(restored) == 0
 
 
 def test_no_passive_mechanics_are_written_into_the_save(engine):
@@ -439,14 +605,94 @@ def test_fmt_amount_drops_a_pointless_decimal():
     assert passives.fmt_amount(10) == "10"
 
 
-def test_marker_is_one_glyph_per_passive(engine):
-    import game.models as models
-
-    item = _weapon(engine, SLICE_ITEM)
+def test_marker_counts_only_active_passives(engine):
+    """Grid stars mean effects the fighter actually gets — an item whose only
+    slot is still locked shows no star, same as an item with none authored."""
+    item = _weapon(engine, SLICE_ITEM)                     # +0: slot locked
+    assert passives.passive_marker(item) == ""
+    item["upgrade_level"] = passives.unlock_threshold(0)
     assert passives.passive_marker(item) == passives.PASSIVE_MARK
-    plain = next(i for i in models.FORGE_WEAPONS
-                 if i["id"] not in passives.COMPILED_PASSIVES)
-    assert passives.passive_marker(plain) == ""
+    assert passives.passive_marker(_bare_item()) == ""
+
+
+def test_render_slots_shows_locked_rows_without_spoiling_the_effect(engine):
+    """Below the threshold the card row says only that the slot is locked and
+    where it opens — the effect text stays hidden until it is real."""
+    from game.localization import get_language, set_language
+
+    previous = get_language()
+    try:
+        set_language("en")
+        item = _weapon(engine, SLICE_ITEM)                 # +0: slot locked
+        threshold = passives.unlock_threshold(0)
+        rule = passives.render(passives.COMPILED_PASSIVES[SLICE_ITEM][0])
+
+        rows = passives.render_slots(item)
+        assert len(rows) == passives.slot_count(item) == 1
+        text, unlocked, shown = rows[0]
+        assert (unlocked, shown) == (False, threshold)
+        assert f"+{threshold}" in text
+        assert rule not in text, "a locked row leaked the effect"
+
+        item["upgrade_level"] = threshold
+        rows = passives.render_slots(item)
+        assert rows == [(f"{passives.PASSIVE_MARK} {rule}", True, threshold)]
+    finally:
+        set_language(previous)
+
+
+def test_render_slots_orders_the_open_prefix_before_the_locked_tail(
+        engine, extra_kinds):
+    """A legendary two thresholds in has its first two slots active and the
+    other three visible but locked, in slot order; the unlocked-only views
+    (render_item, marker) agree with the same gate."""
+    from game.localization import get_language, set_language
+
+    previous = get_language()
+    try:
+        set_language("en")
+        passives.install(
+            {f"w1#{i}": {"item": "w1", "kind": extra_kinds[i], "value": 0.01}
+             for i in range(5)},
+            _slots())
+        item = {"id": "w1", "rarity": "legendary",
+                "upgrade_level": passives.unlock_threshold(1)}
+        rows = passives.render_slots(item)
+        assert [unlocked for _text, unlocked, _n in rows] == [
+            True, True, False, False, False]
+        assert [n for _text, _u, n in rows] == [
+            passives.unlock_threshold(i) for i in range(5)]
+        assert passives.unlocked_count(item) == 2
+        assert passives.passive_marker(item) == passives.PASSIVE_MARK * 2
+        assert passives.render_item(item) == [
+            passives.render(spec)
+            for spec in passives.COMPILED_PASSIVES["w1"][:2]]
+    finally:
+        engine._wire_data()
+        set_language(previous)
+    assert SLICE_ITEM in passives.COMPILED_PASSIVES, "restore path is broken"
+
+
+def test_render_slots_is_empty_for_an_item_with_nothing_authored(engine):
+    """No authored passives — no rarity-sized column of padlocks promising
+    content the data does not have."""
+    assert passives.render_slots(_bare_item()) == []
+
+
+def test_locked_template_formats_where_authored():
+    """en and ru carry passive_slot_locked (the i18n conveyor cascades it to
+    the other languages); the {n} placeholder must survive formatting."""
+    from game.localization import get_language, set_language, t
+
+    previous = get_language()
+    try:
+        for lang in ("en", "ru"):
+            set_language(lang)
+            rendered = t("passive_slot_locked", n=7)
+            assert rendered != "passive_slot_locked", f"{lang}: template missing"
+            assert "+7" in rendered, f"{lang}: dropped the threshold"
+    finally:
+        set_language(previous)
 
 
 def test_marker_glyph_exists_in_the_ui_font():

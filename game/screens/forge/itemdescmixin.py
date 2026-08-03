@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """_ItemDescMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -18,12 +18,16 @@ class _ItemDescMixin:
 
     @staticmethod
     def _build_item_passive_card(item):
-        """BaseCard listing the item's passive effects, or None if it has none.
+        """BaseCard listing the item's passive slots, or None if it has none.
 
         Sits above the description card in every item detail view, so a passive
         is visible without tapping through to the stats popup — it is the
         reason to pick one item over another, and burying it behind a tap made
         it invisible.
+
+        Every authored slot renders — unlocked ones in amber with their rule
+        line, locked ones dimmed with just the +N threshold (no spoiler on
+        the effect, see game/passives/_render.py:render_slots).
 
         Header in PixelFont (it is a heading, and carries the amber BBCode from
         item_passive_header), rules and flavour in BodyFont — the split
@@ -32,13 +36,13 @@ class _ItemDescMixin:
         """
         from kivy.uix.label import Label
 
-        # Gated on a compiled mechanic, not on the prose. An item can carry
-        # special_effect while its passive has not been authored yet — the 20
-        # relics are exactly that case — and showing a "PASSIVE EFFECT" heading
-        # over text that describes nothing the game does is the lie this
-        # feature exists to end.
-        lines = render_item(item)
-        if not lines:
+        # Gated on authored data (any slot, active or still locked), not on
+        # the prose and not on "currently active only" — render_slots already
+        # returns [] for an item with nothing authored (relics until their
+        # passives are written), so this is the same "item id present in
+        # COMPILED_PASSIVES" check the design settled on.
+        slot_rows = render_slots(item)
+        if not slot_rows:
             return None
 
         pad = dp(12)
@@ -50,13 +54,17 @@ class _ItemDescMixin:
             font_name="PixelFont", markup=True,
             halign="left", valign="top", size_hint_y=None,
         )
-        body_text = "\n".join(f"• {line}" for line in lines)
+        lines = []
+        for row_text, unlocked, _threshold in slot_rows:
+            hexcolor = bbcode_hex(ACCENT_AMBER if unlocked else TEXT_MUTED)
+            lines.append(f"[color={hexcolor}]• {row_text}[/color]")
+        body_text = "\n".join(lines)
         special = item.get("special_effect", "")
         if special:
             body_text = f"{body_text}\n\n{special}"
         body = Label(
             text=body_text, font_size="11sp", font_name="BodyFont",
-            color=TEXT_SECONDARY, halign="left", valign="top",
+            color=TEXT_SECONDARY, markup=True, halign="left", valign="top",
             size_hint_y=None,
         )
 

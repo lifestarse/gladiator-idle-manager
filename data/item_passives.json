@@ -5,6 +5,2251 @@
       "item": "rusty_blade",
       "kind": "lifesteal_pct",
       "value": 0.02
+    },
+    "iron_sword#0": {
+      "item": "iron_sword",
+      "kind": "bonus_gold_pct",
+      "value": 0.03
+    },
+    "chipped_hatchet#0": {
+      "item": "chipped_hatchet",
+      "kind": "crit_damage_bonus",
+      "value": 0.05
+    },
+    "bone_shiv#0": {
+      "item": "bone_shiv",
+      "kind": "dodge_chance_bonus",
+      "value": 0.02
+    },
+    "training_gladius#0": {
+      "item": "training_gladius",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "bent_trident#0": {
+      "item": "bent_trident",
+      "kind": "on_kill_heal_pct",
+      "value": 0.03
+    },
+    "slave_cleaver#0": {
+      "item": "slave_cleaver",
+      "kind": "damage_bonus_pct",
+      "value": 0.02
+    },
+    "pit_fighter_knife#0": {
+      "item": "pit_fighter_knife",
+      "kind": "on_dodge_counter",
+      "value": 0.08
+    },
+    "notched_sica#0": {
+      "item": "notched_sica",
+      "kind": "crit_chance_bonus",
+      "value": 0.02
+    },
+    "corroded_spear#0": {
+      "item": "corroded_spear",
+      "kind": "reduce_injury_severity",
+      "value": 0.08
+    },
+    "steel_falcata#0": {
+      "item": "steel_falcata",
+      "kind": "bonus_gold_pct",
+      "value": 0.03
+    },
+    "steel_falcata#1": {
+      "item": "steel_falcata",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "bronze_spatha#0": {
+      "item": "bronze_spatha",
+      "kind": "dodge_chance_bonus",
+      "value": 0.02
+    },
+    "bronze_spatha#1": {
+      "item": "bronze_spatha",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "barbed_trident#0": {
+      "item": "barbed_trident",
+      "kind": "lifesteal_pct",
+      "value": 0.02
+    },
+    "barbed_trident#1": {
+      "item": "barbed_trident",
+      "kind": "crit_damage_bonus",
+      "value": 0.08
+    },
+    "gladiators_mace#0": {
+      "item": "gladiators_mace",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "gladiators_mace#1": {
+      "item": "gladiators_mace",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "ashen_spear#0": {
+      "item": "ashen_spear",
+      "kind": "damage_bonus_pct",
+      "value": 0.02
+    },
+    "ashen_spear#1": {
+      "item": "ashen_spear",
+      "kind": "on_kill_heal_pct",
+      "value": 0.04
+    },
+    "serpent_dagger#0": {
+      "item": "serpent_dagger",
+      "kind": "dodge_chance_bonus",
+      "value": 0.02
+    },
+    "serpent_dagger#1": {
+      "item": "serpent_dagger",
+      "kind": "crit_damage_bonus",
+      "value": 0.08
+    },
+    "scorched_gladius#0": {
+      "item": "scorched_gladius",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "scorched_gladius#1": {
+      "item": "scorched_gladius",
+      "kind": "reduce_injury_severity",
+      "value": 0.12
+    },
+    "twin_sica#0": {
+      "item": "twin_sica",
+      "kind": "crit_chance_bonus",
+      "value": 0.02
+    },
+    "twin_sica#1": {
+      "item": "twin_sica",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "wardens_flail#0": {
+      "item": "wardens_flail",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "wardens_flail#1": {
+      "item": "wardens_flail",
+      "kind": "on_dodge_counter",
+      "value": 0.12
+    },
+    "iron_war_pick#0": {
+      "item": "iron_war_pick",
+      "kind": "crit_chance_bonus",
+      "value": 0.02
+    },
+    "iron_war_pick#1": {
+      "item": "iron_war_pick",
+      "kind": "crit_damage_bonus",
+      "value": 0.08
+    },
+    "obsidian_edge#0": {
+      "item": "obsidian_edge",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "obsidian_edge#1": {
+      "item": "obsidian_edge",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "obsidian_edge#2": {
+      "item": "obsidian_edge",
+      "kind": "crit_damage_bonus",
+      "value": 0.12
+    },
+    "bloodthorn_spatha#0": {
+      "item": "bloodthorn_spatha",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "bloodthorn_spatha#1": {
+      "item": "bloodthorn_spatha",
+      "kind": "lifesteal_pct",
+      "value": 0.04
+    },
+    "bloodthorn_spatha#2": {
+      "item": "bloodthorn_spatha",
+      "kind": "on_kill_heal_pct",
+      "value": 0.05
+    },
+    "centurions_pilum#0": {
+      "item": "centurions_pilum",
+      "kind": "damage_reduction",
+      "value": 0.03
+    },
+    "centurions_pilum#1": {
+      "item": "centurions_pilum",
+      "kind": "damage_bonus_pct",
+      "value": 0.04
+    },
+    "centurions_pilum#2": {
+      "item": "centurions_pilum",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "shadow_sica#0": {
+      "item": "shadow_sica",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "shadow_sica#1": {
+      "item": "shadow_sica",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "shadow_sica#2": {
+      "item": "shadow_sica",
+      "kind": "on_dodge_counter",
+      "value": 0.18
+    },
+    "bone_reaper#0": {
+      "item": "bone_reaper",
+      "kind": "damage_reduction",
+      "value": 0.03
+    },
+    "bone_reaper#1": {
+      "item": "bone_reaper",
+      "kind": "damage_bonus_pct",
+      "value": 0.04
+    },
+    "bone_reaper#2": {
+      "item": "bone_reaper",
+      "kind": "on_kill_heal_pct",
+      "value": 0.05
+    },
+    "vipers_fang#0": {
+      "item": "vipers_fang",
+      "kind": "lifesteal_pct",
+      "value": 0.03
+    },
+    "vipers_fang#1": {
+      "item": "vipers_fang",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "vipers_fang#2": {
+      "item": "vipers_fang",
+      "kind": "crit_damage_bonus",
+      "value": 0.12
+    },
+    "ember_hammer#0": {
+      "item": "ember_hammer",
+      "kind": "bonus_gold_pct",
+      "value": 0.05
+    },
+    "ember_hammer#1": {
+      "item": "ember_hammer",
+      "kind": "damage_bonus_pct",
+      "value": 0.04
+    },
+    "ember_hammer#2": {
+      "item": "ember_hammer",
+      "kind": "crit_damage_bonus",
+      "value": 0.12
+    },
+    "gladius_of_the_condemned#0": {
+      "item": "gladius_of_the_condemned",
+      "kind": "reduce_injury_severity",
+      "value": 0.12
+    },
+    "gladius_of_the_condemned#1": {
+      "item": "gladius_of_the_condemned",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "gladius_of_the_condemned#2": {
+      "item": "gladius_of_the_condemned",
+      "kind": "on_kill_heal_pct",
+      "value": 0.05
+    },
+    "crimson_trident#0": {
+      "item": "crimson_trident",
+      "kind": "lifesteal_pct",
+      "value": 0.03
+    },
+    "crimson_trident#1": {
+      "item": "crimson_trident",
+      "kind": "crit_damage_bonus",
+      "value": 0.1
+    },
+    "crimson_trident#2": {
+      "item": "crimson_trident",
+      "kind": "on_dodge_counter",
+      "value": 0.18
+    },
+    "wraithclaw_dagger#0": {
+      "item": "wraithclaw_dagger",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "wraithclaw_dagger#1": {
+      "item": "wraithclaw_dagger",
+      "kind": "crit_damage_bonus",
+      "value": 0.1
+    },
+    "wraithclaw_dagger#2": {
+      "item": "wraithclaw_dagger",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "inferno_cleaver#0": {
+      "item": "inferno_cleaver",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "inferno_cleaver#1": {
+      "item": "inferno_cleaver",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "inferno_cleaver#2": {
+      "item": "inferno_cleaver",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "inferno_cleaver#3": {
+      "item": "inferno_cleaver",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "doom_gladius#0": {
+      "item": "doom_gladius",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "doom_gladius#1": {
+      "item": "doom_gladius",
+      "kind": "on_kill_heal_pct",
+      "value": 0.06
+    },
+    "doom_gladius#2": {
+      "item": "doom_gladius",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "doom_gladius#3": {
+      "item": "doom_gladius",
+      "kind": "on_dodge_counter",
+      "value": 0.25
+    },
+    "void_trident#0": {
+      "item": "void_trident",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "void_trident#1": {
+      "item": "void_trident",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "void_trident#2": {
+      "item": "void_trident",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "void_trident#3": {
+      "item": "void_trident",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "blood_drinker#0": {
+      "item": "blood_drinker",
+      "kind": "lifesteal_pct",
+      "value": 0.04
+    },
+    "blood_drinker#1": {
+      "item": "blood_drinker",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "blood_drinker#2": {
+      "item": "blood_drinker",
+      "kind": "on_kill_heal_pct",
+      "value": 0.06
+    },
+    "blood_drinker#3": {
+      "item": "blood_drinker",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "tyrants_maul#0": {
+      "item": "tyrants_maul",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "tyrants_maul#1": {
+      "item": "tyrants_maul",
+      "kind": "bonus_gold_pct",
+      "value": 0.09
+    },
+    "tyrants_maul#2": {
+      "item": "tyrants_maul",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "tyrants_maul#3": {
+      "item": "tyrants_maul",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "nightfall_spatha#0": {
+      "item": "nightfall_spatha",
+      "kind": "lifesteal_pct",
+      "value": 0.04
+    },
+    "nightfall_spatha#1": {
+      "item": "nightfall_spatha",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "nightfall_spatha#2": {
+      "item": "nightfall_spatha",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "nightfall_spatha#3": {
+      "item": "nightfall_spatha",
+      "kind": "on_dodge_counter",
+      "value": 0.25
+    },
+    "wailing_falx#0": {
+      "item": "wailing_falx",
+      "kind": "damage_bonus_pct",
+      "value": 0.05
+    },
+    "wailing_falx#1": {
+      "item": "wailing_falx",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "wailing_falx#2": {
+      "item": "wailing_falx",
+      "kind": "bonus_gold_pct",
+      "value": 0.11
+    },
+    "wailing_falx#3": {
+      "item": "wailing_falx",
+      "kind": "on_dodge_counter",
+      "value": 0.25
+    },
+    "scorpion_sting#0": {
+      "item": "scorpion_sting",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "scorpion_sting#1": {
+      "item": "scorpion_sting",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "scorpion_sting#2": {
+      "item": "scorpion_sting",
+      "kind": "on_kill_heal_pct",
+      "value": 0.06
+    },
+    "scorpion_sting#3": {
+      "item": "scorpion_sting",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "ashen_executioner#0": {
+      "item": "ashen_executioner",
+      "kind": "damage_bonus_pct",
+      "value": 0.05
+    },
+    "ashen_executioner#1": {
+      "item": "ashen_executioner",
+      "kind": "on_kill_heal_pct",
+      "value": 0.06
+    },
+    "ashen_executioner#2": {
+      "item": "ashen_executioner",
+      "kind": "on_dodge_counter",
+      "value": 0.23
+    },
+    "ashen_executioner#3": {
+      "item": "ashen_executioner",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "plaguebringer_mace#0": {
+      "item": "plaguebringer_mace",
+      "kind": "lifesteal_pct",
+      "value": 0.04
+    },
+    "plaguebringer_mace#1": {
+      "item": "plaguebringer_mace",
+      "kind": "reduce_injury_severity",
+      "value": 0.17
+    },
+    "plaguebringer_mace#2": {
+      "item": "plaguebringer_mace",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "plaguebringer_mace#3": {
+      "item": "plaguebringer_mace",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "blade_of_ruin#0": {
+      "item": "blade_of_ruin",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "blade_of_ruin#1": {
+      "item": "blade_of_ruin",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "blade_of_ruin#2": {
+      "item": "blade_of_ruin",
+      "kind": "damage_bonus_pct",
+      "value": 0.09
+    },
+    "blade_of_ruin#3": {
+      "item": "blade_of_ruin",
+      "kind": "crit_damage_bonus",
+      "value": 0.23
+    },
+    "blade_of_ruin#4": {
+      "item": "blade_of_ruin",
+      "kind": "on_dodge_counter",
+      "value": 0.3
+    },
+    "soul_harvest#0": {
+      "item": "soul_harvest",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "soul_harvest#1": {
+      "item": "soul_harvest",
+      "kind": "lifesteal_pct",
+      "value": 0.07
+    },
+    "soul_harvest#2": {
+      "item": "soul_harvest",
+      "kind": "reduce_injury_severity",
+      "value": 0.23
+    },
+    "soul_harvest#3": {
+      "item": "soul_harvest",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "soul_harvest#4": {
+      "item": "soul_harvest",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "emperors_verdict#0": {
+      "item": "emperors_verdict",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "emperors_verdict#1": {
+      "item": "emperors_verdict",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "emperors_verdict#2": {
+      "item": "emperors_verdict",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "emperors_verdict#3": {
+      "item": "emperors_verdict",
+      "kind": "damage_bonus_pct",
+      "value": 0.09
+    },
+    "emperors_verdict#4": {
+      "item": "emperors_verdict",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "abyssal_trident#0": {
+      "item": "abyssal_trident",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "abyssal_trident#1": {
+      "item": "abyssal_trident",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "abyssal_trident#2": {
+      "item": "abyssal_trident",
+      "kind": "lifesteal_pct",
+      "value": 0.07
+    },
+    "abyssal_trident#3": {
+      "item": "abyssal_trident",
+      "kind": "reduce_injury_severity",
+      "value": 0.24
+    },
+    "abyssal_trident#4": {
+      "item": "abyssal_trident",
+      "kind": "on_dodge_counter",
+      "value": 0.3
+    },
+    "cataclysm#0": {
+      "item": "cataclysm",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "cataclysm#1": {
+      "item": "cataclysm",
+      "kind": "bonus_gold_pct",
+      "value": 0.13
+    },
+    "cataclysm#2": {
+      "item": "cataclysm",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "cataclysm#3": {
+      "item": "cataclysm",
+      "kind": "damage_bonus_pct",
+      "value": 0.09
+    },
+    "cataclysm#4": {
+      "item": "cataclysm",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "sanguine_majesty#0": {
+      "item": "sanguine_majesty",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "sanguine_majesty#1": {
+      "item": "sanguine_majesty",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "sanguine_majesty#2": {
+      "item": "sanguine_majesty",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "sanguine_majesty#3": {
+      "item": "sanguine_majesty",
+      "kind": "lifesteal_pct",
+      "value": 0.08
+    },
+    "sanguine_majesty#4": {
+      "item": "sanguine_majesty",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "eclipse_falcata#0": {
+      "item": "eclipse_falcata",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "eclipse_falcata#1": {
+      "item": "eclipse_falcata",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "eclipse_falcata#2": {
+      "item": "eclipse_falcata",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "eclipse_falcata#3": {
+      "item": "eclipse_falcata",
+      "kind": "on_dodge_counter",
+      "value": 0.29
+    },
+    "eclipse_falcata#4": {
+      "item": "eclipse_falcata",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "throne_breaker#0": {
+      "item": "throne_breaker",
+      "kind": "reduce_injury_severity",
+      "value": 0.2
+    },
+    "throne_breaker#1": {
+      "item": "throne_breaker",
+      "kind": "bonus_gold_pct",
+      "value": 0.13
+    },
+    "throne_breaker#2": {
+      "item": "throne_breaker",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "throne_breaker#3": {
+      "item": "throne_breaker",
+      "kind": "damage_bonus_pct",
+      "value": 0.09
+    },
+    "throne_breaker#4": {
+      "item": "throne_breaker",
+      "kind": "on_dodge_counter",
+      "value": 0.3
+    },
+    "deaths_whisper#0": {
+      "item": "deaths_whisper",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "deaths_whisper#1": {
+      "item": "deaths_whisper",
+      "kind": "lifesteal_pct",
+      "value": 0.07
+    },
+    "deaths_whisper#2": {
+      "item": "deaths_whisper",
+      "kind": "reduce_injury_severity",
+      "value": 0.23
+    },
+    "deaths_whisper#3": {
+      "item": "deaths_whisper",
+      "kind": "crit_chance_bonus",
+      "value": 0.08
+    },
+    "deaths_whisper#4": {
+      "item": "deaths_whisper",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "godslayer_pilum#0": {
+      "item": "godslayer_pilum",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "godslayer_pilum#1": {
+      "item": "godslayer_pilum",
+      "kind": "bonus_gold_pct",
+      "value": 0.13
+    },
+    "godslayer_pilum#2": {
+      "item": "godslayer_pilum",
+      "kind": "damage_bonus_pct",
+      "value": 0.09
+    },
+    "godslayer_pilum#3": {
+      "item": "godslayer_pilum",
+      "kind": "on_dodge_counter",
+      "value": 0.29
+    },
+    "godslayer_pilum#4": {
+      "item": "godslayer_pilum",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "leather_vest#0": {
+      "item": "leather_vest",
+      "kind": "dodge_chance_bonus",
+      "value": 0.01
+    },
+    "chain_mail#0": {
+      "item": "chain_mail",
+      "kind": "hp_bonus_pct",
+      "value": 0.03
+    },
+    "pit_rags#0": {
+      "item": "pit_rags",
+      "kind": "crit_chance_bonus",
+      "value": 0.01
+    },
+    "hemp_gambeson#0": {
+      "item": "hemp_gambeson",
+      "kind": "reduce_injury_severity",
+      "value": 0.05
+    },
+    "bone_harness#0": {
+      "item": "bone_harness",
+      "kind": "crit_damage_bonus",
+      "value": 0.04
+    },
+    "iron_subarmalis#0": {
+      "item": "iron_subarmalis",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "tar_coated_hide#0": {
+      "item": "tar_coated_hide",
+      "kind": "regen_per_turn_pct",
+      "value": 0.01
+    },
+    "rust_lorica#0": {
+      "item": "rust_lorica",
+      "kind": "damage_bonus_pct",
+      "value": 0.02
+    },
+    "gladiator_wrap#0": {
+      "item": "gladiator_wrap",
+      "kind": "on_dodge_counter",
+      "value": 0.06
+    },
+    "scrap_cuirass#0": {
+      "item": "scrap_cuirass",
+      "kind": "bonus_gold_pct",
+      "value": 0.03
+    },
+    "bronze_plate#0": {
+      "item": "bronze_plate",
+      "kind": "hp_bonus_pct",
+      "value": 0.04
+    },
+    "bronze_plate#1": {
+      "item": "bronze_plate",
+      "kind": "bonus_gold_pct",
+      "value": 0.05
+    },
+    "scorched_manica#0": {
+      "item": "scorched_manica",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "scorched_manica#1": {
+      "item": "scorched_manica",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "centurion_remnant#0": {
+      "item": "centurion_remnant",
+      "kind": "reduce_injury_severity",
+      "value": 0.09
+    },
+    "centurion_remnant#1": {
+      "item": "centurion_remnant",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "wolf_pelt_brigandine#0": {
+      "item": "wolf_pelt_brigandine",
+      "kind": "damage_bonus_pct",
+      "value": 0.02
+    },
+    "wolf_pelt_brigandine#1": {
+      "item": "wolf_pelt_brigandine",
+      "kind": "crit_damage_bonus",
+      "value": 0.06
+    },
+    "ashen_guard#0": {
+      "item": "ashen_guard",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "ashen_guard#1": {
+      "item": "ashen_guard",
+      "kind": "on_dodge_counter",
+      "value": 0.1
+    },
+    "spiked_lorica#0": {
+      "item": "spiked_lorica",
+      "kind": "crit_damage_bonus",
+      "value": 0.05
+    },
+    "spiked_lorica#1": {
+      "item": "spiked_lorica",
+      "kind": "on_dodge_counter",
+      "value": 0.09
+    },
+    "marshland_scale#0": {
+      "item": "marshland_scale",
+      "kind": "damage_reduction",
+      "value": 0.03
+    },
+    "marshland_scale#1": {
+      "item": "marshland_scale",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "blood_iron_plate#0": {
+      "item": "blood_iron_plate",
+      "kind": "hp_bonus_pct",
+      "value": 0.05
+    },
+    "blood_iron_plate#1": {
+      "item": "blood_iron_plate",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "tomb_warden_mail#0": {
+      "item": "tomb_warden_mail",
+      "kind": "reduce_injury_severity",
+      "value": 0.1
+    },
+    "tomb_warden_mail#1": {
+      "item": "tomb_warden_mail",
+      "kind": "bonus_gold_pct",
+      "value": 0.04
+    },
+    "gladius_breaker#0": {
+      "item": "gladius_breaker",
+      "kind": "damage_reduction",
+      "value": 0.03
+    },
+    "gladius_breaker#1": {
+      "item": "gladius_breaker",
+      "kind": "on_dodge_counter",
+      "value": 0.12
+    },
+    "shadow_guard#0": {
+      "item": "shadow_guard",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "shadow_guard#1": {
+      "item": "shadow_guard",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "shadow_guard#2": {
+      "item": "shadow_guard",
+      "kind": "crit_damage_bonus",
+      "value": 0.11
+    },
+    "crimson_lorica#0": {
+      "item": "crimson_lorica",
+      "kind": "hp_bonus_pct",
+      "value": 0.06
+    },
+    "crimson_lorica#1": {
+      "item": "crimson_lorica",
+      "kind": "damage_bonus_pct",
+      "value": 0.04
+    },
+    "crimson_lorica#2": {
+      "item": "crimson_lorica",
+      "kind": "bonus_gold_pct",
+      "value": 0.06
+    },
+    "wrath_pauldron#0": {
+      "item": "wrath_pauldron",
+      "kind": "damage_bonus_pct",
+      "value": 0.05
+    },
+    "wrath_pauldron#1": {
+      "item": "wrath_pauldron",
+      "kind": "crit_damage_bonus",
+      "value": 0.1
+    },
+    "wrath_pauldron#2": {
+      "item": "wrath_pauldron",
+      "kind": "on_dodge_counter",
+      "value": 0.16
+    },
+    "flayed_king_mail#0": {
+      "item": "flayed_king_mail",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "flayed_king_mail#1": {
+      "item": "flayed_king_mail",
+      "kind": "reduce_injury_severity",
+      "value": 0.14
+    },
+    "flayed_king_mail#2": {
+      "item": "flayed_king_mail",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "catacombs_cuirass#0": {
+      "item": "catacombs_cuirass",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "catacombs_cuirass#1": {
+      "item": "catacombs_cuirass",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "catacombs_cuirass#2": {
+      "item": "catacombs_cuirass",
+      "kind": "hp_bonus_pct",
+      "value": 0.07
+    },
+    "minotaur_hide#0": {
+      "item": "minotaur_hide",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "minotaur_hide#1": {
+      "item": "minotaur_hide",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "minotaur_hide#2": {
+      "item": "minotaur_hide",
+      "kind": "on_dodge_counter",
+      "value": 0.13
+    },
+    "obsidian_scale#0": {
+      "item": "obsidian_scale",
+      "kind": "bonus_gold_pct",
+      "value": 0.05
+    },
+    "obsidian_scale#1": {
+      "item": "obsidian_scale",
+      "kind": "on_dodge_counter",
+      "value": 0.13
+    },
+    "obsidian_scale#2": {
+      "item": "obsidian_scale",
+      "kind": "crit_damage_bonus",
+      "value": 0.09
+    },
+    "iron_maiden_plate#0": {
+      "item": "iron_maiden_plate",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "iron_maiden_plate#1": {
+      "item": "iron_maiden_plate",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "iron_maiden_plate#2": {
+      "item": "iron_maiden_plate",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "phalanx_wall#0": {
+      "item": "phalanx_wall",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "phalanx_wall#1": {
+      "item": "phalanx_wall",
+      "kind": "hp_bonus_pct",
+      "value": 0.07
+    },
+    "phalanx_wall#2": {
+      "item": "phalanx_wall",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "venom_coat#0": {
+      "item": "venom_coat",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "venom_coat#1": {
+      "item": "venom_coat",
+      "kind": "damage_bonus_pct",
+      "value": 0.04
+    },
+    "venom_coat#2": {
+      "item": "venom_coat",
+      "kind": "on_dodge_counter",
+      "value": 0.14
+    },
+    "titan_shell#0": {
+      "item": "titan_shell",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "titan_shell#1": {
+      "item": "titan_shell",
+      "kind": "hp_bonus_pct",
+      "value": 0.09
+    },
+    "titan_shell#2": {
+      "item": "titan_shell",
+      "kind": "reduce_injury_severity",
+      "value": 0.18
+    },
+    "titan_shell#3": {
+      "item": "titan_shell",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "hellfire_lorica#0": {
+      "item": "hellfire_lorica",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "hellfire_lorica#1": {
+      "item": "hellfire_lorica",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "hellfire_lorica#2": {
+      "item": "hellfire_lorica",
+      "kind": "crit_damage_bonus",
+      "value": 0.15
+    },
+    "hellfire_lorica#3": {
+      "item": "hellfire_lorica",
+      "kind": "on_dodge_counter",
+      "value": 0.2
+    },
+    "gorgon_aegis#0": {
+      "item": "gorgon_aegis",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "gorgon_aegis#1": {
+      "item": "gorgon_aegis",
+      "kind": "bonus_gold_pct",
+      "value": 0.1
+    },
+    "gorgon_aegis#2": {
+      "item": "gorgon_aegis",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "gorgon_aegis#3": {
+      "item": "gorgon_aegis",
+      "kind": "crit_damage_bonus",
+      "value": 0.16
+    },
+    "reaper_carapace#0": {
+      "item": "reaper_carapace",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "reaper_carapace#1": {
+      "item": "reaper_carapace",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "reaper_carapace#2": {
+      "item": "reaper_carapace",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "reaper_carapace#3": {
+      "item": "reaper_carapace",
+      "kind": "crit_damage_bonus",
+      "value": 0.17
+    },
+    "warlord_mantle#0": {
+      "item": "warlord_mantle",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "warlord_mantle#1": {
+      "item": "warlord_mantle",
+      "kind": "bonus_gold_pct",
+      "value": 0.09
+    },
+    "warlord_mantle#2": {
+      "item": "warlord_mantle",
+      "kind": "crit_damage_bonus",
+      "value": 0.14
+    },
+    "warlord_mantle#3": {
+      "item": "warlord_mantle",
+      "kind": "on_dodge_counter",
+      "value": 0.21
+    },
+    "colosseum_bulwark#0": {
+      "item": "colosseum_bulwark",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "colosseum_bulwark#1": {
+      "item": "colosseum_bulwark",
+      "kind": "hp_bonus_pct",
+      "value": 0.09
+    },
+    "colosseum_bulwark#2": {
+      "item": "colosseum_bulwark",
+      "kind": "reduce_injury_severity",
+      "value": 0.19
+    },
+    "colosseum_bulwark#3": {
+      "item": "colosseum_bulwark",
+      "kind": "bonus_gold_pct",
+      "value": 0.11
+    },
+    "wraith_shroud#0": {
+      "item": "wraith_shroud",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "wraith_shroud#1": {
+      "item": "wraith_shroud",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "wraith_shroud#2": {
+      "item": "wraith_shroud",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "wraith_shroud#3": {
+      "item": "wraith_shroud",
+      "kind": "on_dodge_counter",
+      "value": 0.19
+    },
+    "stygian_plate#0": {
+      "item": "stygian_plate",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "stygian_plate#1": {
+      "item": "stygian_plate",
+      "kind": "reduce_injury_severity",
+      "value": 0.18
+    },
+    "stygian_plate#2": {
+      "item": "stygian_plate",
+      "kind": "crit_damage_bonus",
+      "value": 0.16
+    },
+    "stygian_plate#3": {
+      "item": "stygian_plate",
+      "kind": "on_dodge_counter",
+      "value": 0.22
+    },
+    "molten_core_guard#0": {
+      "item": "molten_core_guard",
+      "kind": "hp_bonus_pct",
+      "value": 0.1
+    },
+    "molten_core_guard#1": {
+      "item": "molten_core_guard",
+      "kind": "damage_bonus_pct",
+      "value": 0.07
+    },
+    "molten_core_guard#2": {
+      "item": "molten_core_guard",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "molten_core_guard#3": {
+      "item": "molten_core_guard",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "leviathan_scales#0": {
+      "item": "leviathan_scales",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "leviathan_scales#1": {
+      "item": "leviathan_scales",
+      "kind": "hp_bonus_pct",
+      "value": 0.1
+    },
+    "leviathan_scales#2": {
+      "item": "leviathan_scales",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "leviathan_scales#3": {
+      "item": "leviathan_scales",
+      "kind": "crit_chance_bonus",
+      "value": 0.06
+    },
+    "dragonscale#0": {
+      "item": "dragonscale",
+      "kind": "damage_reduction",
+      "value": 0.06
+    },
+    "dragonscale#1": {
+      "item": "dragonscale",
+      "kind": "hp_bonus_pct",
+      "value": 0.12
+    },
+    "dragonscale#2": {
+      "item": "dragonscale",
+      "kind": "damage_bonus_pct",
+      "value": 0.08
+    },
+    "dragonscale#3": {
+      "item": "dragonscale",
+      "kind": "bonus_gold_pct",
+      "value": 0.13
+    },
+    "dragonscale#4": {
+      "item": "dragonscale",
+      "kind": "crit_damage_bonus",
+      "value": 0.21
+    },
+    "emperor_aegis#0": {
+      "item": "emperor_aegis",
+      "kind": "reduce_injury_severity",
+      "value": 0.21
+    },
+    "emperor_aegis#1": {
+      "item": "emperor_aegis",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "emperor_aegis#2": {
+      "item": "emperor_aegis",
+      "kind": "bonus_gold_pct",
+      "value": 0.13
+    },
+    "emperor_aegis#3": {
+      "item": "emperor_aegis",
+      "kind": "crit_damage_bonus",
+      "value": 0.2
+    },
+    "emperor_aegis#4": {
+      "item": "emperor_aegis",
+      "kind": "on_dodge_counter",
+      "value": 0.26
+    },
+    "abyssal_fortress#0": {
+      "item": "abyssal_fortress",
+      "kind": "damage_reduction",
+      "value": 0.07
+    },
+    "abyssal_fortress#1": {
+      "item": "abyssal_fortress",
+      "kind": "hp_bonus_pct",
+      "value": 0.15
+    },
+    "abyssal_fortress#2": {
+      "item": "abyssal_fortress",
+      "kind": "reduce_injury_severity",
+      "value": 0.25
+    },
+    "abyssal_fortress#3": {
+      "item": "abyssal_fortress",
+      "kind": "regen_per_turn_pct",
+      "value": 0.04
+    },
+    "abyssal_fortress#4": {
+      "item": "abyssal_fortress",
+      "kind": "dodge_chance_bonus",
+      "value": 0.06
+    },
+    "mars_blessing#0": {
+      "item": "mars_blessing",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "mars_blessing#1": {
+      "item": "mars_blessing",
+      "kind": "crit_chance_bonus",
+      "value": 0.06
+    },
+    "mars_blessing#2": {
+      "item": "mars_blessing",
+      "kind": "damage_bonus_pct",
+      "value": 0.07
+    },
+    "mars_blessing#3": {
+      "item": "mars_blessing",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "mars_blessing#4": {
+      "item": "mars_blessing",
+      "kind": "on_dodge_counter",
+      "value": 0.25
+    },
+    "death_veil#0": {
+      "item": "death_veil",
+      "kind": "damage_reduction",
+      "value": 0.06
+    },
+    "death_veil#1": {
+      "item": "death_veil",
+      "kind": "reduce_injury_severity",
+      "value": 0.21
+    },
+    "death_veil#2": {
+      "item": "death_veil",
+      "kind": "hp_bonus_pct",
+      "value": 0.12
+    },
+    "death_veil#3": {
+      "item": "death_veil",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "death_veil#4": {
+      "item": "death_veil",
+      "kind": "on_dodge_counter",
+      "value": 0.26
+    },
+    "obsidian_juggernaut#0": {
+      "item": "obsidian_juggernaut",
+      "kind": "damage_reduction",
+      "value": 0.07
+    },
+    "obsidian_juggernaut#1": {
+      "item": "obsidian_juggernaut",
+      "kind": "hp_bonus_pct",
+      "value": 0.14
+    },
+    "obsidian_juggernaut#2": {
+      "item": "obsidian_juggernaut",
+      "kind": "damage_bonus_pct",
+      "value": 0.09
+    },
+    "obsidian_juggernaut#3": {
+      "item": "obsidian_juggernaut",
+      "kind": "crit_damage_bonus",
+      "value": 0.23
+    },
+    "obsidian_juggernaut#4": {
+      "item": "obsidian_juggernaut",
+      "kind": "on_dodge_counter",
+      "value": 0.29
+    },
+    "pluto_embrace#0": {
+      "item": "pluto_embrace",
+      "kind": "damage_reduction",
+      "value": 0.06
+    },
+    "pluto_embrace#1": {
+      "item": "pluto_embrace",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "pluto_embrace#2": {
+      "item": "pluto_embrace",
+      "kind": "reduce_injury_severity",
+      "value": 0.22
+    },
+    "pluto_embrace#3": {
+      "item": "pluto_embrace",
+      "kind": "crit_damage_bonus",
+      "value": 0.2
+    },
+    "pluto_embrace#4": {
+      "item": "pluto_embrace",
+      "kind": "on_dodge_counter",
+      "value": 0.27
+    },
+    "blood_god_mantle#0": {
+      "item": "blood_god_mantle",
+      "kind": "regen_per_turn_pct",
+      "value": 0.04
+    },
+    "blood_god_mantle#1": {
+      "item": "blood_god_mantle",
+      "kind": "damage_reduction",
+      "value": 0.06
+    },
+    "blood_god_mantle#2": {
+      "item": "blood_god_mantle",
+      "kind": "reduce_injury_severity",
+      "value": 0.23
+    },
+    "blood_god_mantle#3": {
+      "item": "blood_god_mantle",
+      "kind": "crit_damage_bonus",
+      "value": 0.22
+    },
+    "blood_god_mantle#4": {
+      "item": "blood_god_mantle",
+      "kind": "on_dodge_counter",
+      "value": 0.28
+    },
+    "primordial_carapace#0": {
+      "item": "primordial_carapace",
+      "kind": "damage_reduction",
+      "value": 0.07
+    },
+    "primordial_carapace#1": {
+      "item": "primordial_carapace",
+      "kind": "hp_bonus_pct",
+      "value": 0.14
+    },
+    "primordial_carapace#2": {
+      "item": "primordial_carapace",
+      "kind": "reduce_injury_severity",
+      "value": 0.24
+    },
+    "primordial_carapace#3": {
+      "item": "primordial_carapace",
+      "kind": "regen_per_turn_pct",
+      "value": 0.04
+    },
+    "primordial_carapace#4": {
+      "item": "primordial_carapace",
+      "kind": "crit_chance_bonus",
+      "value": 0.08
+    },
+    "eternal_lorica#0": {
+      "item": "eternal_lorica",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "eternal_lorica#1": {
+      "item": "eternal_lorica",
+      "kind": "hp_bonus_pct",
+      "value": 0.1
+    },
+    "eternal_lorica#2": {
+      "item": "eternal_lorica",
+      "kind": "crit_chance_bonus",
+      "value": 0.06
+    },
+    "eternal_lorica#3": {
+      "item": "eternal_lorica",
+      "kind": "reduce_injury_severity",
+      "value": 0.2
+    },
+    "eternal_lorica#4": {
+      "item": "eternal_lorica",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "bone_charm#0": {
+      "item": "bone_charm",
+      "kind": "hp_bonus_pct",
+      "value": 0.02
+    },
+    "rat_skull_pendant#0": {
+      "item": "rat_skull_pendant",
+      "kind": "reduce_injury_severity",
+      "value": 0.05
+    },
+    "slave_brand_token#0": {
+      "item": "slave_brand_token",
+      "kind": "crit_damage_bonus",
+      "value": 0.03
+    },
+    "ashen_finger_bone#0": {
+      "item": "ashen_finger_bone",
+      "kind": "dodge_chance_bonus",
+      "value": 0.01
+    },
+    "gutter_coin#0": {
+      "item": "gutter_coin",
+      "kind": "bonus_gold_pct",
+      "value": 0.02
+    },
+    "dried_blood_vial#0": {
+      "item": "dried_blood_vial",
+      "kind": "regen_per_turn_pct",
+      "value": 0.01
+    },
+    "iron_ring#0": {
+      "item": "iron_ring",
+      "kind": "hp_bonus_pct",
+      "value": 0.03
+    },
+    "iron_ring#1": {
+      "item": "iron_ring",
+      "kind": "reduce_injury_severity",
+      "value": 0.1
+    },
+    "scorpion_brooch#0": {
+      "item": "scorpion_brooch",
+      "kind": "crit_chance_bonus",
+      "value": 0.02
+    },
+    "scorpion_brooch#1": {
+      "item": "scorpion_brooch",
+      "kind": "crit_damage_bonus",
+      "value": 0.06
+    },
+    "vultures_eye_bead#0": {
+      "item": "vultures_eye_bead",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "vultures_eye_bead#1": {
+      "item": "vultures_eye_bead",
+      "kind": "on_kill_heal_pct",
+      "value": 0.04
+    },
+    "gladiators_tooth#0": {
+      "item": "gladiators_tooth",
+      "kind": "reduce_injury_severity",
+      "value": 0.09
+    },
+    "gladiators_tooth#1": {
+      "item": "gladiators_tooth",
+      "kind": "crit_damage_bonus",
+      "value": 0.08
+    },
+    "tar_knuckle_wrap#0": {
+      "item": "tar_knuckle_wrap",
+      "kind": "dodge_chance_bonus",
+      "value": 0.02
+    },
+    "tar_knuckle_wrap#1": {
+      "item": "tar_knuckle_wrap",
+      "kind": "crit_damage_bonus",
+      "value": 0.07
+    },
+    "centurions_clasp#0": {
+      "item": "centurions_clasp",
+      "kind": "regen_per_turn_pct",
+      "value": 0.01
+    },
+    "centurions_clasp#1": {
+      "item": "centurions_clasp",
+      "kind": "hp_bonus_pct",
+      "value": 0.05
+    },
+    "blood_pendant#0": {
+      "item": "blood_pendant",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "blood_pendant#1": {
+      "item": "blood_pendant",
+      "kind": "on_kill_heal_pct",
+      "value": 0.04
+    },
+    "blood_pendant#2": {
+      "item": "blood_pendant",
+      "kind": "crit_damage_bonus",
+      "value": 0.12
+    },
+    "shadow_anklet#0": {
+      "item": "shadow_anklet",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "shadow_anklet#1": {
+      "item": "shadow_anklet",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "shadow_anklet#2": {
+      "item": "shadow_anklet",
+      "kind": "crit_damage_bonus",
+      "value": 0.11
+    },
+    "wrath_shard_earring#0": {
+      "item": "wrath_shard_earring",
+      "kind": "hp_bonus_pct",
+      "value": 0.05
+    },
+    "wrath_shard_earring#1": {
+      "item": "wrath_shard_earring",
+      "kind": "reduce_injury_severity",
+      "value": 0.13
+    },
+    "wrath_shard_earring#2": {
+      "item": "wrath_shard_earring",
+      "kind": "crit_damage_bonus",
+      "value": 0.1
+    },
+    "tomb_spider_brooch#0": {
+      "item": "tomb_spider_brooch",
+      "kind": "hp_bonus_pct",
+      "value": 0.06
+    },
+    "tomb_spider_brooch#1": {
+      "item": "tomb_spider_brooch",
+      "kind": "reduce_injury_severity",
+      "value": 0.14
+    },
+    "tomb_spider_brooch#2": {
+      "item": "tomb_spider_brooch",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "cursed_laurel_pin#0": {
+      "item": "cursed_laurel_pin",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "cursed_laurel_pin#1": {
+      "item": "cursed_laurel_pin",
+      "kind": "hp_bonus_pct",
+      "value": 0.07
+    },
+    "cursed_laurel_pin#2": {
+      "item": "cursed_laurel_pin",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "gore_stained_locket#0": {
+      "item": "gore_stained_locket",
+      "kind": "dodge_chance_bonus",
+      "value": 0.03
+    },
+    "gore_stained_locket#1": {
+      "item": "gore_stained_locket",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "gore_stained_locket#2": {
+      "item": "gore_stained_locket",
+      "kind": "on_kill_heal_pct",
+      "value": 0.05
+    },
+    "void_amulet#0": {
+      "item": "void_amulet",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "void_amulet#1": {
+      "item": "void_amulet",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "void_amulet#2": {
+      "item": "void_amulet",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "void_amulet#3": {
+      "item": "void_amulet",
+      "kind": "reduce_injury_severity",
+      "value": 0.2
+    },
+    "infernal_knot#0": {
+      "item": "infernal_knot",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "infernal_knot#1": {
+      "item": "infernal_knot",
+      "kind": "hp_bonus_pct",
+      "value": 0.07
+    },
+    "infernal_knot#2": {
+      "item": "infernal_knot",
+      "kind": "on_kill_heal_pct",
+      "value": 0.05
+    },
+    "infernal_knot#3": {
+      "item": "infernal_knot",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "bloodsworn_choker#0": {
+      "item": "bloodsworn_choker",
+      "kind": "regen_per_turn_pct",
+      "value": 0.02
+    },
+    "bloodsworn_choker#1": {
+      "item": "bloodsworn_choker",
+      "kind": "hp_bonus_pct",
+      "value": 0.08
+    },
+    "bloodsworn_choker#2": {
+      "item": "bloodsworn_choker",
+      "kind": "reduce_injury_severity",
+      "value": 0.17
+    },
+    "bloodsworn_choker#3": {
+      "item": "bloodsworn_choker",
+      "kind": "crit_damage_bonus",
+      "value": 0.18
+    },
+    "eye_of_malice#0": {
+      "item": "eye_of_malice",
+      "kind": "bonus_gold_pct",
+      "value": 0.08
+    },
+    "eye_of_malice#1": {
+      "item": "eye_of_malice",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "eye_of_malice#2": {
+      "item": "eye_of_malice",
+      "kind": "on_kill_heal_pct",
+      "value": 0.06
+    },
+    "eye_of_malice#3": {
+      "item": "eye_of_malice",
+      "kind": "crit_damage_bonus",
+      "value": 0.17
+    },
+    "reapers_bangle#0": {
+      "item": "reapers_bangle",
+      "kind": "bonus_gold_pct",
+      "value": 0.09
+    },
+    "reapers_bangle#1": {
+      "item": "reapers_bangle",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "reapers_bangle#2": {
+      "item": "reapers_bangle",
+      "kind": "reduce_injury_severity",
+      "value": 0.16
+    },
+    "reapers_bangle#3": {
+      "item": "reapers_bangle",
+      "kind": "on_kill_heal_pct",
+      "value": 0.07
+    },
+    "obsidian_heart_stud#0": {
+      "item": "obsidian_heart_stud",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "obsidian_heart_stud#1": {
+      "item": "obsidian_heart_stud",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "obsidian_heart_stud#2": {
+      "item": "obsidian_heart_stud",
+      "kind": "hp_bonus_pct",
+      "value": 0.09
+    },
+    "obsidian_heart_stud#3": {
+      "item": "obsidian_heart_stud",
+      "kind": "reduce_injury_severity",
+      "value": 0.19
+    },
+    "crown_of_ash#0": {
+      "item": "crown_of_ash",
+      "kind": "hp_bonus_pct",
+      "value": 0.1
+    },
+    "crown_of_ash#1": {
+      "item": "crown_of_ash",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "crown_of_ash#2": {
+      "item": "crown_of_ash",
+      "kind": "on_kill_heal_pct",
+      "value": 0.08
+    },
+    "crown_of_ash#3": {
+      "item": "crown_of_ash",
+      "kind": "reduce_injury_severity",
+      "value": 0.23
+    },
+    "crown_of_ash#4": {
+      "item": "crown_of_ash",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "chain_of_the_unbroken#0": {
+      "item": "chain_of_the_unbroken",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "chain_of_the_unbroken#1": {
+      "item": "chain_of_the_unbroken",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "chain_of_the_unbroken#2": {
+      "item": "chain_of_the_unbroken",
+      "kind": "hp_bonus_pct",
+      "value": 0.13
+    },
+    "chain_of_the_unbroken#3": {
+      "item": "chain_of_the_unbroken",
+      "kind": "bonus_gold_pct",
+      "value": 0.14
+    },
+    "chain_of_the_unbroken#4": {
+      "item": "chain_of_the_unbroken",
+      "kind": "reduce_injury_severity",
+      "value": 0.25
+    },
+    "dread_emperors_sigil#0": {
+      "item": "dread_emperors_sigil",
+      "kind": "crit_chance_bonus",
+      "value": 0.06
+    },
+    "dread_emperors_sigil#1": {
+      "item": "dread_emperors_sigil",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "dread_emperors_sigil#2": {
+      "item": "dread_emperors_sigil",
+      "kind": "on_kill_heal_pct",
+      "value": 0.08
+    },
+    "dread_emperors_sigil#3": {
+      "item": "dread_emperors_sigil",
+      "kind": "reduce_injury_severity",
+      "value": 0.22
+    },
+    "dread_emperors_sigil#4": {
+      "item": "dread_emperors_sigil",
+      "kind": "crit_damage_bonus",
+      "value": 0.22
+    },
+    "marrow_of_the_titan#0": {
+      "item": "marrow_of_the_titan",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "marrow_of_the_titan#1": {
+      "item": "marrow_of_the_titan",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "marrow_of_the_titan#2": {
+      "item": "marrow_of_the_titan",
+      "kind": "hp_bonus_pct",
+      "value": 0.14
+    },
+    "marrow_of_the_titan#3": {
+      "item": "marrow_of_the_titan",
+      "kind": "reduce_injury_severity",
+      "value": 0.24
+    },
+    "marrow_of_the_titan#4": {
+      "item": "marrow_of_the_titan",
+      "kind": "crit_damage_bonus",
+      "value": 0.25
+    },
+    "stygian_loop#0": {
+      "item": "stygian_loop",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "stygian_loop#1": {
+      "item": "stygian_loop",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "stygian_loop#2": {
+      "item": "stygian_loop",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "stygian_loop#3": {
+      "item": "stygian_loop",
+      "kind": "bonus_gold_pct",
+      "value": 0.13
+    },
+    "stygian_loop#4": {
+      "item": "stygian_loop",
+      "kind": "reduce_injury_severity",
+      "value": 0.24
+    },
+    "sanguine_star#0": {
+      "item": "sanguine_star",
+      "kind": "regen_per_turn_pct",
+      "value": 0.04
+    },
+    "sanguine_star#1": {
+      "item": "sanguine_star",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "sanguine_star#2": {
+      "item": "sanguine_star",
+      "kind": "crit_chance_bonus",
+      "value": 0.07
+    },
+    "sanguine_star#3": {
+      "item": "sanguine_star",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "sanguine_star#4": {
+      "item": "sanguine_star",
+      "kind": "crit_damage_bonus",
+      "value": 0.22
+    },
+    "cracked_idol#0": {
+      "item": "cracked_idol",
+      "kind": "crit_chance_bonus",
+      "value": 0.02
+    },
+    "dusty_talisman#0": {
+      "item": "dusty_talisman",
+      "kind": "reduce_injury_severity",
+      "value": 0.08
+    },
+    "worn_signet#0": {
+      "item": "worn_signet",
+      "kind": "damage_bonus_pct",
+      "value": 0.01
+    },
+    "hollow_tooth_relic#0": {
+      "item": "hollow_tooth_relic",
+      "kind": "damage_reduction",
+      "value": 0.02
+    },
+    "serpent_fang#0": {
+      "item": "serpent_fang",
+      "kind": "lifesteal_pct",
+      "value": 0.02
+    },
+    "serpent_fang#1": {
+      "item": "serpent_fang",
+      "kind": "crit_damage_bonus",
+      "value": 0.06
+    },
+    "stone_of_vigor#0": {
+      "item": "stone_of_vigor",
+      "kind": "regen_per_turn_pct",
+      "value": 0.01
+    },
+    "stone_of_vigor#1": {
+      "item": "stone_of_vigor",
+      "kind": "hp_bonus_pct",
+      "value": 0.05
+    },
+    "wolf_pelt_cloak#0": {
+      "item": "wolf_pelt_cloak",
+      "kind": "dodge_chance_bonus",
+      "value": 0.02
+    },
+    "wolf_pelt_cloak#1": {
+      "item": "wolf_pelt_cloak",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "iron_crow_fetish#0": {
+      "item": "iron_crow_fetish",
+      "kind": "bonus_gold_pct",
+      "value": 0.03
+    },
+    "iron_crow_fetish#1": {
+      "item": "iron_crow_fetish",
+      "kind": "on_kill_heal_pct",
+      "value": 0.04
+    },
+    "eye_of_the_storm#0": {
+      "item": "eye_of_the_storm",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "eye_of_the_storm#1": {
+      "item": "eye_of_the_storm",
+      "kind": "crit_chance_bonus",
+      "value": 0.03
+    },
+    "eye_of_the_storm#2": {
+      "item": "eye_of_the_storm",
+      "kind": "crit_damage_bonus",
+      "value": 0.1
+    },
+    "frozen_heart#0": {
+      "item": "frozen_heart",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "frozen_heart#1": {
+      "item": "frozen_heart",
+      "kind": "hp_bonus_pct",
+      "value": 0.07
+    },
+    "frozen_heart#2": {
+      "item": "frozen_heart",
+      "kind": "reduce_injury_severity",
+      "value": 0.15
+    },
+    "war_banner#0": {
+      "item": "war_banner",
+      "kind": "damage_reduction",
+      "value": 0.03
+    },
+    "war_banner#1": {
+      "item": "war_banner",
+      "kind": "damage_bonus_pct",
+      "value": 0.03
+    },
+    "war_banner#2": {
+      "item": "war_banner",
+      "kind": "on_dodge_counter",
+      "value": 0.12
+    },
+    "plague_doctors_lens#0": {
+      "item": "plague_doctors_lens",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "plague_doctors_lens#1": {
+      "item": "plague_doctors_lens",
+      "kind": "crit_damage_bonus",
+      "value": 0.1
+    },
+    "plague_doctors_lens#2": {
+      "item": "plague_doctors_lens",
+      "kind": "reduce_injury_severity",
+      "value": 0.13
+    },
+    "soul_lantern#0": {
+      "item": "soul_lantern",
+      "kind": "on_kill_heal_pct",
+      "value": 0.05
+    },
+    "soul_lantern#1": {
+      "item": "soul_lantern",
+      "kind": "bonus_gold_pct",
+      "value": 0.08
+    },
+    "soul_lantern#2": {
+      "item": "soul_lantern",
+      "kind": "hp_bonus_pct",
+      "value": 0.09
+    },
+    "soul_lantern#3": {
+      "item": "soul_lantern",
+      "kind": "crit_damage_bonus",
+      "value": 0.16
+    },
+    "titans_finger#0": {
+      "item": "titans_finger",
+      "kind": "damage_reduction",
+      "value": 0.05
+    },
+    "titans_finger#1": {
+      "item": "titans_finger",
+      "kind": "damage_bonus_pct",
+      "value": 0.07
+    },
+    "titans_finger#2": {
+      "item": "titans_finger",
+      "kind": "hp_bonus_pct",
+      "value": 0.1
+    },
+    "titans_finger#3": {
+      "item": "titans_finger",
+      "kind": "reduce_injury_severity",
+      "value": 0.2
+    },
+    "eclipse_shard#0": {
+      "item": "eclipse_shard",
+      "kind": "damage_reduction",
+      "value": 0.04
+    },
+    "eclipse_shard#1": {
+      "item": "eclipse_shard",
+      "kind": "dodge_chance_bonus",
+      "value": 0.04
+    },
+    "eclipse_shard#2": {
+      "item": "eclipse_shard",
+      "kind": "crit_chance_bonus",
+      "value": 0.05
+    },
+    "eclipse_shard#3": {
+      "item": "eclipse_shard",
+      "kind": "on_dodge_counter",
+      "value": 0.2
+    },
+    "wailing_skull#0": {
+      "item": "wailing_skull",
+      "kind": "crit_chance_bonus",
+      "value": 0.04
+    },
+    "wailing_skull#1": {
+      "item": "wailing_skull",
+      "kind": "damage_bonus_pct",
+      "value": 0.06
+    },
+    "wailing_skull#2": {
+      "item": "wailing_skull",
+      "kind": "on_kill_heal_pct",
+      "value": 0.06
+    },
+    "wailing_skull#3": {
+      "item": "wailing_skull",
+      "kind": "crit_damage_bonus",
+      "value": 0.15
+    },
+    "heart_of_colossus#0": {
+      "item": "heart_of_colossus",
+      "kind": "regen_per_turn_pct",
+      "value": 0.03
+    },
+    "heart_of_colossus#1": {
+      "item": "heart_of_colossus",
+      "kind": "damage_reduction",
+      "value": 0.06
+    },
+    "heart_of_colossus#2": {
+      "item": "heart_of_colossus",
+      "kind": "hp_bonus_pct",
+      "value": 0.13
+    },
+    "heart_of_colossus#3": {
+      "item": "heart_of_colossus",
+      "kind": "reduce_injury_severity",
+      "value": 0.22
+    },
+    "heart_of_colossus#4": {
+      "item": "heart_of_colossus",
+      "kind": "on_dodge_counter",
+      "value": 0.28
+    },
+    "abyssal_crown#0": {
+      "item": "abyssal_crown",
+      "kind": "dodge_chance_bonus",
+      "value": 0.05
+    },
+    "abyssal_crown#1": {
+      "item": "abyssal_crown",
+      "kind": "crit_chance_bonus",
+      "value": 0.06
+    },
+    "abyssal_crown#2": {
+      "item": "abyssal_crown",
+      "kind": "damage_bonus_pct",
+      "value": 0.07
+    },
+    "abyssal_crown#3": {
+      "item": "abyssal_crown",
+      "kind": "bonus_gold_pct",
+      "value": 0.12
+    },
+    "abyssal_crown#4": {
+      "item": "abyssal_crown",
+      "kind": "crit_damage_bonus",
+      "value": 0.19
+    },
+    "ember_of_creation#0": {
+      "item": "ember_of_creation",
+      "kind": "lifesteal_pct",
+      "value": 0.07
+    },
+    "ember_of_creation#1": {
+      "item": "ember_of_creation",
+      "kind": "on_kill_heal_pct",
+      "value": 0.09
+    },
+    "ember_of_creation#2": {
+      "item": "ember_of_creation",
+      "kind": "regen_per_turn_pct",
+      "value": 0.04
+    },
+    "ember_of_creation#3": {
+      "item": "ember_of_creation",
+      "kind": "hp_bonus_pct",
+      "value": 0.15
+    },
+    "ember_of_creation#4": {
+      "item": "ember_of_creation",
+      "kind": "reduce_injury_severity",
+      "value": 0.25
+    },
+    "doom_bell#0": {
+      "item": "doom_bell",
+      "kind": "damage_reduction",
+      "value": 0.06
+    },
+    "doom_bell#1": {
+      "item": "doom_bell",
+      "kind": "on_kill_heal_pct",
+      "value": 0.08
+    },
+    "doom_bell#2": {
+      "item": "doom_bell",
+      "kind": "damage_bonus_pct",
+      "value": 0.08
+    },
+    "doom_bell#3": {
+      "item": "doom_bell",
+      "kind": "crit_damage_bonus",
+      "value": 0.21
+    },
+    "doom_bell#4": {
+      "item": "doom_bell",
+      "kind": "on_dodge_counter",
+      "value": 0.27
     }
   }
 }

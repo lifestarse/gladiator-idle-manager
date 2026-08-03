@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 """
 Pixel art RPG color theme — SNES-era inspired.
 Rich saturated accents, warm indigo backgrounds, cream text.
@@ -79,3 +79,14 @@ RARITY_LEGENDARY_CLR = (0.95, 0.75, 0.15, 1)  # gold
 def popup_color(rgba_tuple):
     """Convert a theme RGBA tuple to Kivy Popup background_color list format."""
     return list(rgba_tuple)[:3] + [1]
+
+
+def bbcode_hex(rgba_tuple):
+    """Convert a theme RGBA tuple (0..1 floats) to an RRGGBB hex string.
+
+    For Kivy BBCode ``[color=]`` markup tags on a ``Label(markup=True)`` —
+    the passive slot rows (item card + forge passive card) color unlocked
+    and locked rows differently within a single multi-line Label, where the
+    per-widget ``color`` property only sets one color for the whole text."""
+    r, g, b = rgba_tuple[:3]
+    return f"{round(r * 255):02x}{round(g * 255):02x}{round(b * 255):02x}"

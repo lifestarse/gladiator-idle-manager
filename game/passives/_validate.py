@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Compile data/item_passives.json into COMPILED_PASSIVES.
 
 Policy on bad input: WARN AND DROP, never raise. This runs inside
@@ -15,6 +15,7 @@ from ._registry import (CATEGORY_STATIC, COMPILED_PASSIVES, PASSIVE_KINDS,
                         PassiveSpec, static_effect_for)
 from ._shared import *  # noqa: F401,F403
 from ._shared import _log, PASSIVE_KEY_SEPARATOR, PASSIVE_MAX_PER_ITEM
+from ._slots import slot_count, unlock_threshold
 
 # Default when an entry omits "cond". The condition vocabulary itself arrives
 # with the triggered kinds; statics are unconditional by construction, so the
@@ -73,7 +74,7 @@ def _compile_entry(key, entry, slot_by_item):
         _log.warning("[passives] %r: key must be \"<item_id>%s<n>\"",
                      key, PASSIVE_KEY_SEPARATOR)
         return None
-    key_item, _index = parsed
+    key_item, index = parsed
 
     item_id = entry.get("item")
     if item_id != key_item:
@@ -91,11 +92,21 @@ def _compile_entry(key, entry, slot_by_item):
         _log.warning("[passives] %s: unknown kind %r", key, entry.get("kind"))
         return None
 
-    slot = slot_by_item[item_id]
+    slot, rarity = slot_by_item[item_id]
     if slot not in kind_def.slots:
         _log.warning("[passives] %s: kind %r is not allowed on slot %r "
                      "(allowed: %s)", key, kind_def.kind, slot,
                      sorted(kind_def.slots))
+        return None
+
+    # Dead slot: slot #n only exists on rarities of rank > n. A "#4" on an
+    # epic would sit locked forever — its threshold exceeds the upgrade cap.
+    slots = slot_count({"rarity": rarity})
+    if index >= slots:
+        _log.warning("[passives] %s: slot #%d can never unlock on a %s item "
+                     "(%d slot(s), threshold +%d exceeds the upgrade cap)",
+                     key, index, rarity or "common", slots,
+                     unlock_threshold(index))
         return None
 
     trigger = entry.get("trigger")
@@ -128,13 +139,19 @@ def _compile_entry(key, entry, slot_by_item):
 
 
 def slot_index(item_lists):
-    """{item id: slot} over every equipment list the loader exposes."""
+    """{item id: (slot, rarity)} over every equipment list the loader exposes.
+
+    The slot enforces the per-kind slot charter; the rarity bounds the slot
+    indexes (slot_count). Bundled as one map so install()'s call site in
+    game/engine/wiringmixin.py stays a single pass over the item lists.
+    """
     index = {}
     for items in item_lists:
         for item in items:
             item_id = item.get("id")
             if item_id:
-                index[item_id] = item.get("slot", "")
+                index[item_id] = (item.get("slot", ""),
+                                  item.get("rarity", ""))
     return index
 
 
@@ -164,11 +181,43 @@ def compile_all(definitions, slot_by_item):
         if len(set(indexes)) != len(indexes):
             _log.warning("[passives] %s: duplicate index in %s", item_id,
                          indexes)
+        # One kind per item: five stacked copies of the same effect on one
+        # legendary would defeat the balance rails, and the kind-SET is the
+        # item's identity for the uniqueness rule. Keep the lowest-indexed
+        # copy — it unlocks first.
+        seen_kinds = {}
+        unique = []
+        for spec in specs:
+            first = seen_kinds.get(spec.kind)
+            if first is not None:
+                _log.warning("[passives] %s: kind %r already sits on slot "
+                             "#%d, dropping duplicate #%d", item_id,
+                             spec.kind, first, spec.index)
+                continue
+            seen_kinds[spec.kind] = spec.index
+            unique.append(spec)
+        specs = unique
+        # Backstop only: the real per-item limit is slot_count(rarity),
+        # already enforced index-wise by the dead-slot check in
+        # _compile_entry (legendary's 5 slots == this cap).
         if len(specs) > PASSIVE_MAX_PER_ITEM:
             _log.warning("[passives] %s: %d passives exceeds the cap of %d, "
                          "keeping the first %d", item_id, len(specs),
                          PASSIVE_MAX_PER_ITEM, PASSIVE_MAX_PER_ITEM)
             specs = specs[:PASSIVE_MAX_PER_ITEM]
+        # Warn-only shape checks. A hole (#0, #2 without #1) is a slot that
+        # unlocks with no effect; an under-filled item breaks the "all slots
+        # authored" design. Both degrade rather than drop: the data may be
+        # mid-patch, and completeness is a repo-test concern, not runtime.
+        indexes = [s.index for s in specs]
+        if indexes != list(range(len(indexes))):
+            _log.warning("[passives] %s: non-contiguous slot indexes %s",
+                         item_id, indexes)
+        _slot, rarity = slot_by_item[item_id]
+        slots = slot_count({"rarity": rarity})
+        if len(specs) < slots:
+            _log.warning("[passives] %s: %d of %d slots authored", item_id,
+                         len(specs), slots)
         compiled[item_id] = tuple(specs)
     return compiled
 

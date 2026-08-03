@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Render a PassiveSpec into the player-facing rule line.
 
 Numbers live here and only here. They come from the spec's params and are
@@ -16,6 +16,7 @@ pattern.
 from game.localization import t
 
 from ._shared import *  # noqa: F401,F403
+from ._slots import is_unlocked, slot_count, unlock_threshold
 
 
 def fmt_amount(value):
@@ -48,18 +49,74 @@ def render(spec):
 
 
 def render_item(item):
-    """Rule lines for every passive on `item`, in `#n` order. [] if none."""
+    """Rule lines for the ACTIVE passives on `item`, in `#n` order. [] if none.
+
+    The unlocked-only view of render_slots: a slot below its upgrade threshold
+    grants no effect (fighterperksmixin gates on the same is_unlocked), so it
+    must not read as a rule the item follows. Callers that also want the
+    locked slots use render_slots.
+    """
     from ._registry import COMPILED_PASSIVES
 
     return [render(spec)
-            for spec in COMPILED_PASSIVES.get(item.get("id", ""), ())]
+            for spec in COMPILED_PASSIVES.get(item.get("id", ""), ())
+            if is_unlocked(spec, item)]
+
+
+def render_slots(item):
+    """Slot rows for the item card: [(text, unlocked, threshold), ...].
+
+    One row per passive slot the item's rarity grants (slot_count), in slot
+    order. Thresholds are monotonic in the index, so the unlocked rows always
+    form the prefix — no re-sorting needed.
+
+    * unlocked row: "★ <localized rule line>" — PASSIVE_MARK + render(spec).
+    * locked row: the passive_slot_locked template with the +N threshold. The
+      effect is deliberately NOT revealed until unlocked. The "lock" is a word
+      in the template, not a glyph — see the PASSIVE_MARK note below for why
+      no new symbol may appear here.
+
+    [] for an item with nothing authored: a rarity-sized column of locked rows
+    over passives that do not exist would promise content the data does not
+    have (today that is every item but rusty_blade). An unlocked slot whose
+    spec is missing (mid-patch hole) is skipped for the same reason.
+    """
+    from ._registry import COMPILED_PASSIVES
+
+    specs = COMPILED_PASSIVES.get(item.get("id", ""), ())
+    if not specs:
+        return []
+    by_index = {spec.index: spec for spec in specs}
+    rows = []
+    for index in range(slot_count(item)):
+        threshold = unlock_threshold(index)
+        if item.get("upgrade_level", 0) >= threshold:
+            spec = by_index.get(index)
+            if spec is None:
+                continue
+            rows.append((f"{PASSIVE_MARK} {render(spec)}", True, threshold))
+        else:
+            rows.append((t("passive_slot_locked", n=threshold), False,
+                         threshold))
+    return rows
 
 
 def passive_count(item):
-    """How many passives `item` carries — for badges and sort keys."""
+    """How many passives `item` carries in DATA, active or not.
+
+    The authored total — badges that should count only active effects use
+    unlocked_count."""
     from ._registry import COMPILED_PASSIVES
 
     return len(COMPILED_PASSIVES.get(item.get("id", ""), ()))
+
+
+def unlocked_count(item):
+    """How many of `item`'s passives its upgrade level has activated."""
+    from ._registry import COMPILED_PASSIVES
+
+    return sum(1 for spec in COMPILED_PASSIVES.get(item.get("id", ""), ())
+               if is_unlocked(spec, item))
 
 
 # U+2605 BLACK STAR. Verified present in fonts/PressStart2P-Regular.ttf, which
@@ -75,5 +132,9 @@ PASSIVE_MARK = "★"
 
 
 def passive_marker(item):
-    """Grid marker for an item's passives: one star each, "" for none."""
-    return PASSIVE_MARK * passive_count(item)
+    """Grid marker: one star per ACTIVE passive, "" while all are locked.
+
+    Stars mean effects the fighter actually gets — locked potential is shown
+    in the detail card (render_slots), not in a grid row that has no room for
+    the distinction."""
+    return PASSIVE_MARK * unlocked_count(item)

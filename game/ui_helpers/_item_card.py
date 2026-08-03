@@ -1,10 +1,10 @@
-# Build: 6
+# Build: 7
 """ui_helpers._item_card — item info card builder."""
 from ._imports import *  # noqa: F401,F403
 from ._widgets import _auto_text_size
 from kivy.uix.scrollview import ScrollView
 from game.constants import FIGHTER_ATK_PER_STR, FIGHTER_HP_PER_VIT
-from game.passives import passive_count, render_item
+from game.passives import render_slots
 
 
 # ============================================================
@@ -159,10 +159,14 @@ def show_item_stats_popup(item):
     # Passives sit between the enchantment (also a granted power, but bought)
     # and the flavour text. Rule lines first, then the item's own prose, so a
     # player reading top-down gets the mechanic before the story about it.
-    passive_lines = render_item(item)
-    if passive_lines:
+    # All authored slots show — unlocked ones in amber with their rule line,
+    # locked ones dimmed with the +N threshold, no spoiler on the effect.
+    slot_rows = render_slots(item)
+    if slot_rows:
         lines.append(t("item_passive_header"))
-        lines.extend(f"  • {line}" for line in passive_lines)
+        for row_text, unlocked, _threshold in slot_rows:
+            hexcolor = bbcode_hex(ACCENT_AMBER if unlocked else TEXT_MUTED)
+            lines.append(f"  • [color={hexcolor}]{row_text}[/color]")
         special = item.get("special_effect", "")
         if special:
             lines.append(special)

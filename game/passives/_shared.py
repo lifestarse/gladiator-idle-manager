@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Shared imports for game.passives submodules.
 
 Mirrors game/models/_imports.py: one explicit import block instead of the
@@ -14,7 +14,7 @@ game.constants and game.slots (both leaves) may be imported here.
 import logging  # noqa: F401
 
 from game.constants import (  # noqa: F401
-    PASSIVE_KEY_SEPARATOR, PASSIVE_MAX_PER_ITEM,
+    PASSIVE_KEY_SEPARATOR, PASSIVE_MAX_PER_ITEM, PASSIVE_SLOT_UNLOCK_STEP,
 )
 from game.slots import SLOTS, EQUIPMENT_SLOTS  # noqa: F401
 

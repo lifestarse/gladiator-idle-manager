@@ -1,4 +1,4 @@
-# Build: 42
+# Build: 43
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -20,7 +20,7 @@ from game.constants import (
     UPGRADE_BONUS_PER_LEVEL, RELIC_STAT_SPLIT, ACCESSORY_HP_MULT,
 )
 from game.localization import t
-from game.passives import render_item
+from game.passives import render_slots
 from game.ui_helpers import (
     _batch_fill_grid,
     refresh_forge_grid,

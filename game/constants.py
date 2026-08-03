@@ -1,4 +1,4 @@
-# Build: 16
+# Build: 17
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
@@ -125,12 +125,18 @@ DAMAGE_VARIANCE_HIGH = 1.30      # max damage roll multiplier
 DEFENSE_DIVISOR = 100            # reduction = def / (def + DIVISOR)
 
 # --- Item passives (game/passives/) ---
-# Definitions live in data/item_passives.json, keyed "<item_id>#<n>". Both
+# Definitions live in data/item_passives.json, keyed "<item_id>#<n>". All
 # values below are validation inputs, not balance knobs: the separator is the
 # key grammar the compiler parses and the remote patcher addresses, the cap is
 # how many passives one item may carry (top rarity carries the most).
 PASSIVE_KEY_SEPARATOR = "#"
-PASSIVE_MAX_PER_ITEM = 3
+PASSIVE_MAX_PER_ITEM = 5
+# Upgrade levels per passive slot: slot #n activates at upgrade level
+# (n + 1) * step, so a rarity's slot count is its max upgrade divided by the
+# step. Invariant: RARITY_MAX_UPGRADE[r] == PASSIVE_SLOT_UNLOCK_STEP *
+# slot_count(r) for every rarity — asserted by tests/test_item_passives.py,
+# so each rarity's LAST slot unlocks exactly at its own upgrade cap.
+PASSIVE_SLOT_UNLOCK_STEP = 5
 
 # --- Rarity max upgrade levels (models.py) ---
 MAX_UPGRADE_COMMON = 5

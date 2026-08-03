@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """GameEngine _WiringMixin — JSON→module wiring + item migration."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -48,8 +48,9 @@ class _WiringMixin:
         if dl.enchantments:
             _replace_dict(m.ENCHANTMENT_TYPES, dl.enchantments)
         # Item passives. Compiled here rather than in load_all because the
-        # compiler needs each referenced item's slot to enforce the per-kind
-        # slot charter, and the item lists only exist once the block above ran.
+        # compiler needs each referenced item's slot (per-kind slot charter)
+        # and rarity (slot-count cap), and those item lists only exist once
+        # the block above ran.
         # Unconditional: an empty definitions file must CLEAR the previous
         # compilation, not leave stale specs behind. install() mutates
         # COMPILED_PASSIVES in place, per the same contract as everything else
