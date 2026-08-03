@@ -8,7 +8,7 @@ metadata:
 
 Первый adb-деплой на реальный телефон — 2026-07-27, v1.9.45 debug.
 
-**Телефон:** Pixel 10a, USB, serial `5B211JEA303918`. adb — из scrcpy (`Genymobile.scrcpy` в WinGet Packages, есть в PATH). Остальные adb-девайсы (`127.0.0.1:5555/5556`, `emulator-5554`, model SM_S908E) — это BlueStacks, см. [[bluestacks-deploy]].
+**Телефон:** Pixel 10a, serial `5B211JEA303918`, ЕСТЬ РУТ (su из adb shell работает). **adb-over-WiFi постоянный** (2026-08-04): `persist.adb.tcp.port=5555` установлен через su — переживает ребуты, `adb tcpip` больше не нужен. IP динамический (после ребута менялся 105→107) — искать `adb mdns services` и `adb connect <ip>:5555`; USB нужен только если WiFi-сеть сменилась совсем. adb — из scrcpy (`Genymobile.scrcpy` в WinGet Packages, есть в PATH). Остальные adb-девайсы (`127.0.0.1:5555/5556`, `emulator-5554`, model SM_S908E) — это BlueStacks, см. [[bluestacks-deploy]].
 
 **Подписи (важно, три разных ключа):**
 - До 2026-07-27 на телефоне стояла версия **из Google Play** (`installerPackageName=com.android.vending`) с подписью **Play App Signing** (SHA256 `C3:0B:CE:DC:...`, DName «CN=Android, O=Google Inc.») — её локально не воспроизвести ничем, `adb install -r` поверх невозможен. Снесена с согласия юзера (сейв потерян), теперь стоит debug-подписанная — дальнейшие `adb install -r` работают без плясок. Play-версия обратно поверх debug тоже не встанет — тоже только через uninstall.
