@@ -247,15 +247,57 @@
       "scr_trigger",
       "scr_uop_neg",
       "stat_row_gold"
+    ],
+    "uk": [
+      "achievement_unlocked",
+      "arena_tier_top",
+      "battle_all_down",
+      "battle_victory",
+      "boss_shield_absorb",
+      "chap_ch5",
+      "cloud_err_cancelled",
+      "diamonds_earned",
+      "ds_revive_token_name",
+      "filter_equipped",
+      "help_sections.1.1",
+      "nav_lore",
+      "next_unlock",
+      "no_dead_fighters",
+      "no_eligible",
+      "perk_tier_label",
+      "qst_ch1_q2_name",
+      "qst_ch1_q3_desc",
+      "qst_ch5_q4_name",
+      "qst_ch6_q1_desc",
+      "recruited_msg",
+      "scr_act_log",
+      "scr_add_block",
+      "scr_arg_tier",
+      "scr_block_action",
+      "scr_btn_assign_global",
+      "scr_e_current_floor",
+      "scr_e_inv_armor",
+      "scr_export_all_title",
+      "scr_f_alive",
+      "scr_f_strength",
+      "scr_op_le",
+      "scr_tmpl_t6_name",
+      "scr_trig_battle_end",
+      "shard_name_2",
+      "skill_frenzy_many",
+      "slot_armor_upper",
+      "stat_row_total_gold",
+      "title_lore",
+      "tut_welcome_l1"
     ]
   },
   "selectors": {
     "control": {
-      "clean": 60,
+      "clean": 70,
       "defects": 0
     },
     "glossary-term": {
-      "clean": 42,
+      "clean": 54,
       "defects": 1
     },
     "long-prose": {
@@ -263,7 +305,7 @@
       "defects": 0
     },
     "machine": {
-      "clean": 133,
+      "clean": 151,
       "defects": 3
     }
   }
