@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Extract translation source batches and merge translated fragments back.
 
 Workflow agents never edit data/languages/*.json directly — parallel writers
@@ -40,8 +40,69 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, "scratch", "i18n_src")
 OUT_DIR = os.path.join(ROOT, "scratch", "i18n_out")
+REJECT_DIR = os.path.join(ROOT, "scratch", "i18n_rejected")
 LANG_DIR = os.path.join(ROOT, "data", "languages")
 LANGS = ("ru", "uk", "de", "es", "fr", "it", "pt", "pl")
+
+# LLM scaffolding that must never reach a player-visible string: markdown
+# fences, the agent's own answer-envelope tags, a value that is itself
+# serialized JSON, numbered-answer markers. The game's own markup stays legal
+# on purpose — BBCode ([b], [color=...]), placeholders ({n}) and the script
+# editor's <name>/<nombre> meta-variable match none of these patterns.
+# Shared with tests/test_i18n_*_quality.py so the merge-time quarantine and
+# the acceptance gate cannot drift apart.
+SCAFFOLD_PATTERNS = (
+    ("markdown fence", re.compile(r"```|~~~")),
+    ("answer-envelope tag", re.compile(
+        r"</?(?:content|translation|output|result|answer|json|entry|entries|text)\s*>",
+        re.IGNORECASE)),
+    ("serialized JSON instead of text", re.compile(r'^\s*[\[{]\s*"')),
+    ("numbered-answer marker", re.compile(r"^\s*\[\d+\]\s")),
+)
+
+
+def find_scaffolding(text):
+    """Why the text is agent scaffolding rather than a translation, or None."""
+    for reason, pattern in SCAFFOLD_PATTERNS:
+        if pattern.search(text):
+            return reason
+    return None
+
+
+def _fragment_scaffolding(fragment):
+    """[(key, reason)] for every string value carrying agent scaffolding."""
+    hits = []
+
+    def scan(key, value):
+        if isinstance(value, str):
+            reason = find_scaffolding(value)
+            if reason:
+                hits.append((key, reason))
+        elif isinstance(value, dict):
+            for sub, nested in value.items():
+                scan(f"{key}.{sub}", nested)
+
+    for key, value in fragment.items():
+        scan(key, value)
+    return hits
+
+
+def _quarantine(fragment_path, hits):
+    """Move a dirty fragment out of the merge inputs, keeping it for autopsy.
+
+    The whole fragment goes, not just the dirty keys: scaffolding in one value
+    means the writer was not returning clean JSON, so its neighbours are not
+    trusted either. With the file out of scratch/i18n_out/, status() honestly
+    reports the batch as missing instead of counting rejected work as done.
+    """
+    os.makedirs(REJECT_DIR, exist_ok=True)
+    name = os.path.basename(fragment_path)
+    os.replace(fragment_path, os.path.join(REJECT_DIR, name))
+    for key, reason in hits[:5]:
+        print(f"    REJECTED {name} {key}: {reason}")
+    if len(hits) > 5:
+        print(f"    ... and {len(hits) - 5} more")
+    print(f"    {name} -> scratch/i18n_rejected/ — re-translate the batch")
 
 # section -> (base file, top-level key, fields)
 SECTIONS = {
@@ -140,13 +201,19 @@ def extract():
 def merge(lang):
     target = os.path.join(LANG_DIR, f"data_{lang}.json")
     data = _load(target)
-    applied = missing = 0
+    applied = missing = quarantined = 0
     for name, section, rows in _batches():
         fragment_path = os.path.join(OUT_DIR, f"{lang}__{name}.json")
         if not os.path.exists(fragment_path):
             missing += len(rows)
             continue
         fragment = _load(fragment_path)
+        hits = _fragment_scaffolding(fragment)
+        if hits:
+            _quarantine(fragment_path, hits)
+            quarantined += 1
+            missing += len(rows)
+            continue
         for key, fields in rows.items():
             entry_section, entry_id = (section, key) if section else key.split(":", 1)
             translated = fragment.get(key)
@@ -164,6 +231,10 @@ def merge(lang):
                     missing += 1
     _dump(target, data)
     print(f"{lang}: applied {applied} fields, still missing {missing}")
+    if quarantined:
+        print(f"{lang}: {quarantined} fragments QUARANTINED — nothing from "
+              f"them reached data_{lang}.json")
+        sys.exit(1)
 
 
 def status():
@@ -416,7 +487,12 @@ def _ui_glossary(lang):
             continue
         terms[term] = {k: v for k, v in spec.items()
                        if k in ("en", "ru", "note", lang)}
-    return {"rules": glossary.get("rules", {}).get(lang, []), "terms": terms}
+    # The forbidden list rides along: the agent contract promises the
+    # blacklist inside the batch, and an agent that has to open a second file
+    # to learn that "call" is not a telephone call will not open it.
+    return {"rules": glossary.get("rules", {}).get(lang, []),
+            "forbidden": glossary.get("forbidden", {}).get(lang, {}),
+            "terms": terms}
 
 
 def extract_ui(lang):
@@ -438,7 +514,7 @@ def extract_ui(lang):
 def merge_ui(lang):
     target = _ui_path(lang)
     data = _load(target)
-    applied = missing = 0
+    applied = missing = quarantined = 0
     for name, rows in _ui_batches(lang):
         fragment_path = os.path.join(OUT_DIR, f"ui_{lang}__{name}.json")
         if not os.path.exists(fragment_path):
@@ -446,6 +522,12 @@ def merge_ui(lang):
             continue
         fragment = _load(fragment_path)
         fragment = fragment.get("entries", fragment)
+        hits = _fragment_scaffolding(fragment)
+        if hits:
+            _quarantine(fragment_path, hits)
+            quarantined += 1
+            missing += len(rows)
+            continue
         for path in rows:
             value = fragment.get(path)
             if isinstance(value, dict):
@@ -457,6 +539,10 @@ def merge_ui(lang):
                 missing += 1
     _dump_ui(target, data)
     print(f"{lang}: applied {applied} keys, still missing {missing}")
+    if quarantined:
+        print(f"{lang}: {quarantined} fragments QUARANTINED — nothing from "
+              f"them reached {lang}.json")
+        sys.exit(1)
 
 
 def status_ui():

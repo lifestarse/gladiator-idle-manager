@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Acceptance gate for the CONTENT of data/languages/<lang>.json — the UI strings.
 
 test_i18n_data_quality.py guards data_XX.json (enemies, lore, injuries). This
@@ -37,6 +37,10 @@ import pytest
 # leaves exactly the way localization, the translation tool and remote patches
 # do, or a rule could pass here and fail on a device.
 from game.localization import flatten as _flat
+
+# One implementation of scaffolding detection, shared with the merge-time
+# quarantine in the tool — the gate and the quarantine must not drift apart.
+from scripts.i18n_tool import find_scaffolding
 
 ROOT = Path(__file__).resolve().parents[1]
 LANG_DIR = ROOT / "data" / "languages"
@@ -185,6 +189,21 @@ def test_mixed_alphabet(lang):
     bad = [(key, repr(text[:60])) for key, text in target.items()
            if re.search(r"[Ѐ-ӿ][A-Za-z]|[A-Za-z][Ѐ-ӿ]", text)]
     assert not bad, _report(bad, "mixed-alphabet", lang)
+
+
+def test_no_agent_scaffolding_residue(lang):
+    """LLM wrapper artifacts must never reach a player-visible string.
+
+    Mechanical, so it applies to every language: a markdown fence or an
+    envelope tag renders verbatim on the device regardless of how far the
+    language's re-translation has progressed. Detection is shared with the
+    merge-time quarantine in scripts/i18n_tool.py.
+    """
+    target = _lang(lang)
+    bad = [(key, f"{reason} in {text[:50]!r}")
+           for key, text in target.items()
+           for reason in (find_scaffolding(text),) if reason]
+    assert not bad, _report(bad, "scaffolding", lang)
 
 
 def test_no_english_leak(lang):

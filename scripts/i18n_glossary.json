@@ -46,6 +46,27 @@
       "Без русизмів: «увімк./вимк.» замість «вкл./выкл.», «наступний» замість «следующий», без суржику."
     ]
   },
+  "collisions_ok": {
+    "_doc": [
+      "Reviewed exceptions for tests/test_i18n_terminology.py — the reverse",
+      "(collision) direction of the glossary. Every entry is a manual decision",
+      "recorded as data, word -> reason, so it survives regeneration of the",
+      "glossary and a later pass cannot silently re-litigate it.",
+      "shared_rendering: one word legitimately serving several glossary terms.",
+      "shared_name: one localized name legitimately shared by two entities.",
+      "variant_renderings: one source name legitimately rendered two ways."
+    ],
+    "shared_rendering": {
+      "ru": {
+        "уровень": "мастер сам использует одно слово для tier и level; контекст («арены» / «бойца») различает"
+      },
+      "uk": {
+        "рівень": "вслед за ru: одно слово для tier и level, различает контекст"
+      }
+    },
+    "shared_name": {},
+    "variant_renderings": {}
+  },
   "terms": {
     "fighter": {
       "en": "fighter", "ru": "боец",

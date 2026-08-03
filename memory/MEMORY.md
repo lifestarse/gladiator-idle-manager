@@ -8,6 +8,7 @@
 - [Автокоммит в master](process/auto-commit-to-master.md) — готовую работу коммитить и сливать в master автоматически, без подтверждений; push только по явной просьбе
 - [Агенты и скиллы](process/agents-and-skills.md) — 8 субагентов в .claude/agents/ (verify/scout/factcheck/reviewer/buildcheck/testwright/i18n-translate/i18n-qa); из сторонних скиллов подошли только 2, остальные проверены и отвергнуты с доказательством
 - [Сканер aislop](process/aislop-scanner.md) — установлен глобально; 7/100 в основном ложные (Build-заголовки, re-export импорты, buildozer.spec); `aislop fix` НЕ запускать
+- [Опыт из «Симфонии»](process/symphony-transfer.md) — 8 практик из соседнего проекта LLM-перевода; №1, 2, 5, 8 ВНЕДРЕНЫ 2026-08-03 (карантин скаффолдинга, контракт агентов, двусторонний глоссарный гейт, идемпотентная публикация); №3/4/6/7 отложены; их грабли — не повторять; открыто: паки v1 перегенерированы без бампа ревизии
 
 ## Архитектура
 - [Сплит engine/scripting](architecture/engine-scripting-split.md) — ВЛИТО 2026-07-25: раскладка суб-mixin'ов engine и scripting; лимит 10КБ позже снят

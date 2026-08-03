@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """Acceptance gate for the CONTENT of data/languages/data_XX.json.
 
 test_data_translations.py proves the overlay pipeline works (right file, right
@@ -25,6 +25,10 @@ from collections import Counter
 from pathlib import Path
 
 import pytest
+
+# One implementation of scaffolding detection, shared with the merge-time
+# quarantine in the tool — the gate and the quarantine must not drift apart.
+from scripts.i18n_tool import find_scaffolding
 
 ROOT = Path(__file__).resolve().parents[1]
 LANG_DIR = ROOT / "data" / "languages"
@@ -372,6 +376,29 @@ def test_entity_names_are_localized(lang, translations):
             bad.append(f"{section}: {english}/{len(BASE[section])} names left "
                        f"identical to English (at most {allowed} may coincide)")
     assert not bad, _fail(lang, "entity-names", bad, total)
+
+
+@pytest.mark.parametrize("lang", LANGS)
+def test_no_agent_scaffolding_residue(lang, translations):
+    """LLM wrapper artifacts must never reach a player-visible string.
+
+    The batches are translated by LLM agents, and an agent that wraps its
+    answer in markdown fences or envelope tags produces a value every other
+    rule here accepts: right language, right length, right script — with
+    ``` or </content> rendered to the player verbatim. A sister translation
+    project accepted 16 chapters with exactly such tails before growing this
+    rule; merge-time quarantine (scripts/i18n_tool.py) is the first line,
+    this gate is the second.
+    """
+    bad = []
+    for section in SECTIONS:
+        for entry_id, translated in translations[lang].get(section, {}).items():
+            for field, value in (translated or {}).items():
+                reason = find_scaffolding(value) if isinstance(value, str) else None
+                if reason:
+                    bad.append(f"{section}/{entry_id}.{field}: {reason} "
+                               f"in {value[:50]!r}")
+    assert not bad, _fail(lang, "scaffolding", bad, len(bad))
 
 
 @pytest.mark.parametrize("lang", LANGS)

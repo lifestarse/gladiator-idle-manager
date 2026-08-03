@@ -20,8 +20,10 @@ model: sonnet
 
 ## Формат ответа
 
+Первая строка — парсимый заголовок, как у остальных агентов проекта.
+
 ```
-<что искали>
+скаут | адресов 4 | не найдено 1
 game/engine/_economy.py:41   def buy_consumable — определение
 game/engine/_economy.py:57   списание gold
 game/screens/lore/_core.py:210  вызов из diamondsmixin

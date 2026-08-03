@@ -68,11 +68,18 @@ balance.vN.json          патч баланса
 Пакеты собираются из текущего состояния репозитория.
 
 ```
-python scripts/publish_content.py --since v1.9.44 --packs all --dry-run
-python scripts/publish_content.py --since v1.9.44 --packs uk,de
-python scripts/publish_content.py --since v1.9.44 --lang en --balance
+python scripts/publish_content.py --since v1.9.44 --packs all            # план: ничего не пишет
+python scripts/publish_content.py --since v1.9.44 --packs uk,de --publish
+python scripts/publish_content.py --since v1.9.44 --lang en --balance --publish
 git add docs/content && git commit -m "content: uk pack v2" && git push
+python scripts/publish_content.py --check-live   # Pages реально раздаёт то, что в docs/content?
 ```
+
+По умолчанию скрипт печатает план и **ничего не пишет** — запись только по
+`--publish`. Перед записью он сверяет ревизии с живым манифестом на Pages:
+чекаут, отставший от опубликованного, к публикации не допускается (сначала
+`git pull`). `--check-live` после пуша подтверждает деплой побайтово: «запушено»
+и «раздаётся» — разные состояния, Pages собирается с лагом.
 
 Скрипт прогоняет всё через тот же валидатор, что и устройство, и печатает, что
 отклонил.

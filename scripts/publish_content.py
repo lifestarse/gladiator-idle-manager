@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 4
 """Build remote content patches from the diff against a released build.
 
 A patch is not "the current file" — it is "what changed since the APK players
@@ -7,10 +7,17 @@ cut from. Everything this script emits is validated against THAT baseline with
 the same validator the game runs at startup, because a patch the client will
 reject is worse than no patch — it occupies the cache slot and fixes nothing.
 
+The default run is a PLAN: it reports everything and writes nothing. Writing
+is the explicit flag, because opt-in safety gets forgotten exactly once.
+Before writing, the live manifest is fetched and compared: the remote is the
+truth about what players already have, and a checkout behind the live site
+would mint revisions that overwrite published ones.
+
 Usage:
-    python scripts/publish_content.py --since v1.9.44 --lang uk
-    python scripts/publish_content.py --since v1.9.44 --lang uk,de --balance
-    python scripts/publish_content.py --since HEAD~5 --lang uk --dry-run
+    python scripts/publish_content.py --since v1.9.44 --lang uk            # plan
+    python scripts/publish_content.py --since v1.9.44 --lang uk --publish  # write
+    python scripts/publish_content.py --since v1.9.44 --lang uk,de --balance --publish
+    python scripts/publish_content.py --check-live   # is Pages serving docs/content?
 
 A language that is NOT in the APK (not in packs.OFFERED) can still be
 published — installed clients read the picker list from the manifest. Give it
@@ -46,10 +53,14 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.error
+import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+from game.remote_content import BASE_URL, MANIFEST_URL       # noqa: E402
 from game.remote_content import gamedata, languages          # noqa: E402
 from game.remote_content._manifest import SCHEMA             # noqa: E402
 from game.localization import flatten                        # noqa: E402
@@ -81,10 +92,125 @@ def _load(path):
 
 
 def _dump(path, payload):
+    """Atomic write: a crash mid-write never leaves a half-written file.
+
+    mkstemp rather than a fixed '<path>.tmp' — a fixed name is a race the
+    moment two publishes overlap, and the temp file must live on the same
+    filesystem as the target for os.replace to stay atomic.
+    """
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
-        handle.write("\n")
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2,
+                      sort_keys=True)
+            handle.write("\n")
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
+FETCH_TIMEOUT_S = 15
+
+
+def _fetch(url):
+    """Bytes at a live URL, or None with a printed reason (offline happens)."""
+    try:
+        with urllib.request.urlopen(url, timeout=FETCH_TIMEOUT_S) as response:
+            return response.read()
+    except (urllib.error.URLError, OSError) as exc:
+        print(f"    fetch failed {url}: {exc}")
+        return None
+
+
+def check_remote_sync(local_manifest):
+    """Compare the local manifest with what GitHub Pages actually serves.
+
+    The remote is the truth about what players already have. Live AHEAD of
+    local means this checkout is stale (someone published elsewhere) and the
+    revisions computed here would overwrite published files under new numbers'
+    feet — that refuses the publish. Live BEHIND local is the normal window
+    between a publish and its push/deploy, and is only reported.
+    Returns False when publishing must not proceed.
+    """
+    body = _fetch(MANIFEST_URL)
+    if body is None:
+        print("    live manifest unreachable — revision check SKIPPED; "
+              "fine offline, verify with --check-live after pushing")
+        return True
+    try:
+        live = json.loads(body)
+    except json.JSONDecodeError:
+        print("    live manifest is not valid JSON (Pages mid-deploy?) — "
+              "revision check skipped, verify with --check-live later")
+        return True
+    local_entries = local_manifest.get("entries", {})
+    live_entries = live.get("entries", {}) if isinstance(live, dict) else {}
+    stale = []
+    for name, live_entry in live_entries.items():
+        if not isinstance(live_entry, dict):
+            continue
+        local_entry = local_entries.get(name)
+        local_rev = local_entry.get("revision", 0) \
+            if isinstance(local_entry, dict) else 0
+        if live_entry.get("revision", 0) > local_rev:
+            stale.append(f"{name}: live v{live_entry.get('revision')} > "
+                         f"local v{local_rev}")
+    if stale:
+        print("REFUSED: the live site is AHEAD of this checkout — git pull "
+              "before publishing:")
+        for line in stale:
+            print(f"    {line}")
+        return False
+    if live_entries != local_entries:
+        print("    NOTE live manifest differs from local — unpushed or "
+              "undeployed changes are pending")
+    return True
+
+
+def check_live():
+    """Verify the live site serves byte-for-byte what docs/content holds.
+
+    'Pushed' is not 'deployed': Pages builds lag, and a log line saying
+    published proves nothing. This recomputes the answer from the two ends
+    that matter — local bytes and live bytes. Exit 0 only on a full match.
+    """
+    manifest = _load(MANIFEST_PATH) if os.path.exists(MANIFEST_PATH) else {}
+    targets = [os.path.relpath(MANIFEST_PATH, OUT_DIR).replace(os.sep, "/")]
+    for entry in manifest.get("entries", {}).values():
+        if not isinstance(entry, dict):
+            continue
+        if isinstance(entry.get("path"), str):
+            targets.append(entry["path"])
+        font = entry.get("font")
+        if isinstance(font, dict) and isinstance(font.get("path"), str):
+            targets.append(font["path"])
+    mismatched = 0
+    for rel in dict.fromkeys(targets):
+        local_path = os.path.join(OUT_DIR, rel)
+        if not os.path.exists(local_path):
+            print(f"MISSING locally: docs/content/{rel} (manifest points at it)")
+            mismatched += 1
+            continue
+        body = _fetch(BASE_URL + rel)
+        if body is None:
+            mismatched += 1
+            continue
+        with open(local_path, "rb") as handle:
+            local_body = handle.read()
+        if hashlib.sha256(body).hexdigest() \
+                == hashlib.sha256(local_body).hexdigest():
+            print(f"ok       {rel}")
+        else:
+            print(f"DIFFERS  {rel} — live {len(body)} B, local {len(local_body)} B")
+            mismatched += 1
+    if mismatched:
+        print(f"\n{mismatched} of {len(dict.fromkeys(targets))} files are not "
+              f"what Pages serves — push not done, deploy lagging, or checkout stale")
+        sys.exit(1)
+    print(f"\nlive site serves all {len(dict.fromkeys(targets))} files "
+          f"byte-for-byte — deploy confirmed")
 
 
 def build_language_patch(lang, since):
@@ -235,7 +361,7 @@ def publish_font(lang, source_path, dry_run):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--since", required=True,
+    parser.add_argument("--since",
                         help="git ref of the build players are running (tag or commit)")
     parser.add_argument("--lang", default="",
                         help="comma-separated language codes, e.g. uk,de")
@@ -255,13 +381,28 @@ def main():
                         help="font the language needs because the bundled "
                              "fonts cannot draw its script; copied into "
                              "docs/content/fonts/ and pinned by sha256")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="report what would be published, write nothing")
+    parser.add_argument("--publish", action="store_true",
+                        help="actually write docs/content; without it the run "
+                             "is a plan that reports everything and writes "
+                             "nothing")
+    parser.add_argument("--check-live", action="store_true",
+                        help="verify the live Pages site serves docs/content "
+                             "byte-for-byte, then exit")
     args = parser.parse_args()
+    if args.check_live:
+        check_live()
+        return
+    if not args.since:
+        parser.error("--since is required (git ref of the released build)")
     names = _parse_pairs(args.name, "--name")
     fonts = _parse_pairs(args.font, "--font")
 
     manifest = _load(MANIFEST_PATH) if os.path.exists(MANIFEST_PATH) else {}
+    # Default-on, before any revision is minted: minting revisions from a
+    # stale checkout is the one mistake this script cannot undo.
+    in_sync = check_remote_sync(manifest)
+    if not in_sync and args.publish:
+        sys.exit(1)
     entries = dict(manifest.get("entries", {}))
     writes = []
 
@@ -300,11 +441,19 @@ def main():
             revision = _next_revision(manifest, name)
             pack["revision"] = revision
             # Same validator the device runs, so a pack that would be refused
-            # on the phone is refused here instead.
-            ui, _data = validate_pack(pack, lang)
+            # on the phone is refused here instead. The validated data half is
+            # what gets published: it is the pack reduced to what the overlay
+            # in game/data_loader actually reads, so the file on the CDN is
+            # byte-for-byte what a client accepts.
+            ui, data = validate_pack(pack, lang)
             if ui is None:
                 print(f"{lang}: PACK REJECTED by the device validator — not published")
                 continue
+            dropped = sorted(set(pack["data"]) - set(data))
+            if dropped:
+                print(f"    NOTE {lang}: data sections no code reads, "
+                      f"stripped from the pack: {', '.join(dropped)}")
+            pack["data"] = data
 
             # The font players will actually render with: the newly declared
             # one, else the already-published one, else the bundled pixel font
@@ -326,7 +475,8 @@ def main():
             entry = {"path": f"packs/{lang}.v{revision}.json",
                      "revision": revision, "min_app": args.min_app}
             if lang in fonts:
-                entry["font"] = publish_font(lang, fonts[lang], args.dry_run)
+                entry["font"] = publish_font(lang, fonts[lang],
+                                             dry_run=not args.publish)
             elif "font" in previous:
                 entry["font"] = previous["font"]
             if lang in names:
@@ -363,10 +513,11 @@ def main():
         print("nothing to publish")
         return
 
-    if args.dry_run:
+    if not args.publish:
         for path, _payload in writes:
             print(f"would write {os.path.relpath(path, ROOT)}")
         print(f"would update {os.path.relpath(MANIFEST_PATH, ROOT)}")
+        print("\nplan only — re-run with --publish to write")
         return
 
     for path, payload in writes:
@@ -375,6 +526,8 @@ def main():
     _dump(MANIFEST_PATH, {"schema": SCHEMA, "entries": entries})
     print(f"wrote {os.path.relpath(MANIFEST_PATH, ROOT)}")
     print("\nPublish with: git add docs/content && git commit && git push")
+    print("Then confirm the deploy actually served it:\n"
+          "    python scripts/publish_content.py --check-live")
 
 
 if __name__ == "__main__":
