@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """App _AppLocaleMixin."""
 from game.app._shared import *  # noqa: F401,F403
 
@@ -104,7 +104,15 @@ class _AppLocaleMixin:
         open_language_pack_fetch(lang, on_done=self._apply_language_now)
 
     def _apply_language_now(self, lang_code):
-        """Re-read data for a language that is now present, and repaint."""
+        """Re-read data for a language that is now present, and repaint.
+
+        The one place the language switch is spelled out. Every entry point
+        goes through it — first-launch picker, the returning-player pack
+        fetch, and the More tab's picker
+        (game.screens.more.helpmixin._HelpMixin._set_language), which adds its
+        own tail on top. A step added here reaches all of them; a second copy
+        would leave whichever entry point it missed half switched.
+        """
         from game.localization import load_languages
         from game.data_loader import data_loader
         from game.engine import GameEngine

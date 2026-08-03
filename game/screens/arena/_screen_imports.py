@@ -1,5 +1,4 @@
-# Build: 24
-import math
+# Build: 25
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -13,8 +12,8 @@ from game.models import fmt_num, fmt_def
 from game.theme import *
 from game.theme import popup_color
 from game.constants import (
-    HEAL_GOLD_PER_HP, BATTLE_AUTO_INTERVAL, POPUP_DISMISS_DELAY,
-    HP_HEAL_TIER_MULT, BATTLE_SPEED_OPTIONS, BATTLE_END_TAP_GUARD,
+    BATTLE_AUTO_INTERVAL, POPUP_DISMISS_DELAY,
+    BATTLE_SPEED_OPTIONS, BATTLE_END_TAP_GUARD,
     FEATURE_UNLOCKS,
 )
 from kivy.animation import Animation

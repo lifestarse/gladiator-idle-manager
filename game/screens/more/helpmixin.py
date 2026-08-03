@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """MoreScreen _HelpMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -50,24 +50,16 @@ class _HelpMixin:
         open_language_picker(self._set_language, title=t("language"))
 
     def _set_language(self, lang_code):
-        from game.localization import load_languages
-        # A pack downloaded moments ago is on disk but not yet in the in-memory
-        # table, which was built at startup. force=True re-reads both the
-        # bundled directory and the packs directory.
-        load_languages(force=True)
-        set_language(lang_code)
-        from game.data_loader import data_loader
-        from game.engine import GameEngine
-        data_loader._loaded = False
-        data_loader.load_all()
-        data_loader.apply_translations(lang_code)
-        GameEngine._wire_data()
-        # Explicitly migrate inventory + equipment so item names update to the
-        # new language immediately. (save() no longer migrates — see engine.save
-        # note about detached UI references breaking upgrade-many-times.)
-        App.get_running_app().engine._migrate_all_items()
-        App.get_running_app().engine.save()
-        App.get_running_app()._init_locale_strings()
+        """Switch language from the More tab: the app-wide sequence, then the
+        parts only a mid-run switch needs."""
+        app = App.get_running_app()
+        app._apply_language_now(lang_code)
+        # Item names are baked into inventory + equipment when items are
+        # migrated, and save() does not migrate (see the engine.save note about
+        # detached UI references breaking upgrade-many-times), so a mid-run
+        # switch has to ask for it to see the new language on existing items.
+        app.engine._migrate_all_items()
+        app.engine.save()
         # Reset the cached buy diamond cards so they rebuild with the new language
         if hasattr(self, '_bundle_cards'):
             self._bundle_cards = None

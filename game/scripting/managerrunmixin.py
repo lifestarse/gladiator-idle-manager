@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ScriptManager _ManagerRunMixin — trigger dispatch + synchronous runs.
 
 Also home of RunStats (needed by both sync and async runners; manager.py
@@ -56,6 +56,20 @@ class _ManagerRunMixin:
             return f"program {p.name!r} not found"
         return self._run_program(engine, p, force=True)
 
+    # ---------- run bookkeeping ----------
+
+    def last_run_for(self, p: Program) -> RunStats | None:
+        """Most recent RunStats for ``p``, or None if it has never run.
+
+        The UI asks through here rather than indexing ``last_runs`` itself so
+        the key format stays an implementation detail of this mixin.
+        """
+        return self.last_runs.get(self._program_key(p))
+
+    def last_error_for(self, p: Program) -> str:
+        """Message from ``p``'s last failed run, or "" if it ran clean."""
+        return self.last_errors.get(self._program_key(p), "")
+
     # ---------- internal ----------
 
     def _fire_trigger(self, engine, trigger: str) -> None:
@@ -107,4 +121,11 @@ class _ManagerRunMixin:
 
     @staticmethod
     def _program_key(p: Program) -> str:
+        """Bookkeeping key for one program.
+
+        Name-based, so it stays valid across save/load where object identity
+        does not. Two programs sharing a name would therefore share a tick
+        accumulator; ScriptManager.unique_program_name is what keeps that from
+        happening.
+        """
         return f"{p.trigger}:{p.name}"

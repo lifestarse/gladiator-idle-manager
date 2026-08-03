@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """MoreScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -28,6 +28,10 @@ class MoreScreen(BaseScreen, _IapMixin, _CloudMixin, _LeaderboardMixin, _HelpMix
     sound_volume = NumericProperty(1.0)
 
     def on_enter(self):
+        self.refresh_more()
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
         self.refresh_more()
 
     def refresh_more(self):

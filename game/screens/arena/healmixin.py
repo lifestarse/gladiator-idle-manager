@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """ArenaScreen _HealMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m  # underscore names skipped by star-import
@@ -46,24 +46,14 @@ class _HealMixin:
         if not (0 <= fighter_idx < len(fighters)):
             return
         f = fighters[fighter_idx]
-        if not (f.alive and f.hp > 0 and f.hp < f.max_hp):
+        cost = engine.get_single_heal_cost(f)
+        if cost <= 0:
             return
-        missing = f.max_hp - f.hp
-        tier_mult = HP_HEAL_TIER_MULT ** (engine.arena_tier - 1)
-        cost = math.ceil(missing / HEAL_GOLD_PER_HP * tier_mult)
-        if engine.gold >= cost:
-            engine.gold -= cost
-            f.hp = f.max_hp
-        elif engine.gold > 0:
-            heal_hp = int(engine.gold * HEAL_GOLD_PER_HP / tier_mult)
-            engine.gold = 0
-            f.hp = min(f.max_hp, f.hp + heal_hp)
-        else:
+        healed, _spent = engine.heal_one_hp(f)
+        if not healed:
             App.get_running_app().show_toast(t("not_enough_gold", need=fmt_num(cost)))
             return
         self._spawn_float(t("healed_name", name=f.name), ACCENT_GREEN)
-        if not in_battle:
-            engine.save()
         self.refresh_ui()
 
     def heal_fighter(self, fighter_idx):

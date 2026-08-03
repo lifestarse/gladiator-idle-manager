@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """Registries of read-only fields and side-effect actions exposed to scripts.
 
 All callables receive the live engine for side effects. They MUST be:
@@ -21,6 +21,7 @@ import time
 from typing import Callable, Any
 
 from game.constants import EVENT_LOG_MAX
+from .ast_nodes import Const
 
 # Event-log "type" for lines a player's own script emits. Named so the
 # log UI's label/colour tables and the i18n key gate can refer to it
@@ -81,47 +82,62 @@ BUILTIN_FIELDS: dict[str, Callable[[Any], Any]] = {
 }
 
 
-def _count_inventory_slot(engine, slot: str) -> int:
-    inv = getattr(engine, "inventory", []) or []
-    return sum(1 for it in inv if isinstance(it, dict) and it.get("slot") == slot)
+# This game has no floor / depth progression. ``current_floor`` stays in the
+# registry so programs written against the older field vocabulary keep loading
+# instead of erroring on every run; it reads as this constant.
+_NO_FLOOR = 0
 
 
-def _engine_field(engine, name: str):
-    if name == "available_count":
-        return sum(1 for f in getattr(engine, "fighters", []) if getattr(f, "available", True))
-    if name == "active_count":
-        return sum(1 for f in getattr(engine, "fighters", []) if getattr(f, "is_active", True))
-    if name == "fighter_count":
-        return len(getattr(engine, "fighters", []))
-    if name == "inventory_size":
-        return len(getattr(engine, "inventory", []) or [])
-    if name == "inv_weapons":     return _count_inventory_slot(engine, "weapon")
-    if name == "inv_armor":       return _count_inventory_slot(engine, "armor")
-    if name == "inv_accessories": return _count_inventory_slot(engine, "accessory")
-    if name == "inv_relics":      return _count_inventory_slot(engine, "relic")
-    # Aliases: the script language's names differ from the engine's real
-    # attribute names. Plain getattr used to raise AttributeError here,
-    # which the interpreter maps to 0 — so these whitelisted fields
-    # silently always read 0 in every script.
-    if name == "victories":
-        return getattr(engine, "total_wins", 0)
-    if name == "current_tier":
-        return getattr(engine, "arena_tier", 1)
-    if name == "expedition_active":
-        return any(getattr(f, "on_expedition", False)
-                   for f in getattr(engine, "fighters", []))
-    if name == "current_floor":
-        # No floor concept in this game; kept in the whitelist so old
-        # scripts referencing it don't error. Always 0.
-        return 0
-    return getattr(engine, name)
+def _engine_attr(attr: str, default, transform: Callable[[Any], Any] | None = None):
+    """Build an engine-field accessor that reads a single engine attribute.
+
+    The script language's field names are not always the engine's attribute
+    names (``victories`` -> ``total_wins``), so the mapping has to be written
+    down somewhere. Writing it down *here*, as ``engine_attr`` on the returned
+    callable, keeps it machine-checkable: tests/test_scripting_engine_fields.py
+    asserts every recorded attribute exists on a real GameEngine. Without that
+    marker a mistyped attribute name reads its ``default`` forever, in every
+    script, with no exception and no log line.
+
+    ``default`` covers the stub engines that scripting is also run against; it
+    is not a licence for the attribute to be absent from the real engine.
+    """
+    def read(engine):
+        value = getattr(engine, attr, default)
+        return value if transform is None else transform(value)
+    read.engine_attr = attr
+    return read
 
 
-BUILTIN_ENGINE_FIELDS = {
-    "gold", "diamonds", "victories", "current_tier", "battle_active",
-    "expedition_active", "fighter_count", "active_count", "available_count",
-    "current_floor",
-    "inventory_size", "inv_weapons", "inv_armor", "inv_accessories", "inv_relics",
+def _slot_count(slot: str) -> Callable[[Any], int]:
+    """Count inventory entries sitting in `slot`."""
+    def count(inventory) -> int:
+        return sum(1 for it in (inventory or ())
+                   if isinstance(it, dict) and it.get("slot") == slot)
+    return count
+
+
+BUILTIN_ENGINE_FIELDS: dict[str, Callable[[Any], Any]] = {
+    # numeric
+    "gold":             _engine_attr("gold", 0),
+    "diamonds":         _engine_attr("diamonds", 0),
+    "victories":        _engine_attr("total_wins", 0),
+    "current_tier":     _engine_attr("arena_tier", 1),
+    "fighter_count":    _engine_attr("fighters", (), len),
+    "active_count":     _engine_attr("fighters", (), lambda fs: sum(
+        1 for f in fs if getattr(f, "is_active", True))),
+    "available_count":  _engine_attr("fighters", (), lambda fs: sum(
+        1 for f in fs if getattr(f, "available", True))),
+    "current_floor":    lambda engine: _NO_FLOOR,
+    "inventory_size":   _engine_attr("inventory", (), lambda inv: len(inv or ())),
+    "inv_weapons":      _engine_attr("inventory", (), _slot_count("weapon")),
+    "inv_armor":        _engine_attr("inventory", (), _slot_count("armor")),
+    "inv_accessories":  _engine_attr("inventory", (), _slot_count("accessory")),
+    "inv_relics":       _engine_attr("inventory", (), _slot_count("relic")),
+    # bool
+    "battle_active":    _engine_attr("battle_active", False, bool),
+    "expedition_active": _engine_attr("fighters", (), lambda fs: any(
+        getattr(f, "on_expedition", False) for f in fs)),
 }
 
 
@@ -583,39 +599,33 @@ def _forge_upgrade(engine, fighter, slot):
 #   fighter_arg  — first arg is a Fighter (palette pre-fills with LocalVar("f"))
 #   default_args — optional list of default Expression values for the palette
 #                  to drop in when adding the block. Falls back to Const(0).
-def _ast_const_str(value):
-    # Avoid a hard import of Const at module top to dodge circular imports.
-    from .ast_nodes import Const
-    return Const(value)
-
-
 BUILTIN_ACTIONS: dict[str, dict] = {
     "bench":              {"fn": _bench,              "args": (1, 1), "fighter_arg": True},
     "activate":           {"fn": _activate,           "args": (1, 1), "fighter_arg": True},
     "rest":               {"fn": _rest,               "args": (1, 1), "fighter_arg": True},
     "unequip_all":        {"fn": _unequip_all,        "args": (1, 1), "fighter_arg": True},
     "unequip_slot":       {"fn": _unequip_slot,       "args": (2, 2), "fighter_arg": True,
-                           "default_args_after_fighter": [_ast_const_str("weapon")]},
+                           "default_args_after_fighter": [Const("weapon")]},
     "start_arena_battle": {"fn": _start_arena_battle, "args": (0, 0), "fighter_arg": False},
     "stop_arena_battle":  {"fn": _stop_arena_battle,  "args": (0, 0), "fighter_arg": False},
     "start_expedition":   {"fn": _start_expedition,   "args": (1, 1), "fighter_arg": False,
-                           "default_args": [_ast_const_str(1)]},
+                           "default_args": [Const(1)]},
     "stop_expedition":    {"fn": _stop_expedition,    "args": (0, 0), "fighter_arg": False},
     "spawn_boss":         {"fn": _spawn_boss,         "args": (0, 0), "fighter_arg": False},
     "log":                {"fn": _log,                "args": (1, 1), "fighter_arg": False,
-                           "default_args": [_ast_const_str("hello")]},
+                           "default_args": [Const("hello")]},
     "buy_item":           {"fn": _buy_item,           "args": (1, 1), "fighter_arg": False,
-                           "default_args": [_ast_const_str("weapon")]},
+                           "default_args": [Const("weapon")]},
     "buy_best":           {"fn": _buy_best,           "args": (1, 1), "fighter_arg": False,
-                           "default_args": [_ast_const_str("weapon")]},
+                           "default_args": [Const("weapon")]},
     "equip_best":         {"fn": _equip_best,         "args": (2, 2), "fighter_arg": True,
-                           "default_args_after_fighter": [_ast_const_str("weapon")]},
+                           "default_args_after_fighter": [Const("weapon")]},
     "forge_upgrade":      {"fn": _forge_upgrade,      "args": (2, 2), "fighter_arg": True,
-                           "default_args_after_fighter": [_ast_const_str("weapon")]},
+                           "default_args_after_fighter": [Const("weapon")]},
     "hire":               {"fn": _hire,               "args": (1, 1), "fighter_arg": False,
-                           "default_args": [_ast_const_str("mercenary")]},
+                           "default_args": [Const("mercenary")]},
     "train_to":           {"fn": _train_to,           "args": (2, 2), "fighter_arg": True,
-                           "default_args_after_fighter": [_ast_const_str(10)]},
+                           "default_args_after_fighter": [Const(10)]},
     "give_item":          {"fn": _give_item,          "args": (2, 2), "fighter_arg": True,
-                           "default_args_after_fighter": [_ast_const_str("")]},
+                           "default_args_after_fighter": [Const("")]},
 }

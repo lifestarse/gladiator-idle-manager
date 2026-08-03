@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Smoke tests for built-in scripting templates.
 
 For each entry in ``game.scripting.templates.TEMPLATES``:
@@ -106,7 +106,7 @@ def test_template_references_are_valid(tmpl):
         _walk(stmt, actions, fields, engine_fields, calls, sources)
     bad_actions = actions - BUILTIN_ACTIONS.keys()
     bad_fields = fields - BUILTIN_FIELDS.keys()
-    bad_engine = engine_fields - BUILTIN_ENGINE_FIELDS
+    bad_engine = engine_fields - BUILTIN_ENGINE_FIELDS.keys()
     bad_calls = calls - BUILTIN_CALLS.keys()
     bad_sources = sources - set(ITERABLE_SOURCES)
     assert not bad_actions, f"unknown actions: {bad_actions}"

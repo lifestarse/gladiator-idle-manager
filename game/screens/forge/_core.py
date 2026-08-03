@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """ForgeScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from .inventorymixin import _InventoryMixin
@@ -80,6 +80,10 @@ class ForgeScreen(BaseScreen, _InventoryMixin, _UpgradeMixin, _EnchantMixin, _Eq
             self._entry_depth = 0
         self._cross_screen_pending = False
         self._apply_pending_state()
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
+        self.refresh_forge()
 
     def refresh_forge(self):
         engine = App.get_running_app().engine

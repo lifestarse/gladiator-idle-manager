@@ -1,4 +1,4 @@
-# Build: 66
+# Build: 67
 """
 Gladiator Idle Manager — roguelike-manager.
 Permadeath resets the run. Stats distributed manually. Fighter classes.
@@ -28,6 +28,7 @@ from game.theme import *
 from game.theme import popup_color
 from game.localization import (t, init_language, set_language, get_language,
                                get_requested_language)
+from game.localization import _BUNDLED_FONT_FILES, _register_fonts
 from game.widgets import AutoShrinkLabel, MinimalButton
 from game.ads import ad_manager
 from game.iap import iap_manager, PRODUCTS
@@ -35,7 +36,7 @@ from game.cloud_save import cloud_save_manager
 from game.leaderboard import leaderboard_manager
 from game.ui_helpers import bind_text_wrap
 
-from game.screens.shared import _safe_clear, SCREEN_ORDER
+from game.screens.shared import _safe_clear
 from game.screens.arena import ArenaScreen
 from game.screens.roster import RosterScreen
 from game.screens.forge import ForgeScreen
@@ -51,10 +52,10 @@ Window.clearcolor = BG_DARK
 
 # Register fonts. PixelFont carries headers/numbers; BodyFont (DroidSans)
 # carries long descriptions — PressStart2P at small sizes turns paragraph
-# text into a wall of noise.
-from kivy.core.text import LabelBase
-LabelBase.register(name='PixelFont', fn_regular='fonts/PressStart2P-Regular.ttf')
-LabelBase.register(name='BodyFont', fn_regular='fonts/DroidSans.ttf')
+# text into a wall of noise. The files come from game.localization, which
+# re-registers the same table on every set_language(): a second list of file
+# names here would win at import and lose on the first language switch.
+_register_fonts(_BUNDLED_FONT_FILES)
 
 
 class SwipeScreenManager(ScreenManager):

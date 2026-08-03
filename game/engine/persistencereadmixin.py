@@ -1,8 +1,15 @@
-# Build: 15
+# Build: 16
 """GameEngine _PersistenceReadMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module, _SAVE_MIGRATIONS, CURRENT_SAVE_VERSION
 from game.engine.persistencerecovery import quarantine_primary, read_save_with_fallback
+
+# What a downloaded data_<lang>.json can throw at the translation overlay: a
+# section of the wrong type (AttributeError, TypeError), a structure the
+# overlay does not match (KeyError, IndexError, ValueError), or a file the
+# device refuses to read (OSError).
+TRANSLATION_OVERLAY_FAULTS = (AttributeError, TypeError, KeyError, IndexError,
+                              ValueError, OSError)
 
 
 class _PersistenceReadMixin:
@@ -171,7 +178,18 @@ class _PersistenceReadMixin:
             # Apply data-level translations (achievements, expeditions, etc.)
             # from data/languages/data_{lang}.json, then re-wire so models
             # see the translated names/descs.
-            data_loader.apply_translations(lang)
+            #
+            # The file is downloaded content, so its shape is not this build's
+            # to guarantee. Anything raising here would reach load()'s blanket
+            # handler and QUARANTINE a healthy save — the price of a bad pack
+            # must be English game text, never the player's run. Same reason
+            # the font lookup in localization._apply_language_font is guarded.
+            try:
+                data_loader.apply_translations(lang)
+            except TRANSLATION_OVERLAY_FAULTS as exc:
+                _log.warning(
+                    "[ENGINE] translation overlay for %r failed, keeping "
+                    "English game text: %s", lang, exc)
             self._wire_data()
 
     def _applysave_roster(self, data):

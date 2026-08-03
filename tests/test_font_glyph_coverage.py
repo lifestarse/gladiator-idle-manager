@@ -1,9 +1,10 @@
-# Build: 1
+# Build: 2
 """Gate: every translated string must be drawable by the pixel font.
 
-The app registers two fonts (game/app/_shared.py): PixelFont
-(PressStart2P) carries headers, numbers, buttons, toasts and item/perk
-descriptions; BodyFont (DroidSans) carries a handful of long paragraphs.
+The app registers two fonts, both named by
+game.localization._BUNDLED_FONT_FILES: PixelFont (PressStart2P) carries
+headers, numbers, buttons, toasts and item/perk descriptions; BodyFont
+(DroidSans) carries a handful of long paragraphs.
 A codepoint the chosen font lacks is not substituted — Kivy draws a tofu
 square, and nothing in the render path complains.
 
@@ -113,15 +114,37 @@ def test_no_zero_width_characters_in_translations():
     )
 
 
+def _norm(path):
+    return os.path.normcase(os.path.abspath(path))
+
+
 def test_gate_checks_the_font_the_app_actually_registers():
-    """Keeps the gate honest if the pixel font is ever swapped out."""
+    """Keeps the gate honest if the pixel font is ever swapped out.
+
+    Read from the same table the app registers, so a swap cannot leave the
+    cmap check above speaking for the retired file.
+    """
+    from game.localization import _BUNDLED_FONT_FILES
+    registered = _BUNDLED_FONT_FILES.get("PixelFont")
+    assert registered and _norm(registered) == _norm(_PIXEL_FONT), (
+        "PixelFont registration changed — point this gate at the new file: "
+        f"{_BUNDLED_FONT_FILES}"
+    )
+
+
+def test_font_registration_has_a_single_source():
+    """A second list of file names would win at import and lose on the first
+    set_language(), leaving the gate pointed at a font the device stopped
+    drawing — the exact split this gate exists to make impossible."""
     shared = os.path.join(_PROJ_ROOT, "game", "app", "_shared.py")
     with open(shared, "r", encoding="utf-8") as f:
         source = f.read()
-    registered = dict(re.findall(
-        r"LabelBase\.register\(\s*name=['\"](\w+)['\"],\s*"
-        r"fn_regular=['\"]([^'\"]+)['\"]", source))
-    assert registered.get("PixelFont") == "fonts/PressStart2P-Regular.ttf", (
-        "PixelFont registration changed — point this gate at the new file: "
-        f"{registered}"
+    assert "_BUNDLED_FONT_FILES" in source, (
+        "game/app/_shared.py must register from "
+        "game.localization._BUNDLED_FONT_FILES"
+    )
+    stray = re.findall(r"LabelBase\.register\([^)]*\)", source)
+    assert not stray, (
+        "font file names are named once, in game.localization — "
+        f"game/app/_shared.py registers its own: {stray}"
     )

@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.properties import StringProperty, ListProperty, BooleanProperty
@@ -39,6 +39,10 @@ class ExpeditionScreen(BaseScreen):
         if self.expedition_tab == "missions" and now_active:
             self.status_data = engine.get_expedition_status()
             refresh_expedition_grid(self)
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
+        self.refresh_expeditions()
 
     def refresh_expeditions(self):
         engine = App.get_running_app().engine

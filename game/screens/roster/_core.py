@@ -1,4 +1,4 @@
-# Build: 6
+# Build: 7
 """RosterScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _roster_callbacks, _perk_callbacks  # underscore names skipped by `import *`
@@ -90,6 +90,10 @@ class RosterScreen(BaseScreen, _HireMixin, _InjuriesMixin, _FighterDetailMixin, 
                 return
         self.detail_index = -1
         self.roster_view = "list"
+        self.refresh_roster()
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
         self.refresh_roster()
 
     def refresh_roster(self):

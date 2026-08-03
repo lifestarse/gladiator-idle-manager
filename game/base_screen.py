@@ -1,4 +1,4 @@
-# Build: 8
+# Build: 9
 """BaseScreen — unified base class for all game screens."""
 
 from kivy.uix.screenmanager import Screen
@@ -25,6 +25,17 @@ class BaseScreen(Screen):
         self.gold_text = fmt_num(engine.gold)
         self.diamond_text = fmt_num(engine.diamonds)
         App.get_running_app().update_top_bar()
+
+    def refresh(self):
+        """Redraw this screen from engine state — the per-tick entry point.
+
+        App._idle_tick calls exactly this method on the current screen once a
+        second, and nothing else. A screen with per-tick content MUST override
+        it; leaving the default no-op in place makes that screen look frozen
+        with no exception and no log line. Each screen delegates to its own
+        long-standing public refresh_* name, which the kv files and the other
+        screens still call directly.
+        """
 
     def on_back_pressed(self):
         """Handle hardware back button. Return True if handled internally,

@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """LoreScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -60,6 +60,10 @@ class LoreScreen(BaseScreen, _LogsMixin, _StatsQuestsMixin, _DiamondsMixin, _Eve
             tabs, self.lore_tab, self.set_lore_tab,
             active_color=ACCENT_GOLD, height=dp(40), font_size=10,
         ))
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
+        self.refresh_lore()
 
     def refresh_lore(self):
         self._rebuild_lore_tabs()

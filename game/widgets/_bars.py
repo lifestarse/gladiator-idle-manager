@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Widgets — MinimalBar, FloatingText."""
 from ._imports import *  # noqa: F401,F403
 
@@ -37,6 +37,20 @@ class MinimalBar(Widget):
         Animation.cancel_all(self, "_display_value")
         anim = Animation(_display_value=self.value, duration=0.4, t="out_cubic")
         anim.start(self)
+
+    def set_immediate(self, value):
+        """Snap to ``value`` with no fill animation.
+
+        For pooled RecycleView rows: when a widget is rebound to a
+        different unit the old fill level is meaningless and must not be
+        animated away. Order matters — Animation samples its start value
+        at start(), so _display_value has to be correct *before* `value`
+        fires _animate, otherwise the bar crawls up from the previous
+        unit's level.
+        """
+        Animation.cancel_all(self, "_display_value")
+        self._display_value = value
+        self.value = value
 
     def _update_geom(self, *args):
         self._bg_rect.pos = self.pos

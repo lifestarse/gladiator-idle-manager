@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 import logging
 
 from kivy.app import App
@@ -6,8 +6,6 @@ from kivy.clock import Clock
 from game.ui_helpers import _invalidate_grid_cache
 
 _log = logging.getLogger(__name__)
-
-SCREEN_ORDER = ["arena", "roster", "forge", "expedition", "lore", "more"]
 
 # Fallback used before App.engine exists (headless tests, early startup).
 _DEFAULT_SOUND_VOLUME = 1.0

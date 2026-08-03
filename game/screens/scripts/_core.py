@@ -1,4 +1,4 @@
-# Build: 10
+# Build: 12
 """ScriptsScreen + ScriptEditorScreen.
 
 Layout shell (background, TopBar, top toolbar buttons, separator,
@@ -18,28 +18,11 @@ otherwise the on_press wires throw at first tap.
 from __future__ import annotations
 import logging
 
-from kivy.app import App
-from kivy.clock import Clock
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.popup import Popup
-from kivy.properties import BooleanProperty, NumericProperty, StringProperty
-from kivy.metrics import dp
-from kivy.graphics import Color, Rectangle
-
-from game.base_screen import BaseScreen
-from game.localization import t
-from game.theme import (
-    BTN_PRIMARY, ACCENT_GOLD, ACCENT_RED, ACCENT_PURPLE, TEXT_PRIMARY,
-    TEXT_SECONDARY, BG_DARK, BG_CARD,
-)
-from game.widgets import MinimalButton, SafeTextInput as TextInput
-from game.scripting.ast_nodes import (
-    Program, Trigger, If, While, ForEach, Action, Const,
-)
+from ._screen_imports import *  # noqa: F401,F403
+from game.scripting.ast_nodes import Program, Trigger, If, While, ForEach
+from game.scripting.manager import COPY_MARKER
 from game.scripting import labels as L
-from .blocks import summarize
-from .cells import BlockCard, ExpressionCell, TriggerPicker
+from .cells import BlockCard, TriggerPicker
 from .popups import (
     open_block_palette, open_template_picker, open_program_menu,
     open_run_log, open_confirm, open_export_text, open_import_dialog,
@@ -67,28 +50,17 @@ SNAPSHOT_DEBOUNCE_S = 1.0
 UNDO_MAX = 50
 
 
+# Width of the status/label column the program cards lay text into. The cards
+# live in a fixed-width scroll container, so the labels get an explicit
+# text_size rather than one bound to their own (unconstrained) width.
+CARD_TEXT_W = 360
+
+# How much of a failed run's message fits on a program card's status line
+# before the card starts pushing the list around.
+ERR_SNIPPET_LEN = 40
+
+
 # ---------- shared helpers ----------
-
-def _btn(text_, on_press=None, color=None, w=None, h=40):
-    """Minimal-themed button — for dynamic content (cards, in-card actions).
-
-    Static toolbar buttons live in the kv shell; this helper exists only
-    because each program card has 3 different one-off buttons that vary
-    per program (gear menu, name, etc.) and rebuilding them per refresh
-    is cleaner than templating in kv.
-    """
-    b = MinimalButton(
-        text=text_, size_hint_y=None, height=dp(h), font_size=12,
-        btn_color=color or BTN_PRIMARY,
-        text_color=BG_DARK if color is ACCENT_GOLD else TEXT_PRIMARY,
-    )
-    if w is not None:
-        b.size_hint_x = None
-        b.width = dp(w)
-    if on_press is not None:
-        b.bind(on_release=lambda *_: on_press())
-    return b
-
 
 def _info(title: str, msg: str):
     Popup(title=title or " ", content=Label(text=str(msg)),
@@ -186,6 +158,10 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
         # doesn't drop the change. See _SaveDebounceMixin._flush_save_now.
         self._flush_save_now()
 
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
+        self.refresh_scripts()
+
     def refresh_scripts(self):
         """Called every second by App._idle_tick when engine._ui_dirty.
 
@@ -249,9 +225,9 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             container.add_widget(Label(
                 text=empty_msg,
                 size_hint_y=None, height=dp(40),
-                font_size="12sp", color=(0.7, 0.72, 0.78, 1),
+                font_size="12sp", color=TEXT_SECONDARY,
                 halign="center", valign="middle",
-                text_size=(dp(360), dp(40)),
+                text_size=(dp(CARD_TEXT_W), dp(40)),
             ))
             return
         for i, p in entries:
@@ -267,11 +243,7 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
         wrap = BoxLayout(orientation="vertical", size_hint_y=None,
                           padding=dp(8), spacing=dp(2))
         wrap.bind(minimum_height=wrap.setter("height"))
-        with wrap.canvas.before:
-            Color(*BG_CARD)
-            wrap._bg = Rectangle(pos=wrap.pos, size=wrap.size)
-        wrap.bind(pos=lambda *_: setattr(wrap._bg, "pos", wrap.pos),
-                  size=lambda *_: setattr(wrap._bg, "size", wrap.size))
+        _bg(wrap, BG_CARD)
 
         # Title row: name + gear menu.
         # NOTE: ⋮ ● ○ ✗ ↑ ↓ all rendered as "?" in PixelFont — that font
@@ -308,15 +280,14 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             trig_label = f"{trig_label} ({p.tick_interval}s)"
         wrap.add_widget(Label(
             text=trig_label, size_hint_y=None, height=dp(20),
-            font_size="12sp", font_name="BodyFont", color=(0.85, 0.90, 1, 1),
+            font_size="12sp", font_name="BodyFont", color=TEXT_PRIMARY,
             halign="left", valign="middle",
-            text_size=(dp(360), dp(20)),
+            text_size=(dp(CARD_TEXT_W), dp(20)),
         ))
 
         # Status line: enabled, blocks count, last-run/error
-        key = f"{p.trigger}:{p.name}"
-        run = mgr.last_runs.get(key)
-        err = mgr.last_errors.get(key, "")
+        run = mgr.last_run_for(p)
+        err = mgr.last_error_for(p)
         bits = [
             t("scr_on") if p.enabled else t("scr_off"),
             t("scr_blocks_n", n=len(p.body)),
@@ -328,14 +299,14 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
         else:
             bits.append(t("scr_never_ran"))
         status = " · ".join(bits)
-        status_color = (1, 0.6, 0.6, 1) if err else (0.7, 0.72, 0.78, 1)
+        status_color = TEXT_ERROR if err else TEXT_SECONDARY
         if err:
-            status += f" · {t('scr_run_failed')}: {err[:40]}"
+            status += f" · {t('scr_run_failed')}: {err[:ERR_SNIPPET_LEN]}"
         wrap.add_widget(Label(
             text=status, size_hint_y=None, height=dp(20),
             font_size="11sp", font_name="BodyFont", color=status_color,
             halign="left", valign="middle",
-            text_size=(dp(360), dp(20)),
+            text_size=(dp(CARD_TEXT_W), dp(20)),
         ))
         return wrap
 
@@ -367,7 +338,7 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             if err:
                 _info(t("scr_error_title"), err)
             else:
-                _show_run_toast(p, mgr.last_runs.get(f"{p.trigger}:{p.name}"))
+                _show_run_toast(p, mgr.last_run_for(p))
             self._update_top_bar()
             self._build()
 
@@ -377,23 +348,18 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             self._build()
 
         def _rename(new_name: str):
-            if new_name and new_name != p.name:
-                p.name = new_name
-                self._schedule_save()
-                self._build()
+            # Uniqueness lives on the manager: the run bookkeeping is keyed by
+            # trigger+name, so a rename onto an existing name would merge two
+            # programs' tick accumulators and status lines.
+            mgr.rename_program(p, new_name)
+            self._schedule_save()
+            self._build()
 
         def _duplicate():
             try:
                 clone = Program.from_dict(p.to_dict())
-                taken = {x.name for x in mgr.programs}
-                base = clone.name
-                if base + " (copy)" not in taken:
-                    clone.name = base + " (copy)"
-                else:
-                    n = 2
-                    while f"{base} (copy {n})" in taken:
-                        n += 1
-                    clone.name = f"{base} (copy {n})"
+                clone.name = mgr.unique_program_name(clone.name,
+                                                     marker=COPY_MARKER)
                 mgr.add_program(clone)
                 self._schedule_save()
                 self._build()
@@ -436,44 +402,26 @@ class ScriptsScreen(BaseScreen, _SaveDebounceMixin):
             on_move_up=_move_up, on_move_down=_move_down,
         )
 
+    def _append_program(self, prog: Program):
+        """Apply contract shared by the template and online-library pickers.
+
+        Both hand back a freshly built Program and leave appending to us;
+        ``add_program`` gives it a "(2)" / "(3)" suffix if the name is taken.
+        """
+        App.get_running_app().engine.scripts.add_program(prog)
+        self._schedule_save()
+        self._build()
+
     def _open_templates(self):
-        engine = App.get_running_app().engine
-        mgr = engine.scripts
-        def _apply(prog):
-            taken = {x.name for x in mgr.programs}
-            base = prog.name
-            if base in taken:
-                n = 2
-                while f"{base} ({n})" in taken:
-                    n += 1
-                prog.name = f"{base} ({n})"
-            mgr.add_program(prog)
-            self._schedule_save()
-            self._build()
-        open_template_picker(_apply)
+        open_template_picker(self._append_program)
 
     def _open_online(self):
         """Open the community scripts library browser.
 
-        Same Apply contract as _open_templates: on Apply we de-dup the
-        name with a "(2)" / "(3)" / ... suffix and append the new
-        program. Picker handles all the network/cache logic; we only
-        deal with the resulting Program once the user picks one.
+        The picker handles all the network/cache logic; we only deal with the
+        resulting Program once the user picks one.
         """
-        engine = App.get_running_app().engine
-        mgr = engine.scripts
-        def _apply(prog):
-            taken = {x.name for x in mgr.programs}
-            base = prog.name
-            if base in taken:
-                n = 2
-                while f"{base} ({n})" in taken:
-                    n += 1
-                prog.name = f"{base} ({n})"
-            mgr.add_program(prog)
-            self._schedule_save()
-            self._build()
-        open_online_library(_apply)
+        open_online_library(self._append_program)
 
     def _export_all(self):
         engine = App.get_running_app().engine
@@ -564,8 +512,29 @@ class ScriptEditorScreen(BaseScreen, _SaveDebounceMixin):
         # only, until the next user-triggered save fires later. The
         # snapshot flush matters because the in-flight snapshot would lose
         # its undo entry once the screen rebuilds.
+        self._settle_name()
         self._flush_pending_snapshot()
         self._flush_save_now()
+
+    def _settle_name(self):
+        """Make the typed program name unique, once the user is done typing.
+
+        ``_set_name`` deliberately does NOT dedupe per keystroke: typing
+        "Farm" while another "Farm" exists would rewrite the field to
+        "Farm (2)" under the user's cursor after the "F". The invariant is
+        applied here instead, on the way out, which is the point the list
+        (and its trigger+name-keyed run bookkeeping) has to be consistent
+        again.
+        """
+        p = self._program()
+        if p is None:
+            return
+        mgr = App.get_running_app().engine.scripts
+        self.editor_title = mgr.rename_program(p, p.name)
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
+        self.refresh_scripts()
 
     def refresh_scripts(self):
         """Per-tick TopBar refresh + Run/Stop button state.
@@ -698,9 +667,9 @@ class ScriptEditorScreen(BaseScreen, _SaveDebounceMixin):
         pad_x = dp(8 + indent * 16)
         return Label(
             text=text_, size_hint_y=None, height=dp(h),
-            font_size="11sp", color=(0.70, 0.78, 0.88, 1),
+            font_size="11sp", color=TEXT_SECONDARY,
             halign="left", valign="middle",
-            text_size=(dp(360), dp(h)),
+            text_size=(dp(CARD_TEXT_W), dp(h)),
             padding=(pad_x, 0),
         )
 
@@ -1033,8 +1002,5 @@ class ScriptEditorScreen(BaseScreen, _SaveDebounceMixin):
         p = self._program()
         if p is None:
             return
-        open_run_log(p.name, self._last_run(p))
-
-    def _last_run(self, p: Program):
         mgr = App.get_running_app().engine.scripts
-        return mgr.last_runs.get(f"{p.trigger}:{p.name}")
+        open_run_log(p.name, mgr.last_run_for(p))

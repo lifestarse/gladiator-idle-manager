@@ -1,4 +1,4 @@
-# Build: 36
+# Build: 37
 """Localization — loads translations from data/languages/*.json.
 
 Each JSON file is a flat {key: value} dict for one language.
@@ -13,7 +13,12 @@ import os
 
 _log = logging.getLogger(__name__)
 
-_current_lang = "ru"
+# English, matching the terminal fallback of t(): it is the only language
+# guaranteed to be in the APK, and until engine.load() applies a saved code
+# (it returns early when there is no save at all) this is what the UI renders.
+# Any other default makes the language picker advertise a language the player
+# is not looking at.
+_current_lang = "en"
 
 # What the player asked for, even when its pack is not on the device yet.
 # set_language() falls back to "en" in that case; without this the fallback
@@ -37,15 +42,20 @@ def _project_root():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# The two global font aliases the whole UI renders through, and the files they
-# point at when no downloaded per-language font overrides them. Keep the file
-# names in sync with the registration in game/app/_shared.py — the literals
-# there are pinned by tests/test_font_glyph_coverage.py.
-_FONT_ALIASES = ("PixelFont", "BodyFont")
+# The files the two global font aliases point at when no downloaded
+# per-language font overrides them. Single source of truth: game/app/_shared.py
+# registers straight from this dict at import, set_language() re-registers from
+# it on every switch back to a covered language, and
+# tests/test_font_glyph_coverage.py gates the translation set against the cmap
+# of the file named here. A font swap edited here reaches all three.
 _BUNDLED_FONT_FILES = {
     "PixelFont": os.path.join(_project_root(), "fonts", "PressStart2P-Regular.ttf"),
     "BodyFont": os.path.join(_project_root(), "fonts", "DroidSans.ttf"),
 }
+
+# Every alias the whole UI renders through, and so every alias a per-language
+# font override has to cover.
+_FONT_ALIASES = tuple(_BUNDLED_FONT_FILES)
 
 
 def _register_fonts(mapping):
@@ -112,6 +122,52 @@ def _language_dirs():
     return dirs
 
 
+_LANG_FILE_SUFFIX = ".json"
+
+# The game-data overlay consumed by data_loader.apply_translations(). It sits
+# in the same directories as the UI files and is not a language.
+_DATA_OVERLAY_PREFIX = "data_"
+
+
+def _valid_lang_code(code):
+    """Whether a code is safe to use as a language filename component.
+
+    The rule belongs to game.remote_content._manifest, which owns what an
+    untrusted manifest is allowed to name. Imported lazily like every other
+    remote_content touch in this module — the headless tools import this
+    module without the package. When it is unavailable the code is accepted:
+    here it only ever becomes a dict key, and a remote_content problem must
+    never cost the bundled languages, which is the same trade _language_dirs()
+    makes one function up.
+    """
+    try:
+        from game.remote_content._manifest import valid_lang_code
+    except Exception as exc:  # noqa: BLE001 - bundled languages must still load
+        _log.debug("Language code validation unavailable: %s", exc)
+        return True
+    return valid_lang_code(code)
+
+
+def _is_language_file(fname):
+    """Return the UI language code a directory entry names, or None.
+
+    The one rule for what a scan of the language directories may treat as a
+    language, so this scanner and game.remote_content.packs's own cannot drift
+    apart. Rejected:
+
+    * dotfiles — the packs directory keeps its bookkeeping beside the packs
+      (".revisions.json", ".fonts.json"), and ".revisions" is not a language;
+    * the ``data_XX.json`` overlay — t() never reads it, and loading it here
+      parsed ~2 MB of JSON into _LANG_DATA on every startup for nothing;
+    * a stem the manifest would refuse as a filename component.
+    """
+    if (fname.startswith(".") or fname.startswith(_DATA_OVERLAY_PREFIX)
+            or not fname.endswith(_LANG_FILE_SUFFIX)):
+        return None
+    code = fname[: -len(_LANG_FILE_SUFFIX)]
+    return code if _valid_lang_code(code) else None
+
+
 def load_languages(force=False):
     """Load UI language files from the bundled directory and installed packs.
 
@@ -121,12 +177,7 @@ def load_languages(force=False):
     startup logged each language twice. Pass force=True to re-read from
     disk (dev hot-reload, and after a pack is installed at runtime).
 
-    ``data_XX.json`` files are skipped on purpose. They are the game-data
-    overlay consumed by data_loader.apply_translations(), not UI strings, and
-    t() never reads them — loading them here parsed ~2 MB of JSON into
-    _LANG_DATA on every startup for nothing. They now also sit in the packs
-    directory next to the UI files, so skipping them by name is what keeps
-    "data_uk" from being offered as a language.
+    What counts as a language file is _is_language_file()'s call.
     """
     seen_dir = False
     for lang_dir in _language_dirs():
@@ -134,9 +185,9 @@ def load_languages(force=False):
             continue
         seen_dir = True
         for fname in sorted(os.listdir(lang_dir)):
-            if not fname.endswith(".json") or fname.startswith("data_"):
+            lang_code = _is_language_file(fname)
+            if lang_code is None:
                 continue
-            lang_code = fname[:-5]  # "ru.json" → "ru"
             if lang_code in _LANG_DATA and not force:
                 continue
             path = os.path.join(lang_dir, fname)
@@ -220,7 +271,11 @@ def t(key, **kwargs):
     if kwargs:
         try:
             text = text.format(**kwargs)
-        except (KeyError, IndexError):
+        except (KeyError, IndexError, ValueError):
+            # A translation is data, and remote patches make it data this build
+            # has never seen: a missing placeholder (KeyError/IndexError) or an
+            # unbalanced brace (ValueError) must cost the raw template, not the
+            # screen that formats it.
             pass
     return text
 
@@ -272,44 +327,15 @@ def get_available_languages():
 
 
 def init_language():
-    """Load language files. Current language is left at module default ("ru");
+    """Load language files. Current language is left at module default ("en");
     a saved language code is applied later by engine.load() via set_language().
     """
     load_languages()
-    _refresh_strings()
-
-
-# ---- Backward compat: STRINGS dict (read-only, built from JSON) ----
-
-def _build_strings_compat():
-    """Build {key: {lang: value}} dict for any code still using STRINGS directly."""
-    result = {}
-    all_keys = set()
-    for lang_data in _LANG_DATA.values():
-        all_keys.update(lang_data.keys())
-    for key in all_keys:
-        entry = {}
-        for lang_code, lang_data in _LANG_DATA.items():
-            if key in lang_data:
-                entry[lang_code] = lang_data[key]
-        result[key] = entry
-    return result
-
-
-# STRINGS is populated after load_languages() is called (via init_language or data_loader)
-STRINGS: dict = {}
-
-
-def _refresh_strings():
-    """Refresh the STRINGS compat dict after languages are loaded."""
-    global STRINGS
-    STRINGS = _build_strings_compat()
 
 
 # Auto-load on import if JSON files exist (for tests that don't call init_language)
 try:
     load_languages()
-    _refresh_strings()
 except Exception as exc:
     # Import-time best effort. Swallow to avoid blocking test collection, but
     # surface the reason so a missing / malformed language file is debuggable.

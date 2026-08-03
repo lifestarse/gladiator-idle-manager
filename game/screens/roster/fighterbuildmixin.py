@@ -1,4 +1,4 @@
-# Build: 9
+# Build: 10
 """_FighterBuildMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -54,7 +54,8 @@ class _FighterBuildMixin:
         close_btn.bind(on_release=lambda *_: popup.dismiss())
         popup.open()
 
-    _HOLD_DELAY = 0.35
+    # Faster repeat than the gold-spending Train button: stat points are
+    # already earned, so burning through them should feel immediate.
     _HOLD_INTERVAL = 0.06
 
     def _wire_hold_to_train(self, btn, stat_key, fighter_idx, fighter,
@@ -67,7 +68,7 @@ class _FighterBuildMixin:
             "agility": "total_agility",
             "vitality": "total_vitality",
         }[stat_key]
-        state = {"hold_event": None, "delay_event": None, "dirty": False}
+        state = {"dirty": False}
 
         def _refresh_labels():
             lbl, sname = stat_labels[stat_key]
@@ -75,48 +76,22 @@ class _FighterBuildMixin:
             if pts_label_widget is not None:
                 pts_label_widget.text = t("pts_label", n=fighter.unused_points)
 
-        def _tick(dt):
+        def _step():
             result = engine.distribute_stat(fighter_idx, stat_key)
             if not result.ok:
-                _stop()
                 return False
             state["dirty"] = True
             _refresh_labels()
-            if fighter.unused_points <= 0:
-                _stop()
-                return False
-            return True
+            return fighter.unused_points > 0
 
-        def _start_repeat(dt):
-            state["delay_event"] = None
-            state["hold_event"] = Clock.schedule_interval(
-                _tick, self._HOLD_INTERVAL,
-            )
-
-        def _stop():
-            if state["delay_event"]:
-                state["delay_event"].cancel()
-                state["delay_event"] = None
-            if state["hold_event"]:
-                state["hold_event"].cancel()
-                state["hold_event"] = None
-
-        def _on_press(_inst):
-            _tick(0)
-            if fighter.unused_points > 0:
-                state["delay_event"] = Clock.schedule_once(
-                    _start_repeat, self._HOLD_DELAY,
-                )
-
-        def _on_release(_inst):
-            _stop()
+        def _finish():
             if state["dirty"]:
                 state["dirty"] = False
                 engine.save()
                 self.refresh_roster()
                 self.show_fighter_detail(fighter_idx)
 
-        btn.bind(on_press=_on_press, on_release=_on_release)
+        bind_hold_repeat(btn, _step, _finish, interval=self._HOLD_INTERVAL)
 
     def _stat_cell(self, caption, value, value_color=None):
         """Muted caption over a value — one cell of the stat plate."""

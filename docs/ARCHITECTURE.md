@@ -49,7 +49,7 @@ gladiator-idle-manager/
 |   |
 |   |-- screens/
 |       |-- __init__.py
-|       |-- shared.py          # Shared utilities: _safe_clear, _safe_rebind, SCREEN_ORDER
+|       |-- shared.py          # Shared utilities: _safe_clear, _safe_rebind, hit sound
 |       |-- arena.py           # ArenaScreen: battle UI, enemy preview, pit/boss buttons
 |       |-- roster.py          # RosterScreen: fighter list, stats, equip, hire, level up
 |       |-- forge.py           # ForgeScreen: buy equipment, upgrade, enchant, inventory
@@ -379,7 +379,9 @@ Six screens managed by `SwipeScreenManager` (swipe disabled, navigation via bott
 
 All screens extend `BaseScreen` (from `game/base_screen.py`), which provides a shared top bar displaying gold, diamonds, and arena tier.
 
-Screen order is defined in `screens/shared.py` as `SCREEN_ORDER`.
+Nav-bar order is defined by the `NavButton` blocks in `kv/nav_bar.kv`; the
+ScreenManager registration order lives in `game/app/_core.py` (`build()`).
+The Scripts screen has no nav button by design — it is entered from More.
 
 ---
 

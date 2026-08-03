@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Display metadata for AST entities — labels, descriptions, categories, colors.
 
 The AST itself keeps stable internal names (``bench``, ``activate``, ``hp``,
@@ -13,6 +13,8 @@ or :mod:`game.scripting.ast_nodes`, the only places that need to learn about
 it are this file and the two language JSONs.
 """
 from __future__ import annotations
+
+from .builtins import BUILTIN_ENGINE_FIELDS
 
 
 # ---------- triggers ----------
@@ -140,18 +142,20 @@ NUMERIC_FIGHTER_FIELDS = frozenset({
 })
 
 
-# Same idea as NUMERIC_FIGHTER_FIELDS but for engine fields. Most are
-# numbers (gold, diamonds, counts). The two bools — battle_active and
-# expedition_active — stay out so `if engine.battle_active:` keeps working.
-NUMERIC_ENGINE_FIELDS = frozenset({
-    "gold", "diamonds", "victories", "current_tier",
-    "fighter_count", "active_count", "available_count",
-    "current_floor",
-    "inventory_size",
-    "inv_weapons", "inv_armor", "inv_accessories", "inv_relics",
-})
+# Same idea as NUMERIC_FIGHTER_FIELDS but for engine fields, except the
+# engine vocabulary is small enough to name the exceptions instead of the
+# rule: everything in BUILTIN_ENGINE_FIELDS reads as a number apart from
+# these two bools, which stay out so `if engine.battle_active:` keeps
+# working. Listing the bools rather than the numbers means a new numeric
+# field added to the registry gets the auto-wrap for free.
+BOOLEAN_ENGINE_FIELDS = frozenset({"battle_active", "expedition_active"})
+
+NUMERIC_ENGINE_FIELDS = frozenset(BUILTIN_ENGINE_FIELDS) - BOOLEAN_ENGINE_FIELDS
 
 
+# Every key of BUILTIN_ENGINE_FIELDS needs an entry here; the i18n keys are
+# not derivable from the field names (current_tier -> scr_e_tier), so the
+# parity is enforced by tests/test_scripting_labels.py instead.
 ENGINE_FIELD_LABELS: dict[str, str] = {
     "gold":              "scr_e_gold",
     "diamonds":          "scr_e_diamonds",

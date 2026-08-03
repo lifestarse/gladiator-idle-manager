@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """ArenaScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -83,6 +83,10 @@ class ArenaScreen(BaseScreen, _BattleFlowMixin, _HealMixin, _EnemyPopupMixin, _E
             tier, gold = self._pending_tier_up
             self._pending_tier_up = None
             self._show_tier_up_popup(tier, gold)
+
+    def refresh(self):
+        """BaseScreen per-tick entry point."""
+        self.refresh_ui()
 
     def refresh_ui(self):
         engine = App.get_running_app().engine

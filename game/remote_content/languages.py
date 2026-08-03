@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Validate and apply a remote UI-string patch.
 
 A language file drives every screen, so a bad patch is not a cosmetic problem —
@@ -88,7 +88,25 @@ def _reject_reason(path, text, base):
     if sorted(BBCODE.findall(text)) != sorted(BBCODE.findall(original)):
         # Kivy renders a broken markup tag literally, as visible garbage.
         return "BBCode markup differs from the bundled string"
+    if not _formats(text):
+        return "cannot be formatted — check for an unbalanced brace"
     return None
+
+
+def _formats(text):
+    """True when str.format() survives this string with its own placeholders.
+
+    PLACEHOLDER only recognises well-formed {name} pairs, so the comparison
+    above is blind to a lone "{" — the commonest way a hand-edited translation
+    breaks. Actually formatting the string is the only check that sees it, and
+    what it sees is exactly what t() would hit: ValueError on an unbalanced
+    brace, IndexError on a positional field the callers never supply.
+    """
+    try:
+        text.format(**{name.strip("{}"): "" for name in PLACEHOLDER.findall(text)})
+    except (KeyError, IndexError, ValueError):
+        return False
+    return True
 
 
 def apply_patch(lang_data, patch):

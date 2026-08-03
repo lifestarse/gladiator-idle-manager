@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """One-line summarizers + helpers shared by editor widgets.
 
 Editing model: control-flow nodes own their children directly. The editor
@@ -17,6 +17,7 @@ from game.scripting.ast_nodes import (
     If, While, ForEach, Assign, Action, Break, Continue,
     BinOp, UnaryOp, Const, LocalVar, GlobalVar,
     FighterField, EngineField, Call,
+    WRITABLE_FIGHTER_FIELDS,
 )
 from game.scripting import labels as L
 from game.localization import t
@@ -24,6 +25,21 @@ from game.localization import t
 
 def is_control(node) -> bool:
     return isinstance(node, (If, While, ForEach))
+
+
+def default_writable_fighter_field() -> str:
+    """The field a fresh ``SET f.<field>`` block targets.
+
+    Read off the AST whitelist rather than named here: ``Assign.__post_init__``
+    rejects anything outside WRITABLE_FIGHTER_FIELDS, so a hardcoded name turns
+    every narrowing of that whitelist into a ValueError thrown into the UI at
+    the moment the user taps the palette entry. Sorted so the choice is stable
+    across runs instead of following set iteration order.
+    """
+    fields = sorted(WRITABLE_FIGHTER_FIELDS)
+    if not fields:
+        raise ValueError("no writable fighter fields — SET f.<field> is unavailable")
+    return fields[0]
 
 
 def _action_label(name: str) -> str:

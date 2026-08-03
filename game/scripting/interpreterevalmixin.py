@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Interpreter expression evaluators (`_eval_*`) — one method per Expression node."""
 from __future__ import annotations
 
@@ -33,14 +33,12 @@ class _InterpreterEvalMixin:
             raise ScriptError(f"reading fighter.{node.field_name} failed: {e}") from e
 
     def _eval_EngineField(self, node: ast.EngineField):
-        if node.field_name not in BUILTIN_ENGINE_FIELDS:
+        accessor = BUILTIN_ENGINE_FIELDS.get(node.field_name)
+        if accessor is None:
             raise ScriptError(f"unknown engine field: {node.field_name!r}")
         try:
-            from .builtins import _engine_field
             with self._state_lock:
-                return _engine_field(self.engine, node.field_name)
-        except AttributeError:
-            return 0  # field not present on this engine version
+                return accessor(self.engine)
         except Exception as e:
             raise ScriptError(f"reading engine.{node.field_name} failed: {e}") from e
 

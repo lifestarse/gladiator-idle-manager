@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _HealingMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -17,6 +17,25 @@ class _HealingMixin:
             return 0
         tier_mult = HP_HEAL_TIER_MULT ** (self.arena_tier - 1)
         return math.ceil(total_missing / HP_HEAL_DIVISOR * tier_mult)
+
+    def get_single_heal_cost(self, fighter):
+        """Gold cost to fully heal one fighter's HP, scaling with arena tier.
+
+        Takes the Fighter object rather than a roster index so callers can
+        pass a combatant straight out of battle_mgr.state.player_fighters.
+        Returns 0 when the fighter needs no healing (full HP, dead, or
+        downed at 0 HP — those need a revive, not a heal).
+        """
+        return self.get_hp_heal_cost([fighter])
+
+    def heal_one_hp(self, fighter):
+        """Heal one fighter's HP, spending all remaining gold on a partial
+        heal when it does not cover the full cost.
+
+        Returns (healed_count, gold_spent) — the same shape as heal_all_hp,
+        so both healing entry points report results identically.
+        """
+        return self.heal_all_hp([fighter])
 
     def heal_all_hp(self, fighters=None):
         """Heal all fighters to full HP. If not enough gold, spend all and heal partially.

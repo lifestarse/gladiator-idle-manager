@@ -1,4 +1,4 @@
-# Build: 33
+# Build: 34
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -26,6 +26,7 @@ from game.ui_helpers import (
     _roster_callbacks,
     _perk_callbacks,
     bind_text_wrap,
+    bind_hold_repeat,
     make_styled_popup,
 )
 from game.screens.shared import _safe_clear, _safe_rebind
