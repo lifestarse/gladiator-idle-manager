@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """ui_helpers._item_card — item info card builder."""
 from ._imports import *  # noqa: F401,F403
 from ._widgets import _auto_text_size
@@ -159,8 +159,9 @@ def show_item_stats_popup(item):
     # Passives sit between the enchantment (also a granted power, but bought)
     # and the flavour text. Rule lines first, then the item's own prose, so a
     # player reading top-down gets the mechanic before the story about it.
-    # All authored slots show — unlocked ones in amber with their rule line,
-    # locked ones dimmed with the +N threshold, no spoiler on the effect.
+    # All authored slots show their rule line — unlocked ones in amber, locked
+    # ones dimmed with the +N threshold appended, so a player can weigh a slot
+    # before spending the upgrade materials to open it.
     slot_rows = render_slots(item)
     if slot_rows:
         lines.append(t("item_passive_header"))

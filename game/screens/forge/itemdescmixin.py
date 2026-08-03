@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """_ItemDescMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -25,9 +25,9 @@ class _ItemDescMixin:
         reason to pick one item over another, and burying it behind a tap made
         it invisible.
 
-        Every authored slot renders — unlocked ones in amber with their rule
-        line, locked ones dimmed with just the +N threshold (no spoiler on
-        the effect, see game/passives/_render.py:render_slots).
+        Every authored slot renders its rule line — unlocked ones in amber,
+        locked ones dimmed with the +N threshold appended (see
+        game/passives/_render.py:render_slots).
 
         Header in PixelFont (it is a heading, and carries the amber BBCode from
         item_passive_header), rules and flavour in BodyFont — the split

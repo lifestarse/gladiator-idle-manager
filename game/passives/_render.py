@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Render a PassiveSpec into the player-facing rule line.
 
 Numbers live here and only here. They come from the spec's params and are
@@ -71,15 +71,17 @@ def render_slots(item):
     form the prefix — no re-sorting needed.
 
     * unlocked row: "★ <localized rule line>" — PASSIVE_MARK + render(spec).
-    * locked row: the passive_slot_locked template with the +N threshold. The
-      effect is deliberately NOT revealed until unlocked. The "lock" is a word
-      in the template, not a glyph — see the PASSIVE_MARK note below for why
-      no new symbol may appear here.
+    * locked row: the rule line followed by the passive_slot_locked template
+      (the +N threshold). The effect is shown up front — a player deciding
+      whether to spend upgrade materials needs to know what a slot pays out,
+      not just that it is sealed — with the locked template appended as a
+      suffix so the row still reads as "not active yet". A slot with no
+      authored spec (a mid-patch hole) keeps the old text-only row: there is
+      no rule to show.
 
     [] for an item with nothing authored: a rarity-sized column of locked rows
     over passives that do not exist would promise content the data does not
-    have (today that is every item but rusty_blade). An unlocked slot whose
-    spec is missing (mid-patch hole) is skipped for the same reason.
+    have (today that is every item but rusty_blade).
     """
     from ._registry import COMPILED_PASSIVES
 
@@ -90,14 +92,15 @@ def render_slots(item):
     rows = []
     for index in range(slot_count(item)):
         threshold = unlock_threshold(index)
+        spec = by_index.get(index)
         if item.get("upgrade_level", 0) >= threshold:
-            spec = by_index.get(index)
             if spec is None:
                 continue
             rows.append((f"{PASSIVE_MARK} {render(spec)}", True, threshold))
         else:
-            rows.append((t("passive_slot_locked", n=threshold), False,
-                         threshold))
+            locked = t("passive_slot_locked", n=threshold)
+            text = f"{render(spec)} {locked}" if spec is not None else locked
+            rows.append((text, False, threshold))
     return rows
 
 

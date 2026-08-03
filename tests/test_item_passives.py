@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Per-item passive effects — registry, compiler, wiring and remote patching.
 
 The vertical slice this covers: a definition in data/item_passives.json becomes
@@ -13,6 +13,7 @@ PASSIVE_SLOT_UNLOCK_STEP, and a locked slot must be inert everywhere — the
 validator refuses indexes the rarity can never unlock, the fighter gate skips
 locked specs, and the renderer shows them as locked rows.
 """
+import collections
 import json
 import os
 
@@ -615,9 +616,11 @@ def test_marker_counts_only_active_passives(engine):
     assert passives.passive_marker(_bare_item()) == ""
 
 
-def test_render_slots_shows_locked_rows_without_spoiling_the_effect(engine):
-    """Below the threshold the card row says only that the slot is locked and
-    where it opens — the effect text stays hidden until it is real."""
+def test_render_slots_shows_the_effect_on_a_locked_row_too(engine):
+    """Below the threshold the card row still names the effect — a player
+    deciding whether to spend upgrade materials needs to see what a slot pays
+    out — with the locked template's +N appended so the row still reads as
+    not active yet."""
     from game.localization import get_language, set_language
 
     previous = get_language()
@@ -632,13 +635,43 @@ def test_render_slots_shows_locked_rows_without_spoiling_the_effect(engine):
         text, unlocked, shown = rows[0]
         assert (unlocked, shown) == (False, threshold)
         assert f"+{threshold}" in text
-        assert rule not in text, "a locked row leaked the effect"
+        assert rule in text, "a locked row must still show the effect"
 
         item["upgrade_level"] = threshold
         rows = passives.render_slots(item)
         assert rows == [(f"{passives.PASSIVE_MARK} {rule}", True, threshold)]
     finally:
         set_language(previous)
+
+
+def test_render_slots_locked_hole_stays_text_only(engine, extra_kinds):
+    """A locked slot with no authored spec (a mid-patch hole) has no rule to
+    show, so its row is the bare passive_slot_locked template, same as
+    before this feature."""
+    from game.localization import get_language, set_language, t
+
+    previous = get_language()
+    try:
+        set_language("en")
+        passives.install(
+            {"w1#0": {"item": "w1", "kind": extra_kinds[0], "value": 0.01}},
+            _slots())
+        item = {"id": "w1", "rarity": "legendary", "upgrade_level": 0}
+        rows = passives.render_slots(item)
+        # slot #0 is authored but locked at +0: shows the rule; slots #1-4
+        # are holes: bare locked text.
+        threshold0 = passives.unlock_threshold(0)
+        rule0 = passives.render(passives.COMPILED_PASSIVES["w1"][0])
+        assert rows[0] == (f"{rule0} {t('passive_slot_locked', n=threshold0)}",
+                            False, threshold0)
+        for index in range(1, 5):
+            threshold = passives.unlock_threshold(index)
+            assert rows[index] == (t("passive_slot_locked", n=threshold),
+                                    False, threshold)
+    finally:
+        engine._wire_data()
+        set_language(previous)
+    assert SLICE_ITEM in passives.COMPILED_PASSIVES, "restore path is broken"
 
 
 def test_render_slots_orders_the_open_prefix_before_the_locked_tail(
@@ -706,3 +739,131 @@ def test_marker_glyph_exists_in_the_ui_font():
     for table in font["cmap"].tables:
         covered |= set(table.cmap)
     assert ord(passives.PASSIVE_MARK) in covered
+
+
+# ------------------------------------------------ content variety gate
+#
+# data/item_passives.json is monotonous today: several (source file, slot
+# position) groups are dominated by one kind (e.g. weapon slot #4 is
+# crit_damage_bonus in 70% of the weapons that have one), and several
+# (kind, rarity) pairs repeat the same one or two numbers across a dozen
+# items instead of being tuned per item. This gate is EXPECTED to fail until
+# the content is re-authored — that is its job.
+#
+# Thresholds are picked to be strictly tighter than what the current data
+# does, so the gate cannot pass by accident:
+#   - a same-file, same-position monopoly at 26% (one kind past a clean
+#     quarter of that group) must fail -> cap set at 25%.
+#   - slot #0 is the one passive every single item carries, the widest
+#     sample in the file, so its global cap is tighter still.
+#   - an 11-item (kind, rarity) pair cycling through only 2 numbers (e.g.
+#     crit_chance_bonus/rare in the shipped file today) must fail -> a pair
+#     with enough samples needs at least 3 distinct values.
+MIN_GROUP_SIZE_FOR_SLOT_CHECK = 8     # below this, one repeat is noise, not a trend
+MAX_SLOT_KIND_SHARE_PER_FILE = 0.25   # >1/4 of one file's same-position items sharing a kind is a monopoly
+MAX_SLOT0_KIND_SHARE_GLOBAL = 0.18    # slot #0's sample is every item, so its cap is stricter than the per-file one
+MIN_PAIR_SIZE_FOR_VARIETY_CHECK = 6
+MIN_DISTINCT_VALUES_PER_PAIR = 3      # fewer than this is a copy-pasted number, not a tuned one
+
+SOURCE_DATA_FILES = {
+    "weapon": "weapons.json",
+    "armor": "armor.json",
+    "accessory": "accessories.json",
+    "relic": "relics.json",
+}
+
+
+def _item_catalog():
+    """{item id: (slot id, rarity)}, read straight from the shipped per-slot
+    data files — the only place that ties an id back to weapons vs armor vs
+    accessories vs relics. Slot ids come from these files, not a guess: each
+    file carries exactly one item["slot"] value for all its entries, and
+    that value is the same id game/slots.py uses.
+    """
+    from game.slots import EQUIPMENT_SLOTS
+
+    assert set(SOURCE_DATA_FILES) == set(EQUIPMENT_SLOTS), (
+        "a slot was added to game/slots.py without adding its data file here")
+
+    catalog = {}
+    for slot_id, filename in SOURCE_DATA_FILES.items():
+        path = os.path.join(ROOT, "data", filename)
+        with open(path, encoding="utf-8") as handle:
+            items = json.load(handle)["items"]
+        for item in items:
+            assert item["slot"] == slot_id, (
+                f"{filename} has an item on slot {item['slot']!r}, expected "
+                f"{slot_id!r}")
+            catalog[item["id"]] = (slot_id, item["rarity"])
+    return catalog
+
+
+def _passive_entries():
+    """[(slot id, rarity, slot position, kind, value), ...] for every entry
+    in the shipped data/item_passives.json."""
+    with open(DEFS_PATH, encoding="utf-8") as handle:
+        raw = json.load(handle)["passives"]
+    catalog = _item_catalog()
+
+    entries = []
+    for key, entry in raw.items():
+        slot_id, rarity = catalog[entry["item"]]
+        position = int(key.rsplit("#", 1)[1])
+        entries.append((slot_id, rarity, position, entry["kind"], entry["value"]))
+    return entries
+
+
+def test_no_slot_kind_monopoly_per_file():
+    """Within one item file, one passive position (#0, #1, ...) must not be
+    dominated by a single kind — rerolling weapons should turn up more than
+    one kind of slot-#0 passive."""
+    groups = collections.defaultdict(collections.Counter)
+    for slot_id, _rarity, position, kind, _value in _passive_entries():
+        groups[(slot_id, position)][kind] += 1
+
+    offenders = []
+    for (slot_id, position), counter in sorted(groups.items()):
+        total = sum(counter.values())
+        if total < MIN_GROUP_SIZE_FOR_SLOT_CHECK:
+            continue
+        top_kind, top_count = counter.most_common(1)[0]
+        share = top_count / total
+        if share > MAX_SLOT_KIND_SHARE_PER_FILE:
+            offenders.append(
+                f"{slot_id} slot #{position}: {top_kind} is {top_count}/"
+                f"{total} ({share:.0%}) > {MAX_SLOT_KIND_SHARE_PER_FILE:.0%}")
+    assert not offenders, "\n".join(offenders)
+
+
+def test_no_global_first_slot_kind_monopoly():
+    """Slot #0 is authored on every item that has any passive at all, so its
+    cap on one kind's share is tighter than the per-file check."""
+    counter = collections.Counter(
+        kind for _slot_id, _rarity, position, kind, _value
+        in _passive_entries() if position == 0)
+    total = sum(counter.values())
+    top_kind, top_count = counter.most_common(1)[0]
+    share = top_count / total
+    assert share <= MAX_SLOT0_KIND_SHARE_GLOBAL, (
+        f"slot #0: {top_kind} is {top_count}/{total} ({share:.0%}) > "
+        f"{MAX_SLOT0_KIND_SHARE_GLOBAL:.0%}")
+
+
+def test_kind_rarity_pairs_have_value_variety():
+    """A (kind, rarity) pair repeated across many items should read as tuned
+    per item, not copy-pasted — a pair with enough samples must use at least
+    MIN_DISTINCT_VALUES_PER_PAIR different numbers."""
+    values_by_pair = collections.defaultdict(list)
+    for _slot_id, rarity, _position, kind, value in _passive_entries():
+        values_by_pair[(kind, rarity)].append(value)
+
+    offenders = []
+    for (kind, rarity), values in sorted(values_by_pair.items()):
+        if len(values) < MIN_PAIR_SIZE_FOR_VARIETY_CHECK:
+            continue
+        distinct = len(set(values))
+        if distinct < MIN_DISTINCT_VALUES_PER_PAIR:
+            offenders.append(
+                f"{kind}/{rarity}: {len(values)} items share only {distinct} "
+                f"distinct value(s) < {MIN_DISTINCT_VALUES_PER_PAIR}")
+    assert not offenders, "\n".join(offenders)
