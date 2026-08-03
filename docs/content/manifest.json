@@ -2,43 +2,43 @@
   "entries": {
     "pack.de": {
       "min_app": "1.9.44",
-      "path": "packs/de.v1.json",
-      "revision": 1
+      "path": "packs/de.v2.json",
+      "revision": 2
     },
     "pack.es": {
       "min_app": "1.9.44",
-      "path": "packs/es.v1.json",
-      "revision": 1
+      "path": "packs/es.v2.json",
+      "revision": 2
     },
     "pack.fr": {
       "min_app": "1.9.44",
-      "path": "packs/fr.v1.json",
-      "revision": 1
+      "path": "packs/fr.v2.json",
+      "revision": 2
     },
     "pack.it": {
       "min_app": "1.9.44",
-      "path": "packs/it.v1.json",
-      "revision": 1
+      "path": "packs/it.v2.json",
+      "revision": 2
     },
     "pack.pl": {
       "min_app": "1.9.44",
-      "path": "packs/pl.v1.json",
-      "revision": 1
+      "path": "packs/pl.v2.json",
+      "revision": 2
     },
     "pack.pt": {
       "min_app": "1.9.44",
-      "path": "packs/pt.v1.json",
-      "revision": 1
+      "path": "packs/pt.v2.json",
+      "revision": 2
     },
     "pack.ru": {
       "min_app": "1.9.44",
-      "path": "packs/ru.v1.json",
-      "revision": 1
+      "path": "packs/ru.v2.json",
+      "revision": 2
     },
     "pack.uk": {
       "min_app": "1.9.44",
-      "path": "packs/uk.v1.json",
-      "revision": 1
+      "path": "packs/uk.v2.json",
+      "revision": 2
     }
   },
   "schema": 1
