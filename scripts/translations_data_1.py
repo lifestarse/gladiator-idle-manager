@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """Part 1 of (key, en, ru) triples."""
 NEW_KEYS = [
     # --- Statistics section headers ---
@@ -14,7 +14,7 @@ NEW_KEYS = [
     ("stat_row_kills",          "Kills",            "Убийств"),
     ("stat_row_max_tier",       "Max Tier",         "Макс. уровень"),
     ("stat_row_best_tier",      "Best Tier",        "Лучший уровень"),
-    ("stat_row_best_kills",     "Best Kills",       "Лучшие убийства"),
+    ("stat_row_best_kills",     "Most Kills in a Run", "Рекорд убийств за забег"),
     ("stat_row_total_runs",     "Total Runs",       "Всего забегов"),
     ("stat_row_wins",           "Wins",             "Побед"),
     ("stat_row_bosses_killed",  "Bosses Killed",    "Боссов убито"),
