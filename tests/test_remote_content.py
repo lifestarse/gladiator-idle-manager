@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 4
 """Tests for the remote content overlay.
 
 The overlay's entire value depends on one property: a bad patch must be
@@ -211,6 +211,37 @@ def test_balance_cannot_add_a_field_that_does_not_exist():
     assert "base_str" not in loader._weapons[0]
 
 
+def test_expedition_patch_survives_load_all():
+    """Load order regression: expeditions must be read BEFORE the overlay runs.
+
+    DataLoader.__new__ seeds _expeditions with an empty placeholder list; when
+    load_all read expeditions.json only after patch_gamedata, the overlay wrote
+    into that placeholder and every expeditions patch silently vanished. This
+    drives the real load_all against a cached patch and checks the value lands
+    in the data the game actually reads.
+    """
+    import game.remote_content as rc
+    from game.data_loader import data_loader
+
+    patched_duration = 4242
+    _cache.write("gamedata",
+                 {"expeditions": {"dark_tunnels": {"duration": patched_duration}}})
+    try:
+        data_loader._loaded = False
+        data_loader.load_all()
+        by_id = {exp["id"]: exp for exp in data_loader.expeditions}
+        assert by_id["dark_tunnels"]["duration"] == patched_duration
+    finally:
+        # Reload bundled data so later tests see the singleton unpatched.
+        _cache.discard_all()
+        _cache.clear_marker()
+        rc._enabled = None
+        data_loader._loaded = False
+        data_loader.load_all()
+    by_id = {exp["id"]: exp for exp in data_loader.expeditions}
+    assert by_id["dark_tunnels"]["duration"] != patched_duration
+
+
 def test_whitelist_fields_exist_in_the_real_data_files():
     """The whitelist must describe the shipped files, not a remembered shape."""
     from pathlib import Path
@@ -324,7 +355,7 @@ def test_kill_switch_disables_everything(monkeypatch):
     monkeypatch.setattr(rc, "REMOTE_CONTENT_ENABLED", False)
     data = json.loads(json.dumps(BUNDLED))
     assert rc.patch_language("uk", data) == 0
-    assert rc.sync("uk") == []
+    assert rc.sync() == []
 
 
 # ---------------------------------------------------------------- packs

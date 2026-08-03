@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 9
 """Modal popups for the squad-script editor.
 
 Old build had a deep popup chain (palette -> block editor -> expr editor) that
@@ -37,51 +37,19 @@ Helpers:
 """
 from __future__ import annotations
 import logging
-from typing import Callable
 
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.popup import Popup
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.label import Label
-from kivy.metrics import dp
-
-from game.localization import t
-from game.theme import BTN_PRIMARY, ACCENT_GOLD, ACCENT_RED, TEXT_PRIMARY, BG_DARK
-from game.widgets import MinimalButton, SafeTextInput as TextInput
+from ._screen_imports import *  # noqa: F401,F403
 from game.scripting.ast_nodes import (
     If, While, ForEach, Assign, Action, Break, Continue,
-    Const, LocalVar, BinOp, FighterField,
+    Const, LocalVar, Program,
 )
 from game.scripting.builtins import BUILTIN_ACTIONS
-from game.scripting.ast_nodes import Program
 from game.scripting import labels as L
 from game.scripting import online_library
 from game.scripting import templates as T
+from .blocks import default_writable_fighter_field
 
 _log = logging.getLogger(__name__)
-
-POPUP_BG = (0.10, 0.10, 0.12, 1)
-
-
-# ---------- shared helpers ----------
-
-def _btn(text_, on_press=None, color=None, h=44):
-    b = MinimalButton(
-        text=text_, size_hint_y=None, height=dp(h), font_size=12,
-        btn_color=color or BTN_PRIMARY,
-        text_color=BG_DARK if color is ACCENT_GOLD else TEXT_PRIMARY,
-    )
-    if on_press is not None:
-        b.bind(on_release=lambda *_: on_press())
-    return b
-
-
-def _section(text_):
-    l = Label(text=text_, size_hint_y=None, height=dp(24),
-               font_size="12sp", bold=True,
-               halign="left", valign="middle", color=(0.85, 0.88, 0.95, 1))
-    l.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
-    return l
 
 
 # ---------- default node factories ----------
@@ -124,7 +92,8 @@ def default_block(kind: str):
     if kind == "assign_global":
         return Assign("global", "counter", Const(0))
     if kind == "assign_field":
-        return Assign("fighter_field", "is_active", Const(True), fighter=LocalVar("f"))
+        return Assign("fighter_field", default_writable_fighter_field(),
+                      Const(True), fighter=LocalVar("f"))
     if kind == "break":
         return Break()
     if kind == "continue":
@@ -214,7 +183,7 @@ def open_action_picker(*, current: str | None,
         body.add_widget(_section(t(cat_key)))
         for name in names:
             meta = L.ACTION_META[name]
-            available = meta.get("available", True)
+            available = L.is_action_available(name)
             # Visual cue for no-op actions: keep them pickable (the user might
             # be building a script for a future game build, or just want the
             # syntax in place) but mark them clearly so they don't waste time
@@ -222,7 +191,7 @@ def open_action_picker(*, current: str | None,
             if available:
                 color = ACCENT_GOLD if name == current else BTN_PRIMARY
             else:
-                color = (0.35, 0.35, 0.40, 1)
+                color = BTN_DISABLED
             row = BoxLayout(orientation="vertical", size_hint_y=None,
                              spacing=dp(0))
             row.bind(minimum_height=row.setter("height"))
@@ -242,11 +211,9 @@ def open_action_picker(*, current: str | None,
             desc = Label(text=desc_text, size_hint_y=None,
                           height=dp(28 if available else 56),
                           font_size="10sp",
-                          color=(0.65, 0.7, 0.78, 1) if available
-                                else (0.95, 0.78, 0.40, 1),
+                          color=TEXT_SECONDARY if available else ACCENT_AMBER,
                           halign="left", valign="middle")
-            desc.bind(size=lambda s, *_: setattr(s, "text_size",
-                                                  (s.width - dp(8), s.height)))
+            _bind_wrap(desc, WRAP_INSET_DP)
             row.add_widget(desc)
             body.add_widget(row)
 
@@ -283,10 +250,9 @@ def open_template_picker(on_apply: Callable[[object], None]):
                               color=ACCENT_GOLD, h=36))
         desc = Label(text=t(tmpl.desc_key), size_hint_y=None,
                       height=dp(36), font_size="10sp",
-                      color=(0.65, 0.70, 0.78, 1),
+                      color=TEXT_SECONDARY,
                       halign="left", valign="middle")
-        desc.bind(size=lambda s, *_: setattr(s, "text_size",
-                                              (s.width - dp(8), s.height)))
+        _bind_wrap(desc, WRAP_INSET_DP)
         card.add_widget(desc)
         body.add_widget(card)
 
@@ -369,19 +335,19 @@ def open_run_log(program_name: str, last_run):
             root.add_widget(Label(
                 text=t("scr_log_error", e=last_run.error),
                 size_hint_y=None, height=dp(40), font_size="11sp",
-                color=(1, 0.5, 0.5, 1),
+                color=TEXT_ERROR,
                 halign="left", valign="middle",
             ))
         else:
             root.add_widget(Label(
                 text=t("scr_log_ok", n=last_run.actions_fired),
                 size_hint_y=None, height=dp(28), font_size="11sp",
-                color=(0.5, 1, 0.5, 1),
+                color=TEXT_OK,
             ))
         root.add_widget(Label(
             text=f"{last_run.duration_ms:.1f} ms",
             size_hint_y=None, height=dp(20), font_size="10sp",
-            color=(0.6, 0.7, 0.8, 1),
+            color=TEXT_SECONDARY,
         ))
     root.add_widget(_btn(t("scr_inline_close"), lambda: popup.dismiss(),
                           color=ACCENT_GOLD, h=40))
@@ -399,7 +365,7 @@ def open_confirm(title: str, body: str, yes_label: str,
     root = BoxLayout(orientation="vertical", padding=dp(10), spacing=dp(8))
     msg = Label(text=body, font_size="12sp",
                  halign="center", valign="middle")
-    msg.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+    _bind_wrap(msg)
     root.add_widget(msg)
     row = BoxLayout(orientation="horizontal", size_hint_y=None,
                      height=dp(44), spacing=dp(8))
@@ -449,7 +415,6 @@ def open_online_library(on_apply: Callable[[Program], None]):
     appending it to the manager — same contract as open_template_picker.
     """
     import threading
-    from kivy.clock import Clock
 
     root = BoxLayout(orientation="vertical", padding=dp(8), spacing=dp(6))
 
@@ -458,9 +423,9 @@ def open_online_library(on_apply: Callable[[Program], None]):
         text=t("scr_online_loading"),
         size_hint_y=None, height=dp(48),
         font_size="13sp", halign="center", valign="middle",
-        color=(0.8, 0.85, 0.95, 1),
+        color=TEXT_PRIMARY,
     )
-    loading_lbl.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+    _bind_wrap(loading_lbl)
     root.add_widget(loading_lbl)
 
     # Bottom buttons (Reload + Close) created up front so we can wire them
@@ -492,9 +457,9 @@ def open_online_library(on_apply: Callable[[Program], None]):
                 text=t("scr_online_offline"),
                 size_hint_y=None, height=dp(60),
                 font_size="12sp", halign="center", valign="middle",
-                color=(1, 0.7, 0.5, 1),
+                color=ACCENT_AMBER,
             )
-            offline.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+            _bind_wrap(offline)
             # Insert at position 1 so it lands ABOVE the button row.
             root.add_widget(offline, index=len(root.children))
             return
@@ -505,10 +470,10 @@ def open_online_library(on_apply: Callable[[Program], None]):
             text=t("scr_online_header",
                    n=len(scripts), updated=payload.get("updated", "?")),
             size_hint_y=None, height=dp(28),
-            font_size="11sp", color=(0.6, 0.7, 0.85, 1),
+            font_size="11sp", color=TEXT_SECONDARY,
             halign="left", valign="middle",
         )
-        header.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+        _bind_wrap(header)
         root.add_widget(header, index=len(root.children))
 
         sv = ScrollView()
@@ -544,21 +509,20 @@ def open_online_library(on_apply: Callable[[Program], None]):
             desc = Label(
                 text=entry.get("description", ""),
                 size_hint_y=None, height=dp(36),
-                font_size="10sp", color=(0.65, 0.7, 0.78, 1),
+                font_size="10sp", color=TEXT_SECONDARY,
                 halign="left", valign="middle",
             )
-            desc.bind(size=lambda s, *_:
-                       setattr(s, "text_size", (s.width - dp(8), s.height)))
+            _bind_wrap(desc, WRAP_INSET_DP)
             card.add_widget(desc)
             tags = entry.get("tags", [])
             if tags:
                 tag_lbl = Label(
                     text=" · ".join(tags),
                     size_hint_y=None, height=dp(20),
-                    font_size="10sp", color=(0.5, 0.6, 0.75, 1),
+                    font_size="10sp", color=TEXT_MUTED,
                     halign="left", valign="middle",
                 )
-                tag_lbl.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+                _bind_wrap(tag_lbl)
                 card.add_widget(tag_lbl)
             body.add_widget(card)
 
@@ -608,9 +572,9 @@ def open_import_dialog(on_import: Callable[[str, bool], str | None]):
     root.add_widget(_btn(t("scr_paste"), _paste, h=36))
 
     err_label = Label(text="", size_hint_y=None, height=dp(28),
-                       font_size="11sp", color=(1, 0.6, 0.6, 1),
+                       font_size="11sp", color=TEXT_ERROR,
                        halign="left", valign="middle")
-    err_label.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+    _bind_wrap(err_label)
     root.add_widget(err_label)
 
     def _go(replace: bool):

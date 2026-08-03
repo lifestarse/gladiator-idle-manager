@@ -1,4 +1,4 @@
-# Build: 7
+# Build: 8
 """ui_helpers._forge — forge-grid builders + RV data adapters."""
 from ._imports import *  # noqa: F401,F403
 from ._layouts import _batch_fill_grid, _bind_long_tap
@@ -80,7 +80,7 @@ def _inventory_item_to_rv_data(source, idx, item, fighter_name, forge_screen):
         ench_display = f"[{ench_data['name']}]" if ench_data else f"[{ench_id}]"
     slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
     passive_mark = passive_marker(item)
-    s, a, v = calc_item_stats(item, None)
+    s, a, v = calc_item_stats(item)
     return {
         'iid': item.get('id', ''),
         '_forge': forge_screen,
@@ -114,7 +114,7 @@ def _forge_item_to_rv_data(item, forge_screen):
         ench_display = f"[{ench_data['name']}]" if ench_data else f"[{ench_id}]"
     slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
     passive_mark = passive_marker(item)
-    s, a, v = calc_item_stats(item, None)
+    s, a, v = calc_item_stats(item)
     return {
         'iid': item['id'],
         '_forge': forge_screen,

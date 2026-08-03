@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """ForgeScreen _EquipSwapMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 
@@ -92,7 +92,10 @@ class _EquipSwapMixin:
         if engine.battle_active:
             App.get_running_app().show_toast(t("not_in_battle"))
             return
-        engine.equip_from_inventory(fighter_idx, inv_idx)
+        result = engine.equip_from_inventory(fighter_idx, inv_idx)
+        if not result.ok:
+            App.get_running_app().show_toast(result.message or t("not_in_battle"))
+            return
         self.inv_detail_idx = -1
         self._set_view("inventory_list")
         self.refresh_forge()
@@ -119,7 +122,10 @@ class _EquipSwapMixin:
         if engine.battle_active:
             app.show_toast(t("not_in_battle"))
             return
-        engine.equip_from_inventory(fighter_idx, inv_idx)
+        result = engine.equip_from_inventory(fighter_idx, inv_idx)
+        if not result.ok:
+            app.show_toast(result.message or t("not_in_battle"))
+            return
         # Reset forge UI state so when user enters the forge later they
         # land on the shop, not on a stale inventory-detail view.
         self.inv_detail_idx = -1

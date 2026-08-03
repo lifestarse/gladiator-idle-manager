@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """RosterScreen _EquipmentMixin — extracted from monolithic screen."""
 from ._screen_imports import *  # noqa: F401,F403
 
@@ -75,7 +75,10 @@ class _EquipmentMixin:
                         return
                     inv_idx = engine.find_inventory_index(iid)
                     if inv_idx >= 0:
-                        engine.equip_from_inventory(idx, inv_idx)
+                        result = engine.equip_from_inventory(idx, inv_idx)
+                        if not result.ok:
+                            App.get_running_app().show_toast(result.message or t("not_in_battle"))
+                            return
                         equip_popup.dismiss()
                         self.refresh_roster()
                         self.show_fighter_detail(idx)

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 5
 """GameEngine _ExpeditionsMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -75,7 +75,7 @@ class _ExpeditionsMixin:
             shard_info = _m.SHARD_TIERS.get(exp["id"])
             if shard_info:
                 tier = shard_info["tier"]
-                amount = random.randint(1, 10)
+                amount = random.randint(EXPEDITION_SHARD_MIN, EXPEDITION_SHARD_MAX)
                 self.shards[tier] = self.shards.get(tier, 0) + amount
                 _key = f"shard_tier_{tier}_name"
                 _translated = t(_key)
@@ -92,7 +92,7 @@ class _ExpeditionsMixin:
                 relic = dict(relic_template)
                 self.inventory.append(relic)
                 msg_parts.append(t("found_relic_msg", name=relic['name'], rarity=rarity))
-            if random.random() < exp["danger"] * 0.5:
+            if random.random() < exp["danger"] * EXPEDITION_EXTRA_INJURY_DANGER_MULT:
                 existing_ids = {inj["id"] for inj in f.injuries}
                 extra_inj_id = data_loader.pick_random_injury(existing_ids)
                 f.injuries.append({"id": extra_inj_id})
@@ -108,6 +108,26 @@ class _ExpeditionsMixin:
                 self.pending_notifications.append(msg)
             self._mark_dirty()
         return results
+
+    def has_completed_expedition(self, expedition_id):
+        """True if a fighter ever returned alive from *expedition_id*.
+
+        Locale-independent fact-of-event check: the primary source is
+        ``completed_expedition_ids`` (appended by ``check_expeditions``,
+        persisted, survives permadeath). Fallback: saves from before that
+        field existed recorded the completion only as an English
+        ``expedition_log`` line — match it so those saves still count.
+        Never match the localized log text directly — it differs per
+        language. Shared by story quests (ch6_q3 "Void Walker") and
+        achievements (``expedition_completed_specific``).
+        """
+        if expedition_id in self.completed_expedition_ids:
+            return True
+        needle = expedition_id.replace("_", " ").lower()
+        return any(
+            needle in log.lower() and "returned" in log.lower()
+            for log in self.expedition_log
+        )
 
     def stop_expedition(self):
         """Cancel every active expedition: bring fighters back home with no

@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """ui_helpers._item_card — item info card builder."""
 from ._imports import *  # noqa: F401,F403
 from ._widgets import _auto_text_size
@@ -36,7 +36,7 @@ def build_item_info_card(item, subtitle=None, subtitle_color=None, fighter=None,
         slot_rarity = f"{t(SLOTS[slot].label_keys['upper'])} [{t('rarity_' + rarity + '_upper')}]"
     else:
         slot_rarity = f"{t('slot_' + slot + '_upper')} [{t('rarity_' + rarity + '_upper')}]"
-    s, a, v = calc_item_stats(item, fighter)
+    s, a, v = calc_item_stats(item)
 
     card = BaseCard(orientation="vertical", size_hint_y=None, height=dp(75),
                     padding=[dp(12), dp(8)], spacing=dp(4))

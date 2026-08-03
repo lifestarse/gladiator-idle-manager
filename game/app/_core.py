@@ -1,4 +1,4 @@
-# Build: 12
+# Build: 14
 """GladiatorIdleApp core."""
 from game.app._shared import *  # noqa: F401,F403
 from game.app._shared import _log
@@ -290,7 +290,7 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
             try:
                 from game.remote_content import confirm_healthy, sync_async
                 confirm_healthy()
-                sync_async(get_language())
+                sync_async()
             except Exception as exc:
                 _log.info("[remote] post-startup step suppressed: %s", exc)
 
@@ -368,12 +368,10 @@ class GladiatorIdleApp(App, _AppNavMixin, _AppUiMixin, _AppLocaleMixin):
         # Skip ArenaScreen refresh during battle — _auto_turn already does it
         if hasattr(scr, "refresh_ui") and self.engine.battle_active:
             return
-        for attr in ("refresh_ui", "refresh_roster", "refresh_forge",
-                     "refresh_expeditions", "refresh_lore", "refresh_more",
-                     "refresh_scripts"):
-            if hasattr(scr, attr):
-                getattr(scr, attr)()
-                break
+        # Single per-tick entry point — BaseScreen.refresh(). A new screen
+        # inherits the no-op default and is silently never redrawn, so the
+        # override belongs in the screen class, next to the code it draws.
+        scr.refresh()
 
     def _auto_save(self, dt):
         # Async: JSON serialization + disk write happen on a worker thread.

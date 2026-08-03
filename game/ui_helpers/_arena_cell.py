@@ -1,7 +1,5 @@
-# Build: 5
+# Build: 6
 """ui_helpers._arena_cell — ArenaUnitCardView for fighters + enemies."""
-from kivy.animation import Animation
-
 from game.widgets import PixelBadge
 
 from ._imports import *  # noqa: F401,F403
@@ -205,9 +203,7 @@ class ArenaUnitCardView(RecycleDataViewBehavior, CardWidget):
         if same_unit:
             self._bar.value = hp_pct  # animate delta on the same unit
         else:
-            Animation.cancel_all(self._bar, '_display_value')
-            self._bar.value = hp_pct
-            self._bar._display_value = hp_pct  # pooled rebind: no ghost anim
+            self._bar.set_immediate(hp_pct)  # pooled rebind: no ghost anim
         self._hp_lbl.text = fmt_num(hp)
         self._hp_lbl.color = list(ACCENT_RED) if is_low else (1, 0.3, 0.3, 1)
         # Do NOT chain to super().refresh_view_attrs (same reason as RosterCardView).

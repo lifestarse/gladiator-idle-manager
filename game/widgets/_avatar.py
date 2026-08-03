@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Widgets — GladiatorAvatar (sprite-based, fighters AND enemies)."""
 from game.constants import (
     ENEMY_ROLE_SPRITE, ENEMY_SPRITE_TIER_BUCKET, ENEMY_SPRITE_TIERS,
@@ -83,12 +83,17 @@ class GladiatorAvatar(Widget):
         else:
             self._sprite.source = ""
             self._sprite.opacity = 0
-            self._draw_fallback()
+            self._has_fallback = True
         self._layout()
 
     def _layout(self, *args):
         self._sprite.pos = self.pos
         self._sprite.size = self.size
+        # Fallback rect depends on center/size — redraw on every layout pass
+        # (not just on sprite/wounded changes), otherwise it stays pinned at
+        # whatever pos/size the widget had the moment the sprite was missing.
+        if self._has_fallback:
+            self._draw_fallback()
 
     def _draw_fallback(self):
         self.canvas.before.clear()

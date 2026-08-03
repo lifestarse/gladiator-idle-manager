@@ -1,9 +1,14 @@
-# Build: 3
+# Build: 5
 """ui_helpers._layouts — grid batching, rebuild-cache keys, tap binding."""
+from kivy.clock import Clock
+
 from ._imports import *  # noqa: F401,F403
 
 
-_HOLD_MS = 100
+# Press-and-hold auto-repeat defaults. The delay is a feel constant shared by
+# every holdable button; the interval is per-button (see bind_hold_repeat).
+_HOLD_REPEAT_DELAY = 0.35
+_HOLD_REPEAT_INTERVAL = 0.10
 
 
 def _invalidate_grid_cache(grid):
@@ -74,6 +79,59 @@ def _batch_fill_grid(grid, widgets):
         grid.add_widget(w)
     grid.height = grid.minimum_height
     grid.bind(minimum_height=grid.setter('height'))
+
+
+def bind_hold_repeat(btn, on_step, on_finish=None,
+                     delay=_HOLD_REPEAT_DELAY, interval=_HOLD_REPEAT_INTERVAL):
+    """Wire press-and-hold auto-repeat onto a button.
+
+    ``on_step()`` fires once on press and then every ``interval`` seconds
+    for as long as the button stays held, the repeat starting ``delay``
+    seconds after the press. It returns True to keep repeating and False
+    to stop; False from the initial press means no repeat is scheduled at
+    all. ``on_finish()``, when given, runs on release once the repeat is
+    torn down — the caller decides there whether anything actually
+    happened (persisting, refreshing the screen).
+
+    ``interval`` is per-button and belongs at the call site: a step that
+    spends gold wants a slower repeat than a free one. Pass it by keyword
+    so the chosen pace stays readable where the button is built.
+
+    The Clock events live in this closure only; a press that never sees
+    its touch-up (widget rebuilt mid-hold) is cancelled by the next press
+    rather than ticking forever.
+    """
+    state = {"delay_event": None, "hold_event": None}
+
+    def _cancel():
+        for key in ("delay_event", "hold_event"):
+            event = state[key]
+            if event is not None:
+                event.cancel()
+                state[key] = None
+
+    def _tick(_dt):
+        if on_step():
+            return True
+        _cancel()
+        return False
+
+    def _start_repeat(_dt):
+        state["delay_event"] = None
+        state["hold_event"] = Clock.schedule_interval(_tick, interval)
+
+    def _on_press(_inst):
+        _cancel()
+        if not on_step():
+            return
+        state["delay_event"] = Clock.schedule_once(_start_repeat, delay)
+
+    def _on_release(_inst):
+        _cancel()
+        if on_finish is not None:
+            on_finish()
+
+    btn.bind(on_press=_on_press, on_release=_on_release)
 
 
 def _bind_long_tap(widget, callback):

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """ui_helpers._perks_cells — perk tree cards + equip choice popup cells."""
 from ._imports import *  # noqa: F401,F403
 from ._widgets import bind_text_wrap
@@ -99,8 +99,6 @@ class PerkTreePerkCardView(RecycleDataViewBehavior, BoxLayout):
         # (locked/unlockable/unlocked).
         with self.canvas.before:
             self._bg_color = Color(*BG_CARD)
-            self._bg_rect = _RRect = None  # placeholder, assigned via graphics below
-            # We'll use a simple Rectangle via canvas.after for the border.
         # Use a Kivy Line instruction for the 1px border; recolored per state.
         with self.canvas.after:
             self._border_color = Color(*BTN_DISABLED)

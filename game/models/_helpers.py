@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 6
 """models._helpers — Result namedtuple, fmt_num, rarity maps, boss name gen."""
 from ._imports import *  # noqa: F401,F403
 from ._scaling import DifficultyScaler
@@ -36,15 +36,27 @@ def fmt_num(n):
     return f"{n:.0f}"
 
 
-def fmt_def(defense):
-    """Format DEF with damage-reduction percentage: 370 -> '370 (79%)'.
+def defense_mitigation(defense):
+    """Fraction of incoming damage a DEF value absorbs: 0.0 — 1.0.
 
-    Mirrors the combat formula DEF/(DEF+DEFENSE_DIVISOR) so the UI shows
-    what the stat actually translates to in mitigation — a raw DEF number
-    alone is meaningless to players without knowing the divisor.
+    The single definition of the mitigation curve. Named for DEF rather
+    than "damage reduction" because Fighter.damage_reduction is a
+    different, perk-sourced quantity applied on top of this one.
+    battle._resolve inlines the same expression on purpose (hot path,
+    documented there).
     """
-    pct = int(defense / (defense + DEFENSE_DIVISOR) * 100) if defense > 0 else 0
-    return f"{fmt_num(defense)} ({pct}%)"
+    if defense <= 0:
+        return 0.0
+    return defense / (defense + DEFENSE_DIVISOR)
+
+
+def fmt_def(defense):
+    """Format DEF with damage-reduction percentage: 370 -> '370 (78%)'.
+
+    Shows what the stat actually translates to in mitigation — a raw DEF
+    number alone is meaningless to players without knowing the divisor.
+    """
+    return f"{fmt_num(defense)} ({int(defense_mitigation(defense) * 100)}%)"
 
 
 RARITY_COMMON = "common"
@@ -149,7 +161,7 @@ def item_display_name(item_dict):
     return item_dict.get("name", "?")
 
 
-def calc_item_stats(item, fighter=None):
+def calc_item_stats(item):
     """Calculate total (str, agi, vit) for any item."""
     s = item.get("str", 0)
     a = item.get("agi", 0)

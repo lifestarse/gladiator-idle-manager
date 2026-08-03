@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """GameEngine _ForgeMixin — extracted from monolithic engine.py."""
 from game.engine._shared import *  # noqa: F401,F403
 from game.engine._shared import _m, _log, _ach_module
@@ -56,7 +56,10 @@ class _ForgeMixin:
             return Result(False, t("not_in_battle"), "not_in_battle")
         f = self.fighters[fighter_idx]
         if not f.alive:
-            return Result(False, "", "fighter_dead")
+            # Localized like the other player-visible refusals here: the UI
+            # shows result.message in a toast, and an empty message used to
+            # make it fall back to an unrelated "not in battle" text.
+            return Result(False, t("fighter_dead", name=f.name), "fighter_dead")
         item = self.inventory.pop(inv_index)
         old = f.equip_item(dict(item))
         if old:

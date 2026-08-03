@@ -1,13 +1,12 @@
-# Build: 15
+# Build: 16
 """
 Game-wide constants — replaces magic numbers scattered across the codebase.
 
-Naming convention: CATEGORY_NAME, e.g. HEAL_GOLD_PER_HP, BATTLE_AUTO_INTERVAL.
+Naming convention: CATEGORY_NAME, e.g. HP_HEAL_DIVISOR, BATTLE_AUTO_INTERVAL.
 """
 
 # --- Economy ---
 STARTING_GOLD = 100.0
-HEAL_GOLD_PER_HP = 10          # 1 gold heals 10 HP (cost = missing / 10)
 UPGRADE_BONUS_PER_LEVEL = 20   # +20% per upgrade level
 
 # --- Battle ---
@@ -83,6 +82,13 @@ SEVERITY_HEAL_THRESHOLD = {
 
 # --- Shard tiers ---
 SHARD_TIER_COUNT = 5             # tier 1-5
+# Shards handed out when an expedition that carries a shard tier returns.
+# Inclusive range, rolled uniformly; the tier itself comes from SHARD_TIERS.
+EXPEDITION_SHARD_MIN = 1
+EXPEDITION_SHARD_MAX = 10
+# Chance of a second, unrelated injury on a successful return, expressed as a
+# fraction of that expedition's own "danger" value.
+EXPEDITION_EXTRA_INJURY_DANGER_MULT = 0.5
 
 # --- Fighter base stats (models.py) ---
 FIGHTER_BASE_HP = 30             # base HP before vitality/level
@@ -116,7 +122,7 @@ SEVERITY_DEATH_CHANCE = {
 # --- Combat damage (models.py) ---
 DAMAGE_VARIANCE_LOW = 0.70       # min damage roll multiplier
 DAMAGE_VARIANCE_HIGH = 1.30      # max damage roll multiplier
-DEFENSE_DIVISOR = 100            # damage / (1 + def/DIVISOR)
+DEFENSE_DIVISOR = 100            # reduction = def / (def + DIVISOR)
 
 # --- Item passives (game/passives/) ---
 # Definitions live in data/item_passives.json, keyed "<item_id>#<n>". Both

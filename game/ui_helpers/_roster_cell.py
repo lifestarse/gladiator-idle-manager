@@ -1,7 +1,5 @@
-# Build: 5
+# Build: 6
 """ui_helpers._roster_cell — RosterCardView (list row) + callbacks."""
-from kivy.animation import Animation
-
 from game.widgets import PixelBadge
 
 from ._imports import *  # noqa: F401,F403
@@ -204,10 +202,10 @@ class RosterCardView(RecycleDataViewBehavior, CardWidget):
             HP_PLAYER if hp_pct >= HP_MID_THRESHOLD
             else HP_MID if not is_low else HP_ENEMY)
         self._bar.bg_color = list(HP_PLAYER_BG)
-        if not same_fighter:
-            Animation.cancel_all(self._bar, '_display_value')
-            self._bar._display_value = hp_pct
-        self._bar.value = hp_pct
+        if same_fighter:
+            self._bar.value = hp_pct  # animate delta on the same fighter
+        else:
+            self._bar.set_immediate(hp_pct)  # pooled rebind: no ghost anim
         self._hp_lbl.text = fmt_num(cur_hp)
         self._hp_lbl.color = list(ACCENT_RED) if is_low else (1, 0.3, 0.3, 1)
         # Do NOT call super().refresh_view_attrs — it would auto-setattr all data

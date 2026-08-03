@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """ui_helpers._widgets — widget factories: buttons, popups, labels, icons."""
 from ._imports import *  # noqa: F401,F403
 
@@ -114,17 +114,6 @@ def build_tab_row(tabs, current, on_select, active_color=None, inactive_color=No
     return row
 
 
-def _debug_border(widget, color=(1, 0, 0, 1)):
-    from kivy.graphics import Color, Line
-    def _update(*args):
-        widget.canvas.after.clear()
-        with widget.canvas.after:
-            Color(*color)
-            Line(rectangle=(widget.x, widget.y, widget.width, widget.height), width=1)
-    widget.bind(pos=_update, size=_update)
-    return widget
-
-
 def _auto_text_size(label):
     bind_text_wrap(label)
     return label
@@ -152,17 +141,3 @@ def _diamond_label(amount, font_size="12sp", color=ACCENT_CYAN):
     ))
     anchor.add_widget(box)
     return anchor
-
-
-def _icon_label(icon_src, text, color, font_size="11sp", height=dp(28)):
-    """Helper: icon image + label in a horizontal box."""
-    row = BoxLayout(size_hint_y=None, height=height, spacing=0)
-    ico = Image(source=icon_src, fit_mode="contain",
-                size_hint=(None, 1), width=height * 0.8)
-    ico.color = [1, 1, 1, 1]
-    row.add_widget(ico)
-    lbl = AutoShrinkLabel(text=str(text), font_size=font_size, bold=True,
-                color=color, halign="left", valign="middle")
-    lbl.bind(size=lambda w, s: setattr(w, "text_size", s))
-    row.add_widget(lbl)
-    return row

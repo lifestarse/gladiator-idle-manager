@@ -1,7 +1,12 @@
-# Build: 5
-"""ui_helpers._shop — consumable shop grid rendering."""
+# Build: 6
+"""ui_helpers._shop — consumable shop card builder.
+
+refresh_shop_grid() was removed (dead: no kv template defines a `shop_grid`
+id and no screen exposes `items_data`) — see memory/architecture for the
+audit. build_shop_card() is kept: it's part of the public ui_helpers API
+(tests/test_imports.py::test_ui_helpers_public_api) pending a live caller.
+"""
 from ._imports import *  # noqa: F401,F403
-from ._layouts import _batch_fill_grid
 from ._widgets import _auto_text_size
 
 
@@ -37,11 +42,3 @@ def build_shop_card(item, shop_screen):
     card.add_widget(info)
     card.add_widget(buy_btn)
     return card
-
-
-def refresh_shop_grid(shop_screen):
-    grid = shop_screen.ids.get("shop_grid")
-    if not grid:
-        return
-    cards = [build_shop_card(item, shop_screen) for item in shop_screen.items_data]
-    _batch_fill_grid(grid, cards)

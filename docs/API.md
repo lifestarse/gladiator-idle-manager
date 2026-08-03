@@ -782,16 +782,15 @@ fmt_num(42)        # "42"
 
 **Returns:** `str`
 
-#### `calc_item_stats(item, fighter=None)`
+#### `calc_item_stats(item)`
 
-Calculate total `(atk, def, hp)` for any item dict, optionally with fighter-scaled upgrade bonuses.
+Calculate total `(str, agi, vit)` (primary stats) granted by an item dict.
 
-| Parameter | Type           | Description |
-|-----------|----------------|-------------|
-| `item`    | `dict`         | Item dict with atk/def/hp/slot/upgrade_level keys |
-| `fighter` | `Fighter|None` | If provided, upgrade bonuses scale with fighter stats |
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| `item`    | `dict` | Item dict with str/agi/vit keys |
 
-**Returns:** `tuple[int, int, int]` -- `(atk, def, hp)`.
+**Returns:** `tuple[int, int, int]` -- `(str, agi, vit)`.
 
 #### `item_display_name(item_dict)`
 

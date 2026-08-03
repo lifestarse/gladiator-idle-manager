@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 3
 """Achievement condition-checker builder (split from achievements.py)."""
 import logging
 
@@ -90,16 +90,11 @@ def _build_check(condition):
         )
 
     if ctype == "expedition_completed_specific":
-        # Primary: id list maintained by check_expeditions (locale-independent).
-        # Fallback: legacy English log match, so pre-Build-2 saves where the
-        # entry only survives in expedition_log still unlock.
-        return lambda e, v=val: (
-            v in getattr(e, "completed_expedition_ids", [])
-            or any(
-                v.replace("_", " ").lower() in log.lower() and "returned" in log.lower()
-                for log in e.expedition_log
-            )
-        )
+        # Single source of truth: engine.has_completed_expedition —
+        # id list maintained by check_expeditions (locale-independent)
+        # plus the legacy English-log fallback for pre-Build-2 saves.
+        # Story quest ch6_q3 uses the same method.
+        return lambda e, v=val: e.has_completed_expedition(v)
 
     _log.warning("Unknown achievement condition type: %s", ctype)
     return lambda e: False

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """The remote index: what patches exist, at which revision, for which builds.
 
 One small document (a couple of KB) fetched first, so the client can decide
@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import logging
 
-from game.version import version_tuple, APP_VERSION
+from game.version import version_tuple
 
 _log = logging.getLogger(__name__)
 
@@ -174,7 +174,3 @@ def _applies_to_this_build(entry):
         if not bound or this > bound:
             return False
     return True
-
-
-def describe():
-    return f"app {APP_VERSION}, manifest schema {SCHEMA}"

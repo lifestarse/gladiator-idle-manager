@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 6
 """Downloadable language packs.
 
 Only English ships inside the APK. Every other language is a pack the player
@@ -81,6 +81,37 @@ FONT_MAX_BYTES = 8 * 1024 * 1024
 # not reach freetype.
 FONT_MAGIC = (b"\x00\x01\x00\x00", b"OTTO", b"true", b"ttcf")
 
+# Every half-written file in these directories carries this suffix until the
+# rename that publishes it. Anything scanning a directory a writer also uses
+# has to recognise it: a download in progress is not garbage.
+TMP_SUFFIX = ".tmp"
+
+# ------------------------------------------------------------ data-half shape
+#
+# The contract below is what game/data_loader/translationmixin.py reads, and it
+# is closed: the overlay looks at these sections and these fields and nothing
+# else. Enforcing it here is not tidiness — apply_translations() runs inside
+# engine.load(), whose blanket handler quarantines the save when anything
+# raises, so a section of the wrong type would cost the player their progress.
+#
+# Flat sections map an entry id to {field: text}.
+DATA_TEXT_FIELDS = ("name", "desc", "description", "title", "text",
+                    "special_effect")
+DATA_FLAT_SECTIONS = (
+    "weapons", "armor", "accessories", "relics", "achievements", "enemies",
+    "injuries", "expeditions", "lore", "enchantments", "boss_modifiers",
+    "mutators",
+)
+# "classes" is the one nested section: a class carries the same text fields
+# plus two sub-blocks and a map of perks, each of which is {field: text} again.
+DATA_CLASSES_SECTION = "classes"
+DATA_CLASS_BLOCKS = ("passive_ability", "active_skill")
+DATA_CLASS_PERKS = "perks"
+# The longest translated string across the eight shipped packs is 712
+# characters (a lore paragraph), so this is an order of magnitude of headroom
+# and still a bound on what can reach a widget.
+MAX_DATA_TEXT_CHARS = 4000
+
 
 def bundled_dir():
     """data/languages/ inside the app — the read-only files from the APK."""
@@ -118,6 +149,23 @@ def resolve(filename):
     return None
 
 
+def _tmp_path(path):
+    return path.with_suffix(path.suffix + TMP_SUFFIX)
+
+
+def _write_atomic(path, payload):
+    """Write JSON so a reader sees either the old file or the whole new one.
+
+    Every file this module owns goes through here. The player force-kills the
+    game routinely, and a truncated state file is indistinguishable from a
+    corrupt one to the readers above — they fall back to "nothing installed".
+    """
+    tmp = _tmp_path(path)
+    with open(tmp, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, ensure_ascii=False)
+    shutil.move(str(tmp), str(path))
+
+
 REVISIONS_NAME = ".revisions.json"
 
 
@@ -148,8 +196,7 @@ def _record_revision(lang, revision):
         data = _revisions()
         data[lang] = revision
         try:
-            with open(packs_dir() / REVISIONS_NAME, "w", encoding="utf-8") as handle:
-                json.dump(data, handle)
+            _write_atomic(packs_dir() / REVISIONS_NAME, data)
         except OSError as exc:
             # Losing the revision only costs a redundant re-download later.
             _log.warning("[packs] could not record revision for %s: %s", lang, exc)
@@ -187,8 +234,7 @@ def _fonts_state():
 
 def _write_fonts_state(data):
     try:
-        with open(packs_dir() / FONTS_STATE_NAME, "w", encoding="utf-8") as handle:
-            json.dump(data, handle)
+        _write_atomic(packs_dir() / FONTS_STATE_NAME, data)
     except OSError as exc:
         # Losing the mapping only costs a redundant re-download later.
         _log.warning("[packs] could not record font state: %s", exc)
@@ -199,8 +245,12 @@ def _collect_garbage(state):
     referenced = {entry["file"] for entry in state.values()}
     try:
         for path in fonts_dir().iterdir():
-            if path.name not in referenced:
-                path.unlink(missing_ok=True)
+            # A concurrent download writes its bytes here under a .tmp name
+            # before the rename that makes it referenced; deleting that leaves
+            # the download reporting failure for no reason.
+            if path.name.endswith(TMP_SUFFIX) or path.name in referenced:
+                continue
+            path.unlink(missing_ok=True)
     except OSError as exc:
         _log.warning("[packs] could not tidy the font store: %s", exc)
 
@@ -290,7 +340,7 @@ def ensure_font(lang, base_url, entry, on_progress=None):
         _log.warning("[packs] %s is not a font file — rejected", font["path"])
         return False
     target = fonts_dir() / filename
-    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp = _tmp_path(target)
     try:
         tmp.write_bytes(body)
         shutil.move(str(tmp), str(target))
@@ -365,6 +415,96 @@ def remove(lang):
     return removed
 
 
+def _clean_text_fields(entry):
+    """{field: text} for the fields the overlay reads, or None.
+
+    None means the entry does not obey the contract — it is not a mapping, or
+    one of the fields it does carry is not a string of sane length.
+    """
+    if not isinstance(entry, dict):
+        return None
+    fields = {}
+    for field in DATA_TEXT_FIELDS:
+        if field not in entry:
+            continue
+        text = entry[field]
+        if not isinstance(text, str) or len(text) > MAX_DATA_TEXT_CHARS:
+            return None
+        fields[field] = text
+    return fields
+
+
+def _clean_flat_section(entries):
+    """{entry_id: {field: text}} for one flat section, or None."""
+    if not isinstance(entries, dict):
+        return None
+    clean = {}
+    for entry_id, entry in entries.items():
+        fields = _clean_text_fields(entry)
+        if fields is None:
+            return None
+        clean[entry_id] = fields
+    return clean
+
+
+def _clean_classes_section(entries):
+    """{class_id: {...}} for the nested classes section, or None."""
+    if not isinstance(entries, dict):
+        return None
+    clean = {}
+    for class_id, entry in entries.items():
+        fields = _clean_text_fields(entry)
+        if fields is None:
+            return None
+        for block in DATA_CLASS_BLOCKS:
+            if block not in entry:
+                continue
+            block_fields = _clean_text_fields(entry[block])
+            if block_fields is None:
+                return None
+            fields[block] = block_fields
+        if DATA_CLASS_PERKS in entry:
+            perks = _clean_flat_section(entry[DATA_CLASS_PERKS])
+            if perks is None:
+                return None
+            fields[DATA_CLASS_PERKS] = perks
+        clean[class_id] = fields
+    return clean
+
+
+def validate_data(data):
+    """Return the translatable half of a pack, restricted to the contract, or None.
+
+    None means the payload is not shaped like a data document at all, and the
+    pack must be refused whole: the overlay would raise inside engine.load(),
+    where an exception costs the player their save rather than their subtitles.
+
+    Sections this build does not read are DROPPED, not refused. A pack
+    published for a newer build has to stay installable on an older one, which
+    is the same rule the UI half follows for keys it does not know.
+    """
+    if not isinstance(data, dict):
+        return None
+    clean, unknown = {}, []
+    for section, entries in data.items():
+        if section in DATA_FLAT_SECTIONS:
+            cleaned = _clean_flat_section(entries)
+        elif section == DATA_CLASSES_SECTION:
+            cleaned = _clean_classes_section(entries)
+        else:
+            unknown.append(section)
+            continue
+        if cleaned is None:
+            _log.warning("[packs] data section %r does not obey the "
+                         "translation contract", section)
+            return None
+        clean[section] = cleaned
+    if unknown:
+        _log.info("[packs] data sections not read by this build, dropped: %s",
+                  ", ".join(str(name) for name in unknown))
+    return clean
+
+
 def validate_pack(payload, lang):
     """Return (ui, data) when the payload is a usable pack, else (None, None).
 
@@ -372,11 +512,19 @@ def validate_pack(payload, lang):
     patch path uses: same key universe, same placeholders, same markup. A pack
     that fails wholesale is not installed — the player keeps English, which
     works, instead of a screen of broken format strings.
+
+    The data half is checked against the contract its only consumer imposes
+    (see DATA_FLAT_SECTIONS above) and comes back reduced to it, so what
+    install() writes to disk cannot make the overlay raise.
     """
     if not isinstance(payload, dict) or payload.get("lang") != lang:
         return None, None
     ui, data = payload.get("ui"), payload.get("data")
-    if not isinstance(ui, dict) or not isinstance(data, dict):
+    if not isinstance(ui, dict):
+        return None, None
+    data = validate_data(data)
+    if data is None:
+        _log.warning("[packs] %s rejected: malformed data half", lang)
         return None, None
 
     reference_path = os.path.join(bundled_dir(), "en.json")
@@ -391,9 +539,10 @@ def validate_pack(payload, lang):
     # A pack is a whole language, not a patch: losing a slice of it means the
     # player reads that slice in English with no indication why. Demand that
     # the overwhelming majority survives, and log what did not.
-    if len(accepted) < len(languages_reference_leaves(reference)) * 0.9:
+    reference_leaves = languages_reference_leaves(reference)
+    if len(accepted) < len(reference_leaves) * 0.9:
         _log.warning("[packs] %s rejected: only %d of %d strings valid (e.g. %s)",
-                     lang, len(accepted), len(reference),
+                     lang, len(accepted), len(reference_leaves),
                      list(rejected.items())[:3])
         return None, None
     if rejected:
@@ -404,13 +553,6 @@ def validate_pack(payload, lang):
 def languages_reference_leaves(reference):
     from game.localization import flatten
     return flatten(reference)
-
-
-def _write_atomic(path, payload):
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    with open(tmp, "w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False)
-    shutil.move(str(tmp), str(path))
 
 
 def install(lang, payload, revision=None):

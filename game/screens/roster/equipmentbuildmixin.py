@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """_EquipmentBuildMixin — fighter detail equipment-slot rendering.
 
 Split from fighterbuildmixin.py to keep both files under the 10KB src
@@ -21,13 +21,6 @@ class _EquipmentBuildMixin:
         """
         from game.slots import SLOTS
         from game.localization import t as tr
-
-        seen_relic_ids = set()
-        inv_relics = []
-        for inv_item in engine.inventory:
-            if inv_item.get("slot") == "relic" and inv_item.get("id") not in seen_relic_ids:
-                inv_relics.append(inv_item)
-                seen_relic_ids.add(inv_item.get("id"))
 
         for slot, icon_src in [
             ("weapon", "icons/ic_weapon.png"),

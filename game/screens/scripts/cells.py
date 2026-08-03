@@ -1,4 +1,4 @@
-# Build: 2
+# Build: 4
 """Inline-editable cells for the Scratch-style script editor.
 
 The whole point of this module is to KILL the popup chain. Before, editing a
@@ -16,22 +16,8 @@ Public widgets:
     BlockCard         — one Statement node with all its parameters inline
 """
 from __future__ import annotations
-from typing import Callable
 
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.spinner import Spinner
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.metrics import dp
-from kivy.graphics import Color, Rectangle
-
-from game.localization import t
-from game.theme import (
-    BTN_PRIMARY, ACCENT_GOLD, ACCENT_RED, TEXT_PRIMARY, BG_DARK,
-)
-from game.widgets import MinimalButton, SafeTextInput as TextInput
-from game.widgets._scroll import ScrollSafeButtonMixin
-
+from ._screen_imports import *  # noqa: F401,F403
 from game.scripting.ast_nodes import (
     Statement, Expression,
     If, While, ForEach, Assign, Action, Break, Continue,
@@ -44,48 +30,7 @@ from game.scripting.builtins import (
     BUILTIN_FIELDS, BUILTIN_ENGINE_FIELDS, BUILTIN_CALLS, BUILTIN_ACTIONS,
 )
 from game.scripting import labels as L
-from .blocks import expr_str, summarize
-
-
-# ---------- shared visual helpers ----------
-
-# Colour of the expanded-picker background (slightly lighter than card bg)
-PICKER_BG    = (0.16, 0.16, 0.20, 1)
-PILL_BG      = (0.20, 0.20, 0.26, 1)
-PILL_BG_HOT  = (0.28, 0.28, 0.36, 1)   # hover/expanded
-SUB_LABEL    = (0.70, 0.75, 0.85, 1)
-
-
-def _bg(widget, color):
-    """Paint a rectangle that follows `widget.pos`/`widget.size` as the canvas bg."""
-    with widget.canvas.before:
-        Color(*color)
-        widget._bg_rect = Rectangle(pos=widget.pos, size=widget.size)
-    widget.bind(
-        pos=lambda *_: setattr(widget._bg_rect, "pos", widget.pos),
-        size=lambda *_: setattr(widget._bg_rect, "size", widget.size),
-    )
-
-
-def _section_label(text_, h=22):
-    l = Label(
-        text=text_, size_hint_y=None, height=dp(h),
-        font_size="11sp", color=SUB_LABEL,
-        halign="left", valign="middle",
-    )
-    l.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
-    return l
-
-
-def _pill_button(text_, on_release, color=None, h=32, padding=(8, 2)):
-    """Compact tappable pill used inside the inline editor."""
-    b = MinimalButton(
-        text=text_, size_hint_y=None, height=dp(h), font_size=12,
-        btn_color=color or BTN_PRIMARY,
-        text_color=BG_DARK if color is ACCENT_GOLD else TEXT_PRIMARY,
-    )
-    b.bind(on_release=lambda *_: on_release())
-    return b
+from .blocks import expr_str, summarize, default_writable_fighter_field
 
 
 # ---------- enum / source / trigger pickers ----------
@@ -97,26 +42,42 @@ class EnumPicker(BoxLayout):
     Tapping a pill commits immediately via the on_pick callback. No popup,
     no spinner — at this scale the row of pills is faster than a dropdown and
     keeps the surrounding context visible.
+
+    ``_render`` is the ONLY source of pill text and it runs again on every
+    pick, so a caller that patches ``child.text`` from outside loses its
+    labels on the first tap. Options whose captions are symbols rather than
+    words ("123", '"abc"') pass ``translate=False`` and put the literal
+    caption in ``label_map``.
     """
 
     def __init__(self, options: tuple[str, ...], label_map: dict[str, str],
-                 current: str, on_pick: Callable[[str], None], **kw):
+                 current: str, on_pick: Callable[[str], None],
+                 *, translate: bool = True, **kw):
         super().__init__(orientation="horizontal", size_hint_y=None,
                           height=dp(32), spacing=dp(4), **kw)
         self._options = options
         self._label_map = label_map
         self._current = current
         self._on_pick = on_pick
+        self._translate = translate
         self._render()
+
+    @property
+    def current(self) -> str:
+        """The option currently selected."""
+        return self._current
+
+    def _label_for(self, opt: str) -> str:
+        label = self._label_map.get(opt, opt)
+        return t(label) if self._translate else label
 
     def _render(self):
         self.clear_widgets()
         for opt in self._options:
             is_cur = (opt == self._current)
             color = ACCENT_GOLD if is_cur else BTN_PRIMARY
-            label_key = self._label_map.get(opt, opt)
-            self.add_widget(_pill_button(
-                t(label_key),
+            self.add_widget(_btn(
+                self._label_for(opt),
                 lambda o=opt: self._pick(o),
                 color=color, h=28,
             ))
@@ -143,7 +104,7 @@ class TriggerPicker(BoxLayout):
         self.clear_widgets()
         for trig in L.TRIGGER_ORDER:
             color = ACCENT_GOLD if trig == self._current else BTN_PRIMARY
-            self.add_widget(_pill_button(
+            self.add_widget(_btn(
                 t(L.TRIGGER_LABELS[trig]),
                 lambda x=trig: self._pick(x),
                 color=color, h=30,
@@ -158,6 +119,24 @@ class TriggerPicker(BoxLayout):
 
 
 # ---------- expression cell ----------
+
+# Fixed pill widths (dp). The operator pill is pinned so its label is never
+# squeezed by a long operand next to it; the filter and "+ arg" handles are
+# pinned so they read as handles rather than as full-width rows.
+OP_PILL_W = 50
+FILTER_BTN_W = 140
+ADD_ARG_BTN_W = 80
+ICON_BTN_W = 28
+
+# Literal captions for the constant-type picker. These are symbols, not
+# words — they read the same in every locale, so they bypass t() via
+# EnumPicker(translate=False) instead of carrying nine identical JSON entries.
+CONST_TYPE_LABELS: dict[str, str] = {
+    "int":  "123",
+    "bool": "✓/✗",
+    "str":  '"abc"',
+}
+CONST_TYPE_ORDER = ("int", "bool", "str")
 
 # Categories shown in the expression picker. Order matches the picker rows.
 EXPR_CATS: tuple[tuple[str, str], ...] = (
@@ -231,9 +210,9 @@ class ExpressionCell(BoxLayout):
         if isinstance(self._expr, (BinOp, UnaryOp)):
             self._render_compound()
             return
-        pill = _pill_button(expr_str(self._expr),
-                            on_release=self._toggle_picker,
-                            color=BTN_PRIMARY, h=32)
+        pill = _btn(expr_str(self._expr),
+                    on_press=self._toggle_picker,
+                    color=BTN_PRIMARY, h=32)
         self.add_widget(pill)
 
     def _render_compound(self):
@@ -261,13 +240,11 @@ class ExpressionCell(BoxLayout):
                 lambda new: self._update_binop_lhs(new),
                 allow_op=False, size_hint_x=1,
             ))
-            op_pill = _pill_button(
+            op_pill = _btn(
                 t(L.OP_LABELS.get(self._expr.op, self._expr.op)),
-                on_release=self._open_op_picker,
-                color=ACCENT_GOLD, h=32,
+                on_press=self._open_op_picker,
+                color=ACCENT_GOLD, w=OP_PILL_W, h=32,
             )
-            op_pill.size_hint_x = None
-            op_pill.width = dp(50)
             row.add_widget(op_pill)
             row.add_widget(ExpressionCell(
                 self._expr.rhs,
@@ -275,13 +252,11 @@ class ExpressionCell(BoxLayout):
                 allow_op=False, size_hint_x=1,
             ))
         elif isinstance(self._expr, UnaryOp):
-            op_pill = _pill_button(
+            op_pill = _btn(
                 t(L.UNARY_OP_LABELS.get(self._expr.op, self._expr.op)),
-                on_release=self._open_op_picker,
-                color=ACCENT_GOLD, h=32,
+                on_press=self._open_op_picker,
+                color=ACCENT_GOLD, w=OP_PILL_W, h=32,
             )
-            op_pill.size_hint_x = None
-            op_pill.width = dp(50)
             row.add_widget(op_pill)
             row.add_widget(ExpressionCell(
                 self._expr.operand,
@@ -343,7 +318,7 @@ class ExpressionCell(BoxLayout):
             font_size="12sp", color=TEXT_PRIMARY, bold=True,
             halign="left", valign="middle",
         )
-        header_lbl.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+        _bind_wrap(header_lbl)
         header.add_widget(header_lbl)
         close = MinimalButton(
             text="", icon_source="icons/ic_close.png",
@@ -387,8 +362,8 @@ class ExpressionCell(BoxLayout):
         op field directly when the user picks a new one."""
         self._open = True
         self.clear_widgets()
-        self.add_widget(_pill_button(
-            expr_str(self._expr), on_release=self._render_compound,
+        self.add_widget(_btn(
+            expr_str(self._expr), on_press=self._render_compound,
             color=PILL_BG_HOT, h=32,
         ))
         body = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(2))
@@ -404,9 +379,9 @@ class ExpressionCell(BoxLayout):
                                      spacing=dp(2))
             for i, op in enumerate(L.OP_ORDER):
                 color = ACCENT_GOLD if op == self._expr.op else BTN_PRIMARY
-                current_row.add_widget(_pill_button(
+                current_row.add_widget(_btn(
                     t(L.OP_LABELS[op]),
-                    on_release=lambda o=op: self._set_binop_op(o),
+                    on_press=lambda o=op: self._set_binop_op(o),
                     color=color, h=28,
                 ))
                 if (i + 1) % 5 == 0:
@@ -422,9 +397,9 @@ class ExpressionCell(BoxLayout):
                              height=dp(30), spacing=dp(2))
             for op in ("not", "-"):
                 color = ACCENT_GOLD if op == self._expr.op else BTN_PRIMARY
-                row.add_widget(_pill_button(
+                row.add_widget(_btn(
                     t(L.UNARY_OP_LABELS[op]),
-                    on_release=lambda o=op: self._set_unary_op(o),
+                    on_press=lambda o=op: self._set_unary_op(o),
                     color=color, h=28,
                 ))
             body.add_widget(row)
@@ -465,21 +440,18 @@ class ExpressionCell(BoxLayout):
 
     def _cat_value(self):
         cur_val = getattr(self._expr, "value", 0) if isinstance(self._expr, Const) else 0
-        # Type pills
+        # Type pills. bool before int: bool IS an int in Python, so testing
+        # int first would classify True as an integer.
         type_pick = EnumPicker(
-            options=("int", "bool", "str"),
-            label_map={"int": "scr_inline_done", "bool": "scr_inline_done", "str": "scr_inline_done"},
-            # We override labels manually so no JSON key is needed for the
-            # raw type tags.
+            options=CONST_TYPE_ORDER,
+            label_map=CONST_TYPE_LABELS,
             current=("bool" if isinstance(cur_val, bool)
                      else "int" if isinstance(cur_val, int)
                      else "str"),
             on_pick=lambda t_: self._value_change(type_=t_),
+            translate=False,
         )
-        # Replace localized labels with raw type tags (they're symbols, not text)
-        for child, opt in zip(type_pick.children[::-1], type_pick._options):
-            child.text = {"int": "123", "bool": "✓/✗", "str": '"abc"'}[opt]
-        self._body.add_widget(_section_label("Type:"))
+        self._body.add_widget(_section_label(t("scr_expr_type")))
         self._body.add_widget(type_pick)
         # Value text field
         self._body.add_widget(_section_label(t("scr_pick_value")))
@@ -488,7 +460,7 @@ class ExpressionCell(BoxLayout):
         ti.bind(text=lambda *_: self._value_change(text=ti.text))
         self._body.add_widget(ti)
         self._value_text = ti
-        self._value_type = type_pick._current
+        self._value_type = type_pick.current
 
     def _value_change(self, type_: str | None = None, text: str | None = None):
         if type_ is not None:
@@ -612,14 +584,14 @@ class ExpressionCell(BoxLayout):
         self._body.add_widget(msg)
         row = BoxLayout(orientation="horizontal", size_hint_y=None,
                          height=dp(36), spacing=dp(4))
-        row.add_widget(_pill_button(
+        row.add_widget(_btn(
             "a " + t(L.OP_LABELS[">="]) + " b",
-            on_release=lambda: self._wrap_binop(">="),
+            on_press=lambda: self._wrap_binop(">="),
             color=ACCENT_GOLD, h=32,
         ))
-        row.add_widget(_pill_button(
+        row.add_widget(_btn(
             t(L.UNARY_OP_LABELS["not"]) + " a",
-            on_release=lambda: self._wrap_unary("not"),
+            on_press=lambda: self._wrap_unary("not"),
             color=ACCENT_GOLD, h=32,
         ))
         self._body.add_widget(row)
@@ -668,12 +640,10 @@ class ExpressionCell(BoxLayout):
                 lambda new, idx=i: self._update_call_arg(idx, new),
                 allow_op=False,
             ))
-        plus = _pill_button(
-            "+ arg", on_release=lambda: self._call_add_arg(),
-            color=BTN_PRIMARY, h=28,
+        plus = _btn(
+            "+ arg", on_press=lambda: self._call_add_arg(),
+            color=BTN_PRIMARY, w=ADD_ARG_BTN_W, h=28,
         )
-        plus.size_hint_x = None
-        plus.width = dp(80)
         args_box.add_widget(plus)
         self._body.add_widget(args_box)
         self._call_args = args_now
@@ -701,7 +671,19 @@ class BlockCard(BoxLayout):
     The card shows a coloured stripe (category), a TAG (IF/FOR/DO/...), and
     an inline parameter editor below the title row — NO popup. Reorder/delete
     live in the right-edge buttons.
+
+    ``_build`` is re-entrant: it is called from five places whenever an edit
+    changes what the card has to show. Everything it touches therefore has to
+    be rebuildable — which is why the canvas background is created once in
+    ``__init__`` and only recoloured here, rather than appended to
+    ``canvas.before`` per rebuild (``clear_widgets`` does not touch the
+    canvas, so that would stack rectangles and pos/size observers without
+    bound).
     """
+
+    STRIPE_W = 4
+    TAG_W = 48
+    HANDLE_W = 32
 
     def __init__(self, node: Statement, depth: int,
                  *, on_change: Callable[[Statement], None],
@@ -717,44 +699,41 @@ class BlockCard(BoxLayout):
         self._on_change = on_change
         self._on_delete = on_delete
         self._on_move = on_move
+        with self.canvas.before:
+            Color(*BG_CARD)
+            self._bg_base = Rectangle(pos=self.pos, size=self.size)
+            self._tint = Color(1, 1, 1, CARD_TINT_ALPHA)
+            self._bg_tint = Rectangle(pos=self.pos, size=self.size)
+        self.bind(pos=self._resync_bg, size=self._resync_bg)
         self._build()
+
+    def _resync_bg(self, *_):
+        for rect in (self._bg_base, self._bg_tint):
+            rect.pos = self.pos
+            rect.size = self.size
 
     def _build(self):
         self.clear_widgets()
-        cat = L.category_of(self._node)
-        col = L.CATEGORY_COLORS[cat]
-        # Tinted background
-        with self.canvas.before:
-            Color(0.10, 0.10, 0.13, 1)
-            self._bg1 = Rectangle(pos=self.pos, size=self.size)
-            Color(col[0], col[1], col[2], 0.10)
-            self._bg2 = Rectangle(pos=self.pos, size=self.size)
-        def _resync(*_):
-            self._bg1.pos = self.pos; self._bg1.size = self.size
-            self._bg2.pos = self.pos; self._bg2.size = self.size
-        self.bind(pos=_resync, size=_resync)
+        col = L.CATEGORY_COLORS[L.category_of(self._node)]
+        self._tint.rgba = (col[0], col[1], col[2], CARD_TINT_ALPHA)
 
         # Title row: TAG + summary + reorder buttons
         title = BoxLayout(orientation="horizontal", size_hint_y=None,
                           height=dp(32), spacing=dp(4))
         # Vertical stripe
-        stripe = BoxLayout(size_hint_x=None, width=dp(4))
-        with stripe.canvas.before:
-            Color(*col)
-            stripe._rect = Rectangle(pos=stripe.pos, size=stripe.size)
-        stripe.bind(pos=lambda *_: setattr(stripe._rect, "pos", stripe.pos),
-                    size=lambda *_: setattr(stripe._rect, "size", stripe.size))
+        stripe = BoxLayout(size_hint_x=None, width=dp(self.STRIPE_W))
+        _bg(stripe, col)
         title.add_widget(stripe)
         # TAG
-        tag = Label(text=self._tag_text(), size_hint_x=None, width=dp(48),
+        tag = Label(text=self._tag_text(), size_hint_x=None, width=dp(self.TAG_W),
                      font_size="11sp", bold=True, color=col,
                      halign="center", valign="middle")
-        tag.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+        _bind_wrap(tag)
         title.add_widget(tag)
         # Summary
         summary = Label(text=summarize(self._node), font_size="12sp",
                          halign="left", valign="middle")
-        summary.bind(size=lambda s, *_: setattr(s, "text_size", s.size))
+        _bind_wrap(summary)
         title.add_widget(summary)
         # Move up / down / delete — use PNG icons because PixelFont has no
         # arrow / cross glyphs (they'd render as "?" boxes otherwise).
@@ -764,7 +743,7 @@ class BlockCard(BoxLayout):
             ("icons/ic_close.png", lambda: self._on_delete()),
         ):
             b = MinimalButton(text="", icon_source=icon_src,
-                                size_hint_x=None, width=dp(32),
+                                size_hint_x=None, width=dp(self.HANDLE_W),
                                 size_hint_y=None, height=dp(28),
                                 btn_color=BTN_PRIMARY,
                                 text_color=TEXT_PRIMARY)
@@ -831,25 +810,19 @@ class BlockCard(BoxLayout):
                     n.where,
                     lambda new: (setattr(n, "where", new), self._on_change(n)),
                 ))
-                rm = _pill_button(
+                self.add_widget(_btn(
                     t("scr_block_remove_where"),
-                    on_release=lambda: (setattr(n, "where", None),
-                                         self._on_change(n), self._build()),
-                    color=ACCENT_RED, h=28,
-                )
-                rm.size_hint_x = None
-                rm.width = dp(140)
-                self.add_widget(rm)
+                    on_press=lambda: (setattr(n, "where", None),
+                                       self._on_change(n), self._build()),
+                    color=ACCENT_RED, w=FILTER_BTN_W, h=28,
+                ))
             else:
-                add = _pill_button(
+                self.add_widget(_btn(
                     "+ " + t("scr_block_filter"),
-                    on_release=lambda: (setattr(n, "where", Const(True)),
-                                         self._on_change(n), self._build()),
-                    color=BTN_PRIMARY, h=28,
-                )
-                add.size_hint_x = None
-                add.width = dp(140)
-                self.add_widget(add)
+                    on_press=lambda: (setattr(n, "where", Const(True)),
+                                       self._on_change(n), self._build()),
+                    color=BTN_PRIMARY, w=FILTER_BTN_W, h=28,
+                ))
         elif isinstance(n, Assign):
             self._add_assign_params(n)
         elif isinstance(n, Action):
@@ -869,9 +842,9 @@ class BlockCard(BoxLayout):
             ("fighter_field",  t("scr_btn_assign_field")),
         ):
             color = ACCENT_GOLD if kind == n.target_kind else BTN_PRIMARY
-            row.add_widget(_pill_button(
+            row.add_widget(_btn(
                 label,
-                on_release=lambda k=kind: self._set_assign_kind(n, k),
+                on_press=lambda k=kind: self._set_assign_kind(n, k),
                 color=color, h=30,
             ))
         self.add_widget(row)
@@ -936,7 +909,7 @@ class BlockCard(BoxLayout):
             n.name = "counter"
             n.fighter = None
         elif kind == "fighter_field":
-            n.name = next(iter(WRITABLE_FIGHTER_FIELDS), "is_active")
+            n.name = default_writable_fighter_field()
             n.fighter = LocalVar("f")
         self._on_change(n)
         self._build()
@@ -949,16 +922,16 @@ class BlockCard(BoxLayout):
         # a side-effect-free callback.
         cur_meta = L.ACTION_META.get(n.name, {})
         label = t(cur_meta.get("label", n.name)) if cur_meta else n.name
-        available = cur_meta.get("available", True) if cur_meta else True
+        available = L.is_action_available(n.name) if cur_meta else True
         if not available:
             # In the card itself, the action name pill keeps its accent colour
             # (so it's still clearly the editable handle), but we append the
             # short unavailable tag inline so the user spots it at a glance
             # without opening the picker.
             label = label + "  " + t("scr_act_unavailable")
-        pill = _pill_button(
+        pill = _btn(
             label,
-            on_release=lambda: self._open_action_picker(n),
+            on_press=lambda: self._open_action_picker(n),
             color=ACCENT_GOLD, h=32,
         )
         self.add_widget(pill)
@@ -969,11 +942,10 @@ class BlockCard(BoxLayout):
             warn = Label(
                 text="[!] " + t("scr_act_unavailable_long"),
                 size_hint_y=None, height=dp(36), font_size="10sp",
-                color=(0.95, 0.78, 0.40, 1),
+                color=ACCENT_AMBER,
                 halign="left", valign="middle",
             )
-            warn.bind(size=lambda s, *_: setattr(
-                s, "text_size", (s.width - dp(8), s.height)))
+            _bind_wrap(warn, WRAP_INSET_DP)
             self.add_widget(warn)
         # Per-arg editors
         meta = L.ACTION_META.get(n.name, {})
@@ -1044,6 +1016,5 @@ class BlockCard(BoxLayout):
         n.args = default_action_args(new_name)
         self._on_change(n)
         # Rebuild the card: the name pill and per-arg editors still show
-        # the previous action otherwise (same pattern as _set_assign_kind).
-        self._build()
+        # the previous action otherwise.
         self._build()

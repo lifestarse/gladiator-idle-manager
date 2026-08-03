@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """
 Story campaign — narrative chapters with tutorial integrated.
 
@@ -241,9 +241,10 @@ STORY_CHAPTERS = [
              "reward": {"shards": {5: 10}}},
             {"id": "ch6_q3", "name": "Void Walker",
              "desc": "Return from the Void Rift",
-             "check": lambda e: any(
-                 "Void Rift" in log and "returned" in log
-                 for log in e.expedition_log),
+             # Fact-of-event check, NOT a log-text match: expedition_log is
+             # localized (t("expedition_returned", ...)), so substring
+             # matching only ever worked in English.
+             "check": lambda e: e.has_completed_expedition("void_rift"),
              "reward": {"diamonds": 200}},
             {"id": "ch6_q4", "name": "Immortal",
              "desc": "Train a fighter to Lv.30",

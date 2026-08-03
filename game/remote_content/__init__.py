@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 5
 """Remote content overlay — ship text and balance fixes without a Play release.
 
 WHAT THIS IS NOT: a code updater. Nothing here downloads or executes Python.
@@ -229,6 +229,15 @@ def refresh_manifest(force=False):
     manifest = _http.fetch_json(MANIFEST_URL, max_bytes=MANIFEST_MAX_BYTES)
     if manifest is None:
         return _cache.read(MANIFEST_CACHE) is not None
+    # Validate before caching, not just before reading — the same rule the
+    # balance branch of sync() follows. One malformed publish (or a schema bump
+    # this build cannot read) makes validate() return nothing for every client
+    # at once, and overwriting the cache with it would empty the picker and
+    # stop pack updates until the next good publish reaches each device.
+    if not _manifest.validate(manifest):
+        _log.warning("[remote] fetched manifest has no usable entries — "
+                     "keeping the cached one")
+        return _cache.read(MANIFEST_CACHE) is not None
     _cache.write(MANIFEST_CACHE, manifest)
     return True
 
@@ -250,7 +259,7 @@ def download_pack(lang, on_progress=None):
     return packs.download(lang, BASE_URL, entry, on_progress=on_progress)
 
 
-def sync(lang_code, force=False):
+def sync(force=False):
     """Fetch whatever is stale. Blocking — call from a worker thread.
 
     Writes to the cache only; nothing here touches live game state. Returns the
@@ -316,18 +325,18 @@ def sync(lang_code, force=False):
     return refreshed
 
 
-def sync_async(lang_code):
+def sync_async():
     """Warm the cache on a daemon thread. Never blocks startup."""
     if not REMOTE_CONTENT_ENABLED:
         return None
-    thread = threading.Thread(target=_sync_quietly, args=(lang_code,),
+    thread = threading.Thread(target=_sync_quietly,
                               name="remote-content-sync", daemon=True)
     thread.start()
     return thread
 
 
-def _sync_quietly(lang_code):
+def _sync_quietly():
     try:
-        sync(lang_code)
+        sync()
     except Exception as exc:  # noqa: BLE001 - a worker thread must not crash the app
         _log.warning("[remote] background sync failed: %s", exc)

@@ -1,4 +1,4 @@
-# Build: 4
+# Build: 5
 """DataLoader core."""
 from ._shared import *  # noqa: F401,F403
 from ._shared import _data_dir, _log
@@ -42,6 +42,12 @@ class DataLoader(_LoadMethodsMixin, _TranslationMixin):
         # slot charter, and it must see numbers AFTER the balance overlay below.
         self._item_passives = self._load_keyed(base, "item_passives.json",
                                                "passives")
+        self._mutators = self._load_keyed(base, "mutators.json", "mutators")
+        # Must be read BEFORE the overlay below: the overlay patches whatever
+        # list self._expeditions holds at call time, and __new__ seeds it with
+        # an empty placeholder — loading it after the overlay would silently
+        # drop every expeditions patch into that discarded placeholder.
+        self._expeditions = self._load_list(base, "expeditions.json", "expeditions")
 
         # Balance overlay goes here: after every raw file is read, before the
         # tier indexes are derived from them. Patching an enemy's tier has to
@@ -58,8 +64,6 @@ class DataLoader(_LoadMethodsMixin, _TranslationMixin):
         self._normals_by_tier, self._bosses_by_tier = self._split_enemies(
             self._enemies_by_tier
         )
-        self._mutators = self._load_keyed(base, "mutators.json", "mutators")
-        self._expeditions = self._load_list(base, "expeditions.json", "expeditions")
 
         self._loaded = True
         _log.info("[DataLoader] All data loaded successfully")

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Fighter _FighterEquipMixin — equip/unequip + item stat totals."""
 from ._imports import *  # noqa: F401,F403
 from ._helpers import *  # noqa: F401,F403
@@ -6,20 +6,6 @@ from ._scaling import DifficultyScaler
 
 
 class _FighterEquipMixin:
-    def _relic_bonus(self, stat):
-        """Relic upgrade bonus for str/agi/vit: equal split."""
-        item = self.equipment.get("relic")
-        if not item:
-            return 0
-        return item.get(stat, 0)
-
-    def item_total_stats(self, slot):
-        """Return total (str, agi, vit) an equipped item gives."""
-        item = self.equipment.get(slot)
-        if not item:
-            return 0, 0, 0
-        return item.get("str", 0), item.get("agi", 0), item.get("vit", 0)
-
     def _equip_stat(self, stat):
         """Sum base equipment stats only (no upgrade bonuses).
 

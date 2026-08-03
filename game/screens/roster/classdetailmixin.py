@@ -1,4 +1,4 @@
-# Build: 1
+# Build: 2
 """_ClassDetailMixin — split off to keep file under 10KB."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -165,7 +165,7 @@ class _ClassDetailMixin:
                                     padding=[dp(10), dp(6)], spacing=dp(2))
                     card.border_color = BTN_DISABLED
                     perk_name_lbl = AutoShrinkLabel(
-                        text=f"{perk['name']}  ({perk['cost']} pts)",
+                        text=f"{perk['name']}  ({t('pts_label', n=perk['cost'])})",
                         font_size="10sp", bold=True, color=TEXT_PRIMARY,
                         halign="left", size_hint_y=None, height=dp(18),
                     )

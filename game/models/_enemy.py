@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """models._enemy — Enemy & Boss: from_template + tier scaling."""
 from ._imports import *  # noqa: F401,F403
 from ._helpers import *  # noqa: F401,F403
@@ -52,8 +52,11 @@ class Enemy(CombatUnit):
         rsm = ROLE_STAT_MULT.get(role, {})
         bm = STAT_BIAS_MULT.get(bias, {})
 
+        # Stat pipeline (see CLAUDE.md): ATK derives from str, DEF and HP both
+        # derive from vit — same as fighters, where DEF = total_vitality + ...
+        # and max_HP = vit * FIGHTER_HP_PER_VIT + ... ('agi' feeds dodge, not DEF).
         enemy.attack = int(base_atk * rm * rsm.get("str", 1.0) * bm.get("str", 1.0))
-        enemy.defense = int(base_def * rm * rsm.get("agi", 1.0) * bm.get("agi", 1.0))
+        enemy.defense = int(base_def * rm * rsm.get("vit", 1.0) * bm.get("vit", 1.0))
         enemy.max_hp = int(base_hp * rm * rsm.get("vit", 1.0) * bm.get("vit", 1.0))
         enemy.hp = enemy.max_hp
         enemy.gold_reward = DifficultyScaler.enemy_reward(tier)
