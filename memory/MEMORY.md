@@ -15,6 +15,7 @@
 - [Циклы импортов](architecture/import-cycles.md) — 3 из 4 разорваны, `localization ↔ remote_content` намеренный; ловушка: импорт сабмодуля НЕ развязывает с пакетом (родительский `__init__` выполняется целиком)
 - [Сигналы codemap](architecture/codemap-signals.md) — чему в codemap верить нельзя: `# Build: N` не счётчик правок (наследуется при сплите), `from . import X` рождает фантомные циклы, «неупомянутый» артефакт может грузиться вычисляемым путём
 - [Аудит 2026-07-24](architecture/audit-2026-07-24.md) — открыто: ротация пароля keystore (утёк в историю), валидация IAP/лидербордов, broad except; billing/реклама/UMP закрыты
+- [Мутаторы спят](architecture/mutators-dormant.md) — 20 мутаторов и game/mutators.py ждут prestige-систему (в коде её нет); решение юзера: не подключать и не выпиливать; аудит кода 2026-08-03 закрыт (scratch/audit_report.md)
 
 ## i18n
 - [Переводы данных + гейт](i18n/i18n-data-translations.md) — 8 языков, конвейер scripts/i18n_tool.py; гейт test_i18n_data_quality.py (13 правил) против подделок — НЕ ослаблять
