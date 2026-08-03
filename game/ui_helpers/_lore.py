@@ -1,14 +1,14 @@
-# Build: 6
-"""ui_helpers._lore — achievements grid + lore blog rendering."""
+# Build: 7
+"""ui_helpers._lore — achievements list (AchievementCardView + RV refresh).
+
+build_achievement_card() and the legacy lore_grid branch of
+refresh_achievement_grid() were removed in the 2026-08 redesign wave 0
+cleanup: achievements_rv is always present in kv/lore_screen.kv, so the
+fallback never ran. (lore_grid itself is alive — stats/quests/diamond shop
+render into it.)
+"""
 from ._imports import *  # noqa: F401,F403
-from ._layouts import _batch_fill_grid, _bind_long_tap
 from ._widgets import _auto_text_size, _diamond_label
-
-
-# ============================================================
-#  BATTLE LOG (ArenaScreen)
-# ============================================================
-
 
 
 # ============================================================
@@ -107,74 +107,9 @@ def _achievement_to_rv_data(ach):
     }
 
 
-# ------------------------------------------------------------------
-#  Battle log + Event log — RecycleView viewclasses. Up to 200 entries
-#  each, previously rendered as 200 widgets causing lag on entry.
-# ------------------------------------------------------------------
-
-
-
-
-
-def build_achievement_card(ach):
-    from game.widgets import BaseCard
-    from kivy.uix.anchorlayout import AnchorLayout
-
-    unlocked = ach.get("unlocked", False)
-    card = BaseCard(orientation="horizontal", size_hint_y=None, height=dp(75),
-                    padding=[dp(10), dp(6)], spacing=dp(8))
-    if unlocked:
-        card.border_color = ACCENT_GOLD
-        card.card_color = (0.12, 0.12, 0.08, 1)
-
-    info = BoxLayout(orientation="vertical", size_hint_x=0.7, spacing=dp(4))
-    name_color = ACCENT_GOLD if unlocked else TEXT_SECONDARY
-    info.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=ach["name"], font_size="11sp", bold=True,
-        color=name_color, halign="left", size_hint_y=0.5,
-    )))
-    info.add_widget(_auto_text_size(AutoShrinkLabel(
-        text=ach["desc"], font_size="10sp",
-        color=TEXT_MUTED, halign="left", size_hint_y=0.5,
-    )))
-
-    reward = AnchorLayout(size_hint_x=0.3, anchor_x="center", anchor_y="center")
-    if unlocked:
-        reward.add_widget(AutoShrinkLabel(
-            text=t("done_label"), font_size="12sp", bold=True,
-            color=ACCENT_GREEN, halign="center", valign="middle",
-            size_hint=(1, 1),
-        ))
-    else:
-        reward.add_widget(_diamond_label(ach["diamonds"]))
-
-    card.add_widget(info)
-    card.add_widget(reward)
-    return card
-
-
 def refresh_achievement_grid(lore_screen):
-    """Populate achievements list. Prefers RecycleView (achievements_rv);
-    falls back to legacy GridLayout (lore_grid) otherwise."""
-    data = lore_screen.achievements_data
-
-    # Prefer RecycleView — virtualizes to ~10 visible widgets
+    """Populate the achievements RecycleView (achievements_rv)."""
     rv = lore_screen.ids.get("achievements_rv")
-    if rv is not None:
-        rv.data = [_achievement_to_rv_data(a) for a in data]
+    if rv is None:
         return
-
-    # Legacy path
-    grid = lore_screen.ids.get("lore_grid")
-    if not grid:
-        return
-    unlock_hash = (get_language(), tuple(ach.get("unlocked", False) for ach in data))
-    if (lore_screen._achievement_widgets
-            and len(lore_screen._achievement_widgets) == len(data)
-            and getattr(lore_screen, "_achievement_unlock_hash", None) == unlock_hash):
-        _batch_fill_grid(grid, lore_screen._achievement_widgets)
-        return
-    cards = [build_achievement_card(ach) for ach in data]
-    lore_screen._achievement_widgets = cards
-    lore_screen._achievement_unlock_hash = unlock_hash
-    _batch_fill_grid(grid, cards)
+    rv.data = [_achievement_to_rv_data(a) for a in lore_screen.achievements_data]

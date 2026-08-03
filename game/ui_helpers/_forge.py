@@ -1,52 +1,18 @@
-# Build: 8
-"""ui_helpers._forge — forge-grid builders + RV data adapters."""
+# Build: 9
+"""ui_helpers._forge — RV data adapters + forge grid refresh.
+
+build_forge_card() / _get_card_cache() and the legacy GridLayout branch of
+refresh_forge_grid() were removed in the 2026-08 redesign wave 0 cleanup:
+forge_rv is always present in kv/forge_screen.kv, so the fallback never ran.
+(forge_grid itself is alive — it hosts the detail/upgrade/enchant views.)
+"""
 from ._imports import *  # noqa: F401,F403
-from ._layouts import _batch_fill_grid, _bind_long_tap
 from game.passives import passive_marker
 
 
 # ============================================================
 #  FORGE
 # ============================================================
-
-def build_forge_card(item, forge_screen):
-    rarity = item.get("rarity", "common")
-    rcolor = RARITY_COLORS.get(rarity, TEXT_PRIMARY)
-
-    wrapper = BoxLayout(
-        orientation="vertical",
-        size_hint_y=None, height=dp(114),
-        spacing=dp(4),
-    )
-
-    from kivy.app import App
-    def _tap(inst, it=item):
-        # Shop tap always opens pristine shop preview (never the
-        # upgraded/enchanted inventory copy — use ИНВЕНТАРЬ for that).
-        App.get_running_app().open_shop_preview(it)
-    wrapper.add_widget(build_item_info_card(item, on_tap=_tap))
-
-    affordable = item["affordable"]
-    buy_btn = MinimalButton(
-        text=t("buy_btn_price", price=fmt_num(item['cost'])), font_size=11,
-        size_hint_y=None, height=dp(32),
-        btn_color=rcolor if affordable else BTN_DISABLED,
-        text_color=BG_DARK if affordable else TEXT_MUTED,
-        icon_source="sprites/icons/ic_gold.png",
-    )
-    buy_btn.bind(on_release=lambda inst, iid=item["id"]: forge_screen.buy(iid))
-    wrapper.add_widget(buy_btn)
-    return wrapper
-
-
-def _get_card_cache(forge_screen):
-    """Get or create the permanent {item_id: card} cache."""
-    cache = getattr(forge_screen, '_card_by_id', None)
-    if cache is None:
-        cache = {}
-        forge_screen._card_by_id = cache
-    return cache
-
 
 # ------------------------------------------------------------------
 #  RecycleView viewclass — forge shop card. Widgets pre-created once,
@@ -133,56 +99,22 @@ def _forge_item_to_rv_data(item, forge_screen):
 
 
 def refresh_forge_grid(forge_screen):
-    """Populate forge shop list. Uses RecycleView (forge_rv) if available,
-    falls back to legacy GridLayout (forge_grid) otherwise."""
+    """Populate the forge shop RecycleView (forge_rv)."""
     items = forge_screen.forge_items
 
-    # Prefer RecycleView — virtualizes to ~10 visible widgets
     rv = forge_screen.ids.get("forge_rv")
-    if rv is not None:
-        new_data = [_forge_item_to_rv_data(i, forge_screen) for i in items]
-        # Reported bug: navigating into Forge directly from Lore's
-        # blog_detail sometimes left the forge showing tabs but no items.
-        # Root cause: the blog_detail RV occupies the same layout
-        # scheduling queue; when Forge's on_enter fires right after, its
-        # rv.data assignment can collide with pending layout work and the
-        # RV pool fails to materialize the visible rows. Workaround: hard-
-        # reset the RV's pool by going through empty list first, then
-        # explicitly ask for a refresh. Cheap enough to do every time.
-        rv.data = []
-        rv.data = new_data
-        if hasattr(rv, 'refresh_from_data'):
-            rv.refresh_from_data()
+    if rv is None:
         return
-
-    # Legacy path: GridLayout with pre-built cached cards (all 130 in tree)
-    grid = forge_screen.ids.get("forge_grid")
-    if not grid:
-        return
-    item_ids = [i["id"] for i in items]
-
-    # Build missing cards (once per item, cached forever)
-    cache = _get_card_cache(forge_screen)
-    for item in items:
-        iid = item["id"]
-        if iid not in cache:
-            cache[iid] = build_forge_card(item, forge_screen)
-
-    # Collect cards in display order and update affordability
-    cards = []
-    for item in items:
-        card = cache[item["id"]]
-        rcolor = RARITY_COLORS.get(item.get("rarity", "common"), TEXT_PRIMARY)
-        affordable = item["affordable"]
-        buy_btn = card.children[0]
-        buy_btn.btn_color = rcolor if affordable else BTN_DISABLED
-        buy_btn.text_color = BG_DARK if affordable else TEXT_MUTED
-        cards.append(card)
-
-    # Skip re-layout if already showing the same cards in same order
-    if (hasattr(grid, '_item_ids') and grid._item_ids == item_ids
-            and len(grid.children) == len(cards)):
-        return
-
-    grid._item_ids = item_ids
-    _batch_fill_grid(grid, cards)
+    new_data = [_forge_item_to_rv_data(i, forge_screen) for i in items]
+    # Reported bug: navigating into Forge directly from Lore's
+    # blog_detail sometimes left the forge showing tabs but no items.
+    # Root cause: the blog_detail RV occupies the same layout
+    # scheduling queue; when Forge's on_enter fires right after, its
+    # rv.data assignment can collide with pending layout work and the
+    # RV pool fails to materialize the visible rows. Workaround: hard-
+    # reset the RV's pool by going through empty list first, then
+    # explicitly ask for a refresh. Cheap enough to do every time.
+    rv.data = []
+    rv.data = new_data
+    if hasattr(rv, 'refresh_from_data'):
+        rv.refresh_from_data()

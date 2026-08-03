@@ -1,4 +1,4 @@
-# Build: 63
+# Build: 64
 """game.ui_helpers — dynamic UI builders for all screens.
 
 Split from the original 2382-line ui_helpers.py module into a
@@ -15,7 +15,6 @@ from ._roster_grid import *  # noqa: F401,F403
 from ._item_card import *  # noqa: F401,F403
 from ._forge import *  # noqa: F401,F403
 from ._expedition import *  # noqa: F401,F403
-from ._shop import *  # noqa: F401,F403
 from ._combat_animations import *  # noqa: F401,F403
 from ._lore import *  # noqa: F401,F403
 from ._diamond import *  # noqa: F401,F403

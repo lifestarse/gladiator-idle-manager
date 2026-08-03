@@ -1,11 +1,16 @@
-# Build: 2
-"""_EventLogsMixin — split off to keep file under 10KB."""
+# Build: 3
+"""_EventLogsMixin — split off to keep file under 10KB.
+
+The legacy lore_grid fallback of _show_event_log was removed in the
+2026-08 redesign wave 0 cleanup: event_log_rv is always present in
+kv/lore_screen.kv, so the fallback never ran.
+"""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
 
 # Border/label colour per event type. Single source of truth — the list
-# view, the legacy grid fallback and the detail view all read this, so a
-# newly logged event type only needs one line here.
+# view and the detail view both read this, so a newly logged event type
+# only needs one line here.
 _EVENT_COLORS = {
     "battle": ACCENT_RED, "hire": ACCENT_GREEN, "dismiss": ACCENT_RED,
     "level_up": ACCENT_GOLD, "perk": ACCENT_CYAN, "buy": ACCENT_GOLD,
@@ -47,70 +52,28 @@ class _EventLogsMixin:
         engine = App.get_running_app().engine
         self.lore_subview = "event_list"
 
-        # Prefer RecycleView — virtualizes 200-entry list
+        # RecycleView — virtualizes 200-entry list
         rv = self.ids.get("event_log_rv")
-        if rv is not None:
-            data = []
-            # Iterate by index (not reversed()) so we can pass the real
-            # event_log index through for the detail view to pull from.
-            for idx in range(len(engine.event_log) - 1, -1, -1):
-                entry = engine.event_log[idx]
-                etype = entry.get("type", "?")
-                ts = entry.get("t", 0)
-                time_str = _time.strftime("%d.%m %H:%M", _time.localtime(ts)) if ts else "?"
-                color = _EVENT_COLORS.get(etype, TEXT_PRIMARY)
-                data.append({
-                    'log_idx': idx,
-                    '_lore': self,
-                    'color': list(color),
-                    'label': t(f"evt_{etype}"),
-                    'time_text': time_str,
-                    'detail': self._format_event_detail(entry),
-                })
-            rv.data = data
+        if rv is None:
             return
-
-        # Legacy path below
-        grid = self._get_grid("lore_grid")
-        if not grid:
-            return
-        from game.widgets import BaseCard
-
-        with grid_batch(grid):
-            grid.clear_widgets()
-            grid.add_widget(AutoShrinkLabel(
-                text=t("event_log_title"), font_size="10sp", bold=True,
-                color=ACCENT_GOLD, halign="center",
-                size_hint_y=None, height=dp(32),
-            ))
-            if not engine.event_log:
-                grid.add_widget(AutoShrinkLabel(
-                    text=t("event_log_empty"), font_size="11sp",
-                    color=TEXT_MUTED, halign="center",
-                    size_hint_y=None, height=dp(40),
-                ))
-                return
-            for entry in reversed(engine.event_log):
-                etype = entry.get("type", "?")
-                ts = entry.get("t", 0)
-                time_str = _time.strftime("%d.%m %H:%M", _time.localtime(ts)) if ts else "?"
-                color = _EVENT_COLORS.get(etype, TEXT_PRIMARY)
-                label = t(f"evt_{etype}")
-                detail = self._format_event_detail(entry)
-
-                card = BaseCard(orientation="vertical", size_hint_y=None,
-                                height=dp(48), padding=[dp(8), dp(4)], spacing=dp(1))
-                card.border_color = color
-                card.add_text_row(
-                    (label, sp(7), True, color, 0.45),
-                    (time_str, sp(6), False, TEXT_MUTED, 0.30),
-                    size_hint_y=0.45,
-                )
-                card.add_text_row(
-                    (detail, sp(6), False, TEXT_SECONDARY, 1.0),
-                    size_hint_y=0.55,
-                )
-                grid.add_widget(card)
+        data = []
+        # Iterate by index (not reversed()) so we can pass the real
+        # event_log index through for the detail view to pull from.
+        for idx in range(len(engine.event_log) - 1, -1, -1):
+            entry = engine.event_log[idx]
+            etype = entry.get("type", "?")
+            ts = entry.get("t", 0)
+            time_str = _time.strftime("%d.%m %H:%M", _time.localtime(ts)) if ts else "?"
+            color = _EVENT_COLORS.get(etype, TEXT_PRIMARY)
+            data.append({
+                'log_idx': idx,
+                '_lore': self,
+                'color': list(color),
+                'label': t(f"evt_{etype}"),
+                'time_text': time_str,
+                'detail': self._format_event_detail(entry),
+            })
+        rv.data = data
 
     def _show_event_detail(self, log_idx):
         """Render a full event entry as a list of field rows.

@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """Widgets — CardWidget, BaseCard."""
 from ._imports import *  # noqa: F401,F403
 from ._scroll import ScrollSafeButtonMixin
@@ -60,7 +60,7 @@ class BaseCard(CardWidget):
             ("+3", sp(14), True, ACCENT_GOLD, None),
             size_hint_y=0.35,
         )
-        card.add_stat_row([("icons/ic_str.png", "150")], size_hint_y=0.40)
+        card.add_stat_row([("sprites/icons/ic_str.png", "150")], size_hint_y=0.40)
     """
 
     def _make_label(self, text, font_size=sp(10), bold=False, color=TEXT_PRIMARY,

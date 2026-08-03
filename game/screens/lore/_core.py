@@ -1,4 +1,4 @@
-# Build: 3
+# Build: 4
 """LoreScreen core — lifecycle + small methods."""
 from ._screen_imports import *  # noqa: F401,F403
 from ._screen_imports import _m
@@ -23,10 +23,6 @@ class LoreScreen(BaseScreen, _LogsMixin, _StatsQuestsMixin, _DiamondsMixin, _Eve
 
     event_log_count = StringProperty("")
 
-    _achievement_widgets = []
-
-    _achievement_unlock_hash = None
-
     def on_enter(self):
         self.refresh_lore()
 
@@ -36,7 +32,6 @@ class LoreScreen(BaseScreen, _LogsMixin, _StatsQuestsMixin, _DiamondsMixin, _Eve
         grid = self._get_grid("lore_grid")
         if grid:
             grid._dshop_key = None
-            grid._ach_key = None
         self.refresh_lore()
 
     def _rebuild_lore_tabs(self):

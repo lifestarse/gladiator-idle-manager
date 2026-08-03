@@ -1,4 +1,4 @@
-# Build: 5
+# Build: 6
 """Import smoke tests — catch circular imports and missing re-exports
 that would only manifest at runtime on Android.
 """
@@ -20,11 +20,13 @@ def test_engine_package():
 
 
 def test_ui_helpers_public_api():
+    # build_roster_card / build_forge_card / build_shop_card /
+    # build_achievement_card removed in the 2026-08 redesign wave 0
+    # cleanup (dead pre-RecycleView builders with no live caller).
     import game.ui_helpers as u
     for name in [
-        "build_roster_card", "build_forge_card", "build_item_info_card",
-        "build_expedition_card", "build_shop_card",
-        "build_achievement_card",
+        "build_item_info_card",
+        "build_expedition_card",
         "refresh_forge_grid", "refresh_roster_grid",
         "RosterCardView", "ArenaUnitCardView", "ForgeCardView",
         "InventoryCardView", "AchievementCardView",
